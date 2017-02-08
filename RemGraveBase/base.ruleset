@@ -1,0 +1,69 @@
+#List structure
+[listnames] as listname in listnames
+[rules] as rule in listnames
+[tokens] as token in listnames
+[rulenames] as rulename in listnames
+[list_rules] as list_rule in listnames
+[braces] as brace in listnames
+[comments] as comment in listnames
+
+#Comments
+[#[^\n]*\n] as comment in comments 
+
+#Tokens
+[[|]] as PIPE in tokens
+[[+]] as PLUS in tokens
+[[?]] as OPTIONAL in tokens
+[[*]] as MANY in tokens
+[as] as AS in tokens
+[in] as IN in tokens
+[with] as WITH in tokens
+[are] as ARE in tokens
+[[ \t]+is[ \t]+silent] as SILENCE in tokens
+[\\t] as TAB in tokens
+[\\n] as NEWLINE in tokens
+[[a-zA-Z_-][a-zA-Z0-9_-]*] as NAME in tokens
+[[\\t ]+] as SPACES in tokens
+[.*] as WILD in tokens
+
+#Braces
+braces are Braced
+[(,)] as BRACE in braces with definition
+[[,]] as SQUARE in braces with WILD as regex
+[\",\"] as QUOTE in braces with WILD as regex
+
+#List Rules
+list_rules are empty
+
+#Rules
+base is silent
+	( SPACES | NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules )+
+
+parameters
+	(SPACES AS SPACES NAME as name )? (SPACES IN SPACES listnames as list )? (SPACES WITH SPACES definition as parameter)? SPACES? 
+
+rule is silent
+	NAME as rulename in rulenames ( SILENCE as silence )? SPACES? NEWLINE TAB definition
+
+
+list_rule is silent		
+	( QUOTE | SQUARE ) parameters
+	listnames as list SPACES ARE SPACES NAME as listType
+
+definition
+	( atom atom* ) as chain ( SPACES? ( PIPE | NEWLINE TAB ) definition )? as choice
+
+atom
+	SPACES? element parameters
+
+element	is silent
+	( definition SPACES? ( OPTIONAL | MANY | PLUS ) as option ) as multiple
+	BRACE as braced	
+	terminal
+
+terminal
+	( rulename ) as ruleToken
+	( token ) as token
+	( listnames ) as listsToken
+	( listname ) as listToken
+	( brace ) as braceToken
