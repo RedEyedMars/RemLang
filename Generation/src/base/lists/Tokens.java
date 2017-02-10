@@ -32,6 +32,10 @@ public class Tokens extends ParseList {
 	public static final IParser parser = new ChoiceParser(
 				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,SILENCE,TAB,NEWLINE,NAME,SPACES,WILD);
 
-	public static final IParser name_parser = new NameParser(
+	public static final NameParser name_parser = new NameParser(
 				"tokens","PIPE","PLUS","OPTIONAL","MANY","AS","IN","WITH","ARE","SILENCE","TAB","NEWLINE","NAME","SPACES","WILD");
+	@Override
+	public NameParser getNamesParser(){
+		return name_parser;
+	}
 }

@@ -59,11 +59,24 @@ public class ParseUtil {
 	}
 
 	public static void parse(IParser parser, File file, Generator generator, ParseList... listsToInitiate) {
-		ParseData data = new ParseData(getString(file));		
+		String fileString = getString(file);
+		ParseData data = new ParseData(fileString);		
 		for(ParseList list:listsToInitiate){
 			data.addList(list);
 		}
-		parser.parse(data);
+		if(generator!=null&&generator.getLazyNameParser()!=null){
+			NameParser.lazyParser=generator.getLazyNameParser();
+			parser.parse(data);
+			NameParser.lazyParser=null;
+			data.accumlateLists(generator);
+			data.resetLists();
+			data = new ParseData(fileString);		
+			for(ParseList list:listsToInitiate){
+				data.addList(list);
+			}
+		}
+		parser.parse(data);		
+		data.accumlateLists(generator);
 
 		result(data);
 		if(generator!=null){

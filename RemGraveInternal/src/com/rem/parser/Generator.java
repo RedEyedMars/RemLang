@@ -17,6 +17,9 @@ public abstract class Generator {
 	private Map<String,Element> elements = new LinkedHashMap<String,Element>();
 
 	protected abstract void generate(ParseData data);
+	public abstract IParser getLazyNameParser();
+	public abstract void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken);
+	
 	protected void generateAll(InterpreterDyn gen, IToken token, String name){
 		addPage(gen.getName(),gen.getOutline(),gen.numberOfParameters());
 		for(IToken subToken:token.getAll(name)){

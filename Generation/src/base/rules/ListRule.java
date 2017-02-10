@@ -12,20 +12,29 @@ public class ListRule extends AddTokenParser implements IRule {
 	@Override
 	public void setup(){
 		isSilent(true);
-		set(
-			new ChoiceParser(new ChainParser(
-				
-				new ChoiceParser(
-					Braces.QUOTE,
-					Braces.SQUARE),
-				Parameters.parser),new ChainParser(
-				new AddTokenParser(
-					Listnames.parser,"list"),
-				Tokens.SPACES,
-				Tokens.ARE,
-				Tokens.SPACES,
-				new AddTokenParser(
-					Tokens.NAME,"listType"))));
+		set(new ChainParser(
+				new AddTokenToListParser(
+					Tokens.NAME,"listname","listnames"),
+				new OptionalParser(
+					new ChainParser(
+						Tokens.SPACES,
+						Tokens.ARE,
+						Tokens.SPACES,
+						new AddTokenParser(
+							Tokens.NAME,"listType"))),
+				new OptionalParser(
+					Tokens.SPACES),
+				new ManyParser(
+					new ChainParser(
+						Tokens.NEWLINE,
+						Tokens.TAB,
+						new AddTokenParser(
+							new ChainParser(
+							
+							new ChoiceParser(
+								Braces.QUOTE,
+								Braces.SQUARE),
+							Parameters.parser),"list_def")))));
 
 	}
 

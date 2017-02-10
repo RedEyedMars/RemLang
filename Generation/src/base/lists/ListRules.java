@@ -14,4 +14,9 @@ public class ListRules extends ParseList {
 		return "list_rule";
 	}
 
+	public static final NameParser name_parser = new NameParser("list_rules");
+	@Override
+	public NameParser getNamesParser(){
+		return name_parser;
+	}
 }

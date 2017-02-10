@@ -26,6 +26,10 @@ public class Rules extends ParseList {
 	public static final IParser parser = new ChoiceParser(
 				base,parameters,rule,list_rule,definition,atom,element,terminal);
 
-	public static final IParser name_parser = new NameParser(
+	public static final NameParser name_parser = new NameParser(
 				"rules","base","parameters","rule","list_rule","definition","atom","element","terminal");
+	@Override
+	public NameParser getNamesParser(){
+		return name_parser;
+	}
 }

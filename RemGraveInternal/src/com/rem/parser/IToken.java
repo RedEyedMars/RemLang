@@ -12,6 +12,9 @@ public interface IToken extends Map<IToken.Id,IToken>{
 	public void put(NodeToken nodeToken);
 	public IToken getLast();
 	public List<IToken> getAll(String key);
+	public void accumlateLists(Map<String,ParseList> listMap);
+	public void setName(String name);
+	public void setList(String name);
 
 
 	public static class Id {

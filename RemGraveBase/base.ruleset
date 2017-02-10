@@ -1,36 +1,39 @@
 #List structure
-[listnames] as listname in listnames
-[rules] as rule in listnames
-[tokens] as token in listnames
-[rulenames] as rulename in listnames
-[list_rules] as list_rule in listnames
-[braces] as brace in listnames
-[comments] as comment in listnames
+listnames
+	[listnames] as listname
+	[rules] as rule
+	[tokens] as token
+	[rulenames] as rulename
+	[list_rules] as list_rule
+	[braces] as brace
+	[comments] as comment
 
 #Comments
-[#[^\n]*\n] as comment in comments 
+comments
+	[#[^\n]*\n] as comment 
 
 #Tokens
-[[|]] as PIPE in tokens
-[[+]] as PLUS in tokens
-[[?]] as OPTIONAL in tokens
-[[*]] as MANY in tokens
-[as] as AS in tokens
-[in] as IN in tokens
-[with] as WITH in tokens
-[are] as ARE in tokens
-[[ \t]+is[ \t]+silent] as SILENCE in tokens
-[\\t] as TAB in tokens
-[\\n] as NEWLINE in tokens
-[[a-zA-Z_-][a-zA-Z0-9_-]*] as NAME in tokens
-[[\\t ]+] as SPACES in tokens
-[.*] as WILD in tokens
+tokens
+	[[|]] as PIPE
+	[[+]] as PLUS
+	[[?]] as OPTIONAL
+	[[*]] as MANY
+	[as] as AS
+	[in] as IN
+	[with] as WITH
+	[are] as ARE
+	[[ \t]+is[ \t]+silent] as SILENCE
+	[\\t] as TAB
+	[\\n] as NEWLINE
+	[[a-zA-Z_-][a-zA-Z0-9_-]*] as NAME
+	[[\\t ]+] as SPACES
+	[.*] as WILD
 
 #Braces
 braces are Braced
-[(,)] as BRACE in braces with definition
-[[,]] as SQUARE in braces with WILD as regex
-[\",\"] as QUOTE in braces with WILD as regex
+	[(,)] as BRACE with definition
+	[[,]] as SQUARE with WILD as regex
+	[\",\"] as QUOTE with WILD as regex
 
 #List Rules
 list_rules are empty
@@ -47,8 +50,7 @@ rule is silent
 
 
 list_rule is silent		
-	( QUOTE | SQUARE ) parameters
-	listnames as list SPACES ARE SPACES NAME as listType
+	NAME as listname in listnames ( SPACES ARE SPACES NAME as listType )? SPACES? ( NEWLINE TAB ( ( QUOTE | SQUARE ) parameters ) as list_def )*
 
 definition
 	( atom atom* ) as chain ( SPACES? ( PIPE | NEWLINE TAB ) definition )? as choice
@@ -64,6 +66,6 @@ element	is silent
 terminal
 	( rulename ) as ruleToken
 	( token ) as token
-	( listnames ) as listsToken
 	( listname ) as listToken
+	( listnames ) as listsToken
 	( brace ) as braceToken

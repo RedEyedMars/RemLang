@@ -21,7 +21,8 @@ public class AddTokenToListParser extends AddTokenParser implements IParser {
 		if(subParser==null) return;
 		super.real_parse(data);
 		if(data.isValid()){
-			data.getList(listName).put(new IToken.Id(name),data.getToken().getLast());
+			data.getToken().getLast().setList(listName);
+			data.getToken().getLast().setName(name);
 		}
 	}
 }

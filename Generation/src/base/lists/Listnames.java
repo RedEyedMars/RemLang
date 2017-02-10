@@ -25,6 +25,10 @@ public class Listnames extends ParseList {
 	public static final IParser parser = new ChoiceParser(
 				listname,rule,token,rulename,list_rule,brace,comment);
 
-	public static final IParser name_parser = new NameParser(
+	public static final NameParser name_parser = new NameParser(
 				"listnames","listname","rule","token","rulename","list_rule","brace","comment");
+	@Override
+	public NameParser getNamesParser(){
+		return name_parser;
+	}
 }

@@ -21,10 +21,10 @@ public class Terminal extends AddTokenParser implements IRule {
 					Tokens.name_parser,"token"),
 				new AddTokenParser(
 					
-					Listnames.parser,"listsToken"),
+					Listnames.name_parser,"listToken"),
 				new AddTokenParser(
 					
-					Listnames.name_parser,"listToken"),
+					Listnames.parser,"listsToken"),
 				new AddTokenParser(
 					
 					Braces.name_parser,"braceToken")));

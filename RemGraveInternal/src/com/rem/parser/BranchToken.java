@@ -12,12 +12,14 @@ public class BranchToken implements IToken {
 	private Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
 	private LinkedListSet<IToken.Id> keys = new LinkedListSet<IToken.Id>();
 	private IToken parent;
+	private String listName = null;
+	private String name;
 
 	@Override
 	public Object getValue(){
 		return keys.isEmpty()?"empty":get(keys.getFirst()).getValue();
 	}
-	
+
 	@Override
 	public String getString(){
 		return (String)getValue();
@@ -44,13 +46,40 @@ public class BranchToken implements IToken {
 	}
 
 	@Override
+	public void accumlateLists(Map<String,ParseList> listMap){
+		if(listName!=null){
+			listMap.get(listName).put(new IToken.Id(name),this);
+			listName = null;			
+		}
+		for(IToken.Id key:keys){
+			get(key).accumlateLists(listMap);
+		}
+	}
+	
+	@Override
+	public void setName(String name){
+		this.name = name;
+	}
+
+	@Override
+	public void setList(String name){
+		this.listName  = name;
+	}
+
+	@Override
 	public void clear() {
 		tokens.clear();
 	}
 
 	@Override
 	public boolean containsKey(Object key) {
-		return tokens.containsKey(key);
+		if(key instanceof String){
+			return tokens.containsKey(key);
+		}
+		else if(key instanceof IToken.Id){
+			return tokens.containsKey(((IToken.Id)key).getName());
+		}
+		else return false;
 	}
 
 	@Override
@@ -68,7 +97,7 @@ public class BranchToken implements IToken {
 		if(key instanceof String){
 
 			String id = (String)key;
-			
+
 			if(tokens.containsKey(id)&&tokens.get(id).size()==1){
 				return tokens.get(id).get(0);
 			}

@@ -28,13 +28,21 @@ public abstract class ParseList extends BranchToken{
 
 	public abstract String getName();	
 	public abstract String getSingular();
+	public abstract NameParser getNamesParser();
+	
 	
 	@Override
 	public IToken put(IToken.Id key,IToken value){
+		getNamesParser().addName(value.getString());
+		System.out.println(this.getName()+" add:"+value.getString());
 		return newTokensToken.put(key, value);
 	}
 	
 	public IToken getNewTokens(){
 		return newTokensToken;
+	}
+
+	public void reset() {
+		newTokensToken = new BranchToken();
 	}
 }

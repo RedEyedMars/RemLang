@@ -12,9 +12,21 @@ public class NodeToken implements IToken{
 	private String name;
 	private Object value;
 	private IToken parent;
+	private String listName = null;
+	public NodeToken(Object obj){
+		this.value = obj;
+	}
 	public NodeToken(String name,Object obj){
 		this.name = name;
 		this.value = obj;
+	}
+	
+	public void setName(String name){
+		this.name = name;
+	}
+	
+	public void setList(String name){
+		this.listName  = name;
 	}
 	
 	public String getName(){
@@ -44,7 +56,14 @@ public class NodeToken implements IToken{
 	public IToken getLast(){
 		return null;
 	}
-	
+
+	@Override
+	public void accumlateLists(Map<String,ParseList> listMap){
+		if(listName!=null){
+			listMap.get(listName).put(this);
+			listName = null;
+		}
+	}
 	@Override
 	public List<IToken> getAll(String key){
 		return new ArrayList<IToken>();

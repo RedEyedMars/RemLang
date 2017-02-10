@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class RegexParser extends ConcreteParser implements IParser{
 
 	private String listName;
-	private String name;
+	protected String name;
 	protected Pattern pattern;
 	private boolean fail = false;
 

@@ -110,6 +110,19 @@ public class ParseData {
 		return currentToken;
 	}
 
+	public void accumlateLists(Generator generator) {
+		rootToken.accumlateLists(lists);
+		if(generator!=null){
+			generator.assignListElementNames(lists, rootToken);
+		}
+	}
+	
+	public void resetLists(){
+		for(String listName:lists.keySet()){
+			lists.get(listName).reset();
+		}
+	}
+	
 	public void addError(String error) {
 		System.err.println(ParseUtil.currentParser+"("+position +"):"+ error);
 	}
