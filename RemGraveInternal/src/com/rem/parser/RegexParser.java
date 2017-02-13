@@ -44,6 +44,7 @@ public class RegexParser extends ConcreteParser implements IParser{
 		if(matcher.matches()){
 			data.getToken().put(new NodeToken(name,matcher.group(1)));
 			data.setPosition(data.getPosition()+matcher.end(1));
+			data.validate();
 		}
 		else {
 			data.invalidate();

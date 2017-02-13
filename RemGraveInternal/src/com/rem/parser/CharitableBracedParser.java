@@ -1,6 +1,6 @@
 package com.rem.parser;
 
-public class BracedParser extends ConcreteParser implements IParser{
+public class CharitableBracedParser extends ConcreteParser implements IParser{
 	private IParser subParser;
 	private String name;
 	private String listName;
@@ -8,12 +8,12 @@ public class BracedParser extends ConcreteParser implements IParser{
 	private String close;
 	private String escapeOpen;
 	private String escapeClose;
-	public BracedParser(IParser initialParser, String name, String listName){
+	public CharitableBracedParser(IParser initialParser, String name, String listName){
 		subParser = initialParser;
 		this.name = name;
 		this.listName = listName;
 	}
-	public BracedParser(IParser initialParser, String name, String listName, String parameters){
+	public CharitableBracedParser(IParser initialParser, String name, String listName, String parameters){
 		subParser = initialParser;
 		this.name = name;
 		this.listName = listName;
@@ -72,7 +72,6 @@ public class BracedParser extends ConcreteParser implements IParser{
 				return;
 			}
 			ParseData newParseData = new ParseData(toExamine.substring(0,sectionLength));
-
 			subParser.parse(newParseData);
 
 			ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
@@ -81,7 +80,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 			}
 			else {
-				data.setPosition(data.getPosition()+sectionLength+close.length());
+				data.setPosition(data.getPosition()+sectionLength);
 			}
 		}
 		else {

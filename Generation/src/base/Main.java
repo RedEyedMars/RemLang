@@ -9,6 +9,7 @@ import base.lists.Listnames;
 import base.lists.Rulenames;
 import base.lists.Rules;
 import base.lists.Tokens;
+import base.rules.Arithmatic;
 import base.rules.Atom;
 import base.rules.Base;
 import base.rules.Definition;
@@ -25,6 +26,7 @@ public class Main {
 	public static void main(String[] args){
 		ParseUtil.setupRules(
 				Base.class,
+				Arithmatic.class,
 				Parameters.class,
 				Rule.class,
 				ListRule.class,
@@ -34,8 +36,7 @@ public class Main {
 				Terminal.class);
 		ParseUtil.parse(
 				Base.parser, new File("base.ruleset"), new BaseGenerator(),
-					new Listnames(),
-					new Tokens(), new Braces(), new Rulenames(), new ListRules(), new Rules(), new Comments());
+					new Listnames());
 	}
 
 }

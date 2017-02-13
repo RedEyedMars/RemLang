@@ -32,7 +32,11 @@ public class Parameters extends AddTokenParser implements IRule {
 						Tokens.WITH,
 						Tokens.SPACES,
 						new AddTokenParser(
-							Definition.parser,"parameter"))),
+							
+						new ChoiceParser(
+							Altbraces.NEWLINED,
+							Braces.SEMICOLON,
+							Tokens.NUMBER),"parameter"))),
 				new OptionalParser(
 					Tokens.SPACES)));
 

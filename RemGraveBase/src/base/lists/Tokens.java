@@ -28,12 +28,13 @@ public class Tokens extends ParseList {
 	public static final IParser NAME = new RegexParser("NAME","tokens","[a-zA-Z_-][a-zA-Z0-9_-]*");
 	public static final IParser SPACES = new RegexParser("SPACES","tokens","[\\t ]+");
 	public static final IParser WILD = new RegexParser("WILD","tokens",".*");
+	public static final IParser ANYLIST = new RegexParser("ANYLIST","tokens","any[\\t ]+list");
 
 	public static final IParser parser = new ChoiceParser(
-				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,SILENCE,TAB,NEWLINE,NAME,SPACES,WILD);
+				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ANYLIST,ARE,SILENCE,TAB,NEWLINE,NAME,SPACES,WILD);
 
 	public static final NameParser name_parser = new NameParser(
-				"tokens","PIPE","PLUS","OPTIONAL","MANY","AS","IN","WITH","ARE","SILENCE","TAB","NEWLINE","NAME","SPACES","WILD");
+				"tokens");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

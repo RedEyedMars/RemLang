@@ -14,8 +14,8 @@ public class Atom extends AddTokenParser implements IRule {
 		set(new ChainParser(
 				new OptionalParser(
 					Tokens.SPACES),
-				Element.parser,
-				Parameters.parser));
+				Rules.element,
+				Rules.parameters));
 
 	}
 

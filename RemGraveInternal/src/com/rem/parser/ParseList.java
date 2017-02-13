@@ -10,7 +10,11 @@ public abstract class ParseList extends BranchToken{
 		super();
 		try {
 			for(Field field:this.getClass().getDeclaredFields()){
-				if("serialVersionUID".equals(field.getName())||"parser".equals(field.getName())||"name_parser".equals(field.getName())){
+				if("serialVersionUID".equals(field.getName())||
+						"parser".equals(field.getName())||
+						"name_parser".equals(field.getName())||
+						"this$0".equals(field.getName())||
+						"val$listName".equals(field.getName())){
 					continue;
 				}
 				else {
@@ -34,7 +38,6 @@ public abstract class ParseList extends BranchToken{
 	@Override
 	public IToken put(IToken.Id key,IToken value){
 		getNamesParser().addName(value.getString());
-		System.out.println(this.getName()+" add:"+value.getString());
 		return newTokensToken.put(key, value);
 	}
 	
@@ -44,5 +47,25 @@ public abstract class ParseList extends BranchToken{
 
 	public void reset() {
 		newTokensToken = new BranchToken();
+	}
+	
+	public static ParseList createNew(final String listName){
+		return new ParseList(){
+			private NameParser name_parser = new NameParser(listName);
+			@Override
+			public String getName() {
+				return listName;
+			}
+
+			@Override
+			public String getSingular() {
+				return listName.substring(0,listName.length()-1);
+			}
+
+			@Override
+			public NameParser getNamesParser() {
+				return name_parser;
+			}
+		};
 	}
 }

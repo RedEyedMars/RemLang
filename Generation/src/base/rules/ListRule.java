@@ -26,7 +26,8 @@ public class ListRule extends AddTokenParser implements IRule {
 					Tokens.SPACES),
 				new ManyParser(
 					new ChainParser(
-						Tokens.NEWLINE,
+						new OptionalParser(
+							Tokens.NEWLINE),
 						Tokens.TAB,
 						new AddTokenParser(
 							new ChainParser(
@@ -34,7 +35,7 @@ public class ListRule extends AddTokenParser implements IRule {
 							new ChoiceParser(
 								Braces.QUOTE,
 								Braces.SQUARE),
-							Parameters.parser),"list_def")))));
+							Rules.parameters),"list_def")))));
 
 	}
 

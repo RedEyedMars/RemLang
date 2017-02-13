@@ -14,9 +14,9 @@ public class Definition extends AddTokenParser implements IRule {
 		set(new ChainParser(
 				new AddTokenParser(
 					new ChainParser(
-					Atom.parser,
+					Rules.atom,
 					new ManyParser(
-						Atom.parser)),"chain"),
+						Rules.atom)),"chain"),
 				new AddTokenParser(
 					new OptionalParser(
 					new ChainParser(
@@ -27,7 +27,7 @@ public class Definition extends AddTokenParser implements IRule {
 							Tokens.PIPE,new ChainParser(
 							Tokens.NEWLINE,
 							Tokens.TAB)),
-						Definition.parser)),"choice")));
+						Rules.definition)),"choice")));
 
 	}
 

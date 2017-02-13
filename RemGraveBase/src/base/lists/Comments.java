@@ -20,7 +20,7 @@ public class Comments extends ParseList {
 				comment);
 
 	public static final NameParser name_parser = new NameParser(
-				"comments","comment");
+				"comments");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

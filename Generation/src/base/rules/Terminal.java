@@ -15,19 +15,13 @@ public class Terminal extends AddTokenParser implements IRule {
 			new ChoiceParser(
 				new AddTokenParser(
 					
-					Rulenames.name_parser,"ruleToken"),
-				new AddTokenParser(
-					
-					Tokens.name_parser,"token"),
-				new AddTokenParser(
-					
-					Listnames.name_parser,"listToken"),
+					Tokens.ANYLIST,"anyListNameToken"),
 				new AddTokenParser(
 					
 					Listnames.parser,"listsToken"),
 				new AddTokenParser(
 					
-					Braces.name_parser,"braceToken")));
+					AnyListNameParser.parser,"listToken")));
 
 	}
 

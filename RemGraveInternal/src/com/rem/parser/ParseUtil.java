@@ -69,11 +69,9 @@ public class ParseUtil {
 			parser.parse(data);
 			NameParser.lazyParser=null;
 			data.accumlateLists(generator);
-			data.resetLists();
-			data = new ParseData(fileString);		
-			for(ParseList list:listsToInitiate){
-				data.addList(list);
-			}
+			data.resetLists();			
+			data = new ParseData(data);
+			System.out.println("---");
 		}
 		parser.parse(data);		
 		data.accumlateLists(generator);

@@ -1,0 +1,43 @@
+#Listnames
+listnames
+	[tab] as tabs
+	[token] as tokens
+	[brace] as braces
+
+
+#Tokens
+tokens
+	[[\\t ]+] as SPACES
+	[\\n] as NEWLINE
+	[[a-zA-Z_][a-zA-Z0-9_-]] as NAME
+	[.*] as WILD
+	[[=]] as EQUALSIGN
+
+#Tab collectors
+tabs are Tabbed
+	[\\t] as TAB
+
+#Braces
+braces are Braced
+	[{,}] as CODE_BLOCK with WILD as code
+	[\",\"] as QUOTE with WILD as entry
+
+#Rules
+
+base is silent
+	( SPACES? NEWLINE | class_definition as class_def in class_definitions )+
+
+whitetab is silent has tabCount
+	(SPACES? NEWLINE TAB with tabCount)+
+
+class_definition is silent
+	NAME as className SPACES? NEWLINE ( class_element with 1 )+
+
+class_element has tabCount
+	element_definition with tabCount; | generation_definition with tabCount
+
+element_definition has tabCount
+	TAB with tabCount NAME as elementName SPACES? EQUALSIGN SPACES? QUOTE ( SPACES? (whitetab with tabCount)? QUOTE )+
+
+generation_definition has tabCount
+	TAB with tabCount NAME as tokenName SPACES? NEWLINE (class_element with tabCount+1)+

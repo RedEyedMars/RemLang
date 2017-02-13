@@ -12,22 +12,30 @@ public class Terminal extends AddTokenParser implements IRule {
 	@Override
 	public void setup(){
 		set(
+				new ChoiceParser(
+						new AddTokenParser(	Tokens.ANYLIST,"anyListNameToken"),
+						new AddTokenParser(	Listnames.parser,"listsToken"),
+						new AddTokenParser(	AnyListNameParser.parser,"listToken")
+						
+						));
+		/*
+		set(
 			new ChoiceParser(
 				new AddTokenParser(
-					
+
 					Rulenames.name_parser,"ruleToken"),
 				new AddTokenParser(
-					
+
 					Tokens.name_parser,"token"),
 				new AddTokenParser(
-					
+
 					Listnames.parser,"listsToken"),
 				new AddTokenParser(
-					
-					Listnames.name_parser,"listToken"),
+
+					Listnames.name_parser,"anyListNameToken"),
 				new AddTokenParser(
-					
-					Braces.name_parser,"braceToken")));
+
+					Braces.name_parser,"braceToken")));*/
 
 	}
 

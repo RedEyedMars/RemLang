@@ -3,18 +3,18 @@ package base.lists;
 import com.rem.parser.*;
 import base.rules.*;
 
-public class ListRules extends ParseList {
+public class RuleParameters extends ParseList {
 
 	@Override
 	public String getName() {
-		return "list_rules";
+		return "rule_parameters";
 	}
 	@Override
 	public String getSingular() {
-		return "list_rule";
+		return "rule_parameter";
 	}
 
-	public static final NameParser name_parser = new NameParser("list_rules");
+	public static final NameParser name_parser = new NameParser("rule_parameters");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

@@ -2,6 +2,7 @@ package base;
 
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +13,9 @@ import com.rem.parser.IToken;
 import com.rem.parser.NameParser;
 import com.rem.parser.ParseData;
 import com.rem.parser.ParseList;
+import com.rem.parser.RegexParser;
 
+import base.lists.Listnames;
 import base.lists.Tokens;
 
 public class BaseGenerator extends Generator{
@@ -40,37 +43,27 @@ public class BaseGenerator extends Generator{
 
 	@Override
 	public void assignListElementNames(Map<String,ParseList> listMap, IToken root){
+		
+		List<IParser> listNameChoices = new ArrayList<IParser>();
 		for(IToken.Id key:listMap.get("list_rules").getNewTokens().keySet()){
 			IToken token = listMap.get("list_rules").getNewTokens().get(key);
 			final String listName = token.get("listname").getString();
 			if(!listMap.containsKey(listName)){
-				listMap.put(listName, new ParseList(){
-					private NameParser name_parser = new NameParser(listName);
-					@Override
-					public String getName() {
-						return listName;
-					}
-
-					@Override
-					public String getSingular() {
-						return listName.substring(0,listName.length()-1);
-					}
-
-					@Override
-					public NameParser getNamesParser() {
-						return name_parser;
-					}
-
-				});
+				listMap.put(listName, ParseList.createNew(listName));
 			}
 			ParseList list = listMap.get(listName);
 			List<IToken> defs = token.getAll("list_def");
 			if(defs!=null){
 				for(IToken def:defs){
-					list.getNamesParser().addName(def.get("parameters").get("name").getString());
+					String name = def.get("parameters").get("name").getString();
+					list.getNamesParser().addName(name);
+					if("listnames".equals(listName)){
+						listNameChoices.add(new RegexParser(name,listName,def.get("regex").getString()+"\\b"));
+					}
 				}
 			}
 		}
+		Listnames.parser.replace(listNameChoices);
 	}
 
 
@@ -95,6 +88,7 @@ public class BaseGenerator extends Generator{
 		private String[] listElement = new String[]{"",/*List Name*/".",/*Parser Name*/""};
 		private String[] rule_parserElement = new String[]{"",/*Name*/".parser"};
 		private String[] rule_name_parserElement = new String[]{"",/*Name*/".name_parser"};
+		private String[] rule_any_list_nameElement = new String[]{"AnyListNameParser.parser"};
 
 		private RuleGenerator(){
 			ruleDirectory.mkdir();
@@ -110,6 +104,7 @@ public class BaseGenerator extends Generator{
 			addElement("listElement",listElement);
 			addElement("rule_parserElement",rule_parserElement);
 			addElement("rule_name_parserElement",rule_name_parserElement);
+			addElement("rule_any_list_nameElement",rule_any_list_nameElement);
 		}
 
 		@Override
@@ -249,9 +244,20 @@ public class BaseGenerator extends Generator{
 				else if("listsToken".equals(key.getName())){					
 					return new ElementEntry("rule_parserElement",new StringEntry(camelize(terminal.get(key).getString())));
 				}
-				else if("listToken".equals(key.getName())){					
-					return new ElementEntry("rule_name_parserElement",new StringEntry(camelize(terminal.get(key).getString()+"s")));
+				else if("listToken".equals(key.getName())){
+					String listName = "#NO_LISTNAME_FOUND";
+					for(IToken.Id lkey:terminal.get(key).keySet()){
+						listName = lkey.getName();
+					}
+					if(listName.equals("listnames")){
+						return new ElementEntry("rule_name_parserElement",new StringEntry(camelize(terminal.get(key).getString()+"s")));
+					}
+					else return new ElementEntry("listElement",StringEntry.getEntry(camelize(listName),terminal.get(key).getString()));
 				}
+				else if("anyListNameToken".equals(key.getName())){					
+					return new ElementEntry(
+							"rule_any_list_nameElement",new Entry[]{});
+				}				
 				else if("token".equals(key.getName())){					
 					return new ElementEntry("listElement",StringEntry.getEntry("Tokens",terminal.get(key).getString()));
 				}
@@ -293,7 +299,7 @@ public class BaseGenerator extends Generator{
 				"\tpublic static final IParser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"
 		};
 		private final String[] parserElement = new String[]{
-				"\n\tpublic static final IParser parser = new ChoiceParser(\n\t\t\t\t",/*Rules*/");\n"
+				"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t",/*Rules*/");\n"
 		};
 		private final String[] name_parserElement = new String[]{
 				"\n\tpublic static final NameParser name_parser = new NameParser(\n\t\t\t\t",/*Rules*/");\n"+
@@ -303,9 +309,10 @@ public class BaseGenerator extends Generator{
 						"\t}\n"
 		};
 		private final String[] emptyListElement = new String[]{
+				"\tpublic static final NameParser name_parser = new NameParser(",");\n"+
 				"\t@Override\n"+
 						"\tpublic NameParser getNamesParser(){\n"+
-						"\t\treturn new NameParser();\n"+
+						"\t\treturn name_parser;\n"+
 						"\t}\n"
 		};
 		public ListGenerator(){
@@ -323,6 +330,8 @@ public class BaseGenerator extends Generator{
 
 			String[] fileParameters = new String[]{className,listName,listName.substring(0,listName.length()-1),""};
 			addFile(getName(),listDirectory,fileName,fileParameters);
+			
+			boolean hasDefinition = false;
 
 			for(IToken.Id key:token.keySet()){
 				if("list_def".equals(key.getName())){
@@ -336,7 +345,11 @@ public class BaseGenerator extends Generator{
 					}
 
 					addList(listName, name, regex, parameterEntry);
+					hasDefinition = true;
 				}
+			}
+			if(!hasDefinition){
+				addElement(getName(),listDirectory,fileName,"emptyListElement",emptyListElement).add(StringEntry.getEntry("\""+listName+"\""));
 			}
 		}
 
@@ -350,7 +363,12 @@ public class BaseGenerator extends Generator{
 			}
 			params.add(new StringEntry("\""+name+"\""));
 			params.add(new StringEntry("\""+listName+"\""));
-			params.add(new StringEntry("\""+regex+"\""));
+			if("listnames".equals(listName)){
+				params.add(new StringEntry("\""+regex+"\\b\""));
+			}
+			else {
+				params.add(new StringEntry("\""+regex+"\""));
+			}
 			Entry[] entry = new Entry[]{
 					new StringEntry(name),
 					new StringEntry(listAssociatedClass.get(listName)),
@@ -390,7 +408,7 @@ public class BaseGenerator extends Generator{
 			else {
 				parser_entry = element.get(0);
 			}
-			((ListEntry)parser_entry[0]).add("\""+name+"\"");
+			//((ListEntry)parser_entry[0]).add("\""+name+"\"");
 		}
 
 		@Override

@@ -22,11 +22,11 @@ public class Listnames extends ParseList {
 	public static final IParser brace = new RegexParser("brace","listnames","braces");
 	public static final IParser comment = new RegexParser("comment","listnames","comments");
 
-	public static final IParser parser = new ChoiceParser(
+	public static final ChoiceParser parser = new ChoiceParser(
 				listname,token,rulename,rule,list_rule,brace,comment);
 
 	public static final NameParser name_parser = new NameParser(
-				"listnames","listname","token","rulename","rule","list_rule","brace","comment");
+				"listnames");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

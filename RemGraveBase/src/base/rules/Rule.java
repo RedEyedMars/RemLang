@@ -14,7 +14,7 @@ public class Rule extends AddTokenParser implements IRule {
 		isSilent(true);
 		set(new ChainParser(
 				new AddTokenToListParser(
-					Tokens.NAME,"rulename","rulenames"),
+					Tokens.NAME,"rulename","rules"),
 				new OptionalParser(
 					
 						new AddTokenParser(

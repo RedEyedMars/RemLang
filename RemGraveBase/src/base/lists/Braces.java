@@ -27,7 +27,7 @@ public class Braces extends ParseList {
 				BRACE,SQUARE,QUOTE);
 
 	public static final NameParser name_parser = new NameParser(
-				"braces","BRACE","SQUARE","QUOTE");
+				"braces");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

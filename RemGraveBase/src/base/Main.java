@@ -34,8 +34,7 @@ public class Main {
 				Terminal.class);
 		ParseUtil.parse(
 				Base.parser, new File("base.ruleset"), new BaseGenerator(),
-					new Listnames(),
-					new Tokens(), new Braces(), new Rulenames(), new ListRules(), new Rules(), new Comments());
+					new Listnames());
 	}
 
 }

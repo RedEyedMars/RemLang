@@ -22,6 +22,11 @@ public class ParseData {
 		this.file = file;
 	}
 	
+	public ParseData(ParseData data) {
+		this.length = data.length;
+		this.file = data.file;
+	}
+
 	public boolean isDone() {
 		return valid&&position==length;
 	}
@@ -86,10 +91,22 @@ public class ParseData {
 		return lists.get(listName);
 	}
 
+
+	public Set<String> getListNames() {
+		return lists.keySet();
+	}
+
 	public void addList(ParseList list) {
 		lists.put(list.getName(), list);
 	}
 
+	public String getLine(){
+		int newline = file.indexOf('\n',position);
+		if(newline>=0){
+			return file.substring(position,newline);	
+		}
+		else return file.substring(position);
+	}
 	
 	public IToken getToken(){
 		return currentToken;

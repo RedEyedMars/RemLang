@@ -48,6 +48,9 @@ public class BranchToken implements IToken {
 	@Override
 	public void accumlateLists(Map<String,ParseList> listMap){
 		if(listName!=null){
+			if(!listMap.containsKey(listName)){
+				listMap.put(listName, ParseList.createNew(listName));
+			}
 			listMap.get(listName).put(new IToken.Id(name),this);
 			listName = null;			
 		}

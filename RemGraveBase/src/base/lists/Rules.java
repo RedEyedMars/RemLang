@@ -27,7 +27,7 @@ public class Rules extends ParseList {
 				base,parameters,rule,list_rule,definition,atom,element,terminal);
 
 	public static final NameParser name_parser = new NameParser(
-				"rules","base","parameters","rule","list_rule","definition","atom","element","terminal");
+				"rules");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

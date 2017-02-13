@@ -16,6 +16,11 @@ public abstract class ConcreteListParser extends ConcreteParser implements List<
 		list = new ArrayList<IParser>(length);
 	}
 	
+	public void replace(List<IParser> parsers){
+		list.clear();
+		list.addAll(parsers);
+	}
+	
 	
 	@Override
 	public boolean add(IParser e) {

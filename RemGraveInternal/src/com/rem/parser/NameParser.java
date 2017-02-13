@@ -30,6 +30,11 @@ public class NameParser extends RegexParser{
 	
 	@Override
 	public void parse(ParseData data){
+
+		if(parsers.isEmpty()){
+			data.invalidate();
+			return;
+		}
 		if(lazyParser!=null){
 			lazyParser.parse(data);
 		}
@@ -40,28 +45,33 @@ public class NameParser extends RegexParser{
 		}
 		else {
 			super.parse(data);
-		}		
+		}
 	}
 	
 	public void addName(String parser){
-		this.parsers.add(parser);
+		if(!this.parsers.contains(parser)){
+			this.parsers.add(parser);
+		}
+	}
+	
+	public boolean containsNames(){
+		return !this.parsers.isEmpty();
 	}
 
 	
 	public void solidify(){
 		if(parsers==null||parsers.isEmpty()){
 			setup("");
+			return;
 		}
 		StringBuilder builder = new StringBuilder();
 		String pipe = "";
-		System.out.print(name+":");
 		for(String parser:parsers){
 			builder.append(pipe);
 			builder.append(parser);
 			builder.append("\\b");
 			pipe = "|";
 		}
-		System.out.println(builder.toString());
 		setup(builder.toString());
 	}
 }
