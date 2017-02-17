@@ -42,7 +42,7 @@ public class RegexParser extends ConcreteParser implements IParser{
 		}
 		Matcher matcher = this.pattern.matcher(data.get());
 		if(matcher.matches()){
-			data.getToken().put(new NodeToken(name,matcher.group(1)));
+			data.getToken().put(new NodeToken(name,matcher.group(1),data.getPosition()));
 			data.setPosition(data.getPosition()+matcher.end(1));
 			data.validate();
 		}
@@ -55,6 +55,10 @@ public class RegexParser extends ConcreteParser implements IParser{
 	@Override
 	public String getName(){
 		return name;
+	}
+	
+	public String getPattern(){
+		return pattern==null?"pattern is null":pattern.pattern();
 	}
 
 }

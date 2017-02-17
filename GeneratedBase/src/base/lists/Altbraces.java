@@ -14,10 +14,10 @@ public class Altbraces extends ParseList {
 		return "altbrace";
 	}
 
-	public static final IParser NEWLINED = new CharitableBracedParser(
+	public static final CharitableBracedParser NEWLINED = new CharitableBracedParser(
 					new ChoiceParser(
-						Rules.arithmatic,
-						Rules.definition),"NEWLINED","altbraces",",\n");
+							Rules.arithmatic,
+							Rules.definition),"NEWLINED","altbraces",",\n");
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				NEWLINED);

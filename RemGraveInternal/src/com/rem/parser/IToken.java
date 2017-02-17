@@ -3,7 +3,7 @@ package com.rem.parser;
 import java.util.List;
 import java.util.Map;
 
-public interface IToken extends Map<IToken.Id,IToken>{
+public interface IToken extends Map<IToken.Key,IToken>{
 
 	public Object getValue();
 	public String getString();
@@ -17,13 +17,12 @@ public interface IToken extends Map<IToken.Id,IToken>{
 	public void setList(String name);
 
 
-	public static class Id {
+	public static class Key {
 		private String name;
 		private int index;
-		public Id(String name){
-			this.name = name;
-		}
-		public Id(String name, int index){
+		private int position;
+
+		public Key(String name, int index, int position){
 			this.name = name;
 			this.index = index;
 		}
@@ -35,6 +34,9 @@ public interface IToken extends Map<IToken.Id,IToken>{
 		}
 		public String getName(){
 			return name;
+		}
+		public int getPosition() {
+			return position;
 		}
 	}
 

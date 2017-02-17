@@ -15,15 +15,22 @@ public class Base extends AddTokenParser implements IRule {
 		set(
 				new MultipleParser(
 					
-					new ChoiceParser(
-						Tokens.SPACES,
-						Tokens.NEWLINE,
+					new ChoiceParser(new ChainParser(
+						new OptionalParser(
+							Tokens.SPACES),
+						Tokens.NEWLINE),
 						Comments.parser,
 						new AddTokenToListParser(
-							Rule.parser,"rule","rules"),
+							Rules.rule,"rule","rules"),
 						new AddTokenToListParser(
-							ListRule.parser,"list_rule","list_rules"))));
+							Rules.list_rule,"list_rule","list_rules"))));
 
+	}
+	@Override
+	public Parameter getParameter(int i) {
+		switch(i){
+		default: return null;
+		}
 	}
 
 }

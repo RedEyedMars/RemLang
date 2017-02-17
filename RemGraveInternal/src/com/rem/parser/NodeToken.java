@@ -13,13 +13,21 @@ public class NodeToken implements IToken{
 	private Object value;
 	private IToken parent;
 	private String listName = null;
-	public NodeToken(Object obj){
+	private int position;
+	public NodeToken(Object obj, int position){
 		this.value = obj;
+		this.position = position;
 	}
-	public NodeToken(String name,Object obj){
+	public NodeToken(String name,Object obj, int position){
 		this.name = name;
 		this.value = obj;
+		this.position = position;
 	}
+
+	public int getPosition() {
+		return position;
+	}
+
 	
 	public void setName(String name){
 		this.name = name;
@@ -85,8 +93,8 @@ public class NodeToken implements IToken{
 	}
 
 	@Override
-	public Set<Map.Entry<IToken.Id, IToken>> entrySet() {
-		Set<Map.Entry<IToken.Id, IToken>> set = new HashSet<Map.Entry<IToken.Id, IToken>>();
+	public Set<Map.Entry<IToken.Key, IToken>> entrySet() {
+		Set<Map.Entry<IToken.Key, IToken>> set = new HashSet<Map.Entry<IToken.Key, IToken>>();
 		return set;
 	}
 
@@ -101,13 +109,13 @@ public class NodeToken implements IToken{
 	}
 
 	@Override
-	public Set<Id> keySet() {
-		Set<Id> set = new HashSet<Id>();
+	public Set<Key> keySet() {
+		Set<Key> set = new HashSet<Key>();
 		return set;
 	}
 
 	@Override
-	public IToken put(IToken.Id key, IToken token) {
+	public IToken put(IToken.Key key, IToken token) {
 		return null;
 	}
 	
@@ -116,7 +124,7 @@ public class NodeToken implements IToken{
 	}
 
 	@Override
-	public void putAll(Map<? extends IToken.Id, ? extends IToken> m) {
+	public void putAll(Map<? extends IToken.Key, ? extends IToken> m) {
 		
 	}
 
@@ -135,5 +143,4 @@ public class NodeToken implements IToken{
 		List<IToken> tokens = new ArrayList<IToken>(0);
 		return tokens;
 	}
-
 }

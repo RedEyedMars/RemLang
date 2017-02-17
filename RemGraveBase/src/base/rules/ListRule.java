@@ -14,7 +14,7 @@ public class ListRule extends AddTokenParser implements IRule {
 		isSilent(true);
 		set(new ChainParser(
 				new AddTokenToListParser(
-					Tokens.NAME,"listname","listnames"),
+					Tokens.LISTNAME,"listname","listnames"),
 				new OptionalParser(
 					new ChainParser(
 						Tokens.SPACES,
@@ -24,9 +24,9 @@ public class ListRule extends AddTokenParser implements IRule {
 							Tokens.NAME,"listType"))),
 				new OptionalParser(
 					Tokens.SPACES),
+				Tokens.NEWLINE,
 				new ManyParser(
 					new ChainParser(
-						Tokens.NEWLINE,
 						Tokens.TAB,
 						new AddTokenParser(
 							new ChainParser(
@@ -34,8 +34,14 @@ public class ListRule extends AddTokenParser implements IRule {
 							new ChoiceParser(
 								Braces.QUOTE,
 								Braces.SQUARE),
-							Parameters.parser),"list_def")))));
+							Rules.parameters),"list_def"),Tokens.NEWLINE))));
 
+	}
+	@Override
+	public Parameter getParameter(int i) {
+		switch(i){
+		default: return null;
+		}
 	}
 
 }

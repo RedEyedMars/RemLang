@@ -16,13 +16,17 @@ public class ParseData {
 	private boolean valid = true;
 	private int position = 0;
 	private String file;
+	private boolean mustEnd;
+	private String fileName;
 	
-	public ParseData(String file){
+	public ParseData(String fileName, String file){
 		this.length = file.length();
 		this.file = file;
+		this.fileName = fileName;
 	}
 	
 	public ParseData(ParseData data) {
+		this.fileName = data.fileName;
 		this.length = data.length;
 		this.file = data.file;
 	}
@@ -42,6 +46,10 @@ public class ParseData {
 		valid = true;		
 	}
 
+	public String getFileName(){
+		return fileName;
+	}
+	
 	public int getPosition() {
 		return position;
 	}
@@ -146,6 +154,13 @@ public class ParseData {
 
 	public String printPap(IParser parser) {
 		return paps.get(position).get(parser).contains(parser)+" at "+position;
+	}
+
+	public boolean mustEnd() {
+		return mustEnd;
+	}
+	public void setMustEnd(boolean me){
+		this.mustEnd = me;
 	}
 
 

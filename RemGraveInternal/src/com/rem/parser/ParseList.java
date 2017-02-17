@@ -18,7 +18,7 @@ public abstract class ParseList extends BranchToken{
 					continue;
 				}
 				else {
-					super.put(new NodeToken(field.getName(),field.get(this)));
+					super.put(new NodeToken(field.getName(),field.get(this),-1));
 				}
 			}
 		} catch (IllegalArgumentException e) {
@@ -36,7 +36,7 @@ public abstract class ParseList extends BranchToken{
 	
 	
 	@Override
-	public IToken put(IToken.Id key,IToken value){
+	public IToken put(IToken.Key key,IToken value){
 		getNamesParser().addName(value.getString());
 		return newTokensToken.put(key, value);
 	}

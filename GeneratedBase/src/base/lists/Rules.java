@@ -14,15 +14,15 @@ public class Rules extends ParseList {
 		return "rule";
 	}
 
-	public static final IParser base = Base.parser;
-	public static final IParser parameters = Parameters.parser;
-	public static final IParser arithmatic = Arithmatic.parser;
-	public static final IParser rule = Rule.parser;
-	public static final IParser list_rule = ListRule.parser;
-	public static final IParser definition = Definition.parser;
-	public static final IParser atom = Atom.parser;
-	public static final IParser element = Element.parser;
-	public static final IParser terminal = Terminal.parser;
+	public static final IRule base = Base.parser;
+	public static final IRule parameters = Parameters.parser;
+	public static final IRule arithmatic = Arithmatic.parser;
+	public static final IRule rule = Rule.parser;
+	public static final IRule list_rule = ListRule.parser;
+	public static final IRule definition = Definition.parser;
+	public static final IRule atom = Atom.parser;
+	public static final IRule element = Element.parser;
+	public static final IRule terminal = Terminal.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				base,parameters,arithmatic,rule,list_rule,definition,atom,element,terminal);

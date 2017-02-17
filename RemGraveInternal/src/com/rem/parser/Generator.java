@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,7 +18,7 @@ public abstract class Generator {
 	protected abstract void generate(ParseData data);
 	public abstract IParser getLazyNameParser();
 	public abstract void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken);
-	
+
 	protected void generateAll(InterpreterDyn gen, IToken token, String name){
 		addPage(gen.getName(),gen.getOutline(),gen.numberOfParameters());
 		for(IToken subToken:token.getAll(name)){
@@ -28,7 +27,7 @@ public abstract class Generator {
 	}
 	protected void generateAll(Interpreter gen, IToken token, String name){
 		addPage(gen.getName(),gen.getOutline());
-		
+
 		for(IToken subToken:token.getAll(name)){
 			gen.interpret(subToken);
 		}
@@ -85,7 +84,7 @@ public abstract class Generator {
 		}
 		pages.get(pageName).setOutline(pageOutline);
 	}
-	protected void addFile(String pageName, File directory, String fileName, String[] parameters){
+	protected void addFile(String pageName, File directory, String fileName, Entry[] parameters){
 		if(!pages.containsKey(pageName)){
 			throw new RuntimeException("Page: "+ pageName+" not defined");
 		}
@@ -93,29 +92,28 @@ public abstract class Generator {
 	}
 	protected void addElement(String elementName, String[] elementOutline){
 		if(!elements.containsKey(elementName)){
-			Element element = new Element();
+			Element element = new Element(elementName);
 			element.setOutline(elementOutline);
 			elements.put(elementName, element);
 		}
 	}
-	protected Entries addElement(
+	protected void addEntry(
 			String pageName, 
-			File directory, String fileName,
-			String elementName,String[] elementOutline){
+			File directory, String fileName,String entryName, Entry entry){
 		if(!pages.containsKey(pageName)){
 			throw new RuntimeException("Page: "+ pageName+" not defined");
 		}
-		Entries parameters = pages.get(pageName).addElement(directory,fileName,elementName,elementOutline);
-		return parameters;
+		pages.get(pageName).addEntry(directory,fileName,entryName,entry);
 	}
-	protected void addParameters(
+	protected Entry getOrAddEntry(
 			String pageName, 
-			File directory, String fileName,
-			List<String> parameters){
+			File directory, String fileName,String entryName, Entry entry){
 		if(!pages.containsKey(pageName)){
 			throw new RuntimeException("Page: "+ pageName+" not defined");
 		}
+		return pages.get(pageName).getOrAddEntry(directory,fileName,entryName, entry);
 	}
+
 
 	public static String P(int i){
 		return "$"+i+"$";
@@ -138,7 +136,6 @@ public abstract class Generator {
 			outLineEnd = pageOutline[numberOfParameters];
 		}
 
-
 		public void setOutline(String pageOutline, int numberOfParameters) {
 			this.numberOfParameters = numberOfParameters;
 			this.outLineParts = new String[numberOfParameters];
@@ -153,33 +150,43 @@ public abstract class Generator {
 			this.outLineEnd = pageOutline.substring(leftHandSide);
 		}
 
-		public Entries addElement(
-				File directory, String fileName, String elementName, String[] elementOutline) {
-			if(!elements.containsKey(elementName)){
-				Element element = new Element();
-				element.setOutline(elementOutline);
-				elements.put(elementName, element);
-			}
-			int dirIndex = dirs.indexOf(directory);
-			int fileIndex = details.get(dirIndex).indexOf(new PageComparer(fileName));
-			if(fileIndex!=-1){
-				Entries parameters = details.get(dirIndex).get(fileIndex).addElement(elementName);
-				return parameters;
-			}
-			return null;
-		}
 
-		public Entries getElement(File directory, String fileName, String elementName){
+
+		public Entry getEntry(File directory, String fileName, String entryName){
 			int dirIndex = dirs.indexOf(directory);
 			for(int i=0;i<details.get(dirIndex).size();++i){
 				if(details.get(dirIndex).get(i).filename.equals(fileName)){
-					return details.get(dirIndex).get(i).getElement(elementName);
+					return details.get(dirIndex).get(i).getParameter(entryName);
 				}
 			}
 			return null;
 		}
 
-		public void addFile(File directory, String fileName, String[] parameters) {
+		public Entry getOrAddEntry(File directory, String fileName, String entryName, Entry parameter){
+			int dirIndex = dirs.indexOf(directory);
+			for(int i=0;i<details.get(dirIndex).size();++i){
+				if(details.get(dirIndex).get(i).filename.equals(fileName)){
+					Entry entry = details.get(dirIndex).get(i).getParameter(entryName);
+					if(entry==null){
+						details.get(dirIndex).get(i).addParameter(entryName, parameter);
+						entry = parameter;
+					}
+					return entry;
+				}
+			}
+			return null;
+		}
+
+		public void addEntry(File directory, String fileName, String entryName, Entry entry){
+			int dirIndex = dirs.indexOf(directory);
+			for(int i=0;i<details.get(dirIndex).size();++i){
+				if(details.get(dirIndex).get(i).filename.equals(fileName)){
+					details.get(dirIndex).get(i).addParameter(entryName, entry);
+				}
+			}
+		}
+
+		public void addFile(File directory, String fileName, Entry[] parameters) {
 			int dirIndex = dirs.indexOf(directory);
 			if(dirIndex==-1){
 				dirIndex = dirs.size();
@@ -199,15 +206,14 @@ public abstract class Generator {
 				for(int j=0;j<details.get(i).size();++j){
 					BufferedWriter writer = null;
 					try {
+						StringBuilder builder = new StringBuilder();
+						for(int k=0;k<outLineParts.length;++k){
+							builder.append(outLineParts[k]);
+							details.get(i).get(j).getParameter(k).get(builder);
+						}
 						writer = new BufferedWriter(
 								new FileWriter(new File(dirs.get(i),details.get(i).get(j).filename)));
-						for(int k=0;k<outLineParts.length;++k){
-							writer.write(outLineParts[k]);
-							if(k<numberOfParameters-1){
-								writer.write(details.get(i).get(j).getParameter(k));
-							}
-						}
-						details.get(i).get(j).output(writer);
+						writer.write(builder.toString());
 						writer.write(outLineEnd);
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -227,36 +233,30 @@ public abstract class Generator {
 
 	protected class PageDetails {
 		private String filename;
-		private String[] parameters;
-		private Map<String,Entries> elementParameters = new LinkedHashMap<String,Entries>();
+		private Map<String,Entry> parameters = new HashMap<String,Entry>();
+		private List<String> keys = new ArrayList<String>();
 
 		public PageDetails(String filename) {
 			this.filename = filename;
 		}
 
-		public String getParameter(int i) {
-			return parameters[i];
+		public Entry getParameter(int i) {
+			return parameters.get(keys.get(i));
 		}
 
-		public void addParameters(String[] parameters) {
-			this.parameters = parameters;
+		public Entry getParameter(String key){
+			return parameters.get(key);
 		}
 
-		public Entries addElement(String elementName) {
-			if(!elementParameters.containsKey(elementName)){
-				this.elementParameters.put(elementName,new Entries(elementName));
+		public void addParameters(Entry[] parameters) {
+			for(int i=0;i<parameters.length;++i){
+				this.addParameter("$"+this.keys.size(),parameters[i]);
 			}
-			return elementParameters.get(elementName);
 		}
-		public Entries getElement(String name){
-			return elementParameters.get(name);
-		}
-		public void output(Writer writer) throws IOException{
-			for(String key:elementParameters.keySet()){
-				StringBuilder builder = new StringBuilder();
-				elements.get(key).output(elementParameters.get(key),builder);
-				writer.write(builder.toString());
-			}
+
+		public void addParameter(String name, Entry parameter) {
+			this.parameters.put(name,parameter);
+			this.keys.add(name);
 		}
 
 		@Override
@@ -277,6 +277,13 @@ public abstract class Generator {
 		private String[] outLine;
 		private String outLineEnd;
 		private int numberOfParameters;
+		private String name;
+		public Element(String name){
+			this.name = name;
+		}
+		public String getName(){
+			return name;
+		}
 		public void setOutline(String[] pageOutline){
 			numberOfParameters = pageOutline.length-1;
 			this.outLine = new String[numberOfParameters];
@@ -285,15 +292,10 @@ public abstract class Generator {
 			}
 			this.outLineEnd = pageOutline[pageOutline.length-1];
 		}
-		public void output(List<Entry[]> parameters,StringBuilder builder) {
-			for(Entry[] entry:parameters){
-				getString(entry,builder);
-			}
-		}
-		public void getString(Entry[] entry, StringBuilder builder) {
+		public void getString(ListEntry entries, StringBuilder builder) {
 			for(int i=0;i<numberOfParameters;++i){
 				builder.append(outLine[i]);
-				entry[i].get(builder);
+				entries.get(i).get(builder);
 			}
 			builder.append(outLineEnd);
 		}
@@ -357,10 +359,10 @@ public abstract class Generator {
 		public void get(StringBuilder builder){
 			builder.append(value);
 		}
-		public static Entry[] getEntry(String...strings){
-			Entry[] entries = new Entry[strings.length];
+		public static ListEntry getEntry(String...strings){
+			ListEntry entries = new ListEntry();
 			for(int i=0;i<strings.length;++i){
-				entries[i] = new StringEntry(strings[i]);
+				entries.add(new StringEntry(strings[i]));
 			}
 			return entries;
 		}
@@ -369,13 +371,25 @@ public abstract class Generator {
 	protected static class ListEntry implements Entry {
 		private String delimiter = ",";
 		private List<Entry> list = new ArrayList<Entry>();
-		public ListEntry(){
+		private Entry emptyEntry;
+		public ListEntry(Entry...entries){
+			if(entries!=null&&entries.length>0){
+				for(Entry entry:entries){
+					list.add(entry);
+				}
+			}
+		}
+		public Entry get(int index){
+			return list.get(index);
 		}
 		public boolean add(String e){
 			return list.add(new StringEntry(e));
 		}
 		public boolean add(Entry e){
 			return list.add(e);
+		}
+		public boolean isEmpty(){
+			return list.isEmpty();
 		}
 		public boolean isSingluar(){
 			return list.size()==1;
@@ -393,19 +407,29 @@ public abstract class Generator {
 			list.remove(list.size()-1);
 			list.add(entry);
 		}
+		public void setEmptyEntry(Entry entry){
+			this.emptyEntry = entry;
+		}
 		public void setDelimiter(String delim){
 			this.delimiter = delim;
 		}
 		public void get(StringBuilder builder){
-			String delim = "";
-			for(Entry e:list){
-				builder.append(delim);
-				e.get(builder);
-				delim = delimiter;
+			if(list.isEmpty()){
+				if(this.emptyEntry!=null){
+					this.emptyEntry.get(builder);
+				}
+			}
+			else {
+				String delim = "";
+				for(Entry e:list){
+					builder.append(delim);
+					e.get(builder);
+					delim = delimiter;
+				}
 			}
 		}
 	}
-	
+
 	protected static class TabEntry implements Entry {
 		private int numberOfTabs;
 		private Entry subEntry;
@@ -413,7 +437,7 @@ public abstract class Generator {
 			this.numberOfTabs = numberOfTabs;
 			this.subEntry = entry;
 		}
-		
+
 		public void get(StringBuilder builder){
 			builder.append('\n');
 			for(int i=0;i<numberOfTabs;++i){
@@ -425,25 +449,35 @@ public abstract class Generator {
 
 	protected class ElementEntry implements Entry {
 		private String elementName;
-		private Entry[] parameters;
-		public ElementEntry(String elementName, Entry[] parameters){
-			this.elementName = elementName;
-			this.parameters = parameters;
-		}
+		private ListEntry parameters;
 		public ElementEntry(String elementName, List<Entry> entries){
 			this.elementName = elementName;
-			parameters = new Entry[entries.size()];
+			parameters = new ListEntry();
 			for(int i=0;i<entries.size();++i){
-				parameters[i] = entries.get(i);
+				parameters.add(entries.get(i));
 			}
 		}
-		public ElementEntry(String elementName, Entry entry){
+		public ElementEntry(String elementName, ListEntry entry){
 			this.elementName = elementName;
-			parameters = new Entry[]{entry};
+			parameters = entry;
+		}
+		public ElementEntry(String elementName, String... entries){
+			this.elementName = elementName;
+			parameters = new ListEntry();
+			for(String entry:entries){
+				parameters.add(new StringEntry(entry));
+			}
 		}
 
 		public void get(StringBuilder builder){
 			elements.get(elementName).getString(parameters,builder);
+		}
+
+		public ListEntry getEntries(){
+			return parameters;
+		}
+		public Entry get(int index){
+			return parameters.get(index);
 		}
 	}
 

@@ -58,23 +58,32 @@ public class ParseUtil {
 		}
 	}
 
-	public static void parse(IParser parser, File file, Generator generator, ParseList... listsToInitiate) {
-		String fileString = getString(file);
-		ParseData data = new ParseData(fileString);		
-		for(ParseList list:listsToInitiate){
-			data.addList(list);
+	public static void setupRules(ParseList list){
+
+	}
+
+	public static void parse(IParser parser, File file, Generator generator, ParseList rules, ParseList listnames) {
+		for(IToken.Key key:rules.keySet()){
+			((IRule)rules.get(key).getValue()).setup();
 		}
+		String fileString = getString(file);
+		ParseData data = new ParseData(file.getName(),fileString);		
+		data.addList(listnames);
 		if(generator!=null&&generator.getLazyNameParser()!=null){
 			NameParser.lazyParser=generator.getLazyNameParser();
 			parser.parse(data);
 			NameParser.lazyParser=null;
 			data.accumlateLists(generator);
-			data.resetLists();			
-			data = new ParseData(data);
-			System.out.println("---");
+			data.resetLists();
+			if(data.isDone()){
+				data = new ParseData(data);
+				System.out.println("---");
+			}
 		}
-		parser.parse(data);		
-		data.accumlateLists(generator);
+		if(data.isValid()){
+			parser.parse(data);
+			data.accumlateLists(generator);
+		}
 
 		result(data);
 		if(generator!=null){
@@ -82,11 +91,12 @@ public class ParseUtil {
 		}
 	}
 
-	public static void debug_parse(IParser parser, File file, Generator generator, ParseList... listsToInitiate) {
-		ParseData data = new ParseData(getString(file));
-		for(ParseList list:listsToInitiate){
-			data.addList(list);
+	public static void debug_parse(IParser parser, File file, Generator generator, ParseList rules, ParseList listnames) {
+		for(IToken.Key key:rules.keySet()){
+			((IRule)rules.get(key).getValue()).setup();
 		}
+		ParseData data = new ParseData(file.getName(),getString(file));
+		data.addList(listnames);
 		debug = true;
 		parser.debug_parse(data);
 

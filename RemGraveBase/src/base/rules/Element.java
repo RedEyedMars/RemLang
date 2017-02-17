@@ -16,7 +16,7 @@ public class Element extends AddTokenParser implements IRule {
 			new ChoiceParser(
 				new AddTokenParser(
 					new ChainParser(
-					Definition.parser,
+					Rules.definition,
 					new OptionalParser(
 						Tokens.SPACES),
 					new AddTokenParser(
@@ -27,8 +27,14 @@ public class Element extends AddTokenParser implements IRule {
 						Tokens.PLUS),"option")),"multiple"),
 				new AddTokenParser(
 					Braces.BRACE,"braced"),
-				Terminal.parser));
+				Rules.terminal));
 
+	}
+	@Override
+	public Parameter getParameter(int i) {
+		switch(i){
+		default: return null;
+		}
 	}
 
 }

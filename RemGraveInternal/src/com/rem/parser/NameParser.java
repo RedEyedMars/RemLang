@@ -1,7 +1,5 @@
 package com.rem.parser;
 
-import java.util.HashSet;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.Comparator;
 
@@ -17,8 +15,8 @@ public class NameParser extends RegexParser{
 			else return o2.length()-o1.length();
 		}});
 	private boolean isLazy = true;
-	
-	
+
+
 	public NameParser(String listName, String... parsers) {
 		super(listName, listName);
 		if(parsers!=null){
@@ -27,38 +25,37 @@ public class NameParser extends RegexParser{
 			}			
 		}
 	}
-	
-	@Override
-	public void parse(ParseData data){
 
-		if(parsers.isEmpty()){
-			data.invalidate();
-			return;
-		}
+	@Override
+	public void real_parse(ParseData data){
+
 		if(lazyParser!=null){
 			lazyParser.parse(data);
+		}
+		else if(parsers.isEmpty()){
+			data.invalidate();
+			return;
 		}
 		else if(isLazy&&lazyParser==null){
 			solidify();
 			isLazy = false;
-			super.parse(data);
+			super.real_parse(data);
 		}
 		else {
-			super.parse(data);
+			super.real_parse(data);
 		}
 	}
-	
+
 	public void addName(String parser){
 		if(!this.parsers.contains(parser)){
 			this.parsers.add(parser);
 		}
 	}
-	
+
 	public boolean containsNames(){
 		return !this.parsers.isEmpty();
 	}
 
-	
 	public void solidify(){
 		if(parsers==null||parsers.isEmpty()){
 			setup("");
@@ -73,5 +70,9 @@ public class NameParser extends RegexParser{
 			pipe = "|";
 		}
 		setup(builder.toString());
+	}
+
+	public void clear(){
+		parsers.clear();
 	}
 }

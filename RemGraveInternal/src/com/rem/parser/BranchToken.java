@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class BranchToken implements IToken {
 	private Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
-	private LinkedListSet<IToken.Id> keys = new LinkedListSet<IToken.Id>();
+	private LinkedListSet<IToken.Key> keys = new LinkedListSet<IToken.Key>();
 	private IToken parent;
 	private String listName = null;
 	private String name;
@@ -51,10 +51,10 @@ public class BranchToken implements IToken {
 			if(!listMap.containsKey(listName)){
 				listMap.put(listName, ParseList.createNew(listName));
 			}
-			listMap.get(listName).put(new IToken.Id(name),this);
+			listMap.get(listName).put(new IToken.Key(name,-1,0),this);
 			listName = null;			
 		}
-		for(IToken.Id key:keys){
+		for(IToken.Key key:keys){
 			get(key).accumlateLists(listMap);
 		}
 	}
@@ -79,8 +79,8 @@ public class BranchToken implements IToken {
 		if(key instanceof String){
 			return tokens.containsKey(key);
 		}
-		else if(key instanceof IToken.Id){
-			return tokens.containsKey(((IToken.Id)key).getName());
+		else if(key instanceof IToken.Key){
+			return tokens.containsKey(((IToken.Key)key).getName());
 		}
 		else return false;
 	}
@@ -91,7 +91,7 @@ public class BranchToken implements IToken {
 	}
 
 	@Override
-	public Set<java.util.Map.Entry<IToken.Id, IToken>> entrySet() {
+	public Set<java.util.Map.Entry<IToken.Key, IToken>> entrySet() {
 		return null;
 	}
 
@@ -107,7 +107,7 @@ public class BranchToken implements IToken {
 			else return null;
 		}
 		else {
-			IToken.Id id = (IToken.Id)key;
+			IToken.Key id = (IToken.Key)key;
 			return tokens.get(id.getName()).get(id.getIndex());
 		}
 	}
@@ -118,12 +118,12 @@ public class BranchToken implements IToken {
 	}
 
 	@Override
-	public Set<IToken.Id> keySet() {
+	public Set<IToken.Key> keySet() {
 		return keys;
 	}
 
 	@Override
-	public IToken put(IToken.Id key, IToken value) {		
+	public IToken put(IToken.Key key, IToken value) {		
 		value.setParent(this);
 		if(!tokens.containsKey(key.getName())){
 			tokens.put(key.getName(), new ArrayList<IToken>());
@@ -142,21 +142,22 @@ public class BranchToken implements IToken {
 			tokens.put(name, new ArrayList<IToken>());
 		}
 
-		IToken.Id key = new IToken.Id(name,tokens.get(name).size());
+		IToken.Key key = new IToken.Key(name,tokens.get(name).size(),value.getPosition());
 		tokens.get(name).add(value);		
 		keys.add(key);
 	}
 
 	@Override
-	public void putAll(Map<? extends IToken.Id, ? extends IToken> m) {
-		for(IToken.Id key: m.keySet()){
+	public void putAll(Map<? extends IToken.Key, ? extends IToken> m) {
+		for(IToken.Key key: m.keySet()){
 			put(key,m.get(key));
 		}
 	}
 
 	@Override
 	public IToken remove(Object key) {
-		IToken.Id id = (IToken.Id)key;
+		IToken.Key id = (IToken.Key)key;
+		this.keys.remove(key);
 		return tokens.get(id.getName()).remove(id.getIndex());
 	}
 
@@ -168,7 +169,7 @@ public class BranchToken implements IToken {
 	@Override
 	public Collection<IToken> values() {
 		List<IToken> all = new ArrayList<IToken>();
-		for(IToken.Id key:keys){
+		for(IToken.Key key:keys){
 			all.add(tokens.get(key.getName()).get(key.getIndex()));
 		}
 		return all;

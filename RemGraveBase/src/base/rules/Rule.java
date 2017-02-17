@@ -20,11 +20,24 @@ public class Rule extends AddTokenParser implements IRule {
 						new AddTokenParser(
 							Tokens.SILENCE,"silence")),
 				new OptionalParser(
+					new ChainParser(
+						Tokens.HAS,
+						new ManyParser(
+							
+								new AddTokenToListParser(
+									Tokens.NAME,"rule_param","rule_parameters")))),
+				new OptionalParser(
 					Tokens.SPACES),
 				Tokens.NEWLINE,
 				Tokens.TAB,
-				Definition.parser));
+				Rules.definition));
 
+	}
+	@Override
+	public Parameter getParameter(int i) {
+		switch(i){
+		default: return null;
+		}
 	}
 
 }

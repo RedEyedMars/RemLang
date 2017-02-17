@@ -1,21 +1,9 @@
-#List structure
-listnames
-	[listnames] as listname
-	[rules] as rule
-	[tokens] as token
-	[rulenames] as rulename
-	[rule_parameters] as rule_parameter
-	[list_rules] as list_rule
-	[braces] as brace
-	[altbraces] as altbrace
-	[comments] as comment
-
 #Comments
-comments
+comment{s}
 	[#[^\n]*\n] as comment 
 
 #Tokens
-tokens
+token{s}
 	[[|]] as PIPE
 	[[+]] as PLUS
 	[[?]] as OPTIONAL
@@ -32,44 +20,45 @@ tokens
 	[\\t] as TAB
 	[\\n] as NEWLINE
 	[[a-zA-Z_-][a-zA-Z0-9_-]*] as NAME
+	[[a-zA-Z_-][a-zA-Z0-9_-]*([ \\t]*\\{[ \\t]*([a-zA-Z_-][a-zA-Z0-9_-]*)[ \\t]*\\})?] as LISTNAME
 	[[\\t ]+] as SPACES
 	[.*] as WILD
 	[\\d+] as NUMBER
 
 #Braces
-braces are Braced
+brace{s} are Braced
 	[(,)] as BRACE with definition
 	[[,]] as SQUARE with WILD as regex
 	[\",\"] as QUOTE with WILD as regex
-	[,;] as SEMICOLON with definition
+	[,;] as SEMICOLON with arithmatic | definition
 
-altbraces are CharitableBraced
-	[,\n] as NEWLINED with definition
+altbrace{s} are CharitableBraced
+	[,\n] as NEWLINED with arithmatic | definition
 
 #List Rules
-list_rules are empty
+list_rule{s} are empty
 
 #Rule Parameters
-rule_parameters are empty
+rule_parameter{s} are empty
 
 #Rules
 base is silent
 	( SPACES? NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules )+
 
 parameters
-	(SPACES AS SPACES NAME as name )? (SPACES IN SPACES listnames as list )? (SPACES WITH SPACES ( NEWLINED | SEMICOLON | NUMBER ) as parameter)? SPACES?
+	(SPACES AS SPACES NAME as name )? (SPACES IN SPACES listnames as list )? (SPACES WITH SPACES ( NEWLINED | SEMICOLON ) as parameter)? SPACES?
 
-arithmatic
-	arithmatic ADDITIVE_OPERAND as operand arithmatic
-	arithmatic MULTIPLICATIVE_OPERAND as operand arithmatic
+arithmatic has tabCount
+	arithmatic SPACES? ADDITIVE_OPERAND as operand SPACES? arithmatic with tabCount+1*2
+	arithmatic SPACES? MULTIPLICATIVE_OPERAND as operand SPACES? arithmatic
 	rule_parameter | NUMBER
 
 rule is silent
-	NAME as rulename in rules ( SILENCE as silence )? ( HAS NAME as rule_param in rule_parameters )? SPACES? NEWLINE TAB definition
+	NAME as rulename in rules ( SILENCE as silence )? ( HAS (NAME as rule_param in rule_parameters)* )? SPACES? NEWLINE TAB definition
 
 
 list_rule is silent		
-	NAME as listname in listnames ( SPACES ARE SPACES NAME as listType )? SPACES? ( NEWLINE? TAB ( ( QUOTE | SQUARE ) parameters ) as list_def )*
+	LISTNAME as listname in listnames ( SPACES ARE SPACES NAME as listType )? SPACES? NEWLINE ( TAB ( ( QUOTE | SQUARE ) parameters ) as list_def NEWLINE )*
 
 definition
 	( atom atom* ) as chain ( SPACES? ( PIPE | NEWLINE TAB ) definition )? as choice

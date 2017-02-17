@@ -71,7 +71,8 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 				return;
 			}
-			ParseData newParseData = new ParseData(toExamine.substring(0,sectionLength));
+			ParseData newParseData = new ParseData(data.getFileName(),toExamine.substring(0,sectionLength));
+			newParseData.setMustEnd(true);
 			subParser.parse(newParseData);
 
 			ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());

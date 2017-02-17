@@ -32,13 +32,14 @@ public class AddTokenParser extends ConcreteParser implements IParser {
 			subParser.parse(data);
 		}
 		else {
+			int position = data.getPosition();
 			IToken token = data.addTokenLayer();
 			subParser.parse(data);
 			data.collectTokens();
 			if(data.isValid()){
 				ParseUtil.debug("internal|addtoken",this,"("+ParseUtil.currentParser+"):"+name+":"+token.getValue());
 				//System.out.println("("+ParseUtil.currentParser+"):"+name+":"+token);
-				data.getToken().put(new IToken.Id(name), token);
+				data.getToken().put(new IToken.Key(name,-1,position), token);
 			}
 		}
 	}
