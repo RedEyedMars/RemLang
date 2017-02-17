@@ -9,6 +9,11 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 			add(parser);
 		}
 	}
+	
+	@Override
+	public void handleMustEnd(ParseData data){
+		
+	}
 
 	@Override
 	public void real_parse(ParseData data) {

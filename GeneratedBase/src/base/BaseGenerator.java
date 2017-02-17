@@ -165,7 +165,7 @@ public class BaseGenerator extends Generator{
 			listGen.addClassList("rulenames", ruleName, ruleName, null);
 
 			Entry entry = new ElementEntry("ruleElement",StringEntry.getEntry(ruleName,className));
-			listGen.addList("rules", ruleName, entry);
+			listGen.addList(new ListEntry(new ElementEntry("importRulesElement")),"rules", ruleName, entry);
 
 			ListEntry param_list = new ListEntry();
 			Entry[] parameters = new Entry[]{
@@ -441,6 +441,7 @@ public class BaseGenerator extends Generator{
 
 		private Map<String/*ListName*/,String/*Association*/> listAssociatedClass = new HashMap<String,String>();
 		private File listDirectory = new File(baseDirectory,"lists");
+		private final String[] importRulesElement = new String[]{"import base.rules.*;\n"};
 		private final String[] classElement = new String[]{
 				"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"
 		};
@@ -463,6 +464,7 @@ public class BaseGenerator extends Generator{
 		};
 		public ListGenerator(){
 			listDirectory.mkdir();
+			addElement("importRulesElement",importRulesElement);
 			addElement("classElement",classElement);
 			addElement("parserElement",parserElement);
 			addElement("name_parserElement",name_parserElement);
@@ -481,6 +483,7 @@ public class BaseGenerator extends Generator{
 			}			
 
 			Entry[] fileParameters = new Entry[]{
+					new ListEntry(),
 					new StringEntry("Listnames"),
 					new StringEntry("listnames"),
 					new StringEntry("listname")};
@@ -492,12 +495,13 @@ public class BaseGenerator extends Generator{
 			}
 			String className = camelize(listName);
 			String fileName = className + ".java";
-
+/*
 			fileParameters = new Entry[]{
+					
 					new StringEntry(className),
 					new StringEntry(listName),
 					new StringEntry(listName.substring(0,listName.length()-1))};
-			addFile(getName(),listDirectory,fileName,fileParameters);
+			addFile(getName(),listDirectory,fileName,fileParameters);*/
 			
 			boolean hasDefinition = false;
 
@@ -542,14 +546,15 @@ public class BaseGenerator extends Generator{
 					new StringEntry(name),
 					new StringEntry(listAssociatedClass.get(listName)),
 					params));
-			addList(listName, name, entry);
+			addList(new ListEntry(),listName, name, entry);
 		}
 
-		public void addList(String listName, String name, Entry entry){
+		public void addList(ListEntry imports,String listName, String name, Entry entry){
 			String className = camelize(listName);
 			String fileName = className + ".java";
 
 			Entry[] parameters = new Entry[]{
+					imports,
 					new StringEntry(className),
 					new StringEntry(listName),
 					new StringEntry(listName.substring(0,listName.length()-1))
@@ -582,8 +587,8 @@ public class BaseGenerator extends Generator{
 		public String[] getOutline() {
 			return new String[]{
 					"package base.lists;\n\n"+			
-							"import com.rem.parser.*;\n"+
-							"import base.rules.*;\n\n"+
+							"import com.rem.parser.*;\n",/*Other Imports*/
+							"\n"+
 							"public class ",/*Class Name*/" extends ParseList {\n\n"+
 									"\t@Override\n"+
 									"\tpublic String getName() {\n"+

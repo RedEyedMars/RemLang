@@ -11,9 +11,6 @@ public class ChainParser extends ConcreteListParser implements IParser{
 	@Override
 	public void real_parse(ParseData data) {
 		if(isEmpty())return;
-		if(data.mustEnd()){
-			data.setMustEnd(false);
-		}
 		int index = 0;
 		int position = data.getPosition();
 		get(index++).parse(data);

@@ -1,7 +1,6 @@
 package base.lists;
 
 import com.rem.parser.*;
-import base.rules.*;
 
 public class Tokens extends ParseList {
 

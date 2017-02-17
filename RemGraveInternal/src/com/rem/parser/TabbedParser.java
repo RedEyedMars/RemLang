@@ -19,8 +19,16 @@ public class TabbedParser extends RegexParser implements IRule {
 
 	@Override
 	public void real_parse(ParseData data) {
-		// TODO Auto-generated method stub
+		int tabs = tabCount.evaluate();
+		int position = data.getPosition();
 		
+		for(int i=0;i<tabs;++i){
+			super.real_parse(data);
+			if(!data.isValid()){
+				data.setPosition(position);
+				return;
+			}
+		}
 	}
 
 }

@@ -9,6 +9,7 @@ public abstract class ConcreteParser implements IParser{
 
 	@Override
 	public void parse(ParseData data) {
+		handleMustEnd(data);
 		if(ParseUtil.debug){
 			debug_parse(data);
 		}
@@ -25,10 +26,18 @@ public abstract class ConcreteParser implements IParser{
 		real_parse(data);
 		ParseUtil.debug("verbose", this, "end:"+data.isValid()+"("+data.getPosition()+")");
 	}
+	
+	public void handleMustEnd(ParseData data){
+		if(data.mustEnd()){
+			data.setMustEnd(false);
+		}
+	}
 
 
 	@Override
 	public String getName() {
 		return name;
 	}
+	
+	
 }
