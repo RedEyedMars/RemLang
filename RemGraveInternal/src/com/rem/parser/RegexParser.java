@@ -26,8 +26,14 @@ public class RegexParser extends ConcreteParser implements IParser{
 		if("".equals(regex)){
 			fail = true;
 		}
-		else {
+		else if(regex.contains(" ")||regex.contains("\\t")||regex.contains("\t")){
+			this.pattern = Pattern.compile("("+regex+")([ \\t]*).*",Pattern.DOTALL);
+		}
+		else if(regex.contains("\\n")||regex.contains("\n")){
 			this.pattern = Pattern.compile("("+regex+").*",Pattern.DOTALL);
+		}
+		else {
+			this.pattern = Pattern.compile("("+regex+")([ \\t]*).*",Pattern.DOTALL);
 		}
 	}
 	@Override
@@ -43,7 +49,7 @@ public class RegexParser extends ConcreteParser implements IParser{
 		Matcher matcher = this.pattern.matcher(data.get());
 		if(matcher.matches()){
 			data.getToken().put(new NodeToken(name,matcher.group(1),data.getPosition()));
-			data.setPosition(data.getPosition()+matcher.end(1));
+			data.setPosition(data.getPosition()+matcher.end(matcher.groupCount()));
 			data.validate();
 		}
 		else {

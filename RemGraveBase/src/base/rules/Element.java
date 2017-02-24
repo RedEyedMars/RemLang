@@ -3,9 +3,10 @@ package base.rules;
 import com.rem.parser.*;
 import base.lists.*;
 
-public class Element extends AddTokenParser implements IRule {
+public class Element extends ConcreteRule {
 
-	public static final IParser parser = new Element();
+	public static final IRule parser = new Element();
+	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Element(){
 		super("element");
 	}
@@ -14,27 +15,26 @@ public class Element extends AddTokenParser implements IRule {
 		isSilent(true);
 		set(
 			new ChoiceParser(
-				new AddTokenParser(
-					new ChainParser(
-					Rules.definition,
-					new OptionalParser(
-						Tokens.SPACES),
 					new AddTokenParser(
 						
-					new ChoiceParser(
-						Tokens.OPTIONAL,
-						Tokens.MANY,
-						Tokens.PLUS),"option")),"multiple"),
-				new AddTokenParser(
-					Braces.BRACE,"braced"),
-				Rules.terminal));
+						new ChainParser(
+							Rules.definition,
+							new OptionalParser(
+									Tokens.SPACES),
+							new AddTokenParser(
+								
+							new ChoiceParser(
+									Tokens.OPTIONAL,
+									Tokens.MANY,
+									Tokens.PLUS),"option")),"multiple"),
+					new AddTokenParser(
+						Braces.BRACE,"braced"),
+					Rules.terminal));
 
 	}
-	@Override
-	public Parameter getParameter(int i) {
-		switch(i){
-		default: return null;
-		}
+	@Override @SuppressWarnings("unchecked")
+	public Parameter<?>[] getParameters(){
+		return parameters;
 	}
 
 }

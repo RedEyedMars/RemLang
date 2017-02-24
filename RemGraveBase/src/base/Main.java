@@ -11,9 +11,11 @@ public class Main {
 	
 	public static void main(String[] args){
 
+		long time = System.currentTimeMillis();
 		ParseUtil.parse(
 				Base.parser, new File("base.ruleset"), new BaseGenerator(),
 				new Rules(),new Listnames());
+		System.out.println(System.currentTimeMillis()-time);
 	}
 
 }

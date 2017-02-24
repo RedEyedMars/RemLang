@@ -1,7 +1,6 @@
 package base.lists;
 
 import com.rem.parser.*;
-import base.rules.*;
 
 public class Comments extends ParseList {
 
@@ -14,12 +13,10 @@ public class Comments extends ParseList {
 		return "comment";
 	}
 
-	public static final IParser comment = new RegexParser("comment","comments","#[^\n]*\n");
-
+	public static final RegexParser comment = new RegexParser("comment","comments","#[^\n]*\n");
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				comment);
-
 
 	public static final NameParser name_parser = new NameParser(
 				"comments");

@@ -2,6 +2,8 @@
 git add './RemGraveInternal/src/*'
 git add './RemGraveBase/src/*'
 git add './GeneratedBase/src/*'
+git add './GeneratedGenerator/src/*'
+git add './GeneratedGenerator/base.generator'
 git add './RemGraveBase/generator.ruleset'
 git add './RemGraveBase/base.ruleset'
 git add './add_all.sh'

@@ -16,12 +16,12 @@ public class WithParser extends ConcreteParser{
 	public void real_parse(ParseData data) {
 		List<Object> originalValues = new ArrayList<Object>();
 		for(int i=0;i<args.length;++i){
-			originalValues.add(this.subParser.getParameter(i).evaluate());
-			this.subParser.getParameter(i).set(args[i].evaluate());
+			originalValues.add(this.subParser.getParameters()[i].evaluate());
+			this.subParser.getParameters()[i].set(args[i].evaluate());
 		}
 		this.subParser.parse(data);
 		for(int i=0;i<originalValues.size();++i){
-			this.subParser.getParameter(i).set(originalValues.get(i));
+			this.subParser.getParameters()[i].set(originalValues.get(i));
 		}
 	}
 

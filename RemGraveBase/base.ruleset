@@ -1,73 +1,76 @@
 #Comments
-comment{s}
+comment-s
 	[#[^\n]*\n] as comment 
 
 #Tokens
-token{s}
-	[[|]] as PIPE
-	[[+]] as PLUS
-	[[?]] as OPTIONAL
-	[[*]] as MANY
-	[as] as AS
-	[in] as IN
-	[with] as WITH
-	[are] as ARE
+token-s
+	"|" as PIPE
+	"+" as PLUS
+	"?" as OPTIONAL
+	"*" as MANY
+	"as" as AS
+	"in" as IN
+	"with" as WITH
+	"are" as ARE
+	"," as COMMA
 	[[+-]] as ADDITIVE_OPERAND
 	[[*/]] as MULTIPLICATIVE_OPERAND
-	[[ \\t]+has[ \\t]+] as HAS
-	[[ \\t]+is[ \\t]+silent] as SILENCE
+	"has" as HAS
+	[is[ \\t]+silent] as SILENCE
 	[any[\\t ]+list] as ANYLIST
 	[\\t] as TAB
 	[\\n] as NEWLINE
-	[[a-zA-Z_-][a-zA-Z0-9_-]*] as NAME
-	[[a-zA-Z_-][a-zA-Z0-9_-]*([ \\t]*\\{[ \\t]*([a-zA-Z_-][a-zA-Z0-9_-]*)[ \\t]*\\})?] as LISTNAME
+	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
+	[[a-zA-Z_][a-zA-Z0-9_]*([ \\t]*[-][ \\t]*([a-zA-Z_][a-zA-Z0-9_]*))?] as LISTNAME
 	[[\\t ]+] as SPACES
 	[.*] as WILD
-	[\\d+] as NUMBER
+	[[-]?\\d+] as NUMBER
 
 #Braces
-brace{s} are Braced
-	[(,)] as BRACE with definition
+brace-s are Braced
+	[(,)] as BRACE with definition 
 	[[,]] as SQUARE with WILD as regex
-	[\",\"] as QUOTE with WILD as regex
-	[,;] as SEMICOLON with arithmatic | definition
+	[\",\"] as QUOTE with WILD as quote
+	[{,}] as PARAM_BRACE with arithmatic as parameter ( COMMA arithmatic as parameter )*
 
-altbrace{s} are CharitableBraced
-	[,\n] as NEWLINED with arithmatic | definition
+altbrace-s are CharitableBraced
+	[,\n] as NEWLINED_DEF with definition
 
-#List Rules
-list_rule{s} are empty
-
-#Rule Parameters
-rule_parameter{s} are empty
+#List Prototypes
+list_rule-s are empty
+rule-s are empty
+rule_parameter-s are empty
 
 #Rules
 base is silent
-	( SPACES? NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules )+
+	( NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules )+
 
 parameters
-	(SPACES AS SPACES NAME as name )? (SPACES IN SPACES listnames as list )? (SPACES WITH SPACES ( NEWLINED | SEMICOLON ) as parameter)? SPACES?
+	(AS NAME as name )? (IN listnames as list )? 
 
-arithmatic has tabCount
-	arithmatic SPACES? ADDITIVE_OPERAND as operand SPACES? arithmatic with tabCount+1*2
-	arithmatic SPACES? MULTIPLICATIVE_OPERAND as operand SPACES? arithmatic
+arithmatic has tabCount, tabLength
+	arithmatic ADDITIVE_OPERAND as operand arithmatic{1,2+3}
+	arithmatic MULTIPLICATIVE_OPERAND as operand arithmatic
 	rule_parameter | NUMBER
 
 rule is silent
-	NAME as rulename in rules ( SILENCE as silence )? ( HAS (NAME as rule_param in rule_parameters)* )? SPACES? NEWLINE TAB definition
+	NAME as rulename in rules ( SILENCE as silence )? member_declaration? NEWLINE TAB definition
+
+member_declaration is silent
+	HAS NAME as rule_param in rule_parameters  ( COMMA NAME as rule_param in rule_parameters )*
 
 
 list_rule is silent		
-	LISTNAME as listname in listnames ( SPACES ARE SPACES NAME as listType )? SPACES? NEWLINE ( TAB ( ( QUOTE | SQUARE ) parameters ) as list_def NEWLINE )*
+	LISTNAME as listname in listnames ( ARE NAME as listType )? NEWLINE ( TAB ( ( QUOTE | SQUARE ) parameters ( WITH NEWLINED_DEF as parameter)? ) as list_def NEWLINE )*
 
 definition
-	( atom atom* ) as chain ( SPACES? ( PIPE | NEWLINE TAB ) definition )? as choice
+	( atom atom* ) as chain ( ( PIPE | NEWLINE TAB ) definition )? as choice
 
 atom
-	SPACES? element parameters
+	element parameters PARAM_BRACE?
 
 element	is silent
-	( definition SPACES? ( OPTIONAL | MANY | PLUS ) as option ) as multiple
+	( definition ( OPTIONAL | MANY | PLUS ) as option ) as multiple
 	BRACE as braced	
 	terminal
 

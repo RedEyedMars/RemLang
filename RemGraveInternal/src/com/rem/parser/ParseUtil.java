@@ -58,11 +58,8 @@ public class ParseUtil {
 		}
 	}
 
-	public static void setupRules(ParseList list){
-
-	}
-
 	public static void parse(IParser parser, File file, Generator generator, ParseList rules, ParseList listnames) {
+		long time = System.currentTimeMillis();
 		for(IToken.Key key:rules.keySet()){
 			((IRule)rules.get(key).getValue()).setup();
 		}
@@ -85,7 +82,7 @@ public class ParseUtil {
 			data.accumlateLists(generator);
 		}
 
-		result(data);
+		result(data,time);
 		if(generator!=null){
 			generator.generate(data);
 		}
@@ -100,18 +97,26 @@ public class ParseUtil {
 		debug = true;
 		parser.debug_parse(data);
 
-		result(data);
+		result(data,0);
 		if(generator!=null){
 			generator.generate(data);
 		}
 	}
 
-	public static void result(ParseData data){
+	public static void result(ParseData data, long time){
+		System.out.println("Parse Time:"+((double)(System.currentTimeMillis()-time)/1000.0));
 		System.out.println(data.isDone()?"done":(currentParser+" left hanging"));		
 		System.out.println(data.isValid()?"valid":(currentParser+" unable to parse"));
-		System.out.println(data.getFile().length());
-		System.out.println(data.getPosition());
-		System.out.println(data.get());
+		System.out.println("File Length:"+data.getFile().length());
+		if(data.getPosition()!=data.getFurthestPosition()){
+			System.out.println("Furthest Valid Position:"+data.getPosition());
+			System.out.println("Furthest:"+data.getFurthestParser()+":"+data.getFurthestPosition());
+			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getPosition())+"$"+data.get().substring(data.getFurthestPosition()-data.getPosition()));
+		}
+		else {
+			System.out.println("Furthest Position:"+data.getPosition());
+			System.out.println(data.get());
+		}
 	}
 
 

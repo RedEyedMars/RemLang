@@ -15,6 +15,9 @@ public class ListNameParser extends ConcreteParser{
 			NameParser.lazyParser.parse(data);
 		}
 		else {
+			if(data.getList(listName)==null){
+				throw new RuntimeException("ListNameParser:"+listName+" not recognized listName");
+			}
 			data.getList(listName).getNamesParser().parse(data);
 		}
 	}

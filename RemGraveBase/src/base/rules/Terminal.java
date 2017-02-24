@@ -3,9 +3,10 @@ package base.rules;
 import com.rem.parser.*;
 import base.lists.*;
 
-public class Terminal extends AddTokenParser implements IRule {
+public class Terminal extends ConcreteRule {
 
-	public static final IParser parser = new Terminal();
+	public static final IRule parser = new Terminal();
+	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Terminal(){
 		super("terminal");
 	}
@@ -13,22 +14,20 @@ public class Terminal extends AddTokenParser implements IRule {
 	public void setup(){
 		set(
 			new ChoiceParser(
-				new AddTokenParser(
-					
-					Tokens.ANYLIST,"anyListNameToken"),
-				new AddTokenParser(
-					
-					Listnames.parser,"listsToken"),
-				new AddTokenParser(
-					
-					AnyListNameParser.parser,"listToken")));
+					new AddTokenParser(
+						
+							Tokens.ANYLIST,"anyListNameToken"),
+					new AddTokenParser(
+						
+							Listnames.parser,"listsToken"),
+					new AddTokenParser(
+						
+							AnyListNameParser.parser,"listToken")));
 
 	}
-	@Override
-	public Parameter getParameter(int i) {
-		switch(i){
-		default: return null;
-		}
+	@Override @SuppressWarnings("unchecked")
+	public Parameter<?>[] getParameters(){
+		return parameters;
 	}
 
 }

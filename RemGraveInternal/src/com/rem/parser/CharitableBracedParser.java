@@ -39,6 +39,15 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			boolean isQuote = false;
 			String toExamine = data.get();
 			int sectionLength=0;
+			int sectionStart = 0;
+			if(!"\"".equals(open)){
+				for(;sectionStart<toExamine.length();++sectionStart){
+					if(toExamine.charAt(sectionStart)!=' '&&toExamine.charAt(sectionStart)!='\t'){
+						break;
+					}
+				}
+			}
+			
 			for(;sectionLength+(close.length()-1)<toExamine.length();++sectionLength){
 				if(sectionLength+2<toExamine.length()&&toExamine.substring(sectionLength,sectionLength+2).equals("\\\"")){
 					++sectionLength;
@@ -67,15 +76,23 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 					++currentLayer;
 				}
 			}
-			if(currentLayer>0){				
-				data.invalidate();
-				return;
+			ParseData newParseData = null;
+			if(currentLayer>0){
+				if(currentLayer==1){
+					newParseData = new ParseData(data.getFileName(),toExamine);
+				}
+				else {
+					data.invalidate();
+					return;
+				}
 			}
-			ParseData newParseData = new ParseData(data.getFileName(),toExamine.substring(0,sectionLength));
+			else {
+				newParseData = new ParseData(data.getFileName(),toExamine.substring(sectionStart,sectionLength));
+			}
 			newParseData.setMustEnd(true);
 			subParser.parse(newParseData);
 
-			ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
+			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setPosition(position);
 				data.invalidate();
@@ -88,7 +105,7 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			data.invalidate();
 		}
 	}
-	
+
 	@Override
 	public String getName(){
 		return name;

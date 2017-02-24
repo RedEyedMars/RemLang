@@ -1,0 +1,772 @@
+uses String ParseList IParser Listnames List File
+base
+	var directory as File
+		null
+	generate all takes data
+		var fileName
+			data getFileName
+		var indexOfDot
+			fileName lastIndexOf
+				"."
+		if indexOfDot > -1
+			fileName set
+				fileName substring
+					0
+					indexOfDot
+		directory set
+			new File
+				base buildString
+					"../Generated"
+					base camelize
+						fileName
+					"/src/base/"
+		directory mkdirs			
+		
+		var listGen
+			new list	
+		var ruleGen
+			new rule
+		
+		listGen generateAll
+			data
+		ruleGen generateAll
+			data
+		
+		base outputAll
+	
+	elements
+		defaultLazyParser
+			"Tokens.LISTNAME"
+	
+	aux assignListElementNames takes listMapObj, root
+		var listMap as Map<String,ParseList>
+			listMapObj 
+		var listNameChoices
+			new ArrayList<IParser>
+		var listnames as ParseList
+			listMap get
+				"listnames"
+		var listNamesNameParser as NameParser
+			listnames getNamesParser
+		listNamesNameParser clear
+		var list_rules
+			listMap get
+				"list_rules"
+		token new_list_rules
+			listMap getNewTokens
+		
+		new_list_rules to new_list_def
+			else 
+				var listName
+					'new_list_def -> listname
+				listName set
+					listName replaceAll
+						"[ \\t]+"
+						""
+				var listSingle
+					listName
+				var indexOfDash
+					listName indexOf
+						"-"
+				if indexOfDash > -1
+					var oldList as ParseList
+						null
+					var listMapContainsKey
+						listMap containsKey
+							listName
+					if listMapContainsKey is true
+						oldList set
+							listMap remove
+								listName
+					
+					listSingle set
+						listName substring
+							0
+							indexOfDash
+					listName set
+						base buildString
+							listSingle
+							listName substring
+								indexOfDash+1
+								listName length
+					if oldList is not null
+						listMap put
+							listName
+							oldList
+				var listMapContainsKey
+					listMap containsKey
+						listName
+				if not listMapContainsKey
+					listMap put
+						listName
+					base createNewParseList
+						listName
+				
+				listNameChoices add
+					new RegexParser
+						listSingle
+						"listnames"
+						listName
+				var listnamesNameParser as NameParser
+					listnames getNamesParser
+				listnamesNameParser addName
+					listSingle
+				var list as ParseList
+					listMap get
+						listName
+				var listNameParser as NameParser
+					list getNamesParser
+				new_list_def list_def to def
+					var name
+						'def -> parameters -> name
+					listNameParser addName
+						name					
+		listNameChoices add
+			new RegexParser
+				"listname"
+				"listnames"
+				"listnames"
+		var lisnamesNameParser as NameParser
+			listnames getNamesParser
+		lisnamesNameParser addName
+			"listname"
+		var listNamesParser as IParser
+			Listnames parser
+		listNamesParser replace
+			listNameChoices
+		var listRuless as ParseList
+			listMap get
+				"list_rules"
+		var listRulessNamesParser
+			listRuless getNamesParser
+		listRulessNamesParser clear
+
+rule
+	var ruleParameterNames
+		new HashMap<String,List<String>>
+	var directory
+		new File
+			base getDirectory
+			"rules"
+	
+	elements
+		outline
+			"package base.rules;\n\n"+			
+			"import com.rem.parser.*;\n"+
+			"import base.lists.*;\n\n"+
+			"public class " Class Name " extends ConcreteRule {\n\n"+
+			"\tpublic static final IRule parser = new " Class Name "();\n" Parameter Declarations
+			"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{" Parameter List "};\n"+									
+			"\tpublic " Class Name "(){\n"+
+			"\t\tsuper(\"" Rule Name "\");\n"+
+			"\t}\n"+
+			"\t@Override\n"+
+			"\tpublic void setup(){\n" RuleSetup "\n\t}\n"+
+			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
+			"\tpublic Parameter<?>[] getParameters(){\n"+
+			"\t\treturn parameters;\n\t}\n\n}"
+		rule
+			"\tpublic static final IRule " Rule Name " = " Class Name ".parser;\n"
+		setupSilence
+			"\t\tisSilent(true);\n"
+		setupAdd
+			"\t\tset(" Rule Definition ");\n"		
+		as
+			"new AddTokenParser(" Inner Rule "," Token Name ")"
+		addToList
+			"new AddTokenToListParser(" Inner Rule "," Token Name "," List Name ")"
+		
+		chain
+			"new ChainParser(" Inner Rules ")"
+		choice
+			"new ChoiceParser(" Inner Rules ")"
+		multiple
+			"new " Parser Class Name "Parser(" Inner Rule ")"
+		
+		list
+			"" List Name "." Parser Name ""
+		rule_parser
+			"" Name ".parser"
+		rule_name_parser
+			"new ListNameParser(\"" Name "\")"
+		rule_any_list_name
+			"AnyListNameParser.parser"		
+		
+		parameterMember
+			"\tprivate Parameter<" Type"> " Parameter Name " = new Parameter<" Type ">(" Default Value ");\n"
+		parameterIndex
+			"\t\tcase " Index ": return " Parameter Name ";\n"
+		parameterGet
+			"\t\tswitch(i){\n" Params "\t\tdefault: return null;\n\t\t}\n"
+		parameterWith
+			"new WithParser((IRule)" Parser "," Arguments ")"
+		parameterOperator
+			"new Argument." OperatorName "(" Left "," Right ")"
+		parameterNewNumber
+			"new Parameter<Integer>(" Value ")"
+		parameterExisting
+			"this." Parameter Name ""
+	
+	generate root	
+		directory mkdirs
+		var ruleName
+			'root -> rulename
+		var className
+			base camelize
+				ruleName
+		var fileName
+			base buildString
+				className
+				".java"
+		
+		list addClassList
+			"rulenames"
+			ruleName
+			ruleName
+			null
+		
+		entry rulenames = rule [ruleName className]
+		
+		list addList
+			{importRules {}}
+			"rules"
+			ruleName
+			rulenames
+		
+		entry param_list "" = {}
+		entry parameters = {
+			[className]
+			[className]
+			param_list
+			[className]
+			[ruleName] }
+		rule addFile
+			rule getName
+			rule getDirectory
+			fileName
+			parameters
+		
+		var silence
+			root -> silence
+		var isSilent
+			silence is not null and silence is not empty
+		
+		base println
+			base buildString
+				">"
+				ruleName
+		
+		entry parameterIndexEntries "" = {}
+		var param_count
+			0
+		
+		root to branch
+			definition
+				entry ruleEntry "" = {}
+				if isSilent is true
+					ruleEntry add
+						setupSilence {}
+				ruleEntry add
+					setupAdd {generate definition<ruleName,3>}
+				rule addEntry
+					rule getDirectory
+					fileName
+					"rule"
+					ruleEntry
+			
+			rule_param
+				var rule_param
+					'branch
+				var rules_contains
+					ruleParameterNames containsKey
+						ruleName
+				if rules_contains is true
+					ruleParameterNames put
+						ruleName
+						new ArrayList<String>
+				var ruleParameterNamesList
+					ruleParameterNames get
+						ruleName
+				ruleParameterNamesList add
+					rule_param
+				param_list add
+					parameterMember ["Integer" rule_param "Integer" "0"]
+				parameterIndexEntries add 
+					parameterIndex ['param_count rule_param]
+				base increment
+					param_count
+		
+		rule addEntry
+			rule getDirectory
+			fileName
+			"params"
+			parameterGet {parameterIndexEntries}
+	
+	generate atom takes ruleName, tabs
+		entry returnEntry = null
+		var enclosingName
+			null
+		var enclosingList
+			null
+		entry enclosingArgumentsStatement = null
+		atom to quark
+			parameters
+				var name
+					'quark -> name
+				var list 
+					'quark -> list
+				if name is not null
+					enclosingName set
+						rule buildString
+							"\""
+							name
+							"\""
+				if list is not null
+					enclosingList set
+						rule buildString
+							"\""
+							list
+							"\""
+				
+				entry params = {}
+				quark parameter to energy
+					params add
+						generate parameter
+				if params is not empty
+					enclosingArgumentsStatement set
+						params
+			terminal
+				returnEntry set
+					generate token
+			braced
+				quark definition to energy					
+					returnEntry set
+						generate definition <ruleName,tabs>
+			multiple
+				var option
+					'quark -> option
+				flip option
+					* = Many
+					? = Optional
+					+ = Multiple
+				quark definition to energy
+					returnEntry set
+						multiple {[option] generate definition <ruleName,tabs>}
+		
+		if enclosingName is not null
+			if enclosingList is not null
+				returnEntry set
+					addToList { (tabs+1 returnEntry) [enclosingName] [enclosingList] }
+			else
+				returnEntry set
+					as { (tabs+1 returnEntry) [enclosingName] }
+		
+		if enclosingArgumentsStatement is not null
+			returnEntry set
+				parameterWith {returnEntry enclosingArgumentsStatement}
+		return
+			(tabs returnEntry)
+	
+	generate parameter
+		parameter to p
+			definition
+				error
+					"Rules cannot have definitons as their parameter"
+			arithmatic
+				return
+					generate arithmatic
+		return
+			null
+	
+	generate arithmatic
+		entry left = null
+		var operand
+			null
+		entry right = null
+		arithmatic to element
+			arithmatic
+				if left is null
+					left set
+						generate arithmatic
+				else
+					right set
+						generate arithmatic
+			operand
+				operand set
+					'element
+				flip operand
+					* = Multiply
+					/ = Divide
+					+ = Add
+					- = Subtract
+					else
+						error
+							"Operand:"
+							operand
+							" not recognized."
+			else
+				var elementName
+					element name
+				if left is null
+					left set
+						generate arithmaticTerminal<elementName> 
+				else
+					right set
+						generate arithmaticTerminal<elementName>
+		if right is null
+			return
+				left
+		else
+			return
+				parameterOperator { [operand] left right }
+	
+	generate arithmaticTerminal takes name
+		if "NUMBER" is name
+			return 
+				parameterNewNumber {['arithmaticTerminal]}
+		if "rule_parameters" is name
+			return
+				parameterExisting {['arithmaticTerminal]}
+		error
+			name
+			" not a recognized Arithmatic Terminal"
+		return
+			null
+	
+	
+	generate definition takes ruleName, tabs
+		return
+			generate definition<ruleName,tabs,{}>
+	
+	generate definition takes ruleName, tabs, entries 
+		definition to element				
+			choice
+				element to choice
+					definition
+						entry nextChoices = {}
+						generate definition<ruleName,tabs,nextChoices>							
+						entries addAll
+							nextChoices
+			chain
+				entry chain = {}
+				element atom to atom
+					chain add
+						generate atom<ruleName,tabs+2>
+				
+				if chain is singular
+					entries add
+						chain single
+				else
+					entries add
+						(tabs+1 chain {chain})
+		if entries is singular
+			return
+				entries single
+		else
+			return
+				(tabs choice {entries})
+	
+	generate terminal
+		terminal to token
+			ruleToken
+				var ruleName
+					rule camelize
+						'token
+				return
+					rule_parser {[ruleName]}
+			listsToken			
+				var listName
+					rule camelize
+						'token
+				return
+					rule_parser {[listName]}
+			listToken
+				var listName
+					"#NO_LISTNAME_FOUND"
+				token * to atom
+					listName set
+						atom name
+				if listName is "listnames"
+					var name
+						rule buildString
+							'token
+							"s"
+					return
+						rule_name_parser {[name]}
+				else
+					var name
+						rule camelize
+							listName
+					return
+						list [name 'token]
+			anyListNameToken					
+				return
+					rule_any_list_name {}
+			token					
+				return
+					list ["Tokens" 'token]
+			braceToken
+				return
+					list ["Braces" 'token]
+		return
+			null
+
+list
+	var listAssociatedClass
+		new HashMap<String,String>
+	var directory
+		new File
+			base getDirectory
+			"lists"
+	
+	elements
+		outline
+			"package base.lists;\n\n"+			
+			"import com.rem.parser.*;\n" Other Imports	"\n"+
+			"public class " Class Name " extends ParseList {\n\n"+
+			"\t@Override\n"+
+			"\tpublic String getName() {\n"+
+			"\t\treturn \"" Plural Name "\";\n"+
+			"\t}\n"+
+			"\t@Override\n"+
+			"\tpublic String getSingular() {\n"+
+			"\t\treturn \"" Singular Name "\";\n"+
+			"\t}\n\n" Entries "}"	
+		importRules 
+			"import base.rules.*;\n"
+		class
+			"\tpublic static final " Class "Parser " Name " = new " Class "Parser(" Parameters ");\n"
+		parser
+			"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t" Rules ");\n"
+		name_parser
+			"\n\tpublic static final NameParser name_parser = new NameParser(\n\t\t\t\t" Rules ");\n"+
+			"\t@Override\n"+
+			"\tpublic NameParser getNamesParser(){\n"+
+			"\t\treturn name_parser;\n"+
+			"\t}\n"
+		emptyList
+			"\tpublic static final NameParser name_parser = new NameParser(" List Name ");\n"+
+			"\t@Override\n"+
+			"\tpublic NameParser getNamesParser(){\n"+
+			"\t\treturn name_parser;\n"+
+			"\t}\n"
+	
+	generate root
+		directory mkdir
+		var listName
+			'root -> listname
+		var indexOfDash
+			listName indexOf
+				"-"
+		var singleListName
+			listName
+		if indexOfDash > -1
+			singleListName set
+				listName substring
+					0
+					indexOfDash
+			listName set
+				list buildString
+					singleListName
+					listName substring
+						indexOfDash+1
+						listName length
+		entry fileParameters = {
+					{}
+					["Listnames"]
+					["listnames"]
+					["listname"] }
+		list addFile
+			directory
+			"Listnames.java"
+			fileParameters
+		
+		list addClassList
+			"listnames"
+			singleListName
+			listName
+			null
+		
+		var token_contains_list
+			token containsKey
+				"listType"
+		if token_contains_list is true
+			listAssociatedClass put
+				listName
+				list camelize
+					'token -> listType
+		
+		var className
+			list camelize
+				listName
+		var fileName
+			list buildString
+				className
+				".java"
+		
+		var hasDefinition
+			false
+		
+		root to element
+			list_def
+				token parameters
+					element -> parameters
+				var name
+					'parameters -> name
+				var regex
+					'element -> regex
+				token parameter
+					element -> parameter
+				entry parameterEntry = null
+				
+				if parameter is not null
+					parameterEntry set
+						rule generateDefinition
+							list buildString
+								listName
+								"$HIDDEN"
+							parameter -> definition
+							5
+					
+					list addClassList
+						listName
+						name
+						regex
+						parameterEntry
+					hasDefinition set
+						true
+		
+		var listNameInQuotes
+			list buildString
+				"\""
+				listName
+				"\""
+		if hasDefinition is true
+			list addEntry
+				directory
+				fileName
+				"nameParser"
+				emptyList [listNameInQuotes]
+	
+	aux addClassList takes listName, name, regex, parameter
+		var containsAssociatedClass
+			listAssociatedClass containsKey
+				"listname"
+		if not containsAssociatedClass
+			listAssociatedClass put
+				listName
+				"Regex"
+		
+		entry params = {}
+		if parameter is not null
+			params add
+				parameter
+		var nameInQuotes
+			list buildString
+				"\""
+				name
+				"\""
+		var listNameInQuotes
+			list buildString
+				"\""
+				listName
+				"\""
+		params add
+			[nameInQuotes]
+		params add
+			[listNameInQuotes]
+		
+		var regexInQuotes
+			list buildString
+				"\""
+				regex
+		if "listnames" is listName		
+			regexInQuotes set
+				list buildString
+					regexInQuotes
+					"\\b\""
+		else
+			regexInQuotes set
+				list buildString
+					regexInQuotes
+					"\""
+		params add
+			[regexInQuotes]
+		
+		var associatedClassName
+			listAssociatedClass get
+				listName
+		entry listEntry = class {
+			[associatedClassName]
+			[name]
+			[associatedClassName]
+			params }
+		list addList
+			{}
+			listName
+			name
+			listEntry
+	
+	aux addList takes imports, listName, name, listEntry
+		var className
+			list camelize
+				listName
+		var fileName
+			list buildString
+				className
+				".java"
+		var listNameInQuotes
+			list buildString
+				"\""
+				listName
+				"\""
+		var listNameLength
+			listName length
+		var singularListName
+			listName substring
+				0
+				listNameLength-1
+		entry parameters = {
+			imports
+			[className]
+			[listName]
+			[singularListName] }
+		
+		list addFile
+			directory
+			fileName
+			parameters
+		
+		entry main "" = {}
+		
+		main set
+			list getOrAddEntry
+				directory
+				fileName
+				"main"
+				main
+		
+		entry subs "" = {}
+		if main is empty
+			main add
+				subs
+			
+			main add
+				parser {{}}
+			main add
+				name_parser {[listNameInQuotes]}
+		
+		var main0 as ListEntry
+			main get
+				0
+		main0 add
+			listEntry
+		var main1 as ElementEntry
+			main get
+				1
+		var main10 as ListEntry
+			main1 get
+				0 
+		main10 add
+			name
+

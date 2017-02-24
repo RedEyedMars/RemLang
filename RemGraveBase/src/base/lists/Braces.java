@@ -1,7 +1,6 @@
 package base.lists;
 
 import com.rem.parser.*;
-import base.rules.*;
 
 public class Braces extends ParseList {
 
@@ -14,26 +13,30 @@ public class Braces extends ParseList {
 		return "brace";
 	}
 
-	public static final IParser BRACE = new BracedParser(
-						Rules.definition,"BRACE","braces","(,)");
-
-	public static final IParser SQUARE = new BracedParser(
-						new AddTokenParser(
-							Tokens.WILD,"regex"),"SQUARE","braces","[,]");
-
-	public static final IParser QUOTE = new BracedParser(
-						new AddTokenParser(
-							Tokens.WILD,"regex"),"QUOTE","braces","\",\"");
-
-	public static final IParser SEMICOLON = new BracedParser(
-					new ChoiceParser(
-						Rules.arithmatic,
-						Rules.definition),"SEMICOLON","braces",",;");
-
+	public static final BracedParser BRACE = new BracedParser(
+						new ChainParser(
+							Rules.definition,
+							new OptionalParser(
+									Tokens.SPACES)),"BRACE","braces","(,)");
+	public static final BracedParser SQUARE = new BracedParser(
+							new AddTokenParser(
+								Tokens.WILD,"regex"),"SQUARE","braces","[,]");
+	public static final BracedParser QUOTE = new BracedParser(
+							new AddTokenParser(
+								Tokens.WILD,"quote"),"QUOTE","braces","\",\"");
+	public static final BracedParser PARAM_BRACE = new BracedParser(
+						new ChainParser(
+							new AddTokenParser(
+								Rules.arithmatic,"parameter"),
+							new ManyParser(
+									
+										new ChainParser(
+											Tokens.COMMA,
+											new AddTokenParser(
+												Rules.arithmatic,"parameter")))),"PARAM_BRACE","braces","{,}");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,SQUARE,QUOTE,SEMICOLON);
-
+				BRACE,SQUARE,QUOTE,PARAM_BRACE);
 
 	public static final NameParser name_parser = new NameParser(
 				"braces");

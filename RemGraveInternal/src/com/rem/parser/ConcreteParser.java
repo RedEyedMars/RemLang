@@ -14,7 +14,6 @@ public abstract class ConcreteParser implements IParser{
 			debug_parse(data);
 		}
 		else {
-			ParseUtil.currentParser = this.getName();
 			real_parse(data);
 		}
 	}

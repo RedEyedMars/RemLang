@@ -3,9 +3,10 @@ package base.rules;
 import com.rem.parser.*;
 import base.lists.*;
 
-public class Definition extends AddTokenParser implements IRule {
+public class Definition extends ConcreteRule {
 
 	public static final IRule parser = new Definition();
+	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Definition(){
 		super("definition");
 	}
@@ -23,8 +24,6 @@ public class Definition extends AddTokenParser implements IRule {
 						new OptionalParser(
 							
 								new ChainParser(
-									new OptionalParser(
-											Tokens.SPACES),
 									
 									new ChoiceParser(
 											Tokens.PIPE,
@@ -35,10 +34,8 @@ public class Definition extends AddTokenParser implements IRule {
 
 	}
 	@Override @SuppressWarnings("unchecked")
-	public Parameter<?> getParameter(int i) {
-		switch(i){
-		default: return null;
-		}
+	public Parameter<?>[] getParameters(){
+		return parameters;
 	}
 
 }

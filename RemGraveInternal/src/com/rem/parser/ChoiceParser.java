@@ -3,6 +3,8 @@ package com.rem.parser;
 
 public class ChoiceParser extends ConcreteListParser implements IParser{
 
+	protected boolean flag = false;
+
 	public ChoiceParser(IParser... parsers){
 		super();
 		for(IParser parser:parsers){
@@ -31,12 +33,13 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 				//ParseUtil.debug("internal","Choice","(lock:"+this+"):"+parser+"::"+data.printPap(parser));
 			}
 			else {
+				
 				IToken token = data.addTokenLayer();
 				data.validate();
 				data.setPap(this,index);
 				parser.parse(data);				
 				data.collectTokens();
-
+				if(flag )System.out.println(parser.getName()+":"+data.isValid());
 				if(data.isValid()){
 					data.resetPap(position,this,index);
 					if(mustEnd){

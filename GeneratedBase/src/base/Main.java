@@ -12,7 +12,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("base.ruleset"), new BaseGenerator(),
+				Base.parser, new File("generator.ruleset"), new BaseGenerator(),
 				new Rules(),new Listnames());
 	}
 

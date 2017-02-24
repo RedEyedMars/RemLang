@@ -18,6 +18,8 @@ public abstract class Generator {
 	protected abstract void generate(ParseData data);
 	public abstract IParser getLazyNameParser();
 	public abstract void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken);
+	public abstract String getName();
+	public abstract void generateRoot(IToken rootToken);
 
 	protected void generateAll(InterpreterDyn gen, IToken token, String name){
 		addPage(gen.getName(),gen.getOutline(),gen.numberOfParameters());
@@ -30,6 +32,13 @@ public abstract class Generator {
 
 		for(IToken subToken:token.getAll(name)){
 			gen.interpret(subToken);
+		}
+	}
+	protected void generateAll(Generator gen, IToken token, String name){
+		addPage(gen.getName(),elements.get("outline").getOutline());
+
+		for(IToken subToken:token.getAll(name)){
+			gen.generateRoot(subToken);
 		}
 	}
 	protected String camelize(String name){
@@ -84,7 +93,7 @@ public abstract class Generator {
 		}
 		pages.get(pageName).setOutline(pageOutline);
 	}
-	protected void addFile(String pageName, File directory, String fileName, Entry[] parameters){
+	protected void addFile(String pageName, File directory, String fileName, ListEntry parameters){
 		if(!pages.containsKey(pageName)){
 			throw new RuntimeException("Page: "+ pageName+" not defined");
 		}
@@ -186,7 +195,7 @@ public abstract class Generator {
 			}
 		}
 
-		public void addFile(File directory, String fileName, Entry[] parameters) {
+		public void addFile(File directory, String fileName, ListEntry parameters) {
 			int dirIndex = dirs.indexOf(directory);
 			if(dirIndex==-1){
 				dirIndex = dirs.size();
@@ -248,9 +257,9 @@ public abstract class Generator {
 			return parameters.get(key);
 		}
 
-		public void addParameters(Entry[] parameters) {
-			for(int i=0;i<parameters.length;++i){
-				this.addParameter("$"+this.keys.size(),parameters[i]);
+		public void addParameters(ListEntry parameters) {
+			for(int i=0;i<parameters.list.size();++i){
+				this.addParameter("$"+this.keys.size(),parameters.get(i));
 			}
 		}
 
@@ -280,6 +289,9 @@ public abstract class Generator {
 		private String name;
 		public Element(String name){
 			this.name = name;
+		}
+		public String[] getOutline() {
+			return outLine;
 		}
 		public String getName(){
 			return name;

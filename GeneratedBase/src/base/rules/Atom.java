@@ -3,9 +3,10 @@ package base.rules;
 import com.rem.parser.*;
 import base.lists.*;
 
-public class Atom extends AddTokenParser implements IRule {
+public class Atom extends ConcreteRule {
 
 	public static final IRule parser = new Atom();
+	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Atom(){
 		super("atom");
 	}
@@ -13,17 +14,15 @@ public class Atom extends AddTokenParser implements IRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new OptionalParser(
-							Tokens.SPACES),
 					Rules.element,
-					Rules.parameters));
+					Rules.parameters,
+					new OptionalParser(
+							Braces.PARAM_BRACE)));
 
 	}
 	@Override @SuppressWarnings("unchecked")
-	public Parameter<?> getParameter(int i) {
-		switch(i){
-		default: return null;
-		}
+	public Parameter<?>[] getParameters(){
+		return parameters;
 	}
 
 }

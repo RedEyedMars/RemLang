@@ -39,12 +39,25 @@ public class BracedParser extends ConcreteParser implements IParser{
 			boolean isQuote = false;
 			String toExamine = data.get();
 			int sectionLength=0;
+			int sectionStart = 0;
+			if(!"\"".equals(open)){
+				for(;sectionStart<toExamine.length();++sectionStart){
+					if(toExamine.charAt(sectionStart)!=' '&&toExamine.charAt(sectionStart)!='\t'){
+						break;
+					}
+				}
+			}
+
+			//System.out.println(open+","+close+data.getLine());
 			for(;sectionLength+(close.length()-1)<toExamine.length();++sectionLength){
 				if(sectionLength+2<toExamine.length()&&toExamine.substring(sectionLength,sectionLength+2).equals("\\\"")){
 					++sectionLength;
 				}
 				else if(isQuote&&toExamine.substring(sectionLength,sectionLength+1).equals("\"")){
 					isQuote=false;
+				}
+				else if(sectionLength+2<toExamine.length()&&toExamine.substring(sectionLength,sectionLength+2).equals("\\\\")){
+					sectionLength+=1;
 				}
 				else if(sectionLength+escapeClose.length()<toExamine.length()&&toExamine.substring(sectionLength,sectionLength+escapeClose.length()).equals(escapeClose)){
 					sectionLength+=escapeClose.length()-1;
@@ -71,17 +84,24 @@ public class BracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 				return;
 			}
-			ParseData newParseData = new ParseData(data.getFileName(),toExamine.substring(0,sectionLength));
+			ParseData newParseData = new ParseData(data.getFileName(),toExamine.substring(sectionStart,sectionLength));
 			newParseData.setMustEnd(true);
 			subParser.parse(newParseData);
 
-			ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
+			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setPosition(position);
 				data.invalidate();
 			}
 			else {
-				data.setPosition(data.getPosition()+sectionLength+close.length());
+				int found = sectionLength+close.length();
+				
+				for(;found<toExamine.length();++found){
+					if(toExamine.charAt(found)!=' '&&toExamine.charAt(found)!='\t'){
+						break;
+					}
+				}
+				data.setPosition(data.getPosition()+found);
 			}
 		}
 		else {

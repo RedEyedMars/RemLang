@@ -4,17 +4,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class ParseData {
 
 	private static Map<String,ParseList> lists = new HashMap<String,ParseList>();
 	private static IToken currentToken = new BranchToken();
 	private static IToken rootToken = currentToken;
-	private Map<Integer,Map<IParser,Set<Integer>>> paps = new HashMap<Integer,Map<IParser,Set<Integer>>>();
+	private static Object[] contextParameters;
+	private Map<Integer,Map<IParser,Set<AccessPoint>>> paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
 	private int length;
 
 	private boolean valid = true;
 	private int position = 0;
+	private int furthestPosition = 0;
+	private String furthestParser = "";
 	private String file;
 	private boolean mustEnd;
 	private String fileName;
@@ -53,9 +57,21 @@ public class ParseData {
 	public int getPosition() {
 		return position;
 	}
+	
+	public int getFurthestPosition(){
+		return this.furthestPosition;
+	}
+	
+	public String getFurthestParser(){
+		return furthestParser;
+	}
 
 	public void setPosition(int newPosition) {
 		position = newPosition;
+		if(newPosition>furthestPosition){
+			furthestPosition = newPosition;
+			furthestParser = ParseUtil.currentParser;
+		}
 	}
 	
 	public String get(){
@@ -66,33 +82,103 @@ public class ParseData {
 		return file;
 	}
 	
+	private class AccessPoint implements Comparable<AccessPoint>{
+		private int index;
+		private Object[] context = null;
+		private boolean flag = false;
+		public AccessPoint(int index){
+			this.index = index;
+		}
+		public AccessPoint(int index, boolean flag){
+			this.index = index;
+			this.flag = flag;
+		}
+		public AccessPoint(int index, Object[] context){
+			this.index = index;
+			this.context = context;
+		}
+		@Override
+		public int hashCode(){
+			return index;
+		}
+		@Override
+		public boolean equals(Object obj){
+			if(obj instanceof Integer){
+				return ((Integer)obj) == index; 
+			}
+			else return super.equals(obj);
+		}
+		@Override
+		public int compareTo(AccessPoint o) {
+			if(o.context == null||context==null){
+				return o.index-index;
+			}
+			else if(o.context != null&&context!=null&&context.length==o.context.length){
+				if(o.index!=index){
+					return o.index-index;
+				}
+				for(int i=0;i<context.length;++i){
+					if(!context[i].equals(o.context)){
+						return -1;
+					}
+				}
+				return 0;
+			}
+			else return o.index-index;
+		}
+	}
+	
 	public void setPap(IParser parent, int index){
 		if(!paps.containsKey(position)){
-			paps.put(position,new HashMap<IParser,Set<Integer>>());
+			paps.put(position,new HashMap<IParser,Set<AccessPoint>>());
 		}
 		if(!paps.get(position).containsKey(parent)){
-			paps.get(position).put(parent, new HashSet<Integer>());
+			paps.get(position).put(parent, new TreeSet<AccessPoint>());
 		}
-		paps.get(position).get(parent).add(index);
+		if(ParseData.contextParameters==null){
+			paps.get(position).get(parent).add(new AccessPoint(index));
+		}
+		else {
+			paps.get(position).get(parent).add(new AccessPoint(index,ParseData.contextParameters));
+		}
 	}
 	public void resetPap(int pos, IParser parent, int index){
-		Map<IParser,Set<Integer>> pap = paps.get(pos);
+		Map<IParser,Set<AccessPoint>> pap = paps.get(pos);
 
 		if(pap!=null){
-			Set<Integer> set = pap.get(parent);
+			Set<AccessPoint> set = pap.get(parent);
 			if(set!=null){
-				set.remove(index);
+				set.remove(new AccessPoint(index,true));
 			}
 		}
 	}
 	public boolean isAtPreviousAccessPoint(IParser parent, int index){
 		if(!paps.containsKey(position)){
-			paps.put(position,new HashMap<IParser,Set<Integer>>());
+			paps.put(position,new HashMap<IParser,Set<AccessPoint>>());
 		}
 		if(!paps.get(position).containsKey(parent)){
-			paps.get(position).put(parent, new HashSet<Integer>());
+			paps.get(position).put(parent, new TreeSet<AccessPoint>());
 		}
-		return paps.get(position).get(parent).contains(index);
+		for(AccessPoint point: paps.get(position).get(parent)){
+			if(point.index == index){
+				if(contextParameters==null&&point.context==null){
+					return true;
+				}
+				else if(contextParameters!=null&&point.context!=null&&contextParameters.length==point.context.length){
+					boolean isSame = true;
+					for(int i=0;i<point.context.length;++i){
+						if(!point.context[i].equals(contextParameters[i])){
+							isSame = false;
+							break;
+						}
+					}
+					if(isSame){
+						return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 
 	public ParseList getList(String listName) {
@@ -161,6 +247,18 @@ public class ParseData {
 	}
 	public void setMustEnd(boolean me){
 		this.mustEnd = me;
+	}
+
+	public void setContextParameters(Parameter<Object>[] parameters) {
+		if(parameters.length>0){
+			ParseData.contextParameters = new Object[parameters.length];
+			for(int i=0;i<parameters.length;++i){
+				ParseData.contextParameters[i] = parameters[i].evaluate();	
+			}
+		}
+		else {
+			ParseData.contextParameters = null;
+		}
 	}
 
 

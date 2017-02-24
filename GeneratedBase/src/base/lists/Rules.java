@@ -18,6 +18,7 @@ public class Rules extends ParseList {
 	public static final IRule parameters = Parameters.parser;
 	public static final IRule arithmatic = Arithmatic.parser;
 	public static final IRule rule = Rule.parser;
+	public static final IRule member_declaration = MemberDeclaration.parser;
 	public static final IRule list_rule = ListRule.parser;
 	public static final IRule definition = Definition.parser;
 	public static final IRule atom = Atom.parser;
@@ -25,7 +26,7 @@ public class Rules extends ParseList {
 	public static final IRule terminal = Terminal.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				base,parameters,arithmatic,rule,list_rule,definition,atom,element,terminal);
+				base,parameters,arithmatic,rule,member_declaration,list_rule,definition,atom,element,terminal);
 
 	public static final NameParser name_parser = new NameParser(
 				"rules");

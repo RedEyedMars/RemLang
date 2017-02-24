@@ -3,38 +3,43 @@ package base.rules;
 import com.rem.parser.*;
 import base.lists.*;
 
-public class Definition extends AddTokenParser implements IRule {
+public class Definition extends ConcreteRule {
 
-	public static final IParser parser = new Definition();
+	public static final IRule parser = new Definition();
+	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Definition(){
 		super("definition");
 	}
 	@Override
 	public void setup(){
-		set(new ChainParser(
-				new AddTokenParser(
-					new ChainParser(
-					Rules.atom,
-					new ManyParser(
-						Rules.atom)),"chain"),
-				new AddTokenParser(
+		set(
+				new ChainParser(
 					new OptionalParser(
-					new ChainParser(
-						new OptionalParser(
 							Tokens.SPACES),
+					new AddTokenParser(
 						
-						new ChoiceParser(
-							Tokens.PIPE,new ChainParser(
-							Tokens.NEWLINE,
-							Tokens.TAB)),
-						Rules.definition)),"choice")));
+						new ChainParser(
+							Rules.atom,
+							new ManyParser(
+									Rules.atom)),"chain"),
+					new AddTokenParser(
+						new OptionalParser(
+							
+								new ChainParser(
+									new OptionalParser(
+											Tokens.SPACES),
+									
+									new ChoiceParser(
+											Tokens.PIPE,
+										new ChainParser(
+											Tokens.NEWLINE,
+											Tokens.TAB)),
+									Rules.definition)),"choice")));
 
 	}
-	@Override
-	public Parameter getParameter(int i) {
-		switch(i){
-		default: return null;
-		}
+	@Override @SuppressWarnings("unchecked")
+	public Parameter<?>[] getParameters(){
+		return parameters;
 	}
 
 }

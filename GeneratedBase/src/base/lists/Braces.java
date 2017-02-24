@@ -20,14 +20,20 @@ public class Braces extends ParseList {
 								Tokens.WILD,"regex"),"SQUARE","braces","[,]");
 	public static final BracedParser QUOTE = new BracedParser(
 							new AddTokenParser(
-								Tokens.WILD,"regex"),"QUOTE","braces","\",\"");
-	public static final BracedParser SEMICOLON = new BracedParser(
-					new ChoiceParser(
-							Rules.arithmatic,
-							Rules.definition),"SEMICOLON","braces",",;");
+								Tokens.WILD,"quote"),"QUOTE","braces","\",\"");
+	public static final BracedParser PARAM_BRACE = new BracedParser(
+						new ChainParser(
+							new AddTokenParser(
+								Rules.arithmatic,"parameter"),
+							new ManyParser(
+									
+										new ChainParser(
+											Tokens.COMMA,
+											new AddTokenParser(
+												Rules.arithmatic,"parameter")))),"PARAM_BRACE","braces","{,}");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,SQUARE,QUOTE,SEMICOLON);
+				BRACE,SQUARE,QUOTE,PARAM_BRACE);
 
 	public static final NameParser name_parser = new NameParser(
 				"braces");
