@@ -13,6 +13,7 @@ public class ClassElement extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
+		isSilent(true);
 		set(
 			new ChoiceParser(
 					new WithParser((IRule)Rules.auxillary_declaration,this.tabs),

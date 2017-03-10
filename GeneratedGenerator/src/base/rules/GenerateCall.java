@@ -17,11 +17,13 @@ public class GenerateCall extends ConcreteRule {
 				new ChainParser(
 					new OptionalParser(
 							new WithParser((IRule)Rules.whitetab,this.tabs)),
-					Tokens.GENERATE,
+					new AddTokenParser(
+						Tokens.GENERATE,"subject"),
 					new AddTokenParser(
 						Tokens.NAME,"methodName"),
 					new OptionalParser(
-							Braces.ANGLE_BRACES)));
+							new AddTokenParser(
+								Braces.ANGLE_BRACES,"angle_braces"))));
 
 	}
 	@Override @SuppressWarnings("unchecked")

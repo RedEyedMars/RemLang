@@ -2,48 +2,48 @@
 token-s
 	[[\\t ]+] as SPACES
 	[\\n] as NEWLINE
-	[name] as NAME_WORD
+	"name" as NAME_WORD
 	[[a-zA-Z_][a-zA-Z0-9_-]*] as NAME
 	[.*] as WILD
-	[[=]] as EQUALSIGN
-	[[+]] as PLUS
-	[[*]] as STAR
-	[uses] as USES
-	[elements] as ELEMENTS
-	[generate] as GENERATE
-	[takes] as TAKES
-	[var] as VARIABLE
-	[entry] as ENTRY
-	[return] as RETURN
-	[\\\\] as BACK_SLASH
-	[[:]] as COLON
-	[[,]] as COMMA
-	[\'] as PRIME
-	[to] as TO
-	[new] as NEW
+	"=" as EQUALSIGN
+	"+" as PLUS
+	"*" as STAR
+	"uses" as USES
+	"elements" as ELEMENTS
+	"generate" as GENERATE
+	"takes" as TAKES
+	"var" as VARIABLE
+	"entry" as ENTRY
+	"return" as RETURN
+	"\\" as BACK_SLASH
+	":" as COLON
+	"," as COMMA
+	"\'" as PRIME
+	"to" as TO
+	"new" as NEW
 	[[+-]] as ADDITIVE_OPERAND
 	[[*/]] as MULTIPLICATIVE_OPERAND
 	[(-)?\\d+] as NUMBER
-	[null] as NULL
-	[if] as IF
-	[else] as ELSE
-	[and] as AND
-	[or] as OR
-	[not] as NOT
-	[is] as IS
+	"null" as NULL
+	"if" as IF
+	"else" as ELSE
+	"and" as AND
+	"or" as OR
+	"not" as NOT
+	"is" as IS
 	[[<>](=)?] as ORDINAL_OPERATOR
-	[empty] as EMPTY
-	[singular] as SINGULAR
+	"empty" as EMPTY
+	"singular" as SINGULAR
 	[[-][>]] as ACCESS
 	[[^\\s]+] as NON_SPACE
-	[flip] as FLIP
-	[error] as ERROR
-	[true] as TRUE
-	[false] as FALSE
-	[aux] as AUXILLARY
-	[cast] as CAST
-	[as] as AS
-	[token] as TOKEN
+	"flip" as FLIP
+	"error" as ERROR
+	"true" as TRUE
+	"false" as FALSE
+	"aux" as AUXILLARY
+	"cast" as CAST
+	"as" as AS
+	"token" as TOKEN
 
 #Tab collectors
 tab-s are Tabbed
@@ -90,7 +90,7 @@ used_classes_list
 class_declaration is silent
 	NAME as className in class_names ( TAKES NAME as parameter ( COMMA NAME as parameter)*)? ( class_element{1})+
 
-class_element has tabs
+class_element is silent has tabs
 	auxillary_declaration{tabs}
 	element_declaration{tabs}
 	generation_declaration{tabs}
@@ -100,7 +100,7 @@ element_declaration has tabs
 	whitetab{tabs} ELEMENTS element_definition{tabs+1}+
 
 element_definition has tabs
-	whitetab{tabs} NAME as elementName in element_names element_entry{tabs+1} ( (SPACES? NAME )* as entry element_entry{tabs+1} )*
+	whitetab{tabs} NAME as elementName in element_names element_entry{tabs+1} ( ( NAME )* as entry element_entry{tabs+1} )*
 
 element_entry has tabs
 	whitetab{tabs}? QUOTE ( PLUS whitetab{tabs} QUOTE)*

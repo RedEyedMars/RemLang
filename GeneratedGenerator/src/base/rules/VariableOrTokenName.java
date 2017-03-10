@@ -12,7 +12,6 @@ public class VariableOrTokenName extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
-		isSilent(true);
 		set(
 			new ChoiceParser(
 				new ChainParser(

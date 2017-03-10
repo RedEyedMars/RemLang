@@ -17,7 +17,7 @@ public class FlipSwitch extends ConcreteRule {
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.FLIP,
-					Rules.variable_or_token_name,
+					new ListNameParser("variable_names"),
 					new ManyParser(
 							
 								new ChainParser(

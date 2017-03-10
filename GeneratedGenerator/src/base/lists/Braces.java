@@ -58,7 +58,8 @@ public class Braces extends ParseList {
 	public static final BracedParser ANGLE_BRACES = new BracedParser(
 							Rules.angle_brace_parameters,"ANGLE_BRACES","braces","<,>");
 	public static final BracedParser TAB_BRACES = new BracedParser(
-							Rules.tab_brace_parameters,"TAB_BRACES","braces","(,)");
+							new AddTokenParser(
+								Rules.tab_brace_parameters,"tab_braces"),"TAB_BRACES","braces","(,)");
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				QUOTE,ENTRY_LIST,ENTRY_STRING,ANGLE_BRACES,TAB_BRACES);

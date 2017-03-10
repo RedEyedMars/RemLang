@@ -26,7 +26,8 @@ public class MethodCall extends ConcreteRule {
 						Tokens.NAME,"methodName"),
 					
 					new ChoiceParser(
-							Braces.ANGLE_BRACES,
+							new AddTokenParser(
+								Braces.ANGLE_BRACES,"angle_braces"),
 							new ManyParser(
 									
 									new ChoiceParser(

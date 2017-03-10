@@ -13,7 +13,6 @@ public class BodyElement extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
-		isSilent(true);
 		set(
 			new ChoiceParser(
 					new WithParser((IRule)Rules.error_statement,this.tabs),
@@ -21,6 +20,7 @@ public class BodyElement extends ConcreteRule {
 					new WithParser((IRule)Rules.if_statement,this.tabs),
 					new WithParser((IRule)Rules.token_declaration,this.tabs),
 					new WithParser((IRule)Rules.variable_declaration,this.tabs),
+					new WithParser((IRule)Rules.set_call,this.tabs),
 					new WithParser((IRule)Rules.flip_switch,this.tabs),
 					new WithParser((IRule)Rules.token_expansion,this.tabs),
 					new WithParser((IRule)Rules.method_call,this.tabs)));

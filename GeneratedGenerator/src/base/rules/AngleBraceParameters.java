@@ -19,11 +19,13 @@ public class AngleBraceParameters extends ConcreteRule {
 						
 					new ChoiceParser(
 							new WithParser((IRule)Rules.entry_definition,new Parameter<Integer>(-1)),
-							Rules.arithmatic,
+						new ChainParser(
 							new ListNameParser("class_names"),
+							new OptionalParser(
+									new AddTokenParser(
+										Braces.ANGLE_BRACES,"braces"))),
+							Rules.arithmatic,
 							new ListNameParser("entry_names")),"parameter"),
-					new OptionalParser(
-							Braces.ANGLE_BRACES),
 					new ManyParser(
 							
 								new ChainParser(
@@ -32,11 +34,13 @@ public class AngleBraceParameters extends ConcreteRule {
 										
 									new ChoiceParser(
 											new WithParser((IRule)Rules.entry_definition,new Parameter<Integer>(-1)),
-											Rules.arithmatic,
+										new ChainParser(
 											new ListNameParser("class_names"),
-											new ListNameParser("entry_names")),"parameter"),
-									new OptionalParser(
-											Braces.ANGLE_BRACES)))));
+											new OptionalParser(
+													new AddTokenParser(
+														Braces.ANGLE_BRACES,"braces"))),
+											Rules.arithmatic,
+											new ListNameParser("entry_names")),"parameter")))));
 
 	}
 	@Override @SuppressWarnings("unchecked")

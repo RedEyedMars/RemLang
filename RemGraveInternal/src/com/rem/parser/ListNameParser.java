@@ -16,7 +16,8 @@ public class ListNameParser extends ConcreteParser{
 		}
 		else {
 			if(data.getList(listName)==null){
-				throw new RuntimeException("ListNameParser:"+listName+" not recognized listName");
+				System.err.println(data.getLine());
+				throw new RuntimeException("ListNameParser:"+listName+"is not recognized listName");
 			}
 			data.getList(listName).getNamesParser().parse(data);
 		}

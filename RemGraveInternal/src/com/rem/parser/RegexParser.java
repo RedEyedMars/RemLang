@@ -8,6 +8,7 @@ public class RegexParser extends ConcreteParser implements IParser{
 	private String listName;
 	protected String name;
 	protected Pattern pattern;
+	private String regex = "";
 	private boolean fail = false;
 
 	public RegexParser(String name, String listName){
@@ -23,6 +24,8 @@ public class RegexParser extends ConcreteParser implements IParser{
 		setup(regex);		
 	}
 	protected void setup(String regex){
+
+		this.regex = regex;
 		if("".equals(regex)){
 			fail = true;
 		}
@@ -64,7 +67,7 @@ public class RegexParser extends ConcreteParser implements IParser{
 	}
 	
 	public String getPattern(){
-		return pattern==null?"pattern is null":pattern.pattern();
+		return pattern==null?"pattern is null":regex;
 	}
 
 }

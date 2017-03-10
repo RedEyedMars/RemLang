@@ -25,10 +25,7 @@ public class ElementDefinition extends ConcreteRule {
 									new AddTokenParser(
 										new ManyParser(
 											
-												new ChainParser(
-													new OptionalParser(
-															Tokens.SPACES),
-													Tokens.NAME)),"entry"),
+													Tokens.NAME),"entry"),
 									new WithParser((IRule)Rules.element_entry,new Argument.Add(this.tabs,new Parameter<Integer>(1)))))));
 
 	}

@@ -9,11 +9,11 @@ base
 			fileName lastIndexOf
 				"."
 		if indexOfDot > -1
-			fileName set
+			set fileName
 				fileName substring
 					0
 					indexOfDot
-		directory set
+		set directory
 			new File
 				base buildString
 					"../Generated"
@@ -59,7 +59,7 @@ base
 			else 
 				var listName
 					'new_list_def -> listname
-				listName set
+				set listName
 					listName replaceAll
 						"[ \\t]+"
 						""
@@ -75,15 +75,15 @@ base
 						listMap containsKey
 							listName
 					if listMapContainsKey is true
-						oldList set
+						set oldList
 							listMap remove
 								listName
 					
-					listSingle set
+					set listSingle
 						listName substring
 							0
 							indexOfDash
-					listName set
+					set listName
 						base buildString
 							listSingle
 							listName substring
@@ -111,11 +111,11 @@ base
 					listnames getNamesParser
 				listnamesNameParser addName
 					listSingle
-				var list as ParseList
+				var listVar as ParseList
 					listMap get
 						listName
 				var listNameParser as NameParser
-					list getNamesParser
+					listVar getNamesParser
 				new_list_def list_def to def
 					var name
 						'def -> parameters -> name
@@ -165,7 +165,7 @@ rule
 			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
 			"\tpublic Parameter<?>[] getParameters(){\n"+
 			"\t\treturn parameters;\n\t}\n\n}"
-		rule
+		ruleElement
 			"\tpublic static final IRule " Rule Name " = " Class Name ".parser;\n"
 		setupSilence
 			"\t\tisSilent(true);\n"
@@ -183,7 +183,7 @@ rule
 		multiple
 			"new " Parser Class Name "Parser(" Inner Rule ")"
 		
-		list
+		listElement
 			"" List Name "." Parser Name ""
 		rule_parser
 			"" Name ".parser"
@@ -225,7 +225,7 @@ rule
 			ruleName
 			null
 		
-		entry rulenames = rule [ruleName className]
+		entry rulenames = ruleElement [ruleName className]
 		
 		list addList
 			{importRules {}}
@@ -313,19 +313,19 @@ rule
 			parameters
 				var name
 					'quark -> name
-				var list 
+				var listVar
 					'quark -> list
 				if name is not null
-					enclosingName set
+					set enclosingName
 						rule buildString
 							"\""
 							name
 							"\""
-				if list is not null
-					enclosingList set
+				if listVar is not null
+					set enclosingList
 						rule buildString
 							"\""
-							list
+							listVar
 							"\""
 				
 				entry params = {}
@@ -333,14 +333,14 @@ rule
 					params add
 						generate parameter
 				if params is not empty
-					enclosingArgumentsStatement set
+					set enclosingArgumentsStatement
 						params
 			terminal
-				returnEntry set
+				set returnEntry
 					generate token
 			braced
 				quark definition to energy					
-					returnEntry set
+					set returnEntry
 						generate definition <ruleName,tabs>
 			multiple
 				var option
@@ -350,19 +350,19 @@ rule
 					? = Optional
 					+ = Multiple
 				quark definition to energy
-					returnEntry set
+					set returnEntry
 						multiple {[option] generate definition <ruleName,tabs>}
 		
 		if enclosingName is not null
 			if enclosingList is not null
-				returnEntry set
+				set returnEntry
 					addToList { (tabs+1 returnEntry) [enclosingName] [enclosingList] }
 			else
-				returnEntry set
+				set returnEntry
 					as { (tabs+1 returnEntry) [enclosingName] }
 		
 		if enclosingArgumentsStatement is not null
-			returnEntry set
+			set returnEntry
 				parameterWith {returnEntry enclosingArgumentsStatement}
 		return
 			(tabs returnEntry)
@@ -386,13 +386,13 @@ rule
 		arithmatic to element
 			arithmatic
 				if left is null
-					left set
+					set left
 						generate arithmatic
 				else
-					right set
+					set right
 						generate arithmatic
 			operand
-				operand set
+				set operand
 					'element
 				flip operand
 					* = Multiply
@@ -408,10 +408,10 @@ rule
 				var elementName
 					element name
 				if left is null
-					left set
+					set left
 						generate arithmaticTerminal<elementName> 
 				else
-					right set
+					set right
 						generate arithmaticTerminal<elementName>
 		if right is null
 			return
@@ -438,7 +438,7 @@ rule
 		return
 			generate definition<ruleName,tabs,{}>
 	
-	generate definition takes ruleName, tabs, entries 
+	generate definition takes ruleName, tabs, entries
 		definition to element				
 			choice
 				element to choice
@@ -451,7 +451,9 @@ rule
 				entry chain = {}
 				element atom to atom
 					chain add
-						generate atom<ruleName,tabs+2>
+						generate atom
+							ruleName
+							tabs+2
 				
 				if chain is singular
 					entries add
@@ -484,7 +486,7 @@ rule
 				var listName
 					"#NO_LISTNAME_FOUND"
 				token * to atom
-					listName set
+					set listName
 						atom name
 				if listName is "listnames"
 					var name
@@ -498,16 +500,16 @@ rule
 						rule camelize
 							listName
 					return
-						list [name 'token]
+						listElement [name 'token]
 			anyListNameToken					
 				return
 					rule_any_list_name {}
 			token					
 				return
-					list ["Tokens" 'token]
+					listElement ["Tokens" 'token]
 			braceToken
 				return
-					list ["Braces" 'token]
+					listElement ["Braces" 'token]
 		return
 			null
 
@@ -561,11 +563,11 @@ list
 		var singleListName
 			listName
 		if indexOfDash > -1
-			singleListName set
+			set singleListName
 				listName substring
 					0
 					indexOfDash
-			listName set
+			set listName
 				list buildString
 					singleListName
 					listName substring
@@ -615,17 +617,17 @@ list
 					'parameters -> name
 				var regex
 					'element -> regex
-				token parameter
+				token parameterToken
 					element -> parameter
 				entry parameterEntry = null
 				
-				if parameter is not null
-					parameterEntry set
+				if parameterToken is not null
+					set parameterEntry
 						rule generateDefinition
 							list buildString
 								listName
 								"$HIDDEN"
-							parameter -> definition
+							parameterToken -> definition
 							5
 					
 					list addClassList
@@ -633,7 +635,7 @@ list
 						name
 						regex
 						parameterEntry
-					hasDefinition set
+					set hasDefinition
 						true
 		
 		var listNameInQuotes
@@ -681,12 +683,12 @@ list
 				"\""
 				regex
 		if "listnames" is listName		
-			regexInQuotes set
+			set regexInQuotes
 				list buildString
 					regexInQuotes
 					"\\b\""
 		else
-			regexInQuotes set
+			set regexInQuotes
 				list buildString
 					regexInQuotes
 					"\""
@@ -739,7 +741,7 @@ list
 		
 		entry main "" = {}
 		
-		main set
+		set main
 			list getOrAddEntry
 				directory
 				fileName

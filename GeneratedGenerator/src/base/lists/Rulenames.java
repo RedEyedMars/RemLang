@@ -43,6 +43,7 @@ public class Rulenames extends ParseList {
 	public static final RegexParser boolean_statement = new RegexParser("boolean_statement","rulenames","boolean_statement");
 	public static final RegexParser boolean_clause = new RegexParser("boolean_clause","rulenames","boolean_clause");
 	public static final RegexParser method_call = new RegexParser("method_call","rulenames","method_call");
+	public static final RegexParser set_call = new RegexParser("set_call","rulenames","set_call");
 	public static final RegexParser generate_call = new RegexParser("generate_call","rulenames","generate_call");
 	public static final RegexParser method_parameter = new RegexParser("method_parameter","rulenames","method_parameter");
 	public static final RegexParser variable_or_token_name = new RegexParser("variable_or_token_name","rulenames","variable_or_token_name");
@@ -51,7 +52,7 @@ public class Rulenames extends ParseList {
 	public static final RegexParser cast_as_statement = new RegexParser("cast_as_statement","rulenames","cast_as_statement");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,class_declaration,class_element,element_declaration,element_definition,element_entry,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,body_element,variable_declaration,token_declaration,list_entry_definition,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,if_statement,else_statement,boolean_statement,boolean_clause,method_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
+				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,class_declaration,class_element,element_declaration,element_definition,element_entry,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,body_element,variable_declaration,token_declaration,list_entry_definition,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
 
 	public static final NameParser name_parser = new NameParser(
 				"rulenames");

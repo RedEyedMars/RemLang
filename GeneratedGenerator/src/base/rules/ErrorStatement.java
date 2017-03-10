@@ -20,7 +20,8 @@ public class ErrorStatement extends ConcreteRule {
 					new MultipleParser(
 							
 								new ChainParser(
-									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
+									new OptionalParser(
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Parameter<Integer>(1)))),
 									
 									new ChoiceParser(
 											Braces.QUOTE,

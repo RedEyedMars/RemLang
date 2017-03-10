@@ -1,7 +1,6 @@
 package com.rem.parser;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -19,6 +18,7 @@ public class ParseData {
 	private int position = 0;
 	private int furthestPosition = 0;
 	private String furthestParser = "";
+	private ParseData relativeData = null;
 	private String file;
 	private boolean mustEnd;
 	private String fileName;
@@ -33,6 +33,7 @@ public class ParseData {
 		this.fileName = data.fileName;
 		this.length = data.length;
 		this.file = data.file;
+		relativeData = data;
 	}
 
 	public boolean isDone() {
@@ -85,13 +86,8 @@ public class ParseData {
 	private class AccessPoint implements Comparable<AccessPoint>{
 		private int index;
 		private Object[] context = null;
-		private boolean flag = false;
 		public AccessPoint(int index){
 			this.index = index;
-		}
-		public AccessPoint(int index, boolean flag){
-			this.index = index;
-			this.flag = flag;
 		}
 		public AccessPoint(int index, Object[] context){
 			this.index = index;
@@ -148,7 +144,7 @@ public class ParseData {
 		if(pap!=null){
 			Set<AccessPoint> set = pap.get(parent);
 			if(set!=null){
-				set.remove(new AccessPoint(index,true));
+				set.remove(new AccessPoint(index));
 			}
 		}
 	}

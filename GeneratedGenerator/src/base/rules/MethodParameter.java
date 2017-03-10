@@ -18,11 +18,11 @@ public class MethodParameter extends ConcreteRule {
 					Tokens.TRUE,
 					Tokens.FALSE,
 					Rules.entry_definition,
+					new AddTokenParser(
+						Braces.QUOTE,"string"),
 					Rules.variable_or_token_name,
 					new ListNameParser("class_names"),
 					new ListNameParser("entry_names"),
-					new AddTokenParser(
-						Braces.QUOTE,"string"),
 					Tokens.NUMBER));
 
 	}

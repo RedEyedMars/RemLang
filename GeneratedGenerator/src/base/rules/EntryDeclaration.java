@@ -18,7 +18,7 @@ public class EntryDeclaration extends ConcreteRule {
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.ENTRY,
 					new AddTokenToListParser(
-						Tokens.NAME,"entyName","entry_names"),
+						Tokens.NAME,"entryName","entry_names"),
 					new OptionalParser(
 							
 									new AddTokenParser(
