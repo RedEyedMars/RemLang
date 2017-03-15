@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class EntryDefinition extends ConcreteRule {
 
@@ -19,6 +19,11 @@ public class EntryDefinition extends ConcreteRule {
 							new WithParser((IRule)Rules.whitetab,this.tabs)),
 					
 					new ChoiceParser(
+							new AddTokenParser(
+								
+								new ChainParser(
+									new ListNameParser("entry_names"),
+									Tokens.SINGLE),"getSingle"),
 						new ChainParser(
 							new ListNameParser("element_names"),
 							Rules.list_entry_definition),

@@ -14,14 +14,15 @@ import com.rem.parser.ParseData;
 import com.rem.parser.ParseList;
 import com.rem.parser.RegexParser;
 
-import base.lists.Listnames;
-import base.lists.Tokens;
+import lists.Listnames;
+import lists.Tokens;
 
 public class BaseGenerator extends Generator{
 
 	private File baseDirectory;
+	private File sourceDirectory;;
 	private ListGenerator listGen;
-	private RuleGenerator ruleGen;;
+	private RuleGenerator ruleGen;
 
 
 	@Override
@@ -29,7 +30,9 @@ public class BaseGenerator extends Generator{
 		String fileName = data.getFileName();
 		int indexOfDot = fileName.lastIndexOf('.');
 		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
-		baseDirectory = new File("../Generated"+camelize(fileName)+"/src/base/");
+		sourceDirectory = new File("../Generated"+camelize(fileName)+"/src/");
+		baseDirectory = new File(sourceDirectory,"base/");
+		
 		baseDirectory.mkdirs();
 		listGen = new ListGenerator();
 		ruleGen = new RuleGenerator();
@@ -40,7 +43,7 @@ public class BaseGenerator extends Generator{
 		outputAll();
 
 	}
-	/*
+	
 	@Override
 	public String getName(){
 		return "BASE";
@@ -48,8 +51,7 @@ public class BaseGenerator extends Generator{
 	
 	@Override
 	public void generateRoot(IToken root){
-		
-	}*/
+	}
 
 	@Override
 	public IParser getLazyNameParser(){
@@ -178,14 +180,13 @@ public class BaseGenerator extends Generator{
 			ListEntry param_list = new ListEntry();
 			ListEntry param_declarations = new ListEntry();
 			param_declarations.setDelimiter("");
-			Entry[] parameters = new Entry[]{
+			addFile(getName(),ruleDirectory,fileName,new ListEntry(
 					new StringEntry(className),
 					new StringEntry(className),
 					param_declarations,
 					param_list,
 					new StringEntry(className),
-					new StringEntry(ruleName)};
-			addFile(getName(),ruleDirectory,fileName,parameters);	
+					new StringEntry(ruleName)));	
 
 			IToken silence = token.get("silence");
 			boolean isSilent = silence!=null&&!silence.isEmpty();
@@ -368,7 +369,7 @@ public class BaseGenerator extends Generator{
 							chain.add(generateAtom(ruleName,definition.get(key).get(chainKey),tabs+2));
 						}
 					}
-					if(chain.isSingluar()){
+					if(chain.isSingular()){
 						entries.add(chain.getSingle());
 					}
 					else {
@@ -377,7 +378,7 @@ public class BaseGenerator extends Generator{
 				}
 
 			}
-			if(entries.isSingluar()){
+			if(entries.isSingular()){
 				return entries.getSingle();
 			}
 			else {
@@ -428,7 +429,7 @@ public class BaseGenerator extends Generator{
 			return new String[]{
 					"package base.rules;\n\n"+			
 							"import com.rem.parser.*;\n"+
-							"import base.lists.*;\n\n"+
+							"import lists.*;\n\n"+
 							"public class ",/*Class Name*/" extends ConcreteRule {\n\n"+
 									"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/
 									"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{",/*Parameter List*/"};\n"+									
@@ -448,7 +449,7 @@ public class BaseGenerator extends Generator{
 	private class ListGenerator implements Interpreter{
 
 		private Map<String/*ListName*/,String/*Association*/> listAssociatedClass = new HashMap<String,String>();
-		private File listDirectory = new File(baseDirectory,"lists");
+		private File listDirectory = new File(sourceDirectory,"lists");
 		private final String[] importRulesElement = new String[]{"import base.rules.*;\n"};
 		private final String[] classElement = new String[]{
 				"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"
@@ -490,12 +491,11 @@ public class BaseGenerator extends Generator{
 				listName = singleListName+listName.substring(indexOfDash+1,listName.length());
 			}			
 
-			Entry[] fileParameters = new Entry[]{
+			addFile(getName(),listDirectory,"Listnames.java",new ListEntry(
 					new ListEntry(),
 					new StringEntry("Listnames"),
 					new StringEntry("listnames"),
-					new StringEntry("listname")};
-			addFile(getName(),listDirectory,"Listnames.java",fileParameters);
+					new StringEntry("listname")));
 			addClassList("listnames", singleListName, listName, null);
 
 			if(token.containsKey("listType")){
@@ -517,6 +517,7 @@ public class BaseGenerator extends Generator{
 				if("list_def".equals(key.getName())){
 					IToken def = token.get(key);
 					String name = def.get("parameters").get("name").getString();
+
 					IToken regexToken = def.get("regex");
 					if(regexToken==null){
 						regexToken = def.get("quote");
@@ -529,7 +530,7 @@ public class BaseGenerator extends Generator{
 							this.listAssociatedClass.put(listName, "Regex");
 						}
 					}
-					String regex = regexToken.getString();					
+					String regex = regexToken.getString();	
 					IToken parameter = def.get("parameter");
 					Entry parameterEntry = null;
 					if(parameter!=null){
@@ -573,13 +574,12 @@ public class BaseGenerator extends Generator{
 			String className = camelize(listName);
 			String fileName = className + ".java";
 
-			Entry[] parameters = new Entry[]{
+			addFile(getName(),listDirectory,fileName,
+					new ListEntry(
 					imports,
 					new StringEntry(className),
 					new StringEntry(listName),
-					new StringEntry(listName.substring(0,listName.length()-1))
-			};
-			addFile(getName(),listDirectory,fileName,parameters);
+					new StringEntry(listName.substring(0,listName.length()-1))));
 
 			ListEntry main = new ListEntry();
 			main.setDelimiter("");
@@ -606,7 +606,7 @@ public class BaseGenerator extends Generator{
 		@Override
 		public String[] getOutline() {
 			return new String[]{
-					"package base.lists;\n\n"+			
+					"package lists;\n\n"+			
 							"import com.rem.parser.*;\n",/*Other Imports*/
 							"\n"+
 							"public class ",/*Class Name*/" extends ParseList {\n\n"+

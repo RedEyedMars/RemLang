@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class Atom extends ConcreteRule {
 
@@ -14,12 +14,8 @@ public class Atom extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new OptionalParser(
-							Tokens.SPACES),
 					Rules.element,
 					Rules.parameters,
-					new OptionalParser(
-							Tokens.SPACES),
 					new OptionalParser(
 							Braces.PARAM_BRACE)));
 

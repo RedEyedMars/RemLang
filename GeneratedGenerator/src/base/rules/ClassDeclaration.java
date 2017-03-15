@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class ClassDeclaration extends ConcreteRule {
 
@@ -16,7 +16,7 @@ public class ClassDeclaration extends ConcreteRule {
 		set(
 				new ChainParser(
 					new AddTokenToListParser(
-						Tokens.NAME,"className","class_names"),
+						Tokens.NAME,"className","generator_names"),
 					new OptionalParser(
 							
 								new ChainParser(

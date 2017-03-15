@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class MethodCall extends ConcreteRule {
 
@@ -16,6 +16,9 @@ public class MethodCall extends ConcreteRule {
 		set(
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new OptionalParser(
+							new AddTokenParser(
+								Tokens.STATIC,"isStatic")),
 					new AddTokenParser(
 						
 					new ChoiceParser(

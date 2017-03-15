@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class BooleanClause extends ConcreteRule {
 
@@ -22,7 +22,15 @@ public class BooleanClause extends ConcreteRule {
 					new AddTokenParser(
 						
 						new ChainParser(
-							Rules.method_parameter,
+							new ListNameParser("token_names"),
+							Tokens.CONTAINS,
+							new AddTokenParser(
+								Tokens.NAME,"argument")),"containsStatement"),
+					new AddTokenParser(
+						
+						new ChainParser(
+							new AddTokenParser(
+								Rules.method_parameter,"left"),
 							new AddTokenParser(
 								
 							new ChoiceParser(
@@ -31,11 +39,12 @@ public class BooleanClause extends ConcreteRule {
 									new OptionalParser(
 											Tokens.NOT)),
 									Tokens.ORDINAL_OPERATOR),"operator"),
-							
+							new AddTokenParser(
+								
 							new ChoiceParser(
 									Rules.method_parameter,
 									Tokens.EMPTY,
-									Tokens.SINGULAR)),"operatedStatement")));
+									Tokens.SINGULAR),"right")),"operatedStatement")));
 
 	}
 	@Override @SuppressWarnings("unchecked")

@@ -1,25 +1,25 @@
-package base.lists;
+package lists;
 
 import com.rem.parser.*;
 
-public class Tabs extends ParseList {
+public class Comments extends ParseList {
 
 	@Override
 	public String getName() {
-		return "tabs";
+		return "comments";
 	}
 	@Override
 	public String getSingular() {
-		return "tab";
+		return "comment";
 	}
 
-	public static final TabbedParser TAB = new TabbedParser("TAB","tabs","\\t");
+	public static final RegexParser comment = new RegexParser("comment","comments","#[^\n]*\n");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				TAB);
+				comment);
 
 	public static final NameParser name_parser = new NameParser(
-				"tabs");
+				"comments");
 	@Override
 	public NameParser getNamesParser(){
 		return name_parser;

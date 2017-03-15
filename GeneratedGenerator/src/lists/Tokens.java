@@ -1,4 +1,4 @@
-package base.lists;
+package lists;
 
 import com.rem.parser.*;
 
@@ -34,6 +34,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser PRIME = new ExactParser("PRIME","tokens","\'");
 	public static final ExactParser TO = new ExactParser("TO","tokens","to");
 	public static final ExactParser NEW = new ExactParser("NEW","tokens","new");
+	public static final ExactParser CONTAINS = new ExactParser("CONTAINS","tokens","contains ");
 	public static final RegexParser ADDITIVE_OPERAND = new RegexParser("ADDITIVE_OPERAND","tokens","[+-]");
 	public static final RegexParser MULTIPLICATIVE_OPERAND = new RegexParser("MULTIPLICATIVE_OPERAND","tokens","[*/]");
 	public static final RegexParser NUMBER = new RegexParser("NUMBER","tokens","(-)?\\d+");
@@ -44,9 +45,11 @@ public class Tokens extends ParseList {
 	public static final ExactParser OR = new ExactParser("OR","tokens","or");
 	public static final ExactParser NOT = new ExactParser("NOT","tokens","not");
 	public static final ExactParser IS = new ExactParser("IS","tokens","is");
+	public static final ExactParser STATIC = new ExactParser("STATIC","tokens","static");
 	public static final RegexParser ORDINAL_OPERATOR = new RegexParser("ORDINAL_OPERATOR","tokens","[<>](=)?");
 	public static final ExactParser EMPTY = new ExactParser("EMPTY","tokens","empty");
 	public static final ExactParser SINGULAR = new ExactParser("SINGULAR","tokens","singular");
+	public static final ExactParser SINGLE = new ExactParser("SINGLE","tokens","single");
 	public static final RegexParser ACCESS = new RegexParser("ACCESS","tokens","[-][>]");
 	public static final RegexParser NON_SPACE = new RegexParser("NON_SPACE","tokens","[^\\s]+");
 	public static final ExactParser FLIP = new ExactParser("FLIP","tokens","flip");
@@ -59,7 +62,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser TOKEN = new ExactParser("TOKEN","tokens","token");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NEWLINE,NAME_WORD,NAME,WILD,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,ORDINAL_OPERATOR,EMPTY,SINGULAR,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN);
+				NEWLINE,NAME_WORD,NAME,WILD,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,CONTAINS,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,STATIC,ORDINAL_OPERATOR,EMPTY,SINGULAR,SINGLE,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN);
 
 	public static final NameParser name_parser = new NameParser(
 				"tokens");

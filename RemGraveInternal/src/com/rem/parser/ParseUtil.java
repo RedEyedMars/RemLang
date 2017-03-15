@@ -64,7 +64,8 @@ public class ParseUtil {
 			((IRule)rules.get(key).getValue()).setup();
 		}
 		String fileString = getString(file);
-		ParseData data = new ParseData(file.getName(),fileString);		
+		ParseData data = new ParseData(file.getName(),fileString);			
+		System.out.println("File Length:"+data.getFile().length());
 		data.addList(listnames);
 		if(generator!=null&&generator.getLazyNameParser()!=null){
 			NameParser.lazyParser=generator.getLazyNameParser();
@@ -74,7 +75,10 @@ public class ParseUtil {
 			data.resetLists();
 			if(data.isDone()){
 				data = new ParseData(data);
-				System.out.println("---");
+				System.out.println("First-Pass Successful");
+			}
+			else {
+				System.out.println("First-Pass Failed!");
 			}
 		}
 		if(data.isValid()){
@@ -104,10 +108,9 @@ public class ParseUtil {
 	}
 
 	public static void result(ParseData data, long time){
+		System.out.println(data.isValid()?"Final State:Success":("Final State:Failure("+currentParser+" unable to parse)"));
 		System.out.println("Parse Time:"+((double)(System.currentTimeMillis()-time)/1000.0));
-		System.out.println(data.isDone()?"done":(currentParser+" left hanging"));		
-		System.out.println(data.isValid()?"valid":(currentParser+" unable to parse"));
-		System.out.println("File Length:"+data.getFile().length());
+		System.out.println(data.isDone()?"End Reached":("End not Reached:"+currentParser+" left hanging"));
 		if(data.getPosition()!=data.getFurthestPosition()){
 			System.out.println("Furthest Valid Position:"+data.getPosition());
 			System.out.println("Furthest:"+data.getFurthestParser()+":"+data.getFurthestPosition());

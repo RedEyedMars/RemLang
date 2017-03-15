@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class CastAsStatement extends ConcreteRule {
 
@@ -21,7 +21,8 @@ public class CastAsStatement extends ConcreteRule {
 						new ChainParser(
 							Tokens.NAME,
 							new OptionalParser(
-									Braces.ANGLE_BRACES)),"castToType")));
+									new AddTokenParser(
+										Braces.ANGLE_BRACES,"angle_braces"))),"castToType")));
 
 	}
 	@Override @SuppressWarnings("unchecked")

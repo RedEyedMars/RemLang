@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class MethodParameter extends ConcreteRule {
 
@@ -20,8 +20,13 @@ public class MethodParameter extends ConcreteRule {
 					Rules.entry_definition,
 					new AddTokenParser(
 						Braces.QUOTE,"string"),
+				new ChainParser(
+					Tokens.ACCESS,
+					new AddTokenParser(
+						Tokens.NAME_WORD,"getKeyName")),
 					Rules.variable_or_token_name,
 					new ListNameParser("class_names"),
+					new ListNameParser("generator_names"),
 					new ListNameParser("entry_names"),
 					Tokens.NUMBER));
 

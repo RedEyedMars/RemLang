@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class TokenDeclaration extends ConcreteRule {
 
@@ -22,15 +22,19 @@ public class TokenDeclaration extends ConcreteRule {
 					
 					new ChoiceParser(
 							new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
-						new ChainParser(
-							new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
-							new ListNameParser("token_names"),
-							new MultipleParser(
-									
+							new AddTokenParser(
+								
+									new AddTokenParser(
+										
 										new ChainParser(
-											Tokens.ACCESS,
-											new AddTokenParser(
-												Tokens.NAME,"option")))))));
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
+											new ListNameParser("token_names"),
+											new MultipleParser(
+													
+														new ChainParser(
+															Tokens.ACCESS,
+															new AddTokenParser(
+																Tokens.NAME,"option")))),"variable_or_token_name"),"method_parameter"))));
 
 	}
 	@Override @SuppressWarnings("unchecked")

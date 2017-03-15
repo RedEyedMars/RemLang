@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class AllTypeTokens extends ConcreteRule {
 
@@ -18,7 +18,8 @@ public class AllTypeTokens extends ConcreteRule {
 					new AddTokenParser(
 						
 					new ChoiceParser(
-							Tokens.STAR,
+							new AddTokenParser(
+								Tokens.STAR,"wild"),
 							Tokens.NAME),"specificTokenName"),
 					Tokens.TO,
 					new AddTokenToListParser(

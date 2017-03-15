@@ -3,15 +3,14 @@ package gen;
 import java.io.*;
 import java.util.*;
 import com.rem.parser.*;
+import lists.*;
 
-public class Rule extends Generator {
+public class RuleGenerator extends Generator {
 
-	private HashMap ruleParameterNames = new HashMap<String,List<String>>();
-	private File directory = new File(new Base().getDirectory(),"rules");
+	private HashMap<String,List<String>> ruleParameterNames = new HashMap<String,List<String>>();
+	private File directory = new File(Generators.base.getDirectory(),"rules");
 
-	public Rule(){
-		addElement("defaultLazyParser",new String[]{"Tokens.LISTNAME"});
-
+	public RuleGenerator(){
 		addElement("outline",new String[]{"package base.rules;\n\n"+
 			"import com.rem.parser.*;\n"+
 			"import base.lists.*;\n\n"+
@@ -94,21 +93,21 @@ public class Rule extends Generator {
 			"\t\treturn name_parser;\n"+
 			"\t}\n"});
 	}
-	public Entry generateRoot(IToken root){
+	public void generateRoot(IToken root){
 		directory.mkdirs();
-		String ruleName = root.get(rulename).toString();
-		String className = new Base().camelize(ruleName);
-		String fileName = new Base().buildString(className,".java");
-		new List().addClassList("rulenames",ruleName,ruleName,null);
+		String ruleName = root.get("rulename").getString();
+		String className = Generators.rule.camelize(ruleName);
+		String fileName = Generators.rule.buildString(className,".java");
+		Generators.list.addClassList("rulenames",ruleName,ruleName,null);
 		Entry rulenames = new ElementEntry("ruleElement",new ListEntry(new StringEntry(ruleName),new StringEntry(className)));
-		new List().addList(new ListEntry(new ElementEntry("importRules",new ListEntry())),"rules",ruleName,rulenames);
+		Generators.list.addList(new ListEntry(new ElementEntry("importRules",new ListEntry())),"rules",ruleName,rulenames);
 		ListEntry param_list = new ListEntry();
 		param_list.setDelimiter("");
-		Entry parameters = new ListEntry(new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(className)),param_list,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(ruleName)));
-		new Rule().addFile(new Rule().getName(),new Rule().getDirectory(),fileName,parameters);
-		String silence = root.get(silence);
-		Boolean isSilent = new Boolean(!silence.equals(null) && !silence.isEmpty());
-		new Base().println(new Base().buildString(">",ruleName));
+		ListEntry parameters = new ListEntry(new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(className)),param_list,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(ruleName)));
+		Generators.rule.addFile(Generators.rule.getName(),Generators.rule.getDirectory(),fileName,parameters);
+		IToken silence = root.get("silence");
+		Boolean isSilent = new Boolean(silence != null && !silence.isEmpty());
+		Generators.rule.println(">",ruleName);
 		ListEntry parameterIndexEntries = new ListEntry();
 		parameterIndexEntries.setDelimiter("");
 		Integer param_count = 0;
@@ -117,49 +116,49 @@ public class Rule extends Generator {
 				IToken branch = root.get(branchKey);
 				ListEntry ruleEntry = new ListEntry();
 				ruleEntry.setDelimiter("");
-				if(new Boolean(isSilent.equals(true))){
+				if(new Boolean(isSilent == true)){
 					ruleEntry.add(new ElementEntry("setupSilence",new ListEntry()));
 				}
-				ruleEntry.add(new ElementEntry("setupAdd",new ListEntry(generateDefinition(IToken branch = root.get(branchKey);,ruleName,3))));
-				new Rule().addEntry(new Rule().getDirectory(),fileName,"rule",ruleEntry);
+				ruleEntry.add(new ElementEntry("setupAdd",new ListEntry(generateDefinition(branch,ruleName,3))));
+				Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
 			}
 			else if("rule_param".equals(branchKey.getName())){
 				IToken branch = root.get(branchKey);
 				String rule_param = branch.getString();
-				String rules_contains = ruleParameterNames.containsKey(ruleName);
-				if(new Boolean(rules_contains.equals(true))){
+				Boolean rules_contains = ruleParameterNames.containsKey(ruleName);
+				if(new Boolean(rules_contains == true)){
 					ruleParameterNames.put(ruleName,new ArrayList<String>());
 				}
-				String ruleParameterNamesList = ruleParameterNames.get(ruleName);
+				List<String> ruleParameterNamesList = (List<String>)ruleParameterNames.get(ruleName);
 				ruleParameterNamesList.add(rule_param);
 				param_list.add(new ElementEntry("parameterMember",new ListEntry(new StringEntry("Integer"),new StringEntry(rule_param),new StringEntry("Integer"),new StringEntry("0"))));
 				parameterIndexEntries.add(new ElementEntry("parameterIndex",new ListEntry(new StringEntry(param_count.toString()),new StringEntry(rule_param))));
-				new Base().increment(param_count);
+				param_count = param_count + 1;
 			}
 		}
-		new Rule().addEntry(new Rule().getDirectory(),fileName,"params",new ElementEntry("parameterGet",new ListEntry(parameterIndexEntries)));
+		Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"params",new ElementEntry("parameterGet",new ListEntry(parameterIndexEntries)));
 	}
-	public Entry generateAtom(IToken atom,String ruleName,String tabs){
+	public Entry generateAtom(IToken atom,String ruleName,Integer tabs){
 		Entry returnEntry = null;
 		String enclosingName = null;
 		String enclosingList = null;
-		 enclosingArgumentsStatement = null;
+		Entry enclosingArgumentsStatement = null;
 		for(IToken.Key quarkKey:atom.keySet()){
 			if("parameters".equals(quarkKey.getName())){
 				IToken quark = atom.get(quarkKey);
-				String name = quark.get(name).toString();
-				String listVar = quark.get(list).toString();
-				if(new Boolean(!name.equals(null))){
-					enclosingName = new Rule().buildString("\"",name,"\"");
+				String name = quark.get("name").getString();
+				String listVar = quark.get("list").getString();
+				if(new Boolean(name != null)){
+					enclosingName = Generators.rule.buildString("\"",name,"\"");
 				}
-				if(new Boolean(!listVar.equals(null))){
-					enclosingList = new Rule().buildString("\"",listVar,"\"");
+				if(new Boolean(listVar != null)){
+					enclosingList = Generators.rule.buildString("\"",listVar,"\"");
 				}
-				Entry params = new ListEntry();
-				List<IToken> energyParameter = quark.getAll("Parameter");
+				ListEntry params = new ListEntry();
+				List<IToken> energyParameter = quark.getAll("parameter");
 				if(energyParameter != null){
 					for(IToken energy:energyParameter){
-						params.add(generateParameter(IToken energy));
+						params.add(generateParameter(energy));
 					}
 				}
 				if(new Boolean(!params.isEmpty())){
@@ -168,20 +167,20 @@ public class Rule extends Generator {
 			}
 			else if("terminal".equals(quarkKey.getName())){
 				IToken quark = atom.get(quarkKey);
-				returnEntry = generateToken(IToken quark = atom.get(quarkKey););
+				returnEntry = generateTerminal(quark);
 			}
 			else if("braced".equals(quarkKey.getName())){
 				IToken quark = atom.get(quarkKey);
-				List<IToken> energyDefinition = quark.getAll("Definition");
+				List<IToken> energyDefinition = quark.getAll("definition");
 				if(energyDefinition != null){
 					for(IToken energy:energyDefinition){
-						returnEntry = generateDefinition(IToken energy,ruleName,tabs);
+						returnEntry = generateDefinition(energy,ruleName,tabs);
 					}
 				}
 			}
 			else if("multiple".equals(quarkKey.getName())){
 				IToken quark = atom.get(quarkKey);
-				String option = quark.get(option).toString();
+				String option = quark.get("option").getString();
 				if(option.equals("*")){
 					option = "Many";
 				}
@@ -191,23 +190,23 @@ public class Rule extends Generator {
 				else if(option.equals("+")){
 					option = "Multiple";
 				}
-				List<IToken> energyDefinition = quark.getAll("Definition");
+				List<IToken> energyDefinition = quark.getAll("definition");
 				if(energyDefinition != null){
 					for(IToken energy:energyDefinition){
-						returnEntry = new ElementEntry("multiple",new ListEntry(new ListEntry(new StringEntry(option)),generateDefinition(IToken energy,ruleName,tabs)));
+						returnEntry = new ElementEntry("multiple",new ListEntry(new ListEntry(new StringEntry(option)),generateDefinition(energy,ruleName,tabs)));
 					}
 				}
 			}
 		}
-		if(new Boolean(!enclosingName.equals(null))){
-			if(new Boolean(!enclosingList.equals(null))){
+		if(new Boolean(enclosingName != null)){
+			if(new Boolean(enclosingList != null)){
 				returnEntry = new ElementEntry("addToList",new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry(enclosingName)),new ListEntry(new StringEntry(enclosingList))));
 			}
 			else {
 				returnEntry = new ElementEntry("as",new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry(enclosingName))));
 			}
 		}
-		if(new Boolean(!enclosingArgumentsStatement.equals(null))){
+		if(new Boolean(enclosingArgumentsStatement != null)){
 			returnEntry = new ElementEntry("parameterWith",new ListEntry(returnEntry,enclosingArgumentsStatement));
 		}
 		return new TabEntry(tabs,new ListEntry(returnEntry));
@@ -220,7 +219,7 @@ public class Rule extends Generator {
 			}
 			else if("arithmatic".equals(pKey.getName())){
 				IToken p = parameter.get(pKey);
-				return generateArithmatic(IToken p = parameter.get(pKey););
+				return generateArithmatic(p);
 			}
 		}
 		return null;
@@ -232,11 +231,11 @@ public class Rule extends Generator {
 		for(IToken.Key elementKey:arithmatic.keySet()){
 			if("arithmatic".equals(elementKey.getName())){
 				IToken element = arithmatic.get(elementKey);
-				if(new Boolean(left.equals(null))){
-					left = generateArithmatic(IToken element = arithmatic.get(elementKey););
+				if(new Boolean(left == null)){
+					left = generateArithmatic(element);
 				}
 				else {
-					right = generateArithmatic(IToken element = arithmatic.get(elementKey););
+					right = generateArithmatic(element);
 				}
 			}
 			else if("operand".equals(elementKey.getName())){
@@ -258,61 +257,59 @@ public class Rule extends Generator {
 					System.err.println("Operand:"+operand+" not recognized.");
 				}
 			}
-			else {
+			else if("NUMBER".equals(elementKey.getName())){
 				IToken element = arithmatic.get(elementKey);
-				String elementName = element.name();
-				if(new Boolean(left.equals(null))){
-					left = generateArithmaticTerminal(IToken element = arithmatic.get(elementKey);,elementName);
+				if(new Boolean(left == null)){
+					left = new ElementEntry("parameterNewNumber",new ListEntry(new ListEntry(new StringEntry(element.getString()))));
 				}
 				else {
-					right = generateArithmaticTerminal(IToken element = arithmatic.get(elementKey);,elementName);
+					right = new ElementEntry("parameterNewNumber",new ListEntry(new ListEntry(new StringEntry(element.getString()))));
+				}
+			}
+			else if("rule_parameters".equals(elementKey.getName())){
+				IToken element = arithmatic.get(elementKey);
+				if(new Boolean(left == null)){
+					left = new ElementEntry("parameterExisting",new ListEntry(new ListEntry(new StringEntry(element.getString()))));
+				}
+				else {
+					right = new ElementEntry("parameterExisting",new ListEntry(new ListEntry(new StringEntry(element.getString()))));
 				}
 			}
 		}
-		if(new Boolean(right.equals(null))){
+		if(new Boolean(right == null)){
 			return left;
 		}
 		else {
 			return new ElementEntry("parameterOperator",new ListEntry(new ListEntry(new StringEntry(operand)),left,right));
 		}
 	}
-	public Entry generateArithmaticTerminal(IToken arithmaticTerminal,String name){
-		if(new Boolean("NUMBER".equals(name))){
-			return new ElementEntry("parameterNewNumber",new ListEntry(new ListEntry(new StringEntry(arithmaticTerminal.getString()))));
-		}
-		if(new Boolean("rule_parameters".equals(name))){
-			return new ElementEntry("parameterExisting",new ListEntry(new ListEntry(new StringEntry(arithmaticTerminal.getString()))));
-		}
-		System.err.println(name+" not a recognized Arithmatic Terminal");
-		return null;
+	public Entry generateDefinition(IToken definition,String ruleName,Integer tabs){
+		return generateDefinition2(definition,ruleName,tabs,new ListEntry());
 	}
-	public Entry generateDefinition(IToken definition,String ruleName,String tabs){
-		return generateDefinition(IToken definition,ruleName,tabs,new ListEntry());
-	}
-	public Entry generateDefinition(IToken definition,String ruleName,String tabs,String entries){
-		for(IToken.Key elementKey:definition.keySet()){
+	public Entry generateDefinition2(IToken definition2,String ruleName,Integer tabs,ListEntry entries){
+		for(IToken.Key elementKey:definition2.keySet()){
 			if("choice".equals(elementKey.getName())){
-				IToken element = definition.get(elementKey);
+				IToken element = definition2.get(elementKey);
 				for(IToken.Key choiceKey:element.keySet()){
 					if("definition".equals(choiceKey.getName())){
 						IToken choice = element.get(choiceKey);
-						Entry nextChoices = new ListEntry();
-						generateDefinition(IToken choice = element.get(choiceKey);,ruleName,tabs,nextChoices);
+						ListEntry nextChoices = new ListEntry();
+						generateDefinition2(choice,ruleName,tabs,nextChoices);
 						entries.addAll(nextChoices);
 					}
 				}
 			}
 			else if("chain".equals(elementKey.getName())){
-				IToken element = definition.get(elementKey);
-				Entry chain = new ListEntry();
-				List<IToken> atomAtom = element.getAll("Atom");
-				if(atomAtom != null){
-					for(IToken atom:atomAtom){
-						chain.add(generateAtom(IToken atom,ruleName,tabs + 2));
+				IToken element = definition2.get(elementKey);
+				ListEntry chain = new ListEntry();
+				List<IToken> quarkAtom = element.getAll("atom");
+				if(quarkAtom != null){
+					for(IToken quark:quarkAtom){
+						chain.add(generateAtom(quark,ruleName,tabs + 2));
 					}
 				}
 				if(new Boolean(chain.isSingular())){
-					entries.add(chain.single());
+					entries.add(chain.getSingle());
 				}
 				else {
 					entries.add(new TabEntry(tabs + 1,new ListEntry(new ElementEntry("chain",new ListEntry(chain)))));
@@ -320,7 +317,7 @@ public class Rule extends Generator {
 			}
 		}
 		if(new Boolean(entries.isSingular())){
-			return entries.single();
+			return entries.getSingle();
 		}
 		else {
 			return new TabEntry(tabs,new ListEntry(new ElementEntry("choice",new ListEntry(entries))));
@@ -330,30 +327,27 @@ public class Rule extends Generator {
 		for(IToken.Key tokenKey:terminal.keySet()){
 			if("ruleToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
-				String ruleName = new Rule().camelize(token.getString());
+				String ruleName = Generators.rule.camelize(token.getString());
 				return new ElementEntry("rule_parser",new ListEntry(new ListEntry(new StringEntry(ruleName))));
 			}
 			else if("listsToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
-				String listName = new Rule().camelize(token.getString());
+				String listName = Generators.rule.camelize(token.getString());
 				return new ElementEntry("rule_parser",new ListEntry(new ListEntry(new StringEntry(listName))));
 			}
 			else if("listToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
-				String listName = new Rule().camelize(token.getString());
-				List<IToken> atom* = token.getAll("*");
-				if(atom* != null){
-					for(IToken atom:atom*){
-						listName = atom.name();
-					}
+				String listName = Generators.rule.camelize(token.getString());
+				for(IToken.Key atomKey:token.keySet()){
+					IToken atom = token.get(atomKey);
+					listName = atomKey.getName();
 				}
 				if(new Boolean(listName.equals("listnames"))){
-					String name = new Rule().buildString(token.getString(),"s");
-
+					String name = Generators.rule.buildString(token.getString(),"s");
 					return new ElementEntry("rule_name_parser",new ListEntry(new ListEntry(new StringEntry(name))));
 				}
 				else {
-					String name = new Rule().buildString(token.getString(),"s");
+					String name = Generators.rule.buildString(token.getString(),"s");
 
 					return new ElementEntry("listElement",new ListEntry(new StringEntry(name),new StringEntry(token.getString())));
 				}
@@ -371,6 +365,28 @@ public class Rule extends Generator {
 				return new ElementEntry("listElement",new ListEntry(new StringEntry("Braces"),new StringEntry(token.getString())));
 			}
 		}
+		return null;
+	}
+
+	public HashMap<String,List<String>> getRuleParameterNames(){
+		return ruleParameterNames;
+	}
+
+	public File getDirectory(){
+		return directory;
+	}
+
+	public String getName(){
+		return "Rule";
+	}
+
+	public void generate(ParseData data){
+	}
+
+	public void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken){
+	}
+
+	public IParser getLazyNameParser(){
 		return null;
 	}
 }

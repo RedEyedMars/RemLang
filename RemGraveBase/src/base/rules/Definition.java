@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class Definition extends ConcreteRule {
 
@@ -14,8 +14,6 @@ public class Definition extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new OptionalParser(
-							Tokens.SPACES),
 					new AddTokenParser(
 						
 						new ChainParser(
@@ -26,8 +24,6 @@ public class Definition extends ConcreteRule {
 						new OptionalParser(
 							
 								new ChainParser(
-									new OptionalParser(
-											Tokens.SPACES),
 									
 									new ChoiceParser(
 											Tokens.PIPE,

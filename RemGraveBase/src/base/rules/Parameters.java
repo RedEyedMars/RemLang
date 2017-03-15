@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class Parameters extends ConcreteRule {
 
@@ -17,21 +17,15 @@ public class Parameters extends ConcreteRule {
 					new OptionalParser(
 							
 								new ChainParser(
-									Tokens.SPACES,
 									Tokens.AS,
-									Tokens.SPACES,
 									new AddTokenParser(
 										Tokens.NAME,"name"))),
 					new OptionalParser(
 							
 								new ChainParser(
-									Tokens.SPACES,
 									Tokens.IN,
-									Tokens.SPACES,
 									new AddTokenParser(
-										Listnames.parser,"list"))),
-					new OptionalParser(
-							Tokens.SPACES)));
+										Listnames.parser,"list")))));
 
 	}
 	@Override @SuppressWarnings("unchecked")

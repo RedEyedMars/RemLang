@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class Rule extends ConcreteRule {
 
@@ -23,8 +23,6 @@ public class Rule extends ConcreteRule {
 										Tokens.SILENCE,"silence")),
 					new OptionalParser(
 							Rules.member_declaration),
-					new OptionalParser(
-							Tokens.SPACES),
 					Tokens.NEWLINE,
 					Tokens.TAB,
 					Rules.definition));

@@ -14,14 +14,15 @@ import com.rem.parser.ParseData;
 import com.rem.parser.ParseList;
 import com.rem.parser.RegexParser;
 
-import base.lists.Listnames;
-import base.lists.Tokens;
+import lists.Listnames;
+import lists.Tokens;
 
 public class BaseGenerator extends Generator{
 
 	private File baseDirectory;
+	private File sourceDirectory;;
 	private ListGenerator listGen;
-	private RuleGenerator ruleGen;;
+	private RuleGenerator ruleGen;
 
 
 	@Override
@@ -29,7 +30,9 @@ public class BaseGenerator extends Generator{
 		String fileName = data.getFileName();
 		int indexOfDot = fileName.lastIndexOf('.');
 		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
-		baseDirectory = new File("../Generated"+camelize(fileName)+"/src/base/");
+		sourceDirectory = new File("../Generated"+camelize(fileName)+"/src/");
+		baseDirectory = new File(sourceDirectory,"base/");
+		
 		baseDirectory.mkdirs();
 		listGen = new ListGenerator();
 		ruleGen = new RuleGenerator();
@@ -48,7 +51,6 @@ public class BaseGenerator extends Generator{
 	
 	@Override
 	public void generateRoot(IToken root){
-		
 	}
 
 	@Override
@@ -367,7 +369,7 @@ public class BaseGenerator extends Generator{
 							chain.add(generateAtom(ruleName,definition.get(key).get(chainKey),tabs+2));
 						}
 					}
-					if(chain.isSingluar()){
+					if(chain.isSingular()){
 						entries.add(chain.getSingle());
 					}
 					else {
@@ -376,7 +378,7 @@ public class BaseGenerator extends Generator{
 				}
 
 			}
-			if(entries.isSingluar()){
+			if(entries.isSingular()){
 				return entries.getSingle();
 			}
 			else {
@@ -427,7 +429,7 @@ public class BaseGenerator extends Generator{
 			return new String[]{
 					"package base.rules;\n\n"+			
 							"import com.rem.parser.*;\n"+
-							"import base.lists.*;\n\n"+
+							"import lists.*;\n\n"+
 							"public class ",/*Class Name*/" extends ConcreteRule {\n\n"+
 									"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/
 									"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{",/*Parameter List*/"};\n"+									
@@ -447,7 +449,7 @@ public class BaseGenerator extends Generator{
 	private class ListGenerator implements Interpreter{
 
 		private Map<String/*ListName*/,String/*Association*/> listAssociatedClass = new HashMap<String,String>();
-		private File listDirectory = new File(baseDirectory,"lists");
+		private File listDirectory = new File(sourceDirectory,"lists");
 		private final String[] importRulesElement = new String[]{"import base.rules.*;\n"};
 		private final String[] classElement = new String[]{
 				"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"
@@ -604,7 +606,7 @@ public class BaseGenerator extends Generator{
 		@Override
 		public String[] getOutline() {
 			return new String[]{
-					"package base.lists;\n\n"+			
+					"package lists;\n\n"+			
 							"import com.rem.parser.*;\n",/*Other Imports*/
 							"\n"+
 							"public class ",/*Class Name*/" extends ParseList {\n\n"+

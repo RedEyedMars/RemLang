@@ -47,6 +47,38 @@ public abstract class Generator {
 			gen.generateRoot(subToken);
 		}
 	}
+	
+	public void generateAll(ParseData data) {
+		addPage(getName(), elements.get("outline").getOutline());
+
+		for (IToken.Key key : data.getRoot().keySet()) {
+			generateRoot(data.getRoot().get(key));
+		}
+	}
+	
+	public void generateAll(IToken root,String name) {
+		addPage(getName(), elements.get("outline").getOutline());
+
+		for (IToken token : root.getAll(name)) {
+			generateRoot(token);
+		}
+	}
+		
+	protected void println(String... subStrings){
+		System.out.println(buildString(subStrings));
+	}
+	
+	protected String buildString(String... subStrings){
+		StringBuilder builder = new StringBuilder();
+		for(String subString:subStrings){
+			builder.append(subString);
+		}
+		return builder.toString();
+	}
+	
+	protected ParseList createNewParseList(String listName){
+		return ParseList.createNew(listName);
+	}
 
 	protected String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
@@ -112,6 +144,12 @@ public abstract class Generator {
 		}
 		pages.get(pageName).addFile(directory, fileName, parameters);
 	}
+	protected void addFile(File directory, String fileName, ListEntry parameters) {
+		if (!pages.containsKey(getName())) {
+			throw new RuntimeException("Page: " + getName() + " not defined");
+		}
+		pages.get(getName()).addFile(directory, fileName, parameters);
+	}
 
 	protected void addElement(String elementName, String[] elementOutline) {
 		if (!elements.containsKey(elementName)) {
@@ -127,12 +165,26 @@ public abstract class Generator {
 		}
 		pages.get(pageName).addEntry(directory, fileName, entryName, entry);
 	}
+	
+	protected void addEntry(File directory, String fileName, String entryName, Entry entry) {
+		if (!pages.containsKey(getName())) {
+			throw new RuntimeException("Page: " + getName() + " not defined");
+		}
+		pages.get(getName()).addEntry(directory, fileName, entryName, entry);
+	}
 
 	protected Entry getOrAddEntry(String pageName, File directory, String fileName, String entryName, Entry entry) {
 		if (!pages.containsKey(pageName)) {
 			throw new RuntimeException("Page: " + pageName + " not defined");
 		}
 		return pages.get(pageName).getOrAddEntry(directory, fileName, entryName, entry);
+	}
+	
+	protected Entry getOrAddEntry(File directory, String fileName, String entryName, Entry entry) {
+		if (!pages.containsKey(getName())) {
+			throw new RuntimeException("Page: " + getName() + " not defined");
+		}
+		return pages.get(getName()).getOrAddEntry(directory, fileName, entryName, entry);
 	}
 
 	public static String P(int i) {
@@ -445,8 +497,12 @@ public abstract class Generator {
 		public boolean isEmpty() {
 			return list.isEmpty();
 		}
+		
+		public int size(){
+			return list.size();
+		}
 
-		public boolean isSingluar() {
+		public boolean isSingular() {
 			return list.size() == 1;
 		}
 
@@ -571,5 +627,13 @@ public abstract class Generator {
 		public boolean equals(Object obj) {
 			return obj.equals(fileName);
 		}
+	}
+
+	public String tokenErrorMessage(IToken offender){
+		String error = "";
+		for(IToken.Key key:offender.keySet()){
+			error+="("+key.getName()+":"+offender.get(key).getString()+")"+",";
+		}
+		return error;
 	}
 }

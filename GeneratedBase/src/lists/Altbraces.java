@@ -1,4 +1,4 @@
-package base.lists;
+package lists;
 
 import com.rem.parser.*;
 

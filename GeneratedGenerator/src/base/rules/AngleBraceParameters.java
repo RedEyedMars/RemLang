@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class AngleBraceParameters extends ConcreteRule {
 
@@ -25,6 +25,7 @@ public class AngleBraceParameters extends ConcreteRule {
 									new AddTokenParser(
 										Braces.ANGLE_BRACES,"braces"))),
 							Rules.arithmatic,
+							new ListNameParser("generator_names"),
 							new ListNameParser("entry_names")),"parameter"),
 					new ManyParser(
 							
@@ -40,6 +41,7 @@ public class AngleBraceParameters extends ConcreteRule {
 													new AddTokenParser(
 														Braces.ANGLE_BRACES,"braces"))),
 											Rules.arithmatic,
+											new ListNameParser("generator_names"),
 											new ListNameParser("entry_names")),"parameter")))));
 
 	}

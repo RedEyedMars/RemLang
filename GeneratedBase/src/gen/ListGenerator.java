@@ -3,15 +3,14 @@ package gen;
 import java.io.*;
 import java.util.*;
 import com.rem.parser.*;
+import lists.*;
 
-public class List extends Generator {
+public class ListGenerator extends Generator {
 
-	private HashMap listAssociatedClass = new HashMap<String,String>();
-	private File directory = new File(new Base().getDirectory(),"lists");
+	private HashMap<String,String> listAssociatedClass = new HashMap<String,String>();
+	private File directory = new File(Generators.base.getDirectory(),"lists");
 
-	public List(){
-		addElement("defaultLazyParser",new String[]{"Tokens.LISTNAME"});
-
+	public ListGenerator(){
 		addElement("outline",new String[]{"package base.rules;\n\n"+
 			"import com.rem.parser.*;\n"+
 			"import base.lists.*;\n\n"+
@@ -94,97 +93,116 @@ public class List extends Generator {
 			"\t\treturn name_parser;\n"+
 			"\t}\n"});
 	}
-	public Entry generateRoot(IToken root){
+	public void generateRoot(IToken root){
 		directory.mkdir();
-		String listName = root.get(listname).toString();
-		String indexOfDash = listName.indexOf("-");
+		String listName = root.get("listname").getString();
+		Integer indexOfDash = listName.indexOf("-");
 		String singleListName = listName;
 		if(new Boolean(indexOfDash > -1)){
 			singleListName = listName.substring(0,indexOfDash);
-
-			listName = new List().buildString(singleListName,listName.substring(indexOfDash + 1,listName.length()));
+			listName = Generators.list.buildString(singleListName,listName.substring(indexOfDash + 1,listName.length()));
 		}
-		Entry fileParameters = new ListEntry(new ListEntry(),new ListEntry(new StringEntry("Listnames")),new ListEntry(new StringEntry("listnames")),new ListEntry(new StringEntry("listname")));
-		new List().addFile(directory,"Listnames.java",fileParameters);
-		new List().addClassList("listnames",singleListName,listName,null);
-		String token_contains_list = token.containsKey("listType");
-		if(new Boolean(token_contains_list.equals(true))){
-			listAssociatedClass.put(listName,new List().camelize(token.get(listType).toString()));
+		ListEntry fileParameters = new ListEntry(new ListEntry(),new ListEntry(new StringEntry("Listnames")),new ListEntry(new StringEntry("listnames")),new ListEntry(new StringEntry("listname")));
+		Generators.list.addFile(directory,"Listnames.java",fileParameters);
+		Generators.list.addClassList("listnames",singleListName,listName,null);
+		Boolean token_contains_list = new Boolean(root.containsKey("listType"));
+		if(new Boolean(token_contains_list == true)){
+			listAssociatedClass.put(listName,Generators.list.camelize(root.get("listType").getString()));
 		}
-		String className = new List().camelize(listName);
-		String fileName = new List().buildString(className,".java");
+		String className = Generators.list.camelize(listName);
+		String fileName = Generators.list.buildString(className,".java");
 		Boolean hasDefinition = false;
 		for(IToken.Key elementKey:root.keySet()){
 			if("list_def".equals(elementKey.getName())){
 				IToken element = root.get(elementKey);
-				IToken null = null;
-				String name = parameters.get(name).toString();
-				String regex = element.get(regex).toString();
-				IToken null = null;
-				String parameterEntry = null;
-				if(new Boolean(!parameterToken.equals(null))){
-					parameterEntry = new Rule().generateDefinition(new List().buildString(listName,"$HIDDEN"),parameterToken.get(definition),5);
-
-					new List().addClassList(listName,name,regex,parameterEntry);
-
+				System.out.println(tokenErrorMessage(element));
+				IToken parameters = element.get("parameters");
+				String name = parameters.get("name").getString();
+				String regex = element.get("regex").getString();
+				IToken parameterToken = element.get("parameter");
+				Entry parameterEntry = null;
+				if(new Boolean(parameterToken != null)){
+					parameterEntry = Generators.rule.generateDefinition(parameterToken.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
+					Generators.list.addClassList(listName,name,regex,parameterEntry);
 					hasDefinition = true;
 				}
 			}
 		}
-		String listNameInQuotes = new List().buildString("\"",listName,"\"");
-		if(new Boolean(hasDefinition.equals(true))){
-			new List().addEntry(directory,fileName,"nameParser",new ElementEntry("emptyList",new ListEntry(new StringEntry(listNameInQuotes))));
+		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
+		if(new Boolean(hasDefinition == true)){
+			Generators.list.addEntry(directory,fileName,"nameParser",new ElementEntry("emptyList",new ListEntry(new StringEntry(listNameInQuotes))));
 		}
 	}
-	public void addClassList(String listName,String name,String regex,String parameter){
-		String containsAssociatedClass = listAssociatedClass.containsKey("listname");
+	public void addClassList(String listName,String name,String regex,Entry parameter){
+		Entry p = (Entry)parameter;
+		Boolean containsAssociatedClass = listAssociatedClass.containsKey("listname");
 		if(new Boolean(!containsAssociatedClass)){
 			listAssociatedClass.put(listName,"Regex");
 		}
-		Entry params = new ListEntry();
-		if(new Boolean(!parameter.equals(null))){
+		ListEntry params = new ListEntry();
+		if(new Boolean(parameter != null)){
 			params.add(parameter);
 		}
-		String nameInQuotes = new List().buildString("\"",name,"\"");
-		String listNameInQuotes = new List().buildString("\"",listName,"\"");
+		String nameInQuotes = Generators.list.buildString("\"",name,"\"");
+		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
 		params.add(new ListEntry(new StringEntry(nameInQuotes)));
 		params.add(new ListEntry(new StringEntry(listNameInQuotes)));
-		String regexInQuotes = new List().buildString("\"",regex);
+		String regexInQuotes = Generators.list.buildString("\"",regex);
 		if(new Boolean("listnames".equals(listName))){
-			regexInQuotes = new List().buildString(regexInQuotes,"\\b\"");
+			regexInQuotes = Generators.list.buildString(regexInQuotes,"\\b\"");
 		}
 		else {
-			regexInQuotes = new List().buildString(regexInQuotes,"\"");
+			regexInQuotes = Generators.list.buildString(regexInQuotes,"\"");
 		}
 		params.add(new ListEntry(new StringEntry(regexInQuotes)));
 		String associatedClassName = listAssociatedClass.get(listName);
 		Entry listEntry = new ElementEntry("class",new ListEntry(new ListEntry(new StringEntry(associatedClassName)),new ListEntry(new StringEntry(name)),new ListEntry(new StringEntry(associatedClassName)),params));
-		new List().addList(new ListEntry(),listName,name,listEntry);
+		Generators.list.addList(new ListEntry(),listName,name,listEntry);
 	}
-	public void addList(String imports,String listName,String name,String listEntry){
-		String className = new List().camelize(listName);
-		String fileName = new List().buildString(className,".java");
-		String listNameInQuotes = new List().buildString("\"",listName,"\"");
-		String listNameLength = listName.length();
+	public void addList(Entry imports,String listName,String name,Entry listEntry){
+		Entry l = (Entry)listEntry;
+		String className = Generators.list.camelize(listName);
+		String fileName = Generators.list.buildString(className,".java");
+		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
+		Integer listNameLength = listName.length();
 		String singularListName = listName.substring(0,listNameLength - 1);
-		Entry parameters = new ListEntry(imports,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(listName)),new ListEntry(new StringEntry(singularListName)));
-		new List().addFile(directory,fileName,parameters);
-		String main = new ListEntry();
+		ListEntry parameters = new ListEntry(imports,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(listName)),new ListEntry(new StringEntry(singularListName)));
+		Generators.list.addFile(directory,fileName,parameters);
+		ListEntry main = (ListEntry)Generators.list.getOrAddEntry(directory,fileName,"main",new ListEntry());
 		main.setDelimiter("");
-		main = new List().getOrAddEntry(directory,fileName,"main",main);
 		ListEntry subs = new ListEntry();
 		subs.setDelimiter("");
 		if(new Boolean(main.isEmpty())){
 			main.add(subs);
-
 			main.add(new ElementEntry("parser",new ListEntry(new ListEntry())));
-
 			main.add(new ElementEntry("name_parser",new ListEntry(new ListEntry(new StringEntry(listNameInQuotes)))));
 		}
-		ListEntry main0 = main.get(0);
+		ListEntry main0 = (ListEntry)main.get(0);
 		main0.add(listEntry);
-		ElementEntry main1 = main.get(1);
-		ListEntry main10 = main1.get(0);
+		ElementEntry main1 = (ElementEntry)main.get(1);
+		ListEntry main10 = (ListEntry)main1.get(0);
 		main10.add(name);
+	}
+
+	public HashMap<String,String> getListAssociatedClass(){
+		return listAssociatedClass;
+	}
+
+	public File getDirectory(){
+		return directory;
+	}
+
+	public String getName(){
+		return "List";
+	}
+
+	public void generate(ParseData data){
+	}
+
+	public void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken){
+	}
+
+	public IParser getLazyNameParser(){
+		return null;
 	}
 }

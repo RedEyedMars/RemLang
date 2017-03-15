@@ -1,4 +1,4 @@
-package base.lists;
+package lists;
 
 import com.rem.parser.*;
 
@@ -14,10 +14,7 @@ public class Braces extends ParseList {
 	}
 
 	public static final BracedParser BRACE = new BracedParser(
-						new ChainParser(
-							Rules.definition,
-							new OptionalParser(
-									Tokens.SPACES)),"BRACE","braces","(,)");
+							Rules.definition,"BRACE","braces","(,)");
 	public static final BracedParser SQUARE = new BracedParser(
 							new AddTokenParser(
 								Tokens.WILD,"regex"),"SQUARE","braces","[,]");

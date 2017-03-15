@@ -1,7 +1,7 @@
 package base.rules;
 
 import com.rem.parser.*;
-import base.lists.*;
+import lists.*;
 
 public class Arithmatic extends ConcreteRule {
 
@@ -18,21 +18,13 @@ public class Arithmatic extends ConcreteRule {
 			new ChoiceParser(
 				new ChainParser(
 					Rules.arithmatic,
-					new OptionalParser(
-							Tokens.SPACES),
 					new AddTokenParser(
 						Tokens.ADDITIVE_OPERAND,"operand"),
-					new OptionalParser(
-							Tokens.SPACES),
 					new WithParser((IRule)Rules.arithmatic,new Parameter<Integer>(1),new Argument.Add(new Parameter<Integer>(2),new Parameter<Integer>(3)))),
 				new ChainParser(
 					Rules.arithmatic,
-					new OptionalParser(
-							Tokens.SPACES),
 					new AddTokenParser(
 						Tokens.MULTIPLICATIVE_OPERAND,"operand"),
-					new OptionalParser(
-							Tokens.SPACES),
 					Rules.arithmatic),
 					new ListNameParser("rule_parameters"),
 					Tokens.NUMBER));

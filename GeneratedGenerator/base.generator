@@ -1,8 +1,8 @@
-uses String ParseList IParser Listnames List File
+uses Listnames Tokens
 base
 	var directory as File
 		null
-	generate all takes data
+	generate takes data
 		var fileName
 			data getFileName
 		var indexOfDot
@@ -21,24 +21,20 @@ base
 						fileName
 					"/src/base/"
 		directory mkdirs			
-		
-		var listGen
-			new list	
-		var ruleGen
-			new rule
-		
-		listGen generateAll
+				
+		list generateAll
 			data
-		ruleGen generateAll
+		rule generateAll
 			data
 		
 		base outputAll
 	
-	elements
-		defaultLazyParser
-			"Tokens.LISTNAME"
-	
+	var lazyNameParser as IParser
+		static Tokens LISTNAME
+		
 	aux assignListElementNames takes listMapObj, root
+		var r as IToken
+			root
 		var listMap as Map<String,ParseList>
 			listMapObj 
 		var listNameChoices
@@ -49,11 +45,11 @@ base
 		var listNamesNameParser as NameParser
 			listnames getNamesParser
 		listNamesNameParser clear
-		var list_rules
+		var list_rules as ParseList
 			listMap get
 				"list_rules"
 		token new_list_rules
-			listMap getNewTokens
+			list_rules getNewTokens
 		
 		new_list_rules to new_list_def
 			else 
@@ -99,8 +95,8 @@ base
 				if not listMapContainsKey
 					listMap put
 						listName
-					base createNewParseList
-						listName
+						base createNewParseList
+							listName
 				
 				listNameChoices add
 					new RegexParser
@@ -130,14 +126,14 @@ base
 			listnames getNamesParser
 		lisnamesNameParser addName
 			"listname"
-		var listNamesParser as IParser
-			Listnames parser
+		var listNamesParser as ChoiceParser
+			static Listnames parser
 		listNamesParser replace
 			listNameChoices
 		var listRuless as ParseList
 			listMap get
 				"list_rules"
-		var listRulessNamesParser
+		var listRulessNamesParser as NameParser
 			listRuless getNamesParser
 		listRulessNamesParser clear
 
@@ -212,10 +208,10 @@ rule
 		var ruleName
 			'root -> rulename
 		var className
-			base camelize
+			rule camelize
 				ruleName
 		var fileName
-			base buildString
+			rule buildString
 				className
 				".java"
 		
@@ -251,10 +247,9 @@ rule
 		var isSilent
 			silence is not null and silence is not empty
 		
-		base println
-			base buildString
-				">"
-				ruleName
+		rule println
+			">"
+			ruleName
 		
 		entry parameterIndexEntries "" = {}
 		var param_count
@@ -284,7 +279,7 @@ rule
 					ruleParameterNames put
 						ruleName
 						new ArrayList<String>
-				var ruleParameterNamesList
+				var ruleParameterNamesList as List<String>
 					ruleParameterNames get
 						ruleName
 				ruleParameterNamesList add
@@ -293,8 +288,8 @@ rule
 					parameterMember ["Integer" rule_param "Integer" "0"]
 				parameterIndexEntries add 
 					parameterIndex ['param_count rule_param]
-				base increment
-					param_count
+				set param_count
+					param_count+1
 		
 		rule addEntry
 			rule getDirectory
@@ -337,7 +332,7 @@ rule
 						params
 			terminal
 				set returnEntry
-					generate token
+					generate terminal
 			braced
 				quark definition to energy					
 					set returnEntry
@@ -404,15 +399,20 @@ rule
 							"Operand:"
 							operand
 							" not recognized."
-			else
-				var elementName
-					element name
+			NUMBER
 				if left is null
 					set left
-						generate arithmaticTerminal<elementName> 
+						parameterNewNumber {['element]}
 				else
 					set right
-						generate arithmaticTerminal<elementName>
+						parameterNewNumber {['element]}
+			rule_parameters						
+				if left is null
+					set left
+						parameterExisting {['element]}
+				else
+					set right
+						parameterExisting {['element]}
 		if right is null
 			return
 				left
@@ -420,36 +420,23 @@ rule
 			return
 				parameterOperator { [operand] left right }
 	
-	generate arithmaticTerminal takes name
-		if "NUMBER" is name
-			return 
-				parameterNewNumber {['arithmaticTerminal]}
-		if "rule_parameters" is name
-			return
-				parameterExisting {['arithmaticTerminal]}
-		error
-			name
-			" not a recognized Arithmatic Terminal"
-		return
-			null
-	
 	
 	generate definition takes ruleName, tabs
 		return
-			generate definition<ruleName,tabs,{}>
+			generate definition2<ruleName,tabs,{}>
 	
-	generate definition takes ruleName, tabs, entries
-		definition to element				
+	generate definition2 takes ruleName, tabs, entries
+		definition2 to element				
 			choice
 				element to choice
 					definition
 						entry nextChoices = {}
-						generate definition<ruleName,tabs,nextChoices>							
+						generate definition2<ruleName,tabs,nextChoices>							
 						entries addAll
 							nextChoices
 			chain
 				entry chain = {}
-				element atom to atom
+				element atom to quark
 					chain add
 						generate atom
 							ruleName
@@ -487,7 +474,7 @@ rule
 					"#NO_LISTNAME_FOUND"
 				token * to atom
 					set listName
-						atom name
+						-> name
 				if listName is "listnames"
 					var name
 						rule buildString
@@ -590,13 +577,12 @@ list
 			null
 		
 		var token_contains_list
-			token containsKey
-				"listType"
+			root contains listType
 		if token_contains_list is true
 			listAssociatedClass put
 				listName
 				list camelize
-					'token -> listType
+					'root -> listType
 		
 		var className
 			list camelize
@@ -624,10 +610,10 @@ list
 				if parameterToken is not null
 					set parameterEntry
 						rule generateDefinition
+							parameterToken -> definition
 							list buildString
 								listName
 								"$HIDDEN"
-							parameterToken -> definition
 							5
 					
 					list addClassList
@@ -651,6 +637,8 @@ list
 				emptyList [listNameInQuotes]
 	
 	aux addClassList takes listName, name, regex, parameter
+		var p as Entry
+			parameter
 		var containsAssociatedClass
 			listAssociatedClass containsKey
 				"listname"
@@ -710,6 +698,8 @@ list
 			listEntry
 	
 	aux addList takes imports, listName, name, listEntry
+		var l as Entry
+			listEntry
 		var className
 			list camelize
 				listName
@@ -738,15 +728,15 @@ list
 			directory
 			fileName
 			parameters
-		
-		entry main "" = {}
-		
-		set main
+				
+		var main as ListEntry
 			list getOrAddEntry
 				directory
 				fileName
 				"main"
-				main
+				{}
+		main setDelimiter
+			""
 		
 		entry subs "" = {}
 		if main is empty

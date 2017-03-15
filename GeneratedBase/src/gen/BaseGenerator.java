@@ -3,14 +3,14 @@ package gen;
 import java.io.*;
 import java.util.*;
 import com.rem.parser.*;
+import lists.*;
 
-public class Base extends Generator {
+public class BaseGenerator extends Generator {
 
-	private File directory = null;
+	private File directory = (File)null;
+	private IParser lazyNameParser = (IParser)Tokens.LISTNAME;
 
-	public Base(){
-		addElement("defaultLazyParser",new String[]{"Tokens.LISTNAME"});
-
+	public BaseGenerator(){
 		addElement("outline",new String[]{"package base.rules;\n\n"+
 			"import com.rem.parser.*;\n"+
 			"import base.lists.*;\n\n"+
@@ -93,77 +93,84 @@ public class Base extends Generator {
 			"\t\treturn name_parser;\n"+
 			"\t}\n"});
 	}
-	public Entry generateAll(IToken all,String data){
+	public void generate(ParseData data){
 		String fileName = data.getFileName();
-		String indexOfDot = fileName.lastIndexOf(".");
+		Integer indexOfDot = fileName.lastIndexOf(".");
 		if(new Boolean(indexOfDot > -1)){
 			fileName = fileName.substring(0,indexOfDot);
 		}
-		directory = new File(new Base().buildString("../Generated",new Base().camelize(fileName),"/src/base/"));
+		directory = new File(Generators.base.buildString("../Generated",Generators.base.camelize(fileName),"/src/base/"));
 		directory.mkdirs();
-		List listGen = new List();
-		Rule ruleGen = new Rule();
-		listGen.generateAll(data);
-		ruleGen.generateAll(data);
-		new Base().outputAll();
+		Generators.list.generateAll(data.getList("list_rules").getNewTokens(),"list_rule");
+		Generators.rule.generateAll(data);
+		Generators.base.outputAll();
 	}
-	public void assignListElementNames(String listMapObj,String root){
-		Map listMap = listMapObj;
-		ArrayList listNameChoices = new ArrayList<IParser>();
-		ParseList listnames = listMap.get("listnames");
-		NameParser listNamesNameParser = listnames.getNamesParser();
+	public void assignListElementNames(Map<String,ParseList> listMapObj,IToken root){
+		IToken r = (IToken)root;
+		Map<String,ParseList> listMap = (Map<String,ParseList>)listMapObj;
+		ArrayList<IParser> listNameChoices = new ArrayList<IParser>();
+		ParseList listnames = (ParseList)listMap.get("listnames");
+		NameParser listNamesNameParser = (NameParser)listnames.getNamesParser();
 		listNamesNameParser.clear();
-		String list_rules = listMap.get("list_rules");
-		IToken new_list_rules = listMap.getNewTokens();
+		ParseList list_rules = (ParseList)listMap.get("list_rules");
+		IToken new_list_rules = list_rules.getNewTokens();
 		for(IToken.Key new_list_defKey:new_list_rules.keySet()){
 			IToken new_list_def = new_list_rules.get(new_list_defKey);
-			String listName = new_list_def.get(listname).toString();
+			String listName = new_list_def.get("listname").getString();
 			listName = listName.replaceAll("[ \\t]+","");
 			String listSingle = listName;
-			String indexOfDash = listName.indexOf("-");
+			Integer indexOfDash = listName.indexOf("-");
 			if(new Boolean(indexOfDash > -1)){
-				String oldList = null;
-
-				String listMapContainsKey = listMap.containsKey(listName);
-
-				if(new Boolean(listMapContainsKey.equals(true))){
+				ParseList oldList = (ParseList)null;
+				Boolean listMapContainsKey = listMap.containsKey(listName);
+				if(new Boolean(listMapContainsKey == true)){
 					oldList = listMap.remove(listName);
 				}
-
 				listSingle = listName.substring(0,indexOfDash);
-
-				listName = new Base().buildString(listSingle,listName.substring(indexOfDash + 1,listName.length()));
-
-				if(new Boolean(!oldList.equals(null))){
+				listName = Generators.base.buildString(listSingle,listName.substring(indexOfDash + 1,listName.length()));
+				if(new Boolean(oldList != null)){
 					listMap.put(listName,oldList);
 				}
 			}
-			String listMapContainsKey = listMap.containsKey(listName);
+			Boolean listMapContainsKey = listMap.containsKey(listName);
 			if(new Boolean(!listMapContainsKey)){
-				listMap.put(listName);
-
-				new Base().createNewParseList(listName);
+				listMap.put(listName,Generators.base.createNewParseList(listName));
 			}
 			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));
-			NameParser listnamesNameParser = listnames.getNamesParser();
+			NameParser listnamesNameParser = (NameParser)listnames.getNamesParser();
 			listnamesNameParser.addName(listSingle);
-			ParseList listVar = listMap.get(listName);
-			NameParser listNameParser = listVar.getNamesParser();
-			List<IToken> defListDef = new_list_def.getAll("ListDef");
+			ParseList listVar = (ParseList)listMap.get(listName);
+			NameParser listNameParser = (NameParser)listVar.getNamesParser();
+			List<IToken> defListDef = new_list_def.getAll("list_def");
 			if(defListDef != null){
 				for(IToken def:defListDef){
-					String name = def.get(parameters).get(name).toString();
+					String name = def.get("parameters").get("name").getString();
 					listNameParser.addName(name);
 				}
 			}
 		}
 		listNameChoices.add(new RegexParser("listname","listnames","listnames"));
-		NameParser lisnamesNameParser = listnames.getNamesParser();
+		NameParser lisnamesNameParser = (NameParser)listnames.getNamesParser();
 		lisnamesNameParser.addName("listname");
-		IParser listNamesParser = new Listnames().parser();
+		ChoiceParser listNamesParser = (ChoiceParser)Listnames.parser;
 		listNamesParser.replace(listNameChoices);
-		ParseList listRuless = listMap.get("list_rules");
-		String listRulessNamesParser = listRuless.getNamesParser();
+		ParseList listRuless = (ParseList)listMap.get("list_rules");
+		NameParser listRulessNamesParser = (NameParser)listRuless.getNamesParser();
 		listRulessNamesParser.clear();
+	}
+
+	public File getDirectory(){
+		return directory;
+	}
+
+	public IParser getLazyNameParser(){
+		return lazyNameParser;
+	}
+
+	public String getName(){
+		return "Base";
+	}
+
+	public void generateRoot(IToken root){
 	}
 }
