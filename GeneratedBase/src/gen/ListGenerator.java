@@ -8,62 +8,10 @@ import lists.*;
 public class ListGenerator extends Generator {
 
 	private HashMap<String,String> listAssociatedClass = new HashMap<String,String>();
-	private File directory = new File(Generators.base.getDirectory(),"lists");
+	private File directory = null;
 
 	public ListGenerator(){
-		addElement("outline",new String[]{"package base.rules;\n\n"+
-			"import com.rem.parser.*;\n"+
-			"import base.lists.*;\n\n"+
-			"public class ",/*Class Name*/" extends ConcreteRule {\n\n"+
-			"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{",/*Parameter List*/"};\n"+
-			"\tpublic ",/*Class Name*/"(){\n"+
-			"\t\tsuper(\"",/*Rule Name*/"\");\n"+
-			"\t}\n"+
-			"\t@Override\n"+
-			"\tpublic void setup(){\n",/*RuleSetup*/"\n\t}\n"+
-			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
-			"\tpublic Parameter<?>[] getParameters(){\n"+
-			"\t\treturn parameters;\n\t}\n\n}"});
-
-		addElement("ruleElement",new String[]{"\tpublic static final IRule ",/*Rule Name*/" = ",/*Class Name*/".parser;\n"});
-
-		addElement("setupSilence",new String[]{"\t\tisSilent(true);\n"});
-
-		addElement("setupAdd",new String[]{"\t\tset(",/*Rule Definition*/");\n"});
-
-		addElement("as",new String[]{"new AddTokenParser(",/*Inner Rule*/",",/*Token Name*/")"});
-
-		addElement("addToList",new String[]{"new AddTokenToListParser(",/*Inner Rule*/",",/*Token Name*/",",/*List Name*/")"});
-
-		addElement("chain",new String[]{"new ChainParser(",/*Inner Rules*/")"});
-
-		addElement("choice",new String[]{"new ChoiceParser(",/*Inner Rules*/")"});
-
-		addElement("multiple",new String[]{"new ",/*Parser Class Name*/"Parser(",/*Inner Rule*/")"});
-
-		addElement("listElement",new String[]{"",/*List Name*/".",/*Parser Name*/""});
-
-		addElement("rule_parser",new String[]{"",/*Name*/".parser"});
-
-		addElement("rule_name_parser",new String[]{"new ListNameParser(\"",/*Name*/"\")"});
-
-		addElement("rule_any_list_name",new String[]{"AnyListNameParser.parser"});
-
-		addElement("parameterMember",new String[]{"\tprivate Parameter<",/*Type*/"> ",/*Parameter Name*/" = new Parameter<",/*Type*/">(",/*Default Value*/");\n"});
-
-		addElement("parameterIndex",new String[]{"\t\tcase ",/*Index*/": return ",/*Parameter Name*/";\n"});
-
-		addElement("parameterGet",new String[]{"\t\tswitch(i){\n",/*Params*/"\t\tdefault: return null;\n\t\t}\n"});
-
-		addElement("parameterWith",new String[]{"new WithParser((IRule)",/*Parser*/",",/*Arguments*/")"});
-
-		addElement("parameterOperator",new String[]{"new Argument.",/*OperatorName*/"(",/*Left*/",",/*Right*/")"});
-
-		addElement("parameterNewNumber",new String[]{"new Parameter<Integer>(",/*Value*/")"});
-
-		addElement("parameterExisting",new String[]{"this.",/*Parameter Name*/""});
-
-		addElement("outline",new String[]{"package base.lists;\n\n"+
+		addElement("outline",new String[]{"package lists;\n\n"+
 			"import com.rem.parser.*;\n",/*Other Imports*/"\n"+
 			"public class ",/*Class Name*/" extends ParseList {\n\n"+
 			"\t@Override\n"+
@@ -74,27 +22,27 @@ public class ListGenerator extends Generator {
 			"\tpublic String getSingular() {\n"+
 			"\t\treturn \"",/*Singular Name*/"\";\n"+
 			"\t}\n\n",/*Entries*/"}"});
-
 		addElement("importRules",new String[]{"import base.rules.*;\n"});
-
 		addElement("class",new String[]{"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"});
-
 		addElement("parser",new String[]{"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t",/*Rules*/");\n"});
-
 		addElement("name_parser",new String[]{"\n\tpublic static final NameParser name_parser = new NameParser(\n\t\t\t\t",/*Rules*/");\n"+
 			"\t@Override\n"+
 			"\tpublic NameParser getNamesParser(){\n"+
 			"\t\treturn name_parser;\n"+
 			"\t}\n"});
-
 		addElement("emptyList",new String[]{"\tpublic static final NameParser name_parser = new NameParser(",/*List Name*/");\n"+
 			"\t@Override\n"+
 			"\tpublic NameParser getNamesParser(){\n"+
 			"\t\treturn name_parser;\n"+
 			"\t}\n"});
 	}
+	public void generate(ParseData data){
+		directory = new File(Generators.base.getDirectory(),"lists");
+		directory.mkdirs();
+		ParseList list_rules = (ParseList)data.getList("list_rules");
+		Generators.list.generateAll(list_rules.getNewTokens(),"list_rule");
+	}
 	public void generateRoot(IToken root){
-		directory.mkdir();
 		String listName = root.get("listname").getString();
 		Integer indexOfDash = listName.indexOf("-");
 		String singleListName = listName;
@@ -115,17 +63,42 @@ public class ListGenerator extends Generator {
 		for(IToken.Key elementKey:root.keySet()){
 			if("list_def".equals(elementKey.getName())){
 				IToken element = root.get(elementKey);
-				System.out.println(tokenErrorMessage(element));
-				IToken parameters = element.get("parameters");
-				String name = parameters.get("name").getString();
-				String regex = element.get("regex").getString();
-				IToken parameterToken = element.get("parameter");
-				Entry parameterEntry = null;
-				if(new Boolean(parameterToken != null)){
-					parameterEntry = Generators.rule.generateDefinition(parameterToken.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
-					Generators.list.addClassList(listName,name,regex,parameterEntry);
-					hasDefinition = true;
+				String name = element.get("parameters").get("name").getString();
+				IToken regexToken = element.get("regex");
+				Boolean listAssociatedClassContainsKey = listAssociatedClass.containsKey(listName);
+				if(new Boolean(regexToken == null)){
+					regexToken = element.get("quote");
+					if(new Boolean(!listAssociatedClassContainsKey)){
+						listAssociatedClass.put(listName,"Exact");
+					}
+					else {
+						String listAssociatedClassListName = listAssociatedClass.get(listName);
+
+						if(new Boolean(listAssociatedClassListName.equals("Regex"))){
+							listAssociatedClass.put(listName,"Exact");
+						}
+					}
 				}
+				else {
+					if(new Boolean(!listAssociatedClassContainsKey)){
+						listAssociatedClass.put(listName,"Regex");
+					}
+					else {
+						String listAssociatedClassListName = listAssociatedClass.get(listName);
+
+						if(new Boolean(listAssociatedClassListName.equals("Exact"))){
+							listAssociatedClass.put(listName,"Regex");
+						}
+					}
+				}
+				String regex = regexToken.getString();
+				IToken parameter = element.get("parameter");
+				Entry parameterEntry = null;
+				if(new Boolean(parameter != null)){
+					parameterEntry = Generators.rule.generateDefinition(parameter.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
+				}
+				Generators.list.addClassList(listName,name,regex,parameterEntry);
+				hasDefinition = true;
 			}
 		}
 		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
@@ -135,7 +108,7 @@ public class ListGenerator extends Generator {
 	}
 	public void addClassList(String listName,String name,String regex,Entry parameter){
 		Entry p = (Entry)parameter;
-		Boolean containsAssociatedClass = listAssociatedClass.containsKey("listname");
+		Boolean containsAssociatedClass = listAssociatedClass.containsKey(listName);
 		if(new Boolean(!containsAssociatedClass)){
 			listAssociatedClass.put(listName,"Regex");
 		}
@@ -194,9 +167,6 @@ public class ListGenerator extends Generator {
 
 	public String getName(){
 		return "List";
-	}
-
-	public void generate(ParseData data){
 	}
 
 	public void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken){

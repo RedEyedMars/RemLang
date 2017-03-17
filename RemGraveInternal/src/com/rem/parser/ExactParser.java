@@ -41,14 +41,14 @@ public class ExactParser extends ConcreteParser {
 
 		String toExamine = data.get();
 		if(toExamine.startsWith(pattern)){
-			data.getToken().put(new NodeToken(name,pattern,data.getPosition()));
+			data.getToken().put(new NodeToken(name,pattern,data.getFrontPosition()));
 			int found = pattern.length();
 			for(;found<toExamine.length();++found){
 				if(toExamine.charAt(found)!=' '&&toExamine.charAt(found)!='\t'){
 					break;
 				}
 			}
-			data.setPosition(data.getPosition()+found);
+			data.setFrontPosition(data.getFrontPosition()+found);
 			data.validate();
 		}
 		else {

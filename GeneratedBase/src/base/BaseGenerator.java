@@ -403,7 +403,8 @@ public class BaseGenerator extends Generator{
 					if(listName.equals("listnames")){
 						return new ElementEntry("rule_name_parserElement",terminal.get(key).getString()+"s");
 					}
-					else return new ElementEntry("listElement",StringEntry.getEntry(camelize(listName),terminal.get(key).getString()));
+					else return new ElementEntry("listElement",
+							StringEntry.getEntry(camelize(listName),terminal.get(key).getString()));
 				}
 				else if("anyListNameToken".equals(key.getName())){					
 					return new ElementEntry(

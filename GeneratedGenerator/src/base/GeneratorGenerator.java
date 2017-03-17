@@ -33,7 +33,8 @@ public class GeneratorGenerator extends Generator {
 	private Map<String,Map<String,Map<String,VariableEntry>>> contexts = new HashMap<String,Map<String,Map<String,VariableEntry>>>();
 	private Map<String,Map<String,List<ITypeListener>>> methodParameters = new HashMap<String,Map<String,List<ITypeListener>>>();
 	private List<Check> checks  = new ArrayList<Check>();
-	private ListEntry constructorBody = new ListEntry();
+	private Map<String,ListEntry> constructorBodies = new HashMap<String,ListEntry>();
+	private int ifIndex=0;
 	private String[] outline = new String[]{
 			"package gen;\n\n"+
 					"import java.io.*;\n"+
@@ -101,6 +102,7 @@ public class GeneratorGenerator extends Generator {
 			"\tpublic ",/*Class Name*/"Generator(){",/*Constructor Body*/"\n\t}"};
 	private String[] semicoloned = new String[]{
 			"",/*Body*/";"};
+	private String file;
 
 
 	public GeneratorGenerator(){
@@ -140,7 +142,6 @@ public class GeneratorGenerator extends Generator {
 	@Override
 	public void generateRoot(IToken root){
 
-		constructorBody.setDelimiter("\n");
 		String className = "$";
 		ListEntry classElements = new ListEntry();
 		classElements.setDelimiter("\n");
@@ -163,11 +164,13 @@ public class GeneratorGenerator extends Generator {
 				classNames.add(className);
 				generatorNames.add(genName);
 				contexts.put(className, new HashMap<String,Map<String,VariableEntry>>());
+				constructorBodies.put(className, new ListEntry());
+				constructorBodies.get(className).setDelimiter("");
 				methodParameters.put(className, new HashMap<String,List<ITypeListener>>());
 				Map<String,VariableEntry> varMap = new HashMap<String,VariableEntry>();
 				varMap.put(DEFAULT_TOKEN, new VariableEntry("root","IToken",null));
 				contexts.get(className).put(LOCAL_CONTEXT, varMap);
-				methodDeclarations.add(new ElementEntry("constructor",new ListEntry(new StringEntry(className),constructorBody)));
+				methodDeclarations.add(new ElementEntry("constructor",new ListEntry(new StringEntry(className),constructorBodies.get(className))));
 			}
 			else if("auxillary_declaration".equals(key.getName())){
 				methodDeclarations.add(generateAuxillaryDeclaration(root.get(key),className,LOCAL_CONTEXT));
@@ -184,7 +187,8 @@ public class GeneratorGenerator extends Generator {
 					}
 				};
 				variable.addListener(typeEntry);
-				variableMethods.add(new TabEntry(0,new ElementEntry("methodDeclaration",new ListEntry(new StringEntry(variable.getType()),new StringEntry("get"+camelize(variable.getName())),new ListEntry(),
+				TypeEntry type = new TypeEntry(variable);
+				variableMethods.add(new TabEntry(0,new ElementEntry("methodDeclaration",new ListEntry(type,new StringEntry("get"+camelize(variable.getName())),new ListEntry(),
 						new TabEntry(2,new ElementEntry("returnCall", new ListEntry(new StringEntry(variable.getName()))))))));
 			}
 			else if("element_declaration".equals(key.getName())){
@@ -306,7 +310,7 @@ element_entry has tabs
 					}
 				}
 
-				this.constructorBody.add(
+				constructorBodies.get(contextName).add(
 						new TabEntry(2,
 								new ElementEntry("semicoloned",new ListEntry(new ElementEntry("noSubjectCall",
 										new ListEntry(new StringEntry("addElement"),new ListEntry(new QuoteEntry(elementName),
@@ -514,12 +518,14 @@ generation_declaration has tabs
 		ListEntry ifBody = new ListEntry();
 		ifBody.setDelimiter("");
 		ListEntry elseBody = null;
+		String ifContextName = contextSubName+".if"+ifIndex++;
+		addContext(contextName,contextSubName,ifContextName,contexts.get(contextName).get(contextSubName).get(DEFAULT_TOKEN));
 		for(IToken.Key key:ifStatement.keySet()){
 			if("boolean_statement".equals(key.getName())){
 				ifPart.add(generateBooleanStatement(ifStatement.get(key),contextName,contextSubName));
 			}
-			else if("body_element".equals(key.getName())){
-				ifBody.add(generateBodyElement(ifStatement.get(key),tabs+1,contextName,contextSubName));
+			else if("body_element".equals(key.getName())){				
+				ifBody.add(generateBodyElement(ifStatement.get(key),tabs+1,contextName,ifContextName));
 			}
 			else if("else_statement".equals(key.getName())){
 				IToken else_statement = ifStatement.get(key);
@@ -873,6 +879,7 @@ all_type_tokens has tabs
 			else {
 				var.setAssignment(assignment);
 			}
+
 			return var;
 		}
 		else {
@@ -1120,6 +1127,7 @@ all_type_tokens has tabs
 		MethodEntry ret = null;
 		for(IToken.Key key:votName.keySet()){
 			if("token_names".equals(key.getName())){
+
 				ret = new MethodEntry(null,votName.get(key).getString(),null);
 				ret.changeType("IToken");
 			}
@@ -1129,8 +1137,11 @@ all_type_tokens has tabs
 			}
 			else if("arithmatic".equals(key.getName())){
 				ret = (MethodEntry)generateArithmatic(votName.get(key),false, contextName, contextSubName);
+
+			
 			}
 		}
+		
 		if(isGetString){
 			if(ret.getType().equals("IToken")){
 				ret = new MethodEntry(ret,"getString",new ListEntry());
@@ -1178,10 +1189,15 @@ all_type_tokens has tabs
 					var.setDefined(false);
 					contexts.get(contextName).get(contextSubName).put(variableName, var);
 					checks.add(new DefinedCheck(var,"(004) Variable name"));
-					System.out.println(variableName);
 				}
 				ret = new MethodEntry(null,var.getName(),null);
-				ret.addTypeListener(var);
+				
+				if(var.hasType()){
+					ret.changeType(var.getType());
+				}
+				else {
+					ret.addTypeListener(var);
+				}
 				if(var.getType().equals("Integer")){
 					mustBeNumber = true;
 				}
@@ -1512,6 +1528,7 @@ all_type_tokens has tabs
 
 	@Override
 	protected void generate(ParseData data) {
+		file = data.getFile();
 		String fileName = data.getFileName();
 		int indexOfDot = fileName.lastIndexOf('.');
 		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
@@ -1551,6 +1568,7 @@ all_type_tokens has tabs
 		public void changeType(String newType);
 		public boolean hasType();
 		public String getType();
+		public String getDefaultType();
 		public void setDefaultType(String string);
 	}
 	public class VariableEntry extends ElementEntry implements ITypeListener{
@@ -1609,6 +1627,9 @@ all_type_tokens has tabs
 		public String getType() {
 			return this.typeEntry.getString();
 		}
+		public String getDefaultType(){
+			return this.defaultType;
+		}
 
 		public String getName() {
 			return name;
@@ -1653,6 +1674,23 @@ all_type_tokens has tabs
 		}
 	}
 
+	public class TypeEntry implements Entry {
+
+		private ITypeListener subject = null;		
+		public TypeEntry(ITypeListener subject) {
+			this.subject = subject;
+		}
+		
+		public void get(StringBuilder builder){
+			if(subject.hasType()){
+				builder.append(subject.getType());
+			}
+			else {
+				builder.append(subject.getDefaultType());
+			}
+		}
+		
+	}
 
 	public class MethodEntry extends ElementEntry implements ITypeListener{
 		private StringEntry typeEntry;
@@ -1691,6 +1729,9 @@ all_type_tokens has tabs
 			for(ITypeListener listener:this.typeListeners){
 				listener.setDefaultType(type);
 			}
+		}
+		public String getDefaultType(){
+			return this.defaultType;
 		}
 		public void addTypeListener(ITypeListener listener) {
 			this.typeListeners.add(listener);

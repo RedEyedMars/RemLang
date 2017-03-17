@@ -2,6 +2,8 @@ uses Listnames Tokens
 base
 	var directory as File
 		null
+	var seedName
+		null
 	generate takes data
 		var fileName
 			data getFileName
@@ -13,20 +15,23 @@ base
 				fileName substring
 					0
 					indexOfDot
+		set seedName
+			fileName
 		set directory
 			new File
 				base buildString
 					"../Generated"
 					base camelize
 						fileName
-					"/src/base/"
-		directory mkdirs			
-				
-		list generateAll
+					"/src/"
+		directory mkdirs
+		list generate
 			data
-		rule generateAll
-			data
-		
+		rule generate
+			data	
+			
+		rule outputAll
+		list outputAll
 		base outputAll
 	
 	var lazyNameParser as IParser
@@ -141,15 +146,14 @@ rule
 	var ruleParameterNames
 		new HashMap<String,List<String>>
 	var directory
-		new File
-			base getDirectory
-			"rules"
-	
+		null
+	var packageName
+		null
 	elements
 		outline
-			"package base.rules;\n\n"+			
+			"package " Package Name ";\n\n"+			
 			"import com.rem.parser.*;\n"+
-			"import base.lists.*;\n\n"+
+			"import lists.*;\n\n"+
 			"public class " Class Name " extends ConcreteRule {\n\n"+
 			"\tpublic static final IRule parser = new " Class Name "();\n" Parameter Declarations
 			"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{" Parameter List "};\n"+									
@@ -160,7 +164,9 @@ rule
 			"\tpublic void setup(){\n" RuleSetup "\n\t}\n"+
 			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
 			"\tpublic Parameter<?>[] getParameters(){\n"+
-			"\t\treturn parameters;\n\t}\n\n}"
+			"\t\treturn parameters;\n\t}\n\n}"				
+		importRules 
+			"import " Seed Name ".rules.*;\n"
 		ruleElement
 			"\tpublic static final IRule " Rule Name " = " Class Name ".parser;\n"
 		setupSilence
@@ -202,9 +208,28 @@ rule
 			"new Parameter<Integer>(" Value ")"
 		parameterExisting
 			"this." Parameter Name ""
+		
+	generate takes data
+		set packageName
+			rule buildString
+				base getSeedName
+				".rules"
+		
+		set directory			
+			new File
+				base getDirectory
+				packageName replace
+					"."
+					"/"
+		directory mkdirs
+		var rules as ParseList			
+			data getList
+				"rules"
+		rule generateAll
+			rules getNewTokens
+			"rule"
 	
 	generate root	
-		directory mkdirs
 		var ruleName
 			'root -> rulename
 		var className
@@ -223,21 +248,25 @@ rule
 		
 		entry rulenames = ruleElement [ruleName className]
 		
+		var seedName
+			base getSeedName
 		list addList
-			{importRules {}}
+			{importRules {[seedName]}}
 			"rules"
 			ruleName
 			rulenames
 		
-		entry param_list "" = {}
+		entry param_list = {}
+		entry param_declarations "" = {}
 		entry parameters = {
+			[packageName]
 			[className]
 			[className]
+			param_declarations
 			param_list
 			[className]
 			[ruleName] }
 		rule addFile
-			rule getName
 			rule getDirectory
 			fileName
 			parameters
@@ -275,7 +304,7 @@ rule
 				var rules_contains
 					ruleParameterNames containsKey
 						ruleName
-				if rules_contains is true
+				if not rules_contains
 					ruleParameterNames put
 						ruleName
 						new ArrayList<String>
@@ -284,8 +313,10 @@ rule
 						ruleName
 				ruleParameterNamesList add
 					rule_param
-				param_list add
+				param_declarations add
 					parameterMember ["Integer" rule_param "Integer" "0"]
+				param_list add
+					[rule_param]
 				parameterIndexEntries add 
 					parameterIndex ['param_count rule_param]
 				set param_count
@@ -307,20 +338,20 @@ rule
 		atom to quark
 			parameters
 				var name
-					'quark -> name
+					quark -> name
 				var listVar
-					'quark -> list
+					quark -> list
 				if name is not null
 					set enclosingName
 						rule buildString
 							"\""
-							name
+							'name
 							"\""
 				if listVar is not null
 					set enclosingList
 						rule buildString
 							"\""
-							listVar
+							'listVar
 							"\""
 				
 				entry params = {}
@@ -504,13 +535,11 @@ list
 	var listAssociatedClass
 		new HashMap<String,String>
 	var directory
-		new File
-			base getDirectory
-			"lists"
+		null
 	
 	elements
 		outline
-			"package base.lists;\n\n"+			
+			"package lists;\n\n"+
 			"import com.rem.parser.*;\n" Other Imports	"\n"+
 			"public class " Class Name " extends ParseList {\n\n"+
 			"\t@Override\n"+
@@ -540,8 +569,20 @@ list
 			"\t\treturn name_parser;\n"+
 			"\t}\n"
 	
+	generate takes data
+		set directory	
+			new File
+				base getDirectory
+				"lists"
+		directory mkdirs
+		var list_rules as ParseList			
+			data getList
+				"list_rules"
+		list generateAll
+			list_rules getNewTokens
+			"list_rule"
+	
 	generate root
-		directory mkdir
 		var listName
 			'root -> listname
 		var indexOfDash
@@ -597,32 +638,64 @@ list
 		
 		root to element
 			list_def
-				token parameters
-					element -> parameters
 				var name
-					'parameters -> name
+					'element -> parameters -> name
+				
+				token regexToken
+					element -> regex
+				var listAssociatedClassContainsKey
+					listAssociatedClass containsKey
+						listName
+				if regexToken is null
+					set regexToken
+						element -> quote
+					
+					if not listAssociatedClassContainsKey
+						listAssociatedClass put
+							listName
+							"Exact"
+					else
+						var listAssociatedClassListName
+							listAssociatedClass get
+								listName
+						if listAssociatedClassListName is "Regex"
+							listAssociatedClass put
+								listName
+								"Exact"
+				else					
+					if not listAssociatedClassContainsKey
+						listAssociatedClass put
+							listName
+							"Regex"
+					else
+						var listAssociatedClassListName
+							listAssociatedClass get
+								listName
+						if listAssociatedClassListName is "Exact"
+							listAssociatedClass put
+								listName
+								"Regex"
 				var regex
-					'element -> regex
-				token parameterToken
+					'regexToken	
+				token parameter
 					element -> parameter
 				entry parameterEntry = null
-				
-				if parameterToken is not null
+				if parameter is not null
 					set parameterEntry
 						rule generateDefinition
-							parameterToken -> definition
+							parameter -> definition
 							list buildString
 								listName
 								"$HIDDEN"
 							5
-					
-					list addClassList
-						listName
-						name
-						regex
-						parameterEntry
-					set hasDefinition
-						true
+				
+				list addClassList
+					listName
+					name
+					regex
+					parameterEntry
+				set hasDefinition
+					true
 		
 		var listNameInQuotes
 			list buildString
@@ -641,7 +714,7 @@ list
 			parameter
 		var containsAssociatedClass
 			listAssociatedClass containsKey
-				"listname"
+				listName
 		if not containsAssociatedClass
 			listAssociatedClass put
 				listName

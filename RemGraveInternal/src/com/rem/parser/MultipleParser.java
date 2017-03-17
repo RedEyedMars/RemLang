@@ -16,17 +16,17 @@ public class MultipleParser extends ConcreteParser implements IParser{
 	@Override
 	public void real_parse(ParseData data) {
 		if(subParser==null)return;
-		int position = data.getPosition();
+		int position = data.getFrontPosition();
 		subParser.parse(data);
 		if(!data.isValid()){
-			data.setPosition(position);
+			data.setFrontPosition(position);
 			return;
 		}
 		while(!data.isDone()){
-			position = data.getPosition();
+			position = data.getFrontPosition();
 			subParser.parse(data);
 			if(!data.isValid()){
-				data.setPosition(position);
+				data.setFrontPosition(position);
 				data.validate();
 				break;
 			}

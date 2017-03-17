@@ -33,8 +33,8 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 		}
 
 		if(data.get().startsWith(open)){
-			int position = data.getPosition();
-			data.setPosition(position+open.length());
+			int position = data.getFrontPosition();
+			data.setFrontPosition(position+open.length());
 			int currentLayer = 1;
 			boolean isQuote = false;
 			String toExamine = data.get();
@@ -79,7 +79,9 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			ParseData newParseData = null;
 			if(currentLayer>0){
 				if(currentLayer==1){
-					newParseData = new ParseData(data.getFileName(),toExamine);
+					newParseData = new ParseData(data);
+					newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
+					newParseData.setBackPosition(data.getFrontPosition()+toExamine.length());
 				}
 				else {
 					data.invalidate();
@@ -87,18 +89,21 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 				}
 			}
 			else {
-				newParseData = new ParseData(data.getFileName(),toExamine.substring(sectionStart,sectionLength));
+
+				newParseData = new ParseData(data);
+				newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
+				newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			}
 			newParseData.setMustEnd(true);
 			subParser.parse(newParseData);
 
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
-				data.setPosition(position);
+				data.setFrontPosition(position);
 				data.invalidate();
 			}
 			else {
-				data.setPosition(data.getPosition()+sectionLength);
+				data.setFrontPosition(data.getFrontPosition()+sectionLength);
 			}
 		}
 		else {

@@ -100,7 +100,7 @@ public abstract class Generator {
 
 	}
 
-	protected void outputAll() {
+	public void outputAll() {
 		for (String pageName : pages.keySet()) {
 			pages.get(pageName).output();
 		}
@@ -283,6 +283,7 @@ public abstract class Generator {
 						}
 						writer = new BufferedWriter(
 								new FileWriter(new File(dirs.get(i), details.get(i).get(j).filename)));
+						
 						writer.write(builder.toString());
 						writer.write(outLineEnd);
 					} catch (IOException e) {

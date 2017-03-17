@@ -12,13 +12,13 @@ public class ChainParser extends ConcreteListParser implements IParser{
 	public void real_parse(ParseData data) {
 		if(isEmpty())return;
 		int index = 0;
-		int position = data.getPosition();
+		int position = data.getFrontPosition();
 		get(index++).parse(data);
 		while(data.isValid()&&index<size()){
 			get(index++).parse(data);
 		}
 		if(!data.isValid()){
-			data.setPosition(position);
+			data.setFrontPosition(position);
 		}
 	}
 }

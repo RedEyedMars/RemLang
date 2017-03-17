@@ -18,10 +18,10 @@ public class ManyParser extends ConcreteParser implements IParser{
 		if(subParser==null||data.isDone())return;
 		int position = -1;		
 		while(!data.isDone()){
-			position = data.getPosition();
+			position = data.getFrontPosition();
 			subParser.parse(data);
 			if(!data.isValid()){
-				data.setPosition(position);
+				data.setFrontPosition(position);
 				data.validate();
 				break;
 			}

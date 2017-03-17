@@ -27,6 +27,21 @@ public class NodeToken implements IToken{
 	public int getPosition() {
 		return position;
 	}
+	
+	public int getLineNumber(String file){
+		int current = 0;
+		for(int i=0;i<position&&i<file.length();){
+			int next = file.indexOf('\n',i);
+			if(next==-1){
+				return current;
+			}
+			else {
+				++current;
+				i=next+1;
+			}
+		}
+		return current;
+	}
 
 	
 	public void setName(String name){

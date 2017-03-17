@@ -51,8 +51,9 @@ public class RegexParser extends ConcreteParser implements IParser{
 		}
 		Matcher matcher = this.pattern.matcher(data.get());
 		if(matcher.matches()){
-			data.getToken().put(new NodeToken(name,matcher.group(1),data.getPosition()));
-			data.setPosition(data.getPosition()+matcher.end(matcher.groupCount()));
+
+			data.getToken().put(new NodeToken(name,matcher.group(1),data.getFrontPosition()));
+			data.setFrontPosition(data.getFrontPosition()+matcher.end(matcher.groupCount()));
 			data.validate();
 		}
 		else {

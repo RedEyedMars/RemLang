@@ -20,10 +20,10 @@ public abstract class ConcreteParser implements IParser{
 	
 	@Override
 	public void debug_parse(ParseData data) {
-		ParseUtil.debug("verbose", this, "start("+data.getPosition()+")");
+		ParseUtil.debug("verbose", this, "start("+data.getFrontPosition()+")");
 		ParseUtil.currentParser = this.getName();
 		real_parse(data);
-		ParseUtil.debug("verbose", this, "end:"+data.isValid()+"("+data.getPosition()+")");
+		ParseUtil.debug("verbose", this, "end:"+data.isValid()+"("+data.getFrontPosition()+")");
 	}
 	
 	public void handleMustEnd(ParseData data){

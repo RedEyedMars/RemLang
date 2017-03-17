@@ -33,8 +33,8 @@ public class BracedParser extends ConcreteParser implements IParser{
 		}
 
 		if(data.get().startsWith(open)){
-			int position = data.getPosition();
-			data.setPosition(position+open.length());
+			int position = data.getFrontPosition();
+			data.setFrontPosition(position+open.length());
 			int currentLayer = 1;
 			boolean isQuote = false;
 			String toExamine = data.get();
@@ -84,13 +84,15 @@ public class BracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 				return;
 			}
-			ParseData newParseData = new ParseData(data.getFileName(),toExamine.substring(sectionStart,sectionLength));
+			ParseData newParseData = new ParseData(data);
+			newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
+			newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			newParseData.setMustEnd(true);
 			subParser.parse(newParseData);
 
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
-				data.setPosition(position);
+				data.setFrontPosition(position);
 				data.invalidate();
 			}
 			else {
@@ -101,7 +103,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 						break;
 					}
 				}
-				data.setPosition(data.getPosition()+found);
+				data.setFrontPosition(data.getFrontPosition()+found);
 			}
 		}
 		else {

@@ -15,10 +15,10 @@ public class ParseData {
 	private int length;
 
 	private boolean valid = true;
-	private int position = 0;
+	private int frontPosition = 0;
+	private int backPosition = -1;
 	private int furthestPosition = 0;
 	private String furthestParser = "";
-	private ParseData relativeData = null;
 	private String file;
 	private boolean mustEnd;
 	private String fileName;
@@ -33,11 +33,15 @@ public class ParseData {
 		this.fileName = data.fileName;
 		this.length = data.length;
 		this.file = data.file;
-		relativeData = data;
 	}
 
 	public boolean isDone() {
-		return valid&&position==length;
+		if(backPosition==-1){
+			return valid&&frontPosition==length;
+		}
+		else {
+			return valid&&frontPosition==backPosition; 
+		}
 	}
 
 	public boolean isValid() {
@@ -55,8 +59,11 @@ public class ParseData {
 		return fileName;
 	}
 	
-	public int getPosition() {
-		return position;
+	public int getFrontPosition() {
+		return frontPosition;
+	}
+	public int getBackPosition() {
+		return backPosition;
 	}
 	
 	public int getFurthestPosition(){
@@ -67,16 +74,22 @@ public class ParseData {
 		return furthestParser;
 	}
 
-	public void setPosition(int newPosition) {
-		position = newPosition;
+	public void setFrontPosition(int newPosition) {
+		frontPosition = newPosition;
 		if(newPosition>furthestPosition){
 			furthestPosition = newPosition;
 			furthestParser = ParseUtil.currentParser;
 		}
 	}
+	public void setBackPosition(int newPosition) {
+		backPosition = newPosition;
+	}
 	
 	public String get(){
-		return file.substring(position);
+		if(backPosition==-1){
+			return file.substring(frontPosition);
+		}
+		else return file.substring(frontPosition,backPosition);
 	}
 	
 	public String getFile(){
@@ -125,17 +138,17 @@ public class ParseData {
 	}
 	
 	public void setPap(IParser parent, int index){
-		if(!paps.containsKey(position)){
-			paps.put(position,new HashMap<IParser,Set<AccessPoint>>());
+		if(!paps.containsKey(frontPosition)){
+			paps.put(frontPosition,new HashMap<IParser,Set<AccessPoint>>());
 		}
-		if(!paps.get(position).containsKey(parent)){
-			paps.get(position).put(parent, new TreeSet<AccessPoint>());
+		if(!paps.get(frontPosition).containsKey(parent)){
+			paps.get(frontPosition).put(parent, new TreeSet<AccessPoint>());
 		}
 		if(ParseData.contextParameters==null){
-			paps.get(position).get(parent).add(new AccessPoint(index));
+			paps.get(frontPosition).get(parent).add(new AccessPoint(index));
 		}
 		else {
-			paps.get(position).get(parent).add(new AccessPoint(index,ParseData.contextParameters));
+			paps.get(frontPosition).get(parent).add(new AccessPoint(index,ParseData.contextParameters));
 		}
 	}
 	public void resetPap(int pos, IParser parent, int index){
@@ -149,13 +162,13 @@ public class ParseData {
 		}
 	}
 	public boolean isAtPreviousAccessPoint(IParser parent, int index){
-		if(!paps.containsKey(position)){
-			paps.put(position,new HashMap<IParser,Set<AccessPoint>>());
+		if(!paps.containsKey(frontPosition)){
+			paps.put(frontPosition,new HashMap<IParser,Set<AccessPoint>>());
 		}
-		if(!paps.get(position).containsKey(parent)){
-			paps.get(position).put(parent, new TreeSet<AccessPoint>());
+		if(!paps.get(frontPosition).containsKey(parent)){
+			paps.get(frontPosition).put(parent, new TreeSet<AccessPoint>());
 		}
-		for(AccessPoint point: paps.get(position).get(parent)){
+		for(AccessPoint point: paps.get(frontPosition).get(parent)){
 			if(point.index == index){
 				if(contextParameters==null&&point.context==null){
 					return true;
@@ -191,11 +204,14 @@ public class ParseData {
 	}
 
 	public String getLine(){
-		int newline = file.indexOf('\n',position);
-		if(newline>=0){
-			return file.substring(position,newline);	
+		int newline = file.indexOf('\n',frontPosition);
+		if(newline>=0&&(backPosition>=0&&newline>backPosition)){
+			return file.substring(frontPosition,backPosition);	
 		}
-		else return file.substring(position);
+		else if(newline>=0){
+			return file.substring(frontPosition,newline);
+		}
+		else return file.substring(frontPosition);
 	}
 	
 	public IToken getToken(){
@@ -231,11 +247,11 @@ public class ParseData {
 	}
 	
 	public void addError(String error) {
-		System.err.println(ParseUtil.currentParser+"("+position +"):"+ error);
+		System.err.println(ParseUtil.currentParser+"("+frontPosition +"):"+ error);
 	}
 
 	public String printPap(IParser parser) {
-		return paps.get(position).get(parser).contains(parser)+" at "+position;
+		return paps.get(frontPosition).get(parser).contains(parser)+" at "+frontPosition;
 	}
 
 	public boolean mustEnd() {

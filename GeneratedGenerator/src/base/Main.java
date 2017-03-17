@@ -12,8 +12,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("base.generator"), new GeneratorGenerator(),
+				Base.parser, new File("test.generator"), new GeneratorGenerator(),
 				new Rules(),new Listnames());
-		Integer i = new Integer(1);
 	}
 }

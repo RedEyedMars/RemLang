@@ -73,7 +73,7 @@ public class AddTokenParser extends ConcreteParser implements IParser {
 		}
 		else {
 			//record the initial position.
-			int position = data.getPosition();
+			int position = data.getFrontPosition();
 			//generate a token that will surround the made tokens.
 			IToken token = data.addTokenLayer();
 			//parse the sub parser.

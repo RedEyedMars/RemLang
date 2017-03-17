@@ -16,10 +16,10 @@ public class OptionalParser extends ConcreteParser implements IParser{
 	@Override
 	public void real_parse(ParseData data) {
 		if(subParser==null||data.isDone())return;
-		int position = data.getPosition();
+		int position = data.getFrontPosition();
 		subParser.parse(data);
 		if(!data.isValid()){
-			data.setPosition(position);
+			data.setFrontPosition(position);
 			data.validate();
 		}
 	}

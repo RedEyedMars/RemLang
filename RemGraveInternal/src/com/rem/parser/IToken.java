@@ -15,6 +15,7 @@ public interface IToken extends Map<IToken.Key,IToken>{
 	public void accumlateLists(Map<String,ParseList> listMap);
 	public void setName(String name);
 	public void setList(String name);
+	public int getLineNumber(String file);
 
 
 	public static class Key {

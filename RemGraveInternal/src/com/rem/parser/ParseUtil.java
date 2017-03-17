@@ -111,13 +111,13 @@ public class ParseUtil {
 		System.out.println(data.isValid()?"Final State:Success":("Final State:Failure("+currentParser+" unable to parse)"));
 		System.out.println("Parse Time:"+((double)(System.currentTimeMillis()-time)/1000.0));
 		System.out.println(data.isDone()?"End Reached":("End not Reached:"+currentParser+" left hanging"));
-		if(data.getPosition()!=data.getFurthestPosition()){
-			System.out.println("Furthest Valid Position:"+data.getPosition());
+		if(data.getFrontPosition()!=data.getFurthestPosition()){
+			System.out.println("Furthest Valid Position:"+data.getFrontPosition());
 			System.out.println("Furthest:"+data.getFurthestParser()+":"+data.getFurthestPosition());
-			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getPosition())+"$"+data.get().substring(data.getFurthestPosition()-data.getPosition()));
+			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getFrontPosition())+"$"+data.get().substring(data.getFurthestPosition()-data.getFrontPosition()));
 		}
 		else {
-			System.out.println("Furthest Position:"+data.getPosition());
+			System.out.println("Furthest Position:"+data.getFrontPosition());
 			System.out.println(data.get());
 		}
 	}

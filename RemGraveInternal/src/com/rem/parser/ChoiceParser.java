@@ -25,7 +25,7 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 			data.setMustEnd(false);
 		}
 		data.invalidate();
-		int position = data.getPosition();
+		int position = data.getFrontPosition();
 		for(int index=0;!data.isValid()&&index<size();++index){
 
 			IParser parser = get(index);
@@ -45,7 +45,7 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 					if(mustEnd){
 						if(!data.isDone()){
 							data.invalidate();
-							data.setPosition(position);
+							data.setFrontPosition(position);
 							continue;
 						}
 					}

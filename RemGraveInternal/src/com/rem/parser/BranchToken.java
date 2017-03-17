@@ -44,6 +44,13 @@ public class BranchToken implements IToken {
 	public List<IToken> getAll(String key){
 		return tokens.get(key);
 	}
+	
+	public int getLineNumber(String file){
+		if(keys.size()>0){
+			return get(keys.get(0)).getLineNumber(file);
+		}
+		else return -1;
+	}
 
 	@Override
 	public void accumlateLists(Map<String,ParseList> listMap){
