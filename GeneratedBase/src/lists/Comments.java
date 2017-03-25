@@ -1,6 +1,8 @@
 package lists;
 
 import com.rem.parser.*;
+import com.rem.parser.token.*;
+import com.rem.parser.parser.*;
 
 public class Comments extends ParseList {
 

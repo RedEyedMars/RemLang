@@ -7,14 +7,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.rem.parser.Generator;
-import com.rem.parser.IParser;
-import com.rem.parser.IToken;
-import com.rem.parser.ParseData;
-import com.rem.parser.ParseList;
-import com.rem.parser.RegexParser;
+import com.rem.parser.*;
+import com.rem.parser.generation.*;
+import com.rem.parser.token.*;
+import com.rem.parser.parser.*;
 
-import lists.Listnames;
+//import lists.Listnames;
 import lists.Tokens;
 
 public class BaseGenerator extends Generator{
@@ -23,10 +21,11 @@ public class BaseGenerator extends Generator{
 	private File sourceDirectory;;
 	private ListGenerator listGen;
 	private RuleGenerator ruleGen;
+	private BaseGenerator self = this;
 
 
 	@Override
-	protected void generate(ParseData data) {
+	public void generate(ParseContext data) {
 		String fileName = data.getFileName();
 		int indexOfDot = fileName.lastIndexOf('.');
 		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
@@ -58,7 +57,9 @@ public class BaseGenerator extends Generator{
 		return Tokens.LISTNAME;
 	}
 
-	@Override
+	public void assignListElementNames(ParseContext data, IToken root){
+
+	}
 	public void assignListElementNames(Map<String,ParseList> listMap, IToken root){
 
 		List<IParser> listNameChoices = new ArrayList<IParser>();
@@ -81,7 +82,7 @@ public class BaseGenerator extends Generator{
 				}
 			}
 			if(!listMap.containsKey(listName)){
-				listMap.put(listName, ParseList.createNew(listName));
+				listMap.put(listName, ParseList.createNew(listName,listSingle));
 			}
 
 			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));
@@ -100,7 +101,7 @@ public class BaseGenerator extends Generator{
 
 		listNameChoices.add(new RegexParser("listname","listnames","listnames"));
 		listnames.getNamesParser().addName("listname");
-		Listnames.parser.replace(listNameChoices);
+		//Listnames.parser.replace(listNameChoices);
 		listMap.get("list_rules").getNamesParser().clear();
 
 	}
@@ -174,8 +175,8 @@ public class BaseGenerator extends Generator{
 
 			listGen.addClassList("rulenames", ruleName, ruleName, null);
 
-			Entry entry = new ElementEntry("ruleElement",StringEntry.getEntry(ruleName,className));
-			listGen.addList(new ListEntry(new ElementEntry("importRulesElement")),"rules", ruleName, entry);
+			Entry entry = new ElementEntry(self,"ruleElement",StringEntry.getEntry(ruleName,className));
+			listGen.addList(new ListEntry(new ElementEntry(self,"importRulesElement",new ListEntry())),"rules", ruleName, entry);
 
 			ListEntry param_list = new ListEntry();
 			ListEntry param_declarations = new ListEntry();
@@ -196,10 +197,10 @@ public class BaseGenerator extends Generator{
 				if("definition".equals(key.getName())){
 					ListEntry ruleEntry = new ListEntry();
 					if(isSilent){
-						ruleEntry.add(new ElementEntry("setupSilenceElement",new ListEntry()));
+						ruleEntry.add(new ElementEntry(self,"setupSilenceElement",new ListEntry()));
 						ruleEntry.setDelimiter("");
 					}
-					ruleEntry.add(new ElementEntry("setupAddElement",
+					ruleEntry.add(new ElementEntry(self,"setupAddElement",
 							new ListEntry(generateDefinition(ruleName,token.get(key),3))));
 					addEntry(getName(),ruleDirectory,fileName,"rule",ruleEntry);
 				}
@@ -209,7 +210,7 @@ public class BaseGenerator extends Generator{
 						ruleParameterNames.put(ruleName, new ArrayList<String>());
 					}
 					ruleParameterNames.get(ruleName).add(rule_param);
-					param_declarations.add(new ElementEntry("parameterMemberElement","Integer",rule_param,"Integer","0"));
+					param_declarations.add(new ElementEntry(self.getElement("parameterMemberElement"),"Integer",rule_param,"Integer","0"));
 					param_list.add(new StringEntry(rule_param));
 				}
 			}
@@ -238,7 +239,7 @@ public class BaseGenerator extends Generator{
 				}
 				else if("braced".equals(key.getName())){
 					entry = generateDefinition(ruleName,atom.get(key).get("definition"),tabs);
-					//entries.add(new ElementEntry("choiceElement",generateRule(definition.get(key).get("definition"))));
+					//entries.add(new ElementEntry(self,"choiceElement",generateRule(definition.get(key).get("definition"))));
 				}
 				else if("multiple".equals(key.getName())){
 					String option = atom.get(key).get("option").getString();
@@ -251,7 +252,7 @@ public class BaseGenerator extends Generator{
 					else if("+".equals(option)){
 						option = "Multiple";
 					}
-					entry = new ElementEntry("multipleElement",
+					entry = new ElementEntry(self,"multipleElement",
 							new ListEntry(new StringEntry(option),generateDefinition(ruleName,atom.get(key).get("definition"),tabs)));
 				}
 			}
@@ -259,11 +260,11 @@ public class BaseGenerator extends Generator{
 			Entry ret = entry;
 			if(enclosingName!=null){
 				if(enclosingList!=null){
-					ret = new ElementEntry("addToListElement",
+					ret = new ElementEntry(self,"addToListElement",
 							new ListEntry(new TabEntry(tabs+1,entry),new StringEntry(enclosingName),new StringEntry(enclosingList)));
 				}
 				else {
-					ret = new ElementEntry("asElement",
+					ret = new ElementEntry(self,"asElement",
 							new ListEntry(new TabEntry(tabs+1,entry),new StringEntry(enclosingName)));
 				}
 			}
@@ -277,7 +278,7 @@ public class BaseGenerator extends Generator{
 				enclosingArgumentsStatement = params;
 			}
 			if(enclosingArgumentsStatement!=null){
-				ret = new ElementEntry("parameterWithElement",new ListEntry(ret,enclosingArgumentsStatement));
+				ret = new ElementEntry(self,"parameterWithElement",new ListEntry(ret,enclosingArgumentsStatement));
 			}
 			return new TabEntry(tabs,ret);
 		}
@@ -330,16 +331,16 @@ public class BaseGenerator extends Generator{
 				return left;
 			}
 			else {
-				return new ElementEntry("parameterOperatorElement",new ListEntry(new StringEntry(operand),left,right));
+				return new ElementEntry(self,"parameterOperatorElement",new ListEntry(new StringEntry(operand),left,right));
 			}
 		}
 
 		public Entry generateArithmaticTerminal(String name, IToken terminal){
 			if("NUMBER".equals(name)){
-				return new ElementEntry("parameterNewNumberElement",terminal.getString());
+				return new ElementEntry(self.getElement("parameterNewNumberElement"),terminal.getString());
 			}
 			else if("rule_parameters".equals(name)){
-				return new ElementEntry("parameterExistingElement",terminal.getString());
+				return new ElementEntry(self.getElement("parameterExistingElement"),terminal.getString());
 			}
 			else {
 				System.err.println(name+" not a recognized Arithmatic Terminal");
@@ -373,7 +374,7 @@ public class BaseGenerator extends Generator{
 						entries.add(chain.getSingle());
 					}
 					else {
-						entries.add(new TabEntry(tabs+1,new ElementEntry("chainElement",new ListEntry(chain))));
+						entries.add(new TabEntry(tabs+1,new ElementEntry(self,"chainElement",new ListEntry(chain))));
 					}
 				}
 
@@ -382,7 +383,7 @@ public class BaseGenerator extends Generator{
 				return entries.getSingle();
 			}
 			else {
-				return new TabEntry(tabs,new ElementEntry("choiceElement",new ListEntry(entries)));
+				return new TabEntry(tabs,new ElementEntry(self,"choiceElement",new ListEntry(entries)));
 			}
 
 		}
@@ -390,10 +391,10 @@ public class BaseGenerator extends Generator{
 		public Entry generateToken(IToken terminal){
 			for(IToken.Key key:terminal.keySet()){
 				if("ruleToken".equals(key.getName())){
-					return new ElementEntry("rule_parserElement",camelize(terminal.get(key).getString()));
+					return new ElementEntry(self.getElement("rule_parserElement"),camelize(terminal.get(key).getString()));
 				}
 				else if("listsToken".equals(key.getName())){					
-					return new ElementEntry("rule_parserElement",camelize(terminal.get(key).getString()));
+					return new ElementEntry(self.getElement("rule_parserElement"),camelize(terminal.get(key).getString()));
 				}
 				else if("listToken".equals(key.getName())){
 					String listName = "#NO_LISTNAME_FOUND";
@@ -401,20 +402,20 @@ public class BaseGenerator extends Generator{
 						listName = lkey.getName();
 					}
 					if(listName.equals("listnames")){
-						return new ElementEntry("rule_name_parserElement",terminal.get(key).getString()+"s");
+						return new ElementEntry(self.getElement("rule_name_parserElement"),terminal.get(key).getString()+"s");
 					}
-					else return new ElementEntry("listElement",
+					else return new ElementEntry(self,"listElement",
 							StringEntry.getEntry(camelize(listName),terminal.get(key).getString()));
 				}
 				else if("anyListNameToken".equals(key.getName())){					
-					return new ElementEntry(
+					return new ElementEntry(self,
 							"rule_any_list_nameElement",new ListEntry());
 				}				
 				else if("token".equals(key.getName())){					
-					return new ElementEntry("listElement",StringEntry.getEntry("Tokens",terminal.get(key).getString()));
+					return new ElementEntry(self,"listElement",StringEntry.getEntry("Tokens",terminal.get(key).getString()));
 				}
 				else if("braceToken".equals(key.getName())){
-					return new ElementEntry("listElement",StringEntry.getEntry("Braces",terminal.get(key).getString()));
+					return new ElementEntry(self,"listElement",StringEntry.getEntry("Braces",terminal.get(key).getString()));
 				}
 			}
 			return new StringEntry(terminal.getString());
@@ -430,6 +431,9 @@ public class BaseGenerator extends Generator{
 			return new String[]{
 					"package base.rules;\n\n"+			
 							"import com.rem.parser.*;\n"+
+							"import com.rem.parser.generation.*;\n"+
+							"import com.rem.parser.token.*;\n"+
+							"import com.rem.parser.parser.*;\n"+
 							"import lists.*;\n\n"+
 							"public class ",/*Class Name*/" extends ConcreteRule {\n\n"+
 									"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/
@@ -543,7 +547,7 @@ public class BaseGenerator extends Generator{
 				}
 			}
 			if(!hasDefinition){
-				addEntry(getName(),listDirectory,fileName,"nameParser",new ElementEntry("emptyListElement",StringEntry.getEntry("\""+listName+"\"")));
+				addEntry(getName(),listDirectory,fileName,"nameParser",new ElementEntry(self,"emptyListElement",StringEntry.getEntry("\""+listName+"\"")));
 			}
 		}
 
@@ -563,7 +567,7 @@ public class BaseGenerator extends Generator{
 			else {
 				params.add(new StringEntry("\""+regex+"\""));
 			}
-			Entry entry = new ElementEntry("classElement",new ListEntry(
+			Entry entry = new ElementEntry(self,"classElement",new ListEntry(
 					new StringEntry(listAssociatedClass.get(listName)),
 					new StringEntry(name),
 					new StringEntry(listAssociatedClass.get(listName)),
@@ -591,8 +595,8 @@ public class BaseGenerator extends Generator{
 				subs.setDelimiter("");
 				main.add(subs);
 
-				main.add(new ElementEntry("parserElement",new ListEntry(new ListEntry())));
-				main.add(new ElementEntry("name_parserElement",new ListEntry(new StringEntry("\""+listName + "\""))));
+				main.add(new ElementEntry(self,"parserElement",new ListEntry(new ListEntry())));
+				main.add(new ElementEntry(self,"name_parserElement",new ListEntry(new StringEntry("\""+listName + "\""))));
 			}
 			((ListEntry)main.get(0)).add(entry);
 			((ListEntry)((ElementEntry)main.get(1)).get(0)).add(name);
@@ -608,7 +612,9 @@ public class BaseGenerator extends Generator{
 		public String[] getOutline() {
 			return new String[]{
 					"package lists;\n\n"+			
-							"import com.rem.parser.*;\n",/*Other Imports*/
+							"import com.rem.parser.*;\n"+
+							"import com.rem.parser.token.*;\n"+
+							"import com.rem.parser.parser.*;\n",/*Other Imports*/
 							"\n"+
 							"public class ",/*Class Name*/" extends ParseList {\n\n"+
 									"\t@Override\n"+

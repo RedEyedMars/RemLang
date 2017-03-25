@@ -3,6 +3,11 @@ package gen;
 import java.io.*;
 import java.util.*;
 import com.rem.parser.*;
+import com.rem.parser.generation.*;
+import com.rem.parser.token.*;
+import com.rem.parser.parser.*;
+import gen.entries.*;
+import gen.properties.*;
 import lists.*;
 
 public class BaseGenerator extends Generator {
@@ -11,12 +16,13 @@ public class BaseGenerator extends Generator {
 	private String seedName = null;
 	private IParser lazyNameParser = (IParser)Tokens.LISTNAME;
 
+
 	public BaseGenerator(){
 	}
-	public void generate(ParseData data){
+	public void generate(ParseContext data){
 		String fileName = data.getFileName();
 		Integer indexOfDot = fileName.lastIndexOf(".");
-		if(new Boolean(indexOfDot > -1)){
+		if((indexOfDot > -1)){
 			fileName = fileName.substring(0,indexOfDot);
 		}
 		seedName = fileName;
@@ -28,14 +34,8 @@ public class BaseGenerator extends Generator {
 		Generators.list.outputAll();
 		Generators.base.outputAll();
 	}
-	public void assignListElementNames(Map<String,ParseList> listMapObj,IToken root){
-		IToken r = (IToken)root;
-		Map<String,ParseList> listMap = (Map<String,ParseList>)listMapObj;
-		ArrayList<IParser> listNameChoices = new ArrayList<IParser>();
-		ParseList listnames = (ParseList)listMap.get("listnames");
-		NameParser listNamesNameParser = (NameParser)listnames.getNamesParser();
-		listNamesNameParser.clear();
-		ParseList list_rules = (ParseList)listMap.get("list_rules");
+	public void assignListElementNames(ParseContext context,IToken root){
+		ParseList list_rules = (ParseList)context.getList("list_rules");
 		IToken new_list_rules = list_rules.getNewTokens();
 		for(IToken.Key new_list_defKey:new_list_rules.keySet()){
 			IToken new_list_def = new_list_rules.get(new_list_defKey);
@@ -43,26 +43,22 @@ public class BaseGenerator extends Generator {
 			listName = listName.replaceAll("[ \\t]+","");
 			String listSingle = listName;
 			Integer indexOfDash = listName.indexOf("-");
-			if(new Boolean(indexOfDash > -1)){
-				ParseList oldList = (ParseList)null;
-				Boolean listMapContainsKey = listMap.containsKey(listName);
-				if(new Boolean(listMapContainsKey == true)){
-					oldList = listMap.remove(listName);
+			if((indexOfDash > -1)){
+				ParseList oldList = (ParseList)context.getList(listName);
+				if((oldList != null)){
+					context.removeList(oldList);
 				}
 				listSingle = listName.substring(0,indexOfDash);
 				listName = Generators.base.buildString(listSingle,listName.substring(indexOfDash + 1,listName.length()));
-				if(new Boolean(oldList != null)){
-					listMap.put(listName,oldList);
+				if((oldList != null)){
+					context.addList(oldList);
 				}
 			}
-			Boolean listMapContainsKey = listMap.containsKey(listName);
-			if(new Boolean(!listMapContainsKey)){
-				listMap.put(listName,Generators.base.createNewParseList(listName));
+			ParseList listVar = (ParseList)context.getList(listName);
+			if((listVar == null)){
+				listVar = ParseList.createNew(listName,listSingle);
+				context.addList(listVar);
 			}
-			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));
-			NameParser listnamesNameParser = (NameParser)listnames.getNamesParser();
-			listnamesNameParser.addName(listSingle);
-			ParseList listVar = (ParseList)listMap.get(listName);
 			NameParser listNameParser = (NameParser)listVar.getNamesParser();
 			List<IToken> defListDef = new_list_def.getAll("list_def");
 			if(defListDef != null){
@@ -72,12 +68,7 @@ public class BaseGenerator extends Generator {
 				}
 			}
 		}
-		listNameChoices.add(new RegexParser("listname","listnames","listnames"));
-		NameParser lisnamesNameParser = (NameParser)listnames.getNamesParser();
-		lisnamesNameParser.addName("listname");
-		ChoiceParser listNamesParser = (ChoiceParser)Listnames.parser;
-		listNamesParser.replace(listNameChoices);
-		ParseList listRuless = (ParseList)listMap.get("list_rules");
+		ParseList listRuless = (ParseList)context.getList("list_rules");
 		NameParser listRulessNamesParser = (NameParser)listRuless.getNamesParser();
 		listRulessNamesParser.clear();
 	}

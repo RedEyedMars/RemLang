@@ -1,6 +1,8 @@
 package lists;
 
 import com.rem.parser.*;
+import com.rem.parser.token.*;
+import com.rem.parser.parser.*;
 
 public class ClassNames extends ParseList {
 
@@ -17,6 +19,8 @@ public class ClassNames extends ParseList {
 	public static final RegexParser StringBuilder = new RegexParser("StringBuilder","class_names","StringBuilder");
 	public static final RegexParser Integer = new RegexParser("Integer","class_names","Integer");
 	public static final RegexParser ParseList = new RegexParser("ParseList","class_names","ParseList");
+	public static final RegexParser ParseContext = new RegexParser("ParseContext","class_names","ParseContext");
+	public static final RegexParser ParseUtil = new RegexParser("ParseUtil","class_names","ParseUtil");
 	public static final RegexParser IParser = new RegexParser("IParser","class_names","IParser");
 	public static final RegexParser IToken = new RegexParser("IToken","class_names","IToken");
 	public static final RegexParser Listnames = new RegexParser("Listnames","class_names","Listnames");
@@ -25,7 +29,7 @@ public class ClassNames extends ParseList {
 	public static final RegexParser File = new RegexParser("File","class_names","File");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				String,StringBuilder,Integer,ParseList,IParser,IToken,Listnames,List,Map,File);
+				String,StringBuilder,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,Map,File);
 
 	public static final NameParser name_parser = new NameParser(
 				"class_names");

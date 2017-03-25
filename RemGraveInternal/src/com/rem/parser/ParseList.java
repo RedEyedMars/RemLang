@@ -1,10 +1,18 @@
 package com.rem.parser;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.rem.parser.parser.NameParser;
+import com.rem.parser.token.BranchToken;
+import com.rem.parser.token.IToken;
+import com.rem.parser.token.NodeToken;
 
 public abstract class ParseList extends BranchToken{
 
 	private BranchToken newTokensToken;
+	private List<ParseList> children = new ArrayList<ParseList>();
 
 	public ParseList(){
 		super();
@@ -14,7 +22,8 @@ public abstract class ParseList extends BranchToken{
 						"parser".equals(field.getName())||
 						"name_parser".equals(field.getName())||
 						"this$0".equals(field.getName())||
-						"val$listName".equals(field.getName())){
+						"val$listName".equals(field.getName())||
+						"val$singleName".equals(field.getName())){
 					continue;
 				}
 				else {
@@ -49,7 +58,7 @@ public abstract class ParseList extends BranchToken{
 		newTokensToken = new BranchToken();
 	}
 	
-	public static ParseList createNew(final String listName){
+	public static ParseList createNew(final String listName, final String singleName){
 		return new ParseList(){
 			private NameParser name_parser = new NameParser(listName);
 			@Override
@@ -59,7 +68,7 @@ public abstract class ParseList extends BranchToken{
 
 			@Override
 			public String getSingular() {
-				return listName.substring(0,listName.length()-1);
+				return singleName;
 			}
 
 			@Override
@@ -67,5 +76,20 @@ public abstract class ParseList extends BranchToken{
 				return name_parser;
 			}
 		};
+	}
+
+	public static String createSingleName(String listName) {
+		int indexOfDash = listName.indexOf('-');
+		if(indexOfDash>-1){
+			return listName.substring(0, indexOfDash);
+		}
+		return listName.substring(0,listName.length()-1);
+	}
+	public static String createPluralName(String listName) {
+		int indexOfDash = listName.indexOf('-');
+		if(indexOfDash>-1){
+			return listName.substring(0, indexOfDash)+listName.substring(indexOfDash+1);
+		}
+		return listName;
 	}
 }

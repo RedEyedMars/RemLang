@@ -37,106 +37,67 @@ base
 	var lazyNameParser as IParser
 		static Tokens LISTNAME
 		
-	aux assignListElementNames takes listMapObj, root
-		var r as IToken
-			root
-		var listMap as Map<String,ParseList>
-			listMapObj 
-		var listNameChoices
-			new ArrayList<IParser>
-		var listnames as ParseList
-			listMap get
-				"listnames"
-		var listNamesNameParser as NameParser
-			listnames getNamesParser
-		listNamesNameParser clear
+	aux assignListElementNames takes
+			context as ParseContext
+			root as IToken
 		var list_rules as ParseList
-			listMap get
+			context getList
 				"list_rules"
 		token new_list_rules
 			list_rules getNewTokens
 		
-		new_list_rules to new_list_def
-			else 
-				var listName
-					'new_list_def -> listname
-				set listName
-					listName replaceAll
-						"[ \\t]+"
-						""
-				var listSingle
-					listName
-				var indexOfDash
-					listName indexOf
-						"-"
-				if indexOfDash > -1
-					var oldList as ParseList
-						null
-					var listMapContainsKey
-						listMap containsKey
-							listName
-					if listMapContainsKey is true
-						set oldList
-							listMap remove
-								listName
-					
-					set listSingle
-						listName substring
-							0
-							indexOfDash
-					set listName
-						base buildString
-							listSingle
-							listName substring
-								indexOfDash+1
-								listName length
-					if oldList is not null
-						listMap put
-							listName
-							oldList
-				var listMapContainsKey
-					listMap containsKey
+		new_list_rules * to new_list_def
+			var listName
+				'new_list_def -> listname
+			set listName
+				listName replaceAll
+					"[ \\t]+"
+					""
+			var listSingle
+				listName
+			var indexOfDash
+				listName indexOf
+					"-"
+			if indexOfDash > -1
+				var oldList as ParseList
+					context getList
 						listName
-				if not listMapContainsKey
-					listMap put
-						listName
-						base createNewParseList
-							listName
+				if oldList is not null
+					context removeList
+						oldList
 				
-				listNameChoices add
-					new RegexParser
+				set listSingle
+					listName substring
+						0
+						indexOfDash
+				set listName
+					base buildString
 						listSingle
-						"listnames"
+						listName substring
+							indexOfDash+1
+							listName length
+				if oldList is not null
+					context addList
+						oldList			
+			var listVar as ParseList
+				context getList
+					listName
+			if listVar is null
+				set listVar
+					static ParseList createNew
 						listName
-				var listnamesNameParser as NameParser
-					listnames getNamesParser
-				listnamesNameParser addName
-					listSingle
-				var listVar as ParseList
-					listMap get
-						listName
-				var listNameParser as NameParser
-					listVar getNamesParser
-				new_list_def list_def to def
-					var name
-						'def -> parameters -> name
-					listNameParser addName
-						name					
-		listNameChoices add
-			new RegexParser
-				"listname"
-				"listnames"
-				"listnames"
-		var lisnamesNameParser as NameParser
-			listnames getNamesParser
-		lisnamesNameParser addName
-			"listname"
-		var listNamesParser as ChoiceParser
-			static Listnames parser
-		listNamesParser replace
-			listNameChoices
+						listSingle
+				context addList
+					listVar
+			var listNameParser as NameParser
+				listVar getNamesParser
+			new_list_def list_def to def
+				var name
+					'def -> parameters -> name
+				listNameParser addName
+					name
 		var listRuless as ParseList
-			listMap get
+			context getList
 				"list_rules"
 		var listRulessNamesParser as NameParser
 			listRuless getNamesParser
@@ -153,6 +114,9 @@ rule
 		outline
 			"package " Package Name ";\n\n"+			
 			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import com.rem.parser.parser.*;\n"+
 			"import lists.*;\n\n"+
 			"public class " Class Name " extends ConcreteRule {\n\n"+
 			"\tpublic static final IRule parser = new " Class Name "();\n" Parameter Declarations
@@ -177,6 +141,8 @@ rule
 			"new AddTokenParser(" Inner Rule "," Token Name ")"
 		addToList
 			"new AddTokenToListParser(" Inner Rule "," Token Name "," List Name ")"
+		addToListWithToken
+			"new AddTokenToListParser(" Inner Rule "," Token Name "," List Name "," With Name ")"
 		
 		chain
 			"new ChainParser(" Inner Rules ")"
@@ -334,33 +300,25 @@ rule
 			null
 		var enclosingList
 			null
-		entry enclosingArgumentsStatement = null
+		var enclosingTokenName
+			null
 		atom to quark
 			parameters
 				var name
 					quark -> name
 				var listVar
 					quark -> list
+				var withToken
+					quark -> tokenName
 				if name is not null
 					set enclosingName
-						rule buildString
-							"\""
-							'name
-							"\""
+						``'name``
 				if listVar is not null
 					set enclosingList
-						rule buildString
-							"\""
-							'listVar
-							"\""
-				
-				entry params = {}
-				quark parameter to energy
-					params add
-						generate parameter
-				if params is not empty
-					set enclosingArgumentsStatement
-						params
+						``'listVar``
+				if withToken is not null
+					set enclosingTokenName
+						``'withToken``		
 			terminal
 				set returnEntry
 					generate terminal
@@ -381,13 +339,21 @@ rule
 		
 		if enclosingName is not null
 			if enclosingList is not null
-				set returnEntry
-					addToList { (tabs+1 returnEntry) [enclosingName] [enclosingList] }
+				if enclosingTokenName is not null
+					set returnEntry
+						addToListWithToken { (tabs+1 returnEntry) enclosingName enclosingList enclosingTokenName }
+				else
+					set returnEntry
+						addToList { (tabs+1 returnEntry) enclosingName enclosingList }
 			else
 				set returnEntry
-					as { (tabs+1 returnEntry) [enclosingName] }
+					as { (tabs+1 returnEntry) enclosingName }
 		
-		if enclosingArgumentsStatement is not null
+		entry enclosingArgumentsStatement = {}
+		atom parameter to energy
+			enclosingArgumentsStatement add
+				generate parameter
+		if enclosingArgumentsStatement is not empty
 			set returnEntry
 				parameterWith {returnEntry enclosingArgumentsStatement}
 		return
@@ -498,8 +464,12 @@ rule
 				var listName
 					rule camelize
 						'token
-				return
-					rule_parser {[listName]}
+				if listName is "Listnames"
+					return
+						["new com.rem.parser.parser.Listnames()"]
+				else
+					return
+						rule_parser {[listName]}
 			listToken
 				var listName
 					"#NO_LISTNAME_FOUND"
@@ -540,7 +510,9 @@ list
 	elements
 		outline
 			"package lists;\n\n"+
-			"import com.rem.parser.*;\n" Other Imports	"\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import com.rem.parser.parser.*;\n" Other Imports	"\n"+
 			"public class " Class Name " extends ParseList {\n\n"+
 			"\t@Override\n"+
 			"\tpublic String getName() {\n"+
@@ -696,22 +668,18 @@ list
 					parameterEntry
 				set hasDefinition
 					true
-		
-		var listNameInQuotes
-			list buildString
-				"\""
-				listName
-				"\""
 		if hasDefinition is true
 			list addEntry
 				directory
 				fileName
 				"nameParser"
-				emptyList [listNameInQuotes]
+				emptyList {``listName``}
 	
-	aux addClassList takes listName, name, regex, parameter
-		var p as Entry
-			parameter
+	aux addClassList takes
+			listName
+			name
+			regex
+			parameter as Entry
 		var containsAssociatedClass
 			listAssociatedClass containsKey
 				listName
@@ -724,37 +692,18 @@ list
 		if parameter is not null
 			params add
 				parameter
-		var nameInQuotes
-			list buildString
-				"\""
-				name
-				"\""
-		var listNameInQuotes
-			list buildString
-				"\""
-				listName
-				"\""
 		params add
-			[nameInQuotes]
+			``name``
 		params add
-			[listNameInQuotes]
+			``listName``
 		
-		var regexInQuotes
-			list buildString
-				"\""
-				regex
 		if "listnames" is listName		
-			set regexInQuotes
+			set regex
 				list buildString
-					regexInQuotes
-					"\\b\""
-		else
-			set regexInQuotes
-				list buildString
-					regexInQuotes
-					"\""
+					regex					
+					"\\b"
 		params add
-			[regexInQuotes]
+			``regex``
 		
 		var associatedClassName
 			listAssociatedClass get
@@ -770,9 +719,11 @@ list
 			name
 			listEntry
 	
-	aux addList takes imports, listName, name, listEntry
-		var l as Entry
-			listEntry
+	aux addList takes
+			imports
+			listName
+			name
+			listEntry as Entry
 		var className
 			list camelize
 				listName
@@ -780,11 +731,6 @@ list
 			list buildString
 				className
 				".java"
-		var listNameInQuotes
-			list buildString
-				"\""
-				listName
-				"\""
 		var listNameLength
 			listName length
 		var singularListName
@@ -819,7 +765,7 @@ list
 			main add
 				parser {{}}
 			main add
-				name_parser {[listNameInQuotes]}
+				name_parser {``listName``}
 		
 		var main0 as ListEntry
 			main get

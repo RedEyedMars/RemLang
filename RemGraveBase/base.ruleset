@@ -40,6 +40,7 @@ altbrace-s are CharitableBraced
 list_rule-s are empty
 rule-s are empty
 rule_parameter-s are empty
+definition-s are empty
 
 #Rules
 base is silent
@@ -54,7 +55,7 @@ arithmatic has tabCount, tabLength
 	rule_parameter | NUMBER
 
 rule is silent
-	NAME as rulename in rules ( SILENCE as silence )? member_declaration? NEWLINE TAB definition
+	NAME as rulename in rules ( SILENCE as silence )? member_declaration? NEWLINE TAB definition as definition in definitions
 
 member_declaration is silent
 	HAS NAME as rule_param in rule_parameters  ( COMMA NAME as rule_param in rule_parameters )*

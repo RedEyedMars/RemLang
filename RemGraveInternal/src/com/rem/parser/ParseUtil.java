@@ -8,6 +8,12 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.rem.parser.generation.Generator;
+import com.rem.parser.parser.IParser;
+import com.rem.parser.parser.IRule;
+import com.rem.parser.parser.NameParser;
+import com.rem.parser.token.IToken;
+
 public class ParseUtil {
 
 	public static Map<String,PrintStream> debugStreams = new HashMap<String,PrintStream>();
@@ -58,27 +64,26 @@ public class ParseUtil {
 		}
 	}
 
-	public static void parse(IParser parser, File file, Generator generator, ParseList rules, ParseList listnames) {
+	public static void parse(IParser parser, File file, Generator generator, ParseList rules) {
 		long time = System.currentTimeMillis();
 		for(IToken.Key key:rules.keySet()){
 			((IRule)rules.get(key).getValue()).setup();
 		}
 		String fileString = getString(file);
-		ParseData data = new ParseData(file.getName(),fileString);			
+		ParseContext data = new ParseContext(file.getName(),fileString);			
 		System.out.println("File Length:"+data.getFile().length());
-		data.addList(listnames);
 		if(generator!=null&&generator.getLazyNameParser()!=null){
 			NameParser.lazyParser=generator.getLazyNameParser();
 			parser.parse(data);
 			NameParser.lazyParser=null;
+			if(!data.isDone()){
+				System.out.println("First-Pass Failed!");
+			}
 			data.accumlateLists(generator);
 			data.resetLists();
 			if(data.isDone()){
-				data = new ParseData(data);
+				data = new ParseContext(data);
 				System.out.println("First-Pass Successful");
-			}
-			else {
-				System.out.println("First-Pass Failed!");
 			}
 		}
 		if(data.isValid()){
@@ -96,8 +101,7 @@ public class ParseUtil {
 		for(IToken.Key key:rules.keySet()){
 			((IRule)rules.get(key).getValue()).setup();
 		}
-		ParseData data = new ParseData(file.getName(),getString(file));
-		data.addList(listnames);
+		ParseContext data = new ParseContext(file.getName(),getString(file));
 		debug = true;
 		parser.debug_parse(data);
 
@@ -107,7 +111,7 @@ public class ParseUtil {
 		}
 	}
 
-	public static void result(ParseData data, long time){
+	public static void result(ParseContext data, long time){
 		System.out.println(data.isValid()?"Final State:Success":("Final State:Failure("+currentParser+" unable to parse)"));
 		System.out.println("Parse Time:"+((double)(System.currentTimeMillis()-time)/1000.0));
 		System.out.println(data.isDone()?"End Reached":("End not Reached:"+currentParser+" left hanging"));

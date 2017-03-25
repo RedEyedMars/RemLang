@@ -1,6 +1,9 @@
 package base.rules;
 
 import com.rem.parser.*;
+import com.rem.parser.generation.*;
+import com.rem.parser.token.*;
+import com.rem.parser.parser.*;
 import lists.*;
 
 public class Terminal extends ConcreteRule {
@@ -19,7 +22,7 @@ public class Terminal extends ConcreteRule {
 							Tokens.ANYLIST,"anyListNameToken"),
 					new AddTokenParser(
 						
-							Listnames.parser,"listsToken"),
+							new com.rem.parser.parser.Listnames(),"listsToken"),
 					new AddTokenParser(
 						
 							AnyListNameParser.parser,"listToken")));
