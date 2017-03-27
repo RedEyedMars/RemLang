@@ -14,7 +14,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("generator.ruleset"), Generators.base,
+				Base.parser, new File("test.ruleset"), Generators.base,
 				Rules.parser, Listnames.parser);
 	}
 

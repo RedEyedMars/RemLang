@@ -34,12 +34,8 @@ public class BaseGenerator extends Generator {
 		Generators.list.outputAll();
 		Generators.base.outputAll();
 	}
-	public void assignListElementNames(Map<String,ParseList> listMap,IToken root){
-		ArrayList<IParser> listNameChoices = new ArrayList<IParser>();
-		ParseList listnames = (ParseList)listMap.get("listnames");
-		NameParser listNamesNameParser = (NameParser)listnames.getNamesParser();
-		listNamesNameParser.clear();
-		ParseList list_rules = (ParseList)listMap.get("list_rules");
+	public void assignListElementNames(ParseContext context,IToken root){
+		ParseList list_rules = (ParseList)context.getList("list_rules");
 		IToken new_list_rules = list_rules.getNewTokens();
 		for(IToken.Key new_list_defKey:new_list_rules.keySet()){
 			IToken new_list_def = new_list_rules.get(new_list_defKey);
@@ -48,25 +44,18 @@ public class BaseGenerator extends Generator {
 			String listSingle = listName;
 			Integer indexOfDash = listName.indexOf("-");
 			if((indexOfDash > -1)){
-				ParseList oldList = (ParseList)null;
-				Boolean listMapContainsKey = listMap.containsKey(listName);
-				if((listMapContainsKey == true)){
-					oldList = listMap.remove(listName);
+				ParseList oldList = (ParseList)context.getList(listName);
+				if((oldList != null)){
+					context.removeList(oldList);
 				}
 				listSingle = listName.substring(0,indexOfDash);
 				listName = Generators.base.buildString(listSingle,listName.substring(indexOfDash + 1,listName.length()));
 				if((oldList != null)){
-					listMap.put(listName,oldList);
+					context.addList(oldList);
 				}
 			}
-			Boolean listMapContainsKey = listMap.containsKey(listName);
-			if((!listMapContainsKey)){
-				listMap.put(listName,Generators.base.createNewParseList(listName));
-			}
-			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));
-			NameParser listnamesNameParser = (NameParser)listnames.getNamesParser();
-			listnamesNameParser.addName(listSingle);
-			ParseList listVar = (ParseList)listMap.get(listName);
+			context.addList(listName);
+			ParseList listVar = (ParseList)context.getList(listName);
 			NameParser listNameParser = (NameParser)listVar.getNamesParser();
 			List<IToken> defListDef = new_list_def.getAll("list_def");
 			if(defListDef != null){
@@ -76,12 +65,7 @@ public class BaseGenerator extends Generator {
 				}
 			}
 		}
-		listNameChoices.add(new RegexParser("listname","listnames","listnames"));
-		NameParser lisnamesNameParser = (NameParser)listnames.getNamesParser();
-		lisnamesNameParser.addName("listname");
-		ChoiceParser listNamesParser = (ChoiceParser)Listnames.parser;
-		listNamesParser.replace(listNameChoices);
-		ParseList listRuless = (ParseList)listMap.get("list_rules");
+		ParseList listRuless = (ParseList)context.getList("list_rules");
 		NameParser listRulessNamesParser = (NameParser)listRuless.getNamesParser();
 		listRulessNamesParser.clear();
 	}

@@ -19,11 +19,4 @@ public class Comments extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				comment);
-
-	public static final NameParser name_parser = new NameParser(
-				"comments");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

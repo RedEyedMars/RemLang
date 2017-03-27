@@ -26,11 +26,4 @@ public class Listnames extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				comment,token,brace,altbrace,list_rule,rule,rule_parameter,definition);
-
-	public static final NameParser name_parser = new NameParser(
-				"listnames");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

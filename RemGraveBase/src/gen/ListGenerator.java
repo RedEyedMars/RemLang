@@ -32,23 +32,11 @@ public class ListGenerator extends Generator {
 	public static final Element importRulesElement = new Element("importRules",new String[]{"import base.rules.*;\n"});
 	public static final Element classElement = new Element("class",new String[]{"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"});
 	public static final Element parserElement = new Element("parser",new String[]{"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t",/*Rules*/");\n"});
-	public static final Element name_parserElement = new Element("name_parser",new String[]{"\n\tpublic static final NameParser name_parser = new NameParser(\n\t\t\t\t",/*Rules*/");\n"+
-			"\t@Override\n"+
-			"\tpublic NameParser getNamesParser(){\n"+
-			"\t\treturn name_parser;\n"+
-			"\t}\n"});
-	public static final Element emptyListElement = new Element("emptyList",new String[]{"\tpublic static final NameParser name_parser = new NameParser(",/*List Name*/");\n"+
-			"\t@Override\n"+
-			"\tpublic NameParser getNamesParser(){\n"+
-			"\t\treturn name_parser;\n"+
-			"\t}\n"});
 	public ListGenerator(){
 		addElement("outline",outlineElement);
 		addElement("importRules",importRulesElement);
 		addElement("class",classElement);
 		addElement("parser",parserElement);
-		addElement("name_parser",name_parserElement);
-		addElement("emptyList",emptyListElement);
 	}
 	public void generate(ParseContext data){
 		directory = new File(Generators.base.getDirectory(),"lists");
@@ -115,10 +103,6 @@ public class ListGenerator extends Generator {
 				hasDefinition = true;
 			}
 		}
-		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
-		if((hasDefinition == true)){
-			Generators.list.addEntry(directory,fileName,"nameParser",new ElementEntry(ListGenerator.emptyListElement,new ListEntry(new StringEntry(listNameInQuotes))));
-		}
 	}
 	public void addClassList(String listName,String name,String regex,Entry parameter){
 		Boolean containsAssociatedClass = listAssociatedClass.containsKey(listName);
@@ -129,18 +113,12 @@ public class ListGenerator extends Generator {
 		if((parameter != null)){
 			params.add(parameter);
 		}
-		String nameInQuotes = Generators.list.buildString("\"",name,"\"");
-		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
-		params.add(new ListEntry(new StringEntry(nameInQuotes)));
-		params.add(new ListEntry(new StringEntry(listNameInQuotes)));
-		String regexInQuotes = Generators.list.buildString("\"",regex);
+		params.add(new QuoteEntry(name));
+		params.add(new QuoteEntry(listName));
 		if(("listnames".equals(listName))){
-			regexInQuotes = Generators.list.buildString(regexInQuotes,"\\b\"");
+			regex = Generators.list.buildString(regex,"\\b");
 		}
-		else {
-			regexInQuotes = Generators.list.buildString(regexInQuotes,"\"");
-		}
-		params.add(new ListEntry(new StringEntry(regexInQuotes)));
+		params.add(new QuoteEntry(regex));
 		String associatedClassName = listAssociatedClass.get(listName);
 		Entry listEntry = new ElementEntry(ListGenerator.classElement,new ListEntry(new ListEntry(new StringEntry(associatedClassName)),new ListEntry(new StringEntry(name)),new ListEntry(new StringEntry(associatedClassName)),params));
 		Generators.list.addList(new ListEntry(),listName,name,listEntry);
@@ -148,7 +126,6 @@ public class ListGenerator extends Generator {
 	public void addList(Entry imports,String listName,String name,Entry listEntry){
 		String className = Generators.list.camelize(listName);
 		String fileName = Generators.list.buildString(className,".java");
-		String listNameInQuotes = Generators.list.buildString("\"",listName,"\"");
 		Integer listNameLength = listName.length();
 		String singularListName = listName.substring(0,listNameLength - 1);
 		ListEntry parameters = new ListEntry(imports,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(listName)),new ListEntry(new StringEntry(singularListName)));
@@ -160,7 +137,6 @@ public class ListGenerator extends Generator {
 		if((main.isEmpty())){
 			main.add(subs);
 			main.add(new ElementEntry(ListGenerator.parserElement,new ListEntry(new ListEntry())));
-			main.add(new ElementEntry(ListGenerator.name_parserElement,new ListEntry(new ListEntry(new StringEntry(listNameInQuotes)))));
 		}
 		ListEntry main0 = (ListEntry)main.get(0);
 		main0.add(listEntry);
@@ -181,7 +157,7 @@ public class ListGenerator extends Generator {
 		return "List";
 	}
 
-	public void assignListElementNames(Map<String, ParseList> listMap, IToken rootToken){
+	public void assignListElementNames(ParseContext context, IToken rootToken){
 	}
 
 	public IParser getLazyNameParser(){

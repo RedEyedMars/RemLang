@@ -16,6 +16,7 @@ public class Parameters extends ConcreteRule {
 	@Override
 	public void setup(){
 		set(
+			new ChoiceParser(
 				new ChainParser(
 					new OptionalParser(
 							
@@ -23,12 +24,19 @@ public class Parameters extends ConcreteRule {
 									Tokens.AS,
 									new AddTokenParser(
 										Tokens.NAME,"name"))),
+					Tokens.IN,
+					new AddTokenParser(
+						com.rem.parser.parser.Listnames.parser,"list"),
 					new OptionalParser(
 							
 								new ChainParser(
-									Tokens.IN,
+									Tokens.WITH,
 									new AddTokenParser(
-										Listnames.parser,"list")))));
+										Tokens.NAME,"tokenName")))),
+				new ChainParser(
+					Tokens.AS,
+					new AddTokenParser(
+						Tokens.NAME,"name"))));
 
 	}
 	@Override @SuppressWarnings("unchecked")

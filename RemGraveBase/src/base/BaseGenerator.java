@@ -12,7 +12,7 @@ import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import com.rem.parser.parser.*;
 
-import lists.Listnames;
+//import lists.Listnames;
 import lists.Tokens;
 
 public class BaseGenerator extends Generator{
@@ -57,7 +57,9 @@ public class BaseGenerator extends Generator{
 		return Tokens.LISTNAME;
 	}
 
-	@Override
+	public void assignListElementNames(ParseContext data, IToken root){
+
+	}
 	public void assignListElementNames(Map<String,ParseList> listMap, IToken root){
 
 		List<IParser> listNameChoices = new ArrayList<IParser>();
@@ -80,7 +82,7 @@ public class BaseGenerator extends Generator{
 				}
 			}
 			if(!listMap.containsKey(listName)){
-				listMap.put(listName, ParseList.createNew(listName));
+				//listMap.put(listName, ParseList.createNew(listName,listSingle));
 			}
 
 			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));
@@ -99,7 +101,7 @@ public class BaseGenerator extends Generator{
 
 		listNameChoices.add(new RegexParser("listname","listnames","listnames"));
 		listnames.getNamesParser().addName("listname");
-		Listnames.parser.replace(listNameChoices);
+		//Listnames.parser.replace(listNameChoices);
 		listMap.get("list_rules").getNamesParser().clear();
 
 	}

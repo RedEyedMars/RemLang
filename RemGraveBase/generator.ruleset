@@ -7,31 +7,31 @@ token-s
 	"=" as EQUALSIGN
 	"+" as PLUS
 	"*" as STAR
-	"uses" as USES
+	"uses " as USES
 	"elements" as ELEMENTS
 	"generate" as GENERATE
 	"takes" as TAKES
-	"var" as VARIABLE
-	"set" as SET
-	"entry" as ENTRY
+	"var " as VARIABLE
+	"set " as SET
+	"entry " as ENTRY
 	"return" as RETURN
 	"\\" as BACK_SLASH
 	":" as COLON
 	"," as COMMA
 	"\'" as PRIME
 	"to" as TO
-	"new" as NEW
+	"new " as NEW
 	"contains " as CONTAINS
 	[[+-]] as ADDITIVE_OPERAND
 	[[*/]] as MULTIPLICATIVE_OPERAND
 	[(-)?\\d+] as NUMBER
 	"null" as NULL
-	"if" as IF
+	"if " as IF
 	"else" as ELSE
-	"and" as AND
-	"or" as OR
-	"not" as NOT
-	"is" as IS
+	"and " as AND
+	"or " as OR
+	"not " as NOT
+	"is " as IS
 	"static" as STATIC
 	[[<>](=)?] as ORDINAL_OPERATOR
 	"empty" as EMPTY
@@ -39,14 +39,23 @@ token-s
 	"single" as SINGLE
 	[[-][>]] as ACCESS
 	[[^\\s]+] as NON_SPACE
-	"flip" as FLIP
+	"flip " as FLIP
 	"error" as ERROR
 	"true" as TRUE
 	"false" as FALSE
-	"aux" as AUXILLARY
-	"cast" as CAST
-	"as" as AS
-	"token" as TOKEN
+	"aux " as AUXILLARY
+	"cast " as CAST
+	"as " as AS
+	"token " as TOKEN
+	"property " as PROPERTY
+	"each " as EACH
+	"in " as IN
+	"constructor" as CONSTRUCTOR
+	"output" as OUTPUT
+	"this" as THIS
+	"constant" as CONSTANT
+	"otherwise" as OTHERWISE
+	"|" as PIPE
 
 #Tab collectors
 tab-s are Tabbed
@@ -55,13 +64,15 @@ tab-s are Tabbed
 #Braces
 brace-s are Braced
 	[\",\"] as QUOTE with WILD as entry
+	[``,``] as QUOTE_ENTRY with (QUOTE | variable_or_token_name)
 	[{,}] as ENTRY_LIST with (entry_definition{-1}| generate_call{-1} | whitetab{-1}? (entry_name|variable_name))? ( (entry_definition{-1} | generate_call{-1} | whitetab{-1}? (entry_name|variable_name)) )*
-	[[,]] as ENTRY_STRING with (QUOTE | variable_or_token_name) ( (QUOTE | variable_or_token_name))*
+	[[,]] as ENTRY_STRING with ( QUOTE_ENTRY | QUOTE | variable_or_token_name) ( ( QUOTE_ENTRY | QUOTE | variable_or_token_name))*	
 	[<,>] as ANGLE_BRACES with angle_brace_parameters
 	[(,)] as TAB_BRACES with tab_brace_parameters as tab_braces
+	[@,@] as CUSTOM_ENTRY_DEFINITION with entry_class_name method_parameter*
 
 angle_brace_parameters is silent
-	(entry_definition{-1}|class_name ANGLE_BRACES as braces?|arithmatic|generator_name|entry_name) as parameter ( COMMA (entry_definition{-1}|class_name ANGLE_BRACES as braces?|arithmatic|generator_name|entry_name) as parameter)*
+	(entry_definition{-1}|(class_name|property_name) ANGLE_BRACES as braces?|arithmatic|generator_name|entry_name) as parameter ( COMMA (entry_definition{-1}|(class_name|property_name) ANGLE_BRACES as braces?|arithmatic|generator_name|entry_name) as parameter)*
 
 tab_brace_parameters is silent
 	arithmatic (entry_definition|entry_name) 
@@ -73,6 +84,8 @@ arithmatic
 
 #Class Definition	
 class_definition-s are empty
+entry_class_definition-s are empty
+property_definition-s are empty
 
 generator_name-s
 class_name-s
@@ -80,6 +93,8 @@ class_name-s
 	[StringBuilder] as StringBuilder
 	[Integer] as Integer
 	[ParseList] as ParseList
+	[ParseContext] as ParseContext	
+	[ParseUtil] as ParseUtil
 	[IParser] as IParser
 	[IToken] as IToken
 	[Listnames] as Listnames
@@ -87,27 +102,45 @@ class_name-s
 	[Map] as Map
 	[File] as File
 element_name-s are empty
-variable_name-s are empty
+variable_name-s	are empty
 entry_name-s are empty
+entry_class_name-s are empty
+property_name-s are empty
 token_name-s are empty
+method_declaration-s are empty
 
 #Rules
 base is silent
-	( NEWLINE | used_classes_list | class_declaration as class_def in class_definitions )+
+	( NEWLINE | used_classes_list | property_declaration as property_dec in property_definitions | entry_class_declaration as entry_dec in entry_class_definitions | class_declaration as class_dec in class_definitions )+
 
 whitetab is silent has tabs
 	( NEWLINE TAB{tabs})+
 
 used_classes_list
-	USES ( NAME as className in class_names)+ 
+	USES ( NAME as className in class_names)+
+
+property_declaration is silent
+	PROPERTY NAME as propertyName in property_names  entry_class_element*
+
+entry_class_declaration is silent
+	ENTRY NAME as entryClassName in entry_class_names (USES property_name+) as implements? entry_class_element*
+
+entry_class_element
+	constant_declaration{1}
+	variable_declaration{1}
+	entry_declaration{1}
+	( whitetab{1} CONSTRUCTOR takes_statement{1}? ( entry_declaration{2} | body_element{2} )+ ) as constructor
+	( whitetab{1} OUTPUT as methodName ( whitetab{3} (PLUS as break | ( entry_definition{-1} | entry_name ) as value ( OTHERWISE as otherwise | IF boolean_statement) as ifStatement?) )as  entry_values+ ( ( entry_declaration{2} | body_element{2} )* ) as body ) as output_method
+	( whitetab{1} NAME as methodName ( AS NAME as methodType )? takes_statement{1}? ( entry_declaration{2} | body_element{2} )+ ) as entry_method
 
 class_declaration is silent
-	NAME as className in generator_names ( TAKES NAME as parameter ( COMMA NAME as parameter)*)? ( class_element{1})+
+	NAME as className in generator_names ( class_element{1})+
 
 class_element is silent has tabs
-	auxillary_declaration{tabs}
+	constant_declaration{tabs}
+	(auxillary_declaration{tabs}) as auxillary_declaration in method_declarations
 	element_declaration{tabs}
-	generation_declaration{tabs}
+	(generation_declaration{tabs}) as generation_declaration in method_declarations
 	variable_declaration{tabs}
 
 element_declaration has tabs
@@ -119,19 +152,26 @@ element_definition has tabs
 element_entry has tabs
 	whitetab{tabs}? QUOTE ( PLUS whitetab{tabs} QUOTE)*
 
+takes_statement is silent has tabs
+	TAKES ( whitetab{tabs+2}? NAME as takeName in variable_names cast_as_statement? ) as parameter ( (COMMA|whitetab{tabs+2}) ( NAME as takeName in variable_names cast_as_statement? ) as parameter)*
 
-auxillary_declaration has tabs
-	whitetab{tabs} AUXILLARY NAME as methodName ( TAKES NAME as takeName in variable_names ( COMMA NAME as takeName in variable_names )* )? ( entry_declaration{tabs+1} | body_element{tabs+1} )+
+auxillary_declaration is silent has tabs
+	whitetab{tabs} AUXILLARY NAME as methodName takes_statement{tabs}? ( entry_declaration{tabs+1} | body_element{tabs+1} )+
 
-generation_declaration has tabs
-	whitetab{tabs} GENERATE ( TAKES NAME as takeName in variable_names ( COMMA NAME as takeName in variable_names )* )?  ( entry_declaration{tabs+1} | body_element{tabs+1} )+
-	whitetab{tabs} GENERATE NAME as tokenName in token_names ( TAKES NAME as takeName in variable_names ( COMMA NAME as takeName in variable_names )* )?  ( entry_declaration{tabs+1} | body_element{tabs+1} )+ 
+generation_declaration is silent has tabs
+	whitetab{tabs} GENERATE takes_statement{tabs}?  ( entry_declaration{tabs+1} | body_element{tabs+1} )+
+	whitetab{tabs} GENERATE NAME as tokenName in token_names takes_statement{tabs}?  ( entry_declaration{tabs+1} | body_element{tabs+1} )+ 
 
 entry_declaration has tabs
 	whitetab{tabs} ENTRY NAME as entryName in entry_names ( QUOTE as delimiter )? EQUALSIGN ( entry_definition{tabs+1} | NULL )
 
 entry_definition has tabs
-	whitetab{tabs}? ( (entry_name SINGLE) as getSingle | element_name list_entry_definition | list_entry_definition | TAB_BRACES )
+	whitetab{tabs}? ( (entry_name SINGLE) as getSingle | CUSTOM_ENTRY_DEFINITION | QUOTE_ENTRY as quoted | generator_name (element_name|variable_name) list_entry_definition | element_name list_entry_definition | list_entry_definition | TAB_BRACES )
+
+list_entry_definition
+	ENTRY_LIST as list
+	ENTRY_STRING as string
+	( PIPE variable_name PIPE ) as exact_variable
 
 body_element has tabs
 	error_statement{tabs}
@@ -140,19 +180,18 @@ body_element has tabs
 	token_declaration{tabs}
 	variable_declaration{tabs}
 	set_call{tabs}
+	each_call{tabs}
 	flip_switch{tabs}
 	token_expansion{tabs}
 	method_call{tabs}
 
+constant_declaration has tabs
+	whitetab{tabs} CONSTANT NAME as variableName in variable_names cast_as_statement? ( cast_statement{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
 variable_declaration has tabs
 	whitetab{tabs} VARIABLE NAME as variableName in variable_names cast_as_statement? ( cast_statement{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
 
 token_declaration has tabs
 	whitetab{tabs} TOKEN NAME as tokenName in token_names ( method_call{tabs+1} | ( ( whitetab{tabs+1} token_name ( ACCESS NAME as option )+ ) as variable_or_token_name ) as method_parameter ) 
-
-list_entry_definition
-	ENTRY_LIST as list
-	ENTRY_STRING as string
 
 token_expansion has tabs
 	whitetab{tabs} token_name ( NAME_WORD as getName | clause_type_tokens{tabs} | all_type_tokens{tabs} )
@@ -167,10 +206,13 @@ all_type_tokens has tabs
 	(STAR as wild|NAME) as specificTokenName TO NAME as tokenName in token_names ( entry_declaration{tabs+1} | body_element{tabs+1} )+ as body
 
 return_statement has tabs
-	whitetab{tabs} RETURN ( generate_call{tabs+1} | entry_definition{tabs+1} | method_call{tabs+1} | whitetab{tabs+1} (entry_name|NULL) )
+	whitetab{tabs} RETURN ( generate_call{tabs+1} | entry_definition{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} (entry_name|NULL) )
 
 error_statement has tabs
 	whitetab{tabs} ERROR ( whitetab{tabs+1}? (QUOTE|variable_or_token_name))+
+
+each_call has tabs
+	whitetab{tabs} EACH NAME as eachName in variable_names IN variable_name as iterable body_element{tabs+1}+
 
 if_statement has tabs
 	whitetab{tabs} IF boolean_statement ( body_element{tabs+1} )+ else_statement{tabs}?
@@ -187,7 +229,7 @@ boolean_clause
 	( method_parameter as left ( IS NOT? | ORDINAL_OPERATOR ) as operator (method_parameter | EMPTY | SINGULAR) as right ) as operatedStatement
 
 method_call has tabs
-	whitetab{tabs} STATIC as isStatic?( NEW | GENERATE | method_parameter ) as subject NAME as methodName  ( ANGLE_BRACES as angle_braces | ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter)* )
+	whitetab{tabs} STATIC as isStatic?( NEW | GENERATE | THIS | method_parameter ) as subject NAME as methodName  ( ANGLE_BRACES as angle_braces | ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter)* )
 
 set_call has tabs
 	whitetab{tabs}? SET NAME as subject ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
@@ -203,6 +245,8 @@ method_parameter
 	variable_or_token_name
 	class_name
 	generator_name
+	property_name
+	entry_class_name
 	entry_name
 	NUMBER
 

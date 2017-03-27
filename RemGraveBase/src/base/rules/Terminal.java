@@ -22,7 +22,7 @@ public class Terminal extends ConcreteRule {
 							Tokens.ANYLIST,"anyListNameToken"),
 					new AddTokenParser(
 						
-							Listnames.parser,"listsToken"),
+							com.rem.parser.parser.Listnames.parser,"listsToken"),
 					new AddTokenParser(
 						
 							AnyListNameParser.parser,"listToken")));

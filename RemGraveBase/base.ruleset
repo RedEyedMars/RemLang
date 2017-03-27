@@ -44,10 +44,10 @@ definition-s are empty
 
 #Rules
 base is silent
-	( NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules )+
+	( NEWLINE | comments | rule as rule in rules | list_rule as list_rule in list_rules)+
 
 parameters
-	(AS NAME as name )? (IN listnames as list )? 
+	(AS NAME as name)? IN listnames as list ( WITH NAME as tokenName )? | AS NAME as name 
 
 arithmatic has tabCount, tabLength
 	arithmatic ADDITIVE_OPERAND as operand arithmatic{1,2+3}
@@ -55,20 +55,19 @@ arithmatic has tabCount, tabLength
 	rule_parameter | NUMBER
 
 rule is silent
-	NAME as rulename in rules ( SILENCE as silence )? member_declaration? NEWLINE TAB definition as definition in definitions
+	NAME as rulename in rules ( SILENCE as silence )? member_declaration? NEWLINE TAB definition
 
 member_declaration is silent
 	HAS NAME as rule_param in rule_parameters  ( COMMA NAME as rule_param in rule_parameters )*
 
-
 list_rule is silent		
-	LISTNAME as listname in listnames ( ARE NAME as listType )? NEWLINE ( TAB ( ( QUOTE | SQUARE ) parameters ( WITH NEWLINED_DEF as parameter)? ) as list_def NEWLINE )*
+	LISTNAME as listname in listnames ( ARE NAME as listType )? NEWLINE ( TAB ( ( QUOTE | SQUARE )  parameters ( WITH NEWLINED_DEF as parameter)? ) as list_def NEWLINE )*
 
 definition
 	( atom atom* ) as chain ( ( PIPE | NEWLINE TAB ) definition )? as choice
 
 atom
-	element parameters PARAM_BRACE?
+	element parameters? PARAM_BRACE?
 
 element	is silent
 	( definition ( OPTIONAL | MANY | PLUS ) as option ) as multiple

@@ -18,7 +18,8 @@ public class Atom extends ConcreteRule {
 		set(
 				new ChainParser(
 					Rules.element,
-					Rules.parameters,
+					new OptionalParser(
+							Rules.parameters),
 					new OptionalParser(
 							Braces.PARAM_BRACE)));
 

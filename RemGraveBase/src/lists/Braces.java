@@ -36,11 +36,4 @@ public class Braces extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				BRACE,SQUARE,QUOTE,PARAM_BRACE);
-
-	public static final NameParser name_parser = new NameParser(
-				"braces");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }
