@@ -1,7 +1,9 @@
 package com.rem.parser;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,19 +16,23 @@ import com.rem.parser.token.IToken;
 
 public class ParseContext {
 
-	private Set<String> listnames = new HashSet<String>();
+	private static Set<String> listnames = new HashSet<String>();
 	private Map<String,ParseList> lists = new HashMap<String,ParseList>();
 
 	private static IToken currentToken = new BranchToken();
 	private static IToken rootToken = currentToken;
 	private static Object[] contextParameters;
 	private Map<Integer,Map<IParser,Set<AccessPoint>>> paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
+	private List<Range> subContextRanges = new ArrayList<Range>();
+	private List<ParseContext> subContexts = new ArrayList<ParseContext>();
+	private ParseContext parentContext;
+	private int id;
 	private int length;
 
 	private boolean valid = true;
 	private int frontPosition = 0;
 	private int backPosition = -1;
-	private int furthestPosition = 0;
+	static int furthestPosition = 0;
 	private String furthestParser = "";
 	private String file;
 	private boolean mustEnd;
@@ -38,15 +44,59 @@ public class ParseContext {
 		this.fileName = fileName;
 	}
 
-	public ParseContext(ParseContext data) {
+	private ParseContext(ParseContext data) {
 		this.fileName = data.fileName;
 		this.length = data.length;
 		this.file = data.file;
+		this.parentContext = data;
 		for(String listName:data.getListNames()){
-			ParseList newList = ParseList.createNew(listName,data.lists.get(listName).getSingular());
-			addList(newList);
-			newList.getNamesParser().setParent(data.lists.get(listName).getNamesParser());
+			ParseList parentList = data.getList(listName);
+			if(parentList==null){
+				addList(listName);
+			}
+			else {
+				ParseList newList = ParseList.createNew(listName,parentList.getSingular(),data);
+				addList(newList);
+			}
 		}
+	}
+
+	public static ParseContext copy(ParseContext data) {
+		ParseContext copy = new ParseContext(data.fileName, data.file);
+		copy.lists = data.lists;
+		copy.subContextRanges = data.subContextRanges;
+		copy.subContexts = data.subContexts;
+		copy.resetPaps();
+		return copy;
+	}
+	
+	public void resetPaps(){
+		this.paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
+		for(ParseContext subContext:subContexts){
+			subContext.resetPaps();
+		}
+	}
+
+	public ParseContext getContextFromPosition(int position){
+		for(int i=0;i<subContextRanges.size();++i){
+			if(subContextRanges.get(i).contains(position)){
+				if(subContextRanges.get(i).startsWith(position)){
+					return subContexts.get(i);
+				}
+				else {
+					return subContexts.get(i).getContextFromPosition(position);
+				}
+			}
+		}
+		ParseContext newContext =  new ParseContext(this);
+		newContext.id = subContexts.size();
+		subContexts.add(newContext);
+		subContextRanges.add( new Range(position,backPosition));
+		return newContext;
+	}
+
+	public void setRangeBack(int newBackPosition){
+		parentContext.subContextRanges.get(id).setBack(newBackPosition);
 	}
 
 	public boolean isDone() {
@@ -81,7 +131,7 @@ public class ParseContext {
 	}
 
 	public int getFurthestPosition(){
-		return this.furthestPosition;
+		return furthestPosition;
 	}
 
 	public String getFurthestParser(){
@@ -207,7 +257,13 @@ public class ParseContext {
 	}
 
 	public ParseList getList(String listName) {
-		return lists.get(listName);
+		if(lists.containsKey(listName)){
+			return lists.get(listName);
+		}
+		else if(parentContext!=null){
+			return parentContext.getList(listName);
+		}
+		else return null;
 	}
 
 
@@ -216,11 +272,21 @@ public class ParseContext {
 	}
 
 	public void addList(ParseList list) {
-		if(listnames.add(list.getName())){
+		listnames.add(list.getName());
+		if(!lists.containsKey(list.getName())){
 			lists.put(list.getName(), list);
-		}
+		}		
 	}
 	
+	public void addList(String listName) {
+		listnames.add(listName);
+		if(!lists.containsKey(listName)){
+			lists.put(listName, ParseList.createNew(
+					ParseList.createPluralName(listName),
+					ParseList.createSingleName(listName), parentContext));
+		}		
+	}
+
 	public void removeList(ParseList list){
 		listnames.remove(list.getName());
 		lists.remove(list.getName());
@@ -294,6 +360,17 @@ public class ParseContext {
 		}
 		else {
 			ParseContext.contextParameters = null;
+		}
+	}
+
+
+	public void listParents() {
+		if(this.parentContext!=null){
+			System.out.println(this.parentContext);
+			this.parentContext.listParents();
+		}
+		else {
+			System.out.println("root:"+this);
 		}
 	}
 

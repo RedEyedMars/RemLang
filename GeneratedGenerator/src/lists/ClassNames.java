@@ -30,11 +30,4 @@ public class ClassNames extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				String,StringBuilder,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,Map,File);
-
-	public static final NameParser name_parser = new NameParser(
-				"class_names");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

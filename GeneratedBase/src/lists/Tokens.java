@@ -39,11 +39,4 @@ public class Tokens extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,HAS,SILENCE,ANYLIST,TAB,NEWLINE,NAME,LISTNAME,SPACES,WILD,NUMBER);
-
-	public static final NameParser name_parser = new NameParser(
-				"tokens");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

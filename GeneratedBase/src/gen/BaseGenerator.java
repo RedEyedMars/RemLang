@@ -54,11 +54,8 @@ public class BaseGenerator extends Generator {
 					context.addList(oldList);
 				}
 			}
+			context.addList(listName);
 			ParseList listVar = (ParseList)context.getList(listName);
-			if((listVar == null)){
-				listVar = ParseList.createNew(listName,listSingle);
-				context.addList(listVar);
-			}
 			NameParser listNameParser = (NameParser)listVar.getNamesParser();
 			List<IToken> defListDef = new_list_def.getAll("list_def");
 			if(defListDef != null){

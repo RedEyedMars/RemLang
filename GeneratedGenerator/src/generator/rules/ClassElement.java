@@ -20,9 +20,13 @@ public class ClassElement extends ConcreteRule {
 		set(
 			new ChoiceParser(
 					new WithParser((IRule)Rules.constant_declaration,this.tabs),
-					new WithParser((IRule)Rules.auxillary_declaration,this.tabs),
+					new AddTokenToListParser(
+						
+							new WithParser((IRule)Rules.auxillary_declaration,this.tabs),"auxillary_declaration","method_declarations"),
 					new WithParser((IRule)Rules.element_declaration,this.tabs),
-					new WithParser((IRule)Rules.generation_declaration,this.tabs),
+					new AddTokenToListParser(
+						
+							new WithParser((IRule)Rules.generation_declaration,this.tabs),"generation_declaration","method_declarations"),
 					new WithParser((IRule)Rules.variable_declaration,this.tabs)));
 
 	}

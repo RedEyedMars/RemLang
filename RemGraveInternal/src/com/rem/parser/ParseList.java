@@ -12,36 +12,14 @@ import com.rem.parser.token.NodeToken;
 public abstract class ParseList extends BranchToken{
 
 	private BranchToken newTokensToken;
-	private List<ParseList> children = new ArrayList<ParseList>();
-
-	public ParseList(){
-		super();
-		try {
-			for(Field field:this.getClass().getDeclaredFields()){
-				if("serialVersionUID".equals(field.getName())||
-						"parser".equals(field.getName())||
-						"name_parser".equals(field.getName())||
-						"this$0".equals(field.getName())||
-						"val$listName".equals(field.getName())||
-						"val$singleName".equals(field.getName())){
-					continue;
-				}
-				else {
-					super.put(new NodeToken(field.getName(),field.get(this),-1));
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		
-		newTokensToken = new BranchToken();
-	}
-
+	private NameParser name_parser;
+	
 	public abstract String getName();	
 	public abstract String getSingular();
-	public abstract NameParser getNamesParser();
+	
+	public NameParser getNamesParser(){
+		return name_parser;
+	}
 	
 	
 	@Override
@@ -58,9 +36,9 @@ public abstract class ParseList extends BranchToken{
 		newTokensToken = new BranchToken();
 	}
 	
-	public static ParseList createNew(final String listName, final String singleName){
-		return new ParseList(){
-			private NameParser name_parser = new NameParser(listName);
+	static ParseList createNew(final String listName, final String singleName, final ParseContext parentContext){
+		//System.out.println(listName+"::"+singleName);
+		ParseList newList = new ParseList(){
 			@Override
 			public String getName() {
 				return listName;
@@ -70,12 +48,30 @@ public abstract class ParseList extends BranchToken{
 			public String getSingular() {
 				return singleName;
 			}
-
-			@Override
-			public NameParser getNamesParser() {
-				return name_parser;
-			}
 		};
+		try {
+			for(Field field:ParseList.class.getDeclaredFields()){
+				if("serialVersionUID".equals(field.getName())||
+						"parser".equals(field.getName())||
+						"name_parser".equals(field.getName())||
+						"this$0".equals(field.getName())||
+						"val$listName".equals(field.getName())||
+						"val$singleName".equals(field.getName())){
+					continue;
+				}
+				else {
+					newList.put(new NodeToken(field.getName(),field.get(newList),-1));
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		
+		newList.newTokensToken = new BranchToken();
+		newList.name_parser = new NameParser(parentContext,listName);
+		return newList;
 	}
 
 	public static String createSingleName(String listName) {

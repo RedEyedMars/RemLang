@@ -16,6 +16,7 @@ public class AuxillaryDeclaration extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
+		isSilent(true);
 		set(
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),

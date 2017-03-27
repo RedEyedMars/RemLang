@@ -20,11 +20,4 @@ public class Altbraces extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				NEWLINED_DEF);
-
-	public static final NameParser name_parser = new NameParser(
-				"altbraces");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

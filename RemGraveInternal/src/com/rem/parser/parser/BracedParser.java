@@ -86,7 +86,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 				return;
 			}
-			ParseContext newParseData = new ParseContext(data);
+			ParseContext newParseData = data.getContextFromPosition(position);
 			newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
 			newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			newParseData.setMustEnd(true);
@@ -95,6 +95,8 @@ public class BracedParser extends ConcreteParser implements IParser{
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setFrontPosition(position);
+				newParseData.setRangeBack(-1 );
+				newParseData.setFrontPosition(data.getFrontPosition());
 				data.invalidate();
 			}
 			else {
@@ -105,7 +107,9 @@ public class BracedParser extends ConcreteParser implements IParser{
 						break;
 					}
 				}
+				newParseData.setRangeBack(data.getFrontPosition()+found);
 				data.setFrontPosition(data.getFrontPosition()+found);
+				data.validate();
 			}
 		}
 		else {

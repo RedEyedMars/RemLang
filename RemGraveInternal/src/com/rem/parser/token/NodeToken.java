@@ -30,6 +30,7 @@ public class NodeToken implements IToken{
 		return position;
 	}
 	
+	
 	public int getLineNumber(String file){
 		int current = 0;
 		for(int i=0;i<position&&i<file.length();){

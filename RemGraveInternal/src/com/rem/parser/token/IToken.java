@@ -17,6 +17,8 @@ public interface IToken extends Map<IToken.Key,IToken>{
 	public void accumlateLists(ParseContext data);
 	public void setName(String name);
 	public void setList(String name);
+
+	public int getPosition();
 	public int getLineNumber(String file);
 
 
@@ -42,9 +44,6 @@ public interface IToken extends Map<IToken.Key,IToken>{
 			return position;
 		}
 	}
-
-
-
 
 
 

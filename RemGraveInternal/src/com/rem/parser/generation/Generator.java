@@ -100,10 +100,6 @@ public abstract class Generator {
 		return builder.toString();
 	}
 
-	protected ParseList createNewParseList(String listName, String singleName){
-		return ParseList.createNew(listName,singleName);
-	}
-
 	protected String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(("" + name.charAt(0)).toUpperCase());

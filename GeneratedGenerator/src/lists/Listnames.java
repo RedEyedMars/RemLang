@@ -29,14 +29,8 @@ public class Listnames extends ParseList {
 	public static final RegexParser entry_class_name = new RegexParser("entry_class_name","listnames","entry_class_names\b");
 	public static final RegexParser property_name = new RegexParser("property_name","listnames","property_names\b");
 	public static final RegexParser token_name = new RegexParser("token_name","listnames","token_names\b");
+	public static final RegexParser method_declaration = new RegexParser("method_declaration","listnames","method_declarations\b");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				token,tab,brace,class_definition,entry_class_definition,property_definition,generator_name,class_name,element_name,variable_name,entry_name,entry_class_name,property_name,token_name);
-
-	public static final NameParser name_parser = new NameParser(
-				"listnames");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
+				token,tab,brace,class_definition,entry_class_definition,property_definition,generator_name,class_name,element_name,variable_name,entry_name,entry_class_name,property_name,token_name,method_declaration);
 }

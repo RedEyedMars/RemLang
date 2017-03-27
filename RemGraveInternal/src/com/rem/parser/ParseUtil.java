@@ -6,12 +6,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.rem.parser.generation.Generator;
+import com.rem.parser.parser.ChoiceParser;
+import com.rem.parser.parser.ConcreteListParser;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.IRule;
 import com.rem.parser.parser.NameParser;
+import com.rem.parser.parser.RegexParser;
 import com.rem.parser.token.IToken;
 
 public class ParseUtil {
@@ -64,10 +68,10 @@ public class ParseUtil {
 		}
 	}
 
-	public static void parse(IParser parser, File file, Generator generator, ParseList rules) {
+	public static void parse(IParser parser, File file, Generator generator, List<IParser> rules, List<IParser> listnames) {
 		long time = System.currentTimeMillis();
-		for(IToken.Key key:rules.keySet()){
-			((IRule)rules.get(key).getValue()).setup();
+		for(int i=0;i<rules.size();++i){
+			((IRule)rules.get(i)).setup();
 		}
 		String fileString = getString(file);
 		ParseContext data = new ParseContext(file.getName(),fileString);			
@@ -77,12 +81,19 @@ public class ParseUtil {
 			parser.parse(data);
 			NameParser.lazyParser=null;
 			if(!data.isDone()){
-				System.out.println("First-Pass Failed!");
+				System.out.println("First-Pass Failed!"+data.getLine());
+				data.invalidate();
 			}
-			data.accumlateLists(generator);
-			data.resetLists();
-			if(data.isDone()){
-				data = new ParseContext(data);
+			else {
+				data.accumlateLists(generator);
+				for(IParser list:listnames){
+					String pattern = ((RegexParser)list).getPattern();
+					String listName = pattern.substring(0, pattern.length()-1);
+					data.addList(listName);
+				}
+				data.resetLists();
+				data = ParseContext.copy(data);
+				ParseContext.furthestPosition = 0;
 				System.out.println("First-Pass Successful");
 			}
 		}
@@ -92,7 +103,7 @@ public class ParseUtil {
 		}
 
 		result(data,time);
-		if(generator!=null){
+		if(generator!=null&&data.isDone()){
 			generator.generate(data);
 		}
 	}

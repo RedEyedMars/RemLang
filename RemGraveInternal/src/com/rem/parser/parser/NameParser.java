@@ -19,28 +19,24 @@ public class NameParser extends RegexParser{
 			else return o2.length()-o1.length();
 		}});
 	private boolean isLazy = true;
-	private NameParser parent = null;
+	private ParseContext parent = null;
 
 
-	public NameParser(String listName, String... parsers) {
+	public NameParser(ParseContext parentContext, String listName, String... parsers) {
 		super(listName, listName);
 		if(parsers!=null){
 			for(int i=0;i<parsers.length;++i){
 				this.parsers.add(parsers[i]);
 			}			
 		}
+		this.parent = parentContext;
 	}
 
 	@Override
 	public void real_parse(ParseContext data){
 
 		if(lazyParser!=null){
-			System.out.println(data.getLine());
 			lazyParser.parse(data);
-			System.out.println(data.isValid());
-			if(data.isValid()){
-				System.out.println(data.getLine());
-			}
 			return;
 		}
 		else if(!containsNames()){
@@ -57,9 +53,12 @@ public class NameParser extends RegexParser{
 		else {
 			data.invalidate();
 		}
-		if(!data.isValid()&&(parent!=null&&parent.containsNames())){
-			data.validate();
-			parent.real_parse(data);				
+		if(!data.isValid()&&parent!=null){
+			ParseList parentList = parent.getList(name);
+			if(parentList!=null&&parentList.getNamesParser().containsNames()){
+				data.validate();
+				parentList.getNamesParser().real_parse(data);				
+			}
 		}
 	}
 
@@ -70,7 +69,16 @@ public class NameParser extends RegexParser{
 	}
 
 	public boolean containsNames(){
-		return !parsers.isEmpty()||(parent!=null&&parent.containsNames());
+		if(!parsers.isEmpty()){
+			return true;
+		}
+		else if(parent!=null){
+			ParseList parentList = parent.getList(name);
+			if(parentList!=null&&parentList.getNamesParser().containsNames()){
+				return true;			
+			}
+		}
+		return false;
 	}
 
 	public void solidify(){
@@ -90,10 +98,15 @@ public class NameParser extends RegexParser{
 	}
 
 	public void clear(){
+		
 		parsers.clear();
 	}
 
-	public void setParent(NameParser newParent) {
-		this.parent = newParent;
+	public ParseContext getParent(){
+		return this.parent;
 	}
+/*
+	public void setParentContext(ParseContext parentContext) {
+		this.parent = parentContext;
+	}*/
 }

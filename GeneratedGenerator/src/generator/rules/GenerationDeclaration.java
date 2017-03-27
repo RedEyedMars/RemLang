@@ -16,6 +16,7 @@ public class GenerationDeclaration extends ConcreteRule {
 	}
 	@Override
 	public void setup(){
+		isSilent(true);
 		set(
 			new ChoiceParser(
 				new ChainParser(

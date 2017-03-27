@@ -26,7 +26,7 @@ public class Parameters extends ConcreteRule {
 										Tokens.NAME,"name"))),
 					Tokens.IN,
 					new AddTokenParser(
-						new com.rem.parser.parser.Listnames(),"list"),
+						com.rem.parser.parser.Listnames.parser,"list"),
 					new OptionalParser(
 							
 								new ChainParser(

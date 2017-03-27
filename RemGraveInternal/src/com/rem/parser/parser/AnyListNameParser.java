@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.ParseList;
 import com.rem.parser.token.NodeToken;
 
 public class AnyListNameParser extends ConcreteParser {
@@ -24,12 +25,19 @@ public class AnyListNameParser extends ConcreteParser {
 			return;
 		}
 		data.invalidate();
+		//System.out.println(data+":"+data.getListNames().isEmpty());
+		//data.listParents();
 		for(String listName:data.getListNames()){
-			NameParser nameParser = data.getList(listName).getNamesParser();
-			if(nameParser.containsNames()){
-				nameParser.parse(data);
-				if(data.isValid()){
-					return;
+			ParseList list = data.getList(listName); 
+			if(list!=null){
+				NameParser nameParser = data.getList(listName).getNamesParser();
+				if(nameParser.containsNames()){
+					//System.out.println(data.getLine());
+					nameParser.parse(data);
+					//System.out.println(listName+":"+nameParser.getParent()+":"+data.isValid()+":"+data+":"+nameParser.getPattern());
+					if(data.isValid()){
+						return;
+					}
 				}
 			}
 		}
@@ -46,18 +54,23 @@ public class AnyListNameParser extends ConcreteParser {
 				}}
 					);
 			for(String listName:data.getListNames()){
-				//System.out.println(">>>"+data.getList(listName).getSingular());
+				if(data.getList(listName)!=null){
 				listnames.add(data.getList(listName).getSingular());
+				}
 			}
+			listnames.add("listname");
 		}
 		else {
 			if(data.getListNames().size()!=listnames.size()){
 				listnames.clear();
-				listnames.addAll(data.getListNames());
+				for(String listName:data.getListNames()){
+					if(data.getList(listName)!=null){
+						listnames.add(data.getList(listName).getSingular());
+					}
+				}
 			}
 		}
 		String toExamine = data.get();
-		//System.out.println("::"+data.getLine());
 		for(String listName:listnames){
 			boolean isValid = true;
 			for(int i=0;i<listName.length()&&i<toExamine.length();++i){

@@ -24,16 +24,19 @@ public class Listnames extends ConcreteParser{
 				}}
 					);
 			listnames.addAll(data.getListNames());
+			listnames.add("listnames");
 		}
 		else {
 			if(data.getListNames().size()!=listnames.size()){
 				listnames.clear();
 				listnames.addAll(data.getListNames());
+				listnames.add("listnames");
 			}
 		}
 		String toExamine = data.get();
 		//System.out.println("::"+data.getLine());
 		for(String listName:listnames){
+
 			boolean isValid = true;
 			if(listName.length()>toExamine.length()){
 				continue;
@@ -46,7 +49,7 @@ public class Listnames extends ConcreteParser{
 			}
 			if(isValid){
 				int found = listName.length();
-				boolean foundSpace = found>=toExamine.length();
+				boolean foundSpace = found>=toExamine.length()||toExamine.charAt(found)=='\n';
 				for(;found<toExamine.length();++found){
 					if(toExamine.charAt(found)!=' '&&toExamine.charAt(found)!='\t'){
 						break;

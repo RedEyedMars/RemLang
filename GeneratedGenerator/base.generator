@@ -78,17 +78,12 @@ base
 							listName length
 				if oldList is not null
 					context addList
-						oldList			
+						oldList
+			context addList
+				listName						
 			var listVar as ParseList
 				context getList
 					listName
-			if listVar is null
-				set listVar
-					static ParseList createNew
-						listName
-						listSingle
-				context addList
-					listVar
 			var listNameParser as NameParser
 				listVar getNamesParser
 			new_list_def list_def to def
@@ -466,7 +461,7 @@ rule
 						'token
 				if listName is "Listnames"
 					return
-						["new com.rem.parser.parser.Listnames()"]
+						["com.rem.parser.parser.Listnames.parser"]
 				else
 					return
 						rule_parser {[listName]}
@@ -528,18 +523,6 @@ list
 			"\tpublic static final " Class "Parser " Name " = new " Class "Parser(" Parameters ");\n"
 		parser
 			"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t" Rules ");\n"
-		name_parser
-			"\n\tpublic static final NameParser name_parser = new NameParser(\n\t\t\t\t" Rules ");\n"+
-			"\t@Override\n"+
-			"\tpublic NameParser getNamesParser(){\n"+
-			"\t\treturn name_parser;\n"+
-			"\t}\n"
-		emptyList
-			"\tpublic static final NameParser name_parser = new NameParser(" List Name ");\n"+
-			"\t@Override\n"+
-			"\tpublic NameParser getNamesParser(){\n"+
-			"\t\treturn name_parser;\n"+
-			"\t}\n"
 	
 	generate takes data
 		set directory	
@@ -668,12 +651,6 @@ list
 					parameterEntry
 				set hasDefinition
 					true
-		if hasDefinition is true
-			list addEntry
-				directory
-				fileName
-				"nameParser"
-				emptyList {``listName``}
 	
 	aux addClassList takes
 			listName
@@ -764,8 +741,6 @@ list
 			
 			main add
 				parser {{}}
-			main add
-				name_parser {``listName``}
 		
 		var main0 as ListEntry
 			main get

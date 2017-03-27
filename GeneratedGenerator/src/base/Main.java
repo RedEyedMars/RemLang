@@ -3,6 +3,7 @@ package base;
 import java.io.File;
 
 import lists.Rules;
+import lists.Listnames;
 import generator.rules.Base;
 import com.rem.parser.ParseUtil;
 import com.rem.parser.generation.*;
@@ -15,7 +16,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("base.generator"), Generators.generator,
-				new Rules());
+				Base.parser, new File("test.generator"), Generators.generator,
+				Rules.parser,Listnames.parser);
 	}
 }

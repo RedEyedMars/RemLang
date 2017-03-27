@@ -17,7 +17,8 @@ public class BranchToken implements IToken {
 	private IToken parent;
 	private String listName = null;
 	private String name;
-
+	private int position = -1;
+	
 	@Override
 	public Object getValue(){
 		return keys.isEmpty()?"empty":get(keys.getFirst()).getValue();
@@ -58,17 +59,24 @@ public class BranchToken implements IToken {
 	@Override
 	public void accumlateLists(ParseContext data){
 		if(listName!=null){
-			if(data.getList(listName)==null){
-				data.addList(ParseList.createNew(
-						ParseList.createPluralName(listName),
-						ParseList.createSingleName(listName)));
-			}
+			data.addList(listName);
 			data.getList(listName).put(new IToken.Key(name,-1,0),this);
-			listName = null;			
+			listName = null;
+			int position = getPosition();
+			if(position>-1){
+				data = data.getContextFromPosition(position);
+			}
 		}
 		for(IToken.Key key:keys){
 			get(key).accumlateLists(data);
 		}
+	}
+	
+	public int getPosition(){
+		if(!keys.isEmpty()){
+		return tokens.get(keys.get(0).getName()).get(0).getPosition();
+		}
+		return -1;
 	}
 	
 	@Override

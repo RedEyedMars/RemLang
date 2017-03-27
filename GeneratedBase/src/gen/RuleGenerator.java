@@ -334,7 +334,7 @@ public class RuleGenerator extends Generator {
 				IToken token = terminal.get(tokenKey);
 				String listName = Generators.rule.camelize(token.getString());
 				if((listName.equals("Listnames"))){
-					return new ListEntry(new StringEntry("new com.rem.parser.parser.Listnames()"));
+					return new ListEntry(new StringEntry("com.rem.parser.parser.Listnames.parser"));
 				}
 				else {
 					return new ElementEntry(RuleGenerator.rule_parserElement,new ListEntry(new ListEntry(new StringEntry(listName))));

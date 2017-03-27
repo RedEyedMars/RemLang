@@ -19,11 +19,4 @@ public class Tabs extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				TAB);
-
-	public static final NameParser name_parser = new NameParser(
-				"tabs");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

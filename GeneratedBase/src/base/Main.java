@@ -2,6 +2,7 @@ package base;
 
 import java.io.File;
 
+import lists.Listnames;
 import lists.Rules;
 import base.rules.Base;
 import gen.Generators;
@@ -14,7 +15,7 @@ public class Main {
 
 		ParseUtil.parse(
 				Base.parser, new File("generator.ruleset"), Generators.base,
-				new Rules());
+				Rules.parser, Listnames.parser);
 	}
 
 }

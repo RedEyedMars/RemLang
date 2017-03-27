@@ -29,11 +29,4 @@ public class Rules extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				base,parameters,arithmatic,rule,member_declaration,list_rule,definition,atom,element,terminal);
-
-	public static final NameParser name_parser = new NameParser(
-				"rules");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

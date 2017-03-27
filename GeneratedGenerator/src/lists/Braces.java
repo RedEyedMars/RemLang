@@ -77,11 +77,4 @@ public class Braces extends ParseList {
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_BRACES,TAB_BRACES,CUSTOM_ENTRY_DEFINITION);
-
-	public static final NameParser name_parser = new NameParser(
-				"braces");
-	@Override
-	public NameParser getNamesParser(){
-		return name_parser;
-	}
 }

@@ -82,7 +82,7 @@ public class BaseGenerator extends Generator{
 				}
 			}
 			if(!listMap.containsKey(listName)){
-				listMap.put(listName, ParseList.createNew(listName,listSingle));
+				//listMap.put(listName, ParseList.createNew(listName,listSingle));
 			}
 
 			listNameChoices.add(new RegexParser(listSingle,"listnames",listName));

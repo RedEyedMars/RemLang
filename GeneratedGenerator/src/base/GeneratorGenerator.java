@@ -1748,18 +1748,25 @@ all_type_tokens has tabs
 	}
 
 	@Override
-	public void assignListElementNames(ParseContext context, IToken root){		
+	public void assignListElementNames(ParseContext context, IToken root){
+		
 		for(IParser parser:Listnames.parser){
 			String pattern = ((RegexParser)parser).getPattern();
 			String listName = pattern.substring(0, pattern.length()-1);
-			String singleName = listName.substring(0, listName.length()-1);
-			if(context.getList(listName)==null){
-				context.addList(ParseList.createNew(listName,singleName));
-			}
+			context.addList(listName);
 		}
+		context.addList("class_names");
 		for(IParser parser:ClassNames.parser){
 			String className = ((RegexParser)parser).getPattern();
 			context.getList("class_names").getNamesParser().addName(className);
+		}
+		if(context.getList("class_definitions")!=null){
+			context.addList("generator_names");
+			NameParser generatorNames = context.getList("generator_names").getNamesParser();
+			List<IToken> classDefs = context.getList("class_definitions").getNewTokens().getAll("class_dec");
+			for(IToken token:classDefs){
+				generatorNames.addName(token.get("className").getString());
+			}
 		}
 	}
 
