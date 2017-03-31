@@ -1,102 +1,3 @@
-uses Listnames Tokens
-base
-	var directory as File
-		null
-	var seedName
-		null
-	generate takes data
-		var fileName
-			data getFileName
-		var indexOfDot
-			fileName lastIndexOf
-				"."
-		if indexOfDot > -1
-			set fileName
-				fileName substring
-					0
-					indexOfDot
-		set seedName
-			fileName
-		set directory
-			new File
-				base buildString
-					"../Generated"
-					base camelize
-						fileName
-					"/src/"
-		directory mkdirs
-		list generate
-			data
-		rule generate
-			data	
-			
-		rule outputAll
-		list outputAll
-		base outputAll
-	
-	var lazyNameParser as IParser
-		static Tokens LISTNAME
-		
-	aux assignListElementNames takes
-			context as ParseContext
-			root as IToken
-		var list_rules as ParseList
-			context getList
-				"list_rules"
-		token new_list_rules
-			list_rules getNewTokens
-		
-		new_list_rules * to new_list_def
-			var listName
-				'new_list_def -> listname
-			set listName
-				listName replaceAll
-					"[ \\t]+"
-					""
-			var listSingle
-				listName
-			var indexOfDash
-				listName indexOf
-					"-"
-			if indexOfDash > -1
-				var oldList as ParseList
-					context getList
-						listName
-				if oldList is not null
-					context removeList
-						oldList
-				
-				set listSingle
-					listName substring
-						0
-						indexOfDash
-				set listName
-					base buildString
-						listSingle
-						listName substring
-							indexOfDash+1
-							listName length
-				if oldList is not null
-					context addList
-						oldList
-			context addList
-				listName						
-			var listVar as ParseList
-				context getList
-					listName
-			var listNameParser as NameParser
-				listVar getNamesParser
-			new_list_def list_def to def
-				var name
-					'def -> parameters -> name
-				listNameParser addName
-					name
-		var listRuless as ParseList
-			context getList
-				"list_rules"
-		var listRulessNamesParser as NameParser
-			listRuless getNamesParser
-		listRulessNamesParser clear
 
 rule
 	var ruleParameterNames
@@ -151,7 +52,7 @@ rule
 		rule_parser
 			"" Name ".parser"
 		rule_name_parser
-			"new ListNameParser(\"" Name "\")"
+			"new ListNameElementParser(\"" Name "\")"
 		rule_any_list_name
 			"AnyListNameParser.parser"		
 		
@@ -169,13 +70,12 @@ rule
 			"new Parameter<Integer>(" Value ")"
 		parameterExisting
 			"this." Parameter Name ""
-		
-	generate takes data
+	
+	aux setup takes data as ParseContext
 		set packageName
 			rule buildString
 				base getSeedName
 				".rules"
-		
 		set directory			
 			new File
 				base getDirectory
@@ -183,6 +83,7 @@ rule
 					"."
 					"/"
 		directory mkdirs
+	aux generate takes data as ParseContext
 		var rules as ParseList			
 			data getList
 				"rules"
@@ -343,6 +244,14 @@ rule
 			else
 				set returnEntry
 					as { (tabs+1 returnEntry) enclosingName }
+		else
+			if enclosingList is not null
+				if enclosingTokenName is not null
+					set returnEntry
+						addToListWithToken { (tabs+1 returnEntry) ["null"] enclosingList enclosingTokenName }
+				else
+					set returnEntry
+						addToList { (tabs+1 returnEntry) ["null"] enclosingList }
 		
 		entry enclosingArgumentsStatement = {}
 		atom parameter to energy
@@ -461,7 +370,7 @@ rule
 						'token
 				if listName is "Listnames"
 					return
-						["com.rem.parser.parser.Listnames.parser"]
+						["ListNameParser.parser"]
 				else
 					return
 						rule_parser {[listName]}
@@ -495,264 +404,3 @@ rule
 					listElement ["Braces" 'token]
 		return
 			null
-
-list
-	var listAssociatedClass
-		new HashMap<String,String>
-	var directory
-		null
-	
-	elements
-		outline
-			"package lists;\n\n"+
-			"import com.rem.parser.*;\n"+
-			"import com.rem.parser.token.*;\n"+
-			"import com.rem.parser.parser.*;\n" Other Imports	"\n"+
-			"public class " Class Name " extends ParseList {\n\n"+
-			"\t@Override\n"+
-			"\tpublic String getName() {\n"+
-			"\t\treturn \"" Plural Name "\";\n"+
-			"\t}\n"+
-			"\t@Override\n"+
-			"\tpublic String getSingular() {\n"+
-			"\t\treturn \"" Singular Name "\";\n"+
-			"\t}\n\n" Entries "}"	
-		importRules 
-			"import base.rules.*;\n"
-		class
-			"\tpublic static final " Class "Parser " Name " = new " Class "Parser(" Parameters ");\n"
-		parser
-			"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t" Rules ");\n"
-	
-	generate takes data
-		set directory	
-			new File
-				base getDirectory
-				"lists"
-		directory mkdirs
-		var list_rules as ParseList			
-			data getList
-				"list_rules"
-		list generateAll
-			list_rules getNewTokens
-			"list_rule"
-	
-	generate root
-		var listName
-			'root -> listname
-		var indexOfDash
-			listName indexOf
-				"-"
-		var singleListName
-			listName
-		if indexOfDash > -1
-			set singleListName
-				listName substring
-					0
-					indexOfDash
-			set listName
-				list buildString
-					singleListName
-					listName substring
-						indexOfDash+1
-						listName length
-		entry fileParameters = {
-					{}
-					["Listnames"]
-					["listnames"]
-					["listname"] }
-		list addFile
-			directory
-			"Listnames.java"
-			fileParameters
-		
-		list addClassList
-			"listnames"
-			singleListName
-			listName
-			null
-		
-		var token_contains_list
-			root contains listType
-		if token_contains_list is true
-			listAssociatedClass put
-				listName
-				list camelize
-					'root -> listType
-		
-		var className
-			list camelize
-				listName
-		var fileName
-			list buildString
-				className
-				".java"
-		
-		var hasDefinition
-			false
-		
-		root to element
-			list_def
-				var name
-					'element -> parameters -> name
-				
-				token regexToken
-					element -> regex
-				var listAssociatedClassContainsKey
-					listAssociatedClass containsKey
-						listName
-				if regexToken is null
-					set regexToken
-						element -> quote
-					
-					if not listAssociatedClassContainsKey
-						listAssociatedClass put
-							listName
-							"Exact"
-					else
-						var listAssociatedClassListName
-							listAssociatedClass get
-								listName
-						if listAssociatedClassListName is "Regex"
-							listAssociatedClass put
-								listName
-								"Exact"
-				else					
-					if not listAssociatedClassContainsKey
-						listAssociatedClass put
-							listName
-							"Regex"
-					else
-						var listAssociatedClassListName
-							listAssociatedClass get
-								listName
-						if listAssociatedClassListName is "Exact"
-							listAssociatedClass put
-								listName
-								"Regex"
-				var regex
-					'regexToken	
-				token parameter
-					element -> parameter
-				entry parameterEntry = null
-				if parameter is not null
-					set parameterEntry
-						rule generateDefinition
-							parameter -> definition
-							list buildString
-								listName
-								"$HIDDEN"
-							5
-				
-				list addClassList
-					listName
-					name
-					regex
-					parameterEntry
-				set hasDefinition
-					true
-	
-	aux addClassList takes
-			listName
-			name
-			regex
-			parameter as Entry
-		var containsAssociatedClass
-			listAssociatedClass containsKey
-				listName
-		if not containsAssociatedClass
-			listAssociatedClass put
-				listName
-				"Regex"
-		
-		entry params = {}
-		if parameter is not null
-			params add
-				parameter
-		params add
-			``name``
-		params add
-			``listName``
-		
-		if "listnames" is listName		
-			set regex
-				list buildString
-					regex					
-					"\\b"
-		params add
-			``regex``
-		
-		var associatedClassName
-			listAssociatedClass get
-				listName
-		entry listEntry = class {
-			[associatedClassName]
-			[name]
-			[associatedClassName]
-			params }
-		list addList
-			{}
-			listName
-			name
-			listEntry
-	
-	aux addList takes
-			imports
-			listName
-			name
-			listEntry as Entry
-		var className
-			list camelize
-				listName
-		var fileName
-			list buildString
-				className
-				".java"
-		var listNameLength
-			listName length
-		var singularListName
-			listName substring
-				0
-				listNameLength-1
-		entry parameters = {
-			imports
-			[className]
-			[listName]
-			[singularListName] }
-		
-		list addFile
-			directory
-			fileName
-			parameters
-				
-		var main as ListEntry
-			list getOrAddEntry
-				directory
-				fileName
-				"main"
-				{}
-		main setDelimiter
-			""
-		
-		entry subs "" = {}
-		if main is empty
-			main add
-				subs
-			
-			main add
-				parser {{}}
-		
-		var main0 as ListEntry
-			main get
-				0
-		main0 add
-			listEntry
-		var main1 as ElementEntry
-			main get
-				1
-		var main10 as ListEntry
-			main1 get
-				0 
-		main10 add
-			name
-

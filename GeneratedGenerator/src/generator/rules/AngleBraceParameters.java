@@ -9,7 +9,6 @@ import lists.*;
 public class AngleBraceParameters extends ConcreteRule {
 
 	public static final IRule parser = new AngleBraceParameters();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public AngleBraceParameters(){
 		super("angle_brace_parameters");
 	}
@@ -21,18 +20,18 @@ public class AngleBraceParameters extends ConcreteRule {
 					new AddTokenParser(
 						
 					new ChoiceParser(
-							new WithParser((IRule)Rules.entry_definition,new Parameter<Integer>(-1)),
+							new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
 						new ChainParser(
 							
 							new ChoiceParser(
-									new ListNameParser("class_names"),
-									new ListNameParser("property_names")),
+									new ListNameElementParser("class_names"),
+									new ListNameElementParser("property_names")),
 							new OptionalParser(
 									new AddTokenParser(
 										Braces.ANGLE_BRACES,"braces"))),
 							Rules.arithmatic,
-							new ListNameParser("generator_names"),
-							new ListNameParser("entry_names")),"parameter"),
+							new ListNameElementParser("generator_names"),
+							new ListNameElementParser("entry_names")),"parameter"),
 					new ManyParser(
 							
 								new ChainParser(
@@ -40,23 +39,19 @@ public class AngleBraceParameters extends ConcreteRule {
 									new AddTokenParser(
 										
 									new ChoiceParser(
-											new WithParser((IRule)Rules.entry_definition,new Parameter<Integer>(-1)),
+											new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
 										new ChainParser(
 											
 											new ChoiceParser(
-													new ListNameParser("class_names"),
-													new ListNameParser("property_names")),
+													new ListNameElementParser("class_names"),
+													new ListNameElementParser("property_names")),
 											new OptionalParser(
 													new AddTokenParser(
 														Braces.ANGLE_BRACES,"braces"))),
 											Rules.arithmatic,
-											new ListNameParser("generator_names"),
-											new ListNameParser("entry_names")),"parameter")))));
+											new ListNameElementParser("generator_names"),
+											new ListNameElementParser("entry_names")),"parameter")))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

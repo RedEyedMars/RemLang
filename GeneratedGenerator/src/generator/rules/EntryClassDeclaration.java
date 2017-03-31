@@ -9,7 +9,6 @@ import lists.*;
 public class EntryClassDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new EntryClassDeclaration();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public EntryClassDeclaration(){
 		super("entry_class_declaration");
 	}
@@ -27,14 +26,10 @@ public class EntryClassDeclaration extends ConcreteRule {
 								new ChainParser(
 									Tokens.USES,
 									new MultipleParser(
-											new ListNameParser("property_names"))),"implements")),
+											new ListNameElementParser("property_names"))),"implements")),
 					new ManyParser(
 							Rules.entry_class_element)));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

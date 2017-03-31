@@ -49,8 +49,8 @@ base is silent
 parameters
 	(AS NAME as name)? IN listnames as list ( WITH NAME as tokenName )? | AS NAME as name 
 
-arithmatic has tabCount, tabLength
-	arithmatic ADDITIVE_OPERAND as operand arithmatic{1,2+3}
+arithmatic
+	arithmatic ADDITIVE_OPERAND as operand arithmatic
 	arithmatic MULTIPLICATIVE_OPERAND as operand arithmatic
 	rule_parameter | NUMBER
 

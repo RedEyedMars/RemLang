@@ -9,7 +9,6 @@ import lists.*;
 public class Element extends ConcreteRule {
 
 	public static final IRule parser = new Element();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Element(){
 		super("element");
 	}
@@ -32,10 +31,6 @@ public class Element extends ConcreteRule {
 						Braces.BRACE,"braced"),
 					Rules.terminal));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

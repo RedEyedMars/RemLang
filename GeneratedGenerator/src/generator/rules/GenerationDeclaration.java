@@ -9,8 +9,6 @@ import lists.*;
 public class GenerationDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new GenerationDeclaration();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public GenerationDeclaration(){
 		super("generation_declaration");
 	}
@@ -18,34 +16,19 @@ public class GenerationDeclaration extends ConcreteRule {
 	public void setup(){
 		isSilent(true);
 		set(
-			new ChoiceParser(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
-					Tokens.GENERATE,
-					new OptionalParser(
-							new WithParser((IRule)Rules.takes_statement,this.tabs)),
-					new MultipleParser(
-							
-							new ChoiceParser(
-									new WithParser((IRule)Rules.entry_declaration,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
-									new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Parameter<Integer>(1)))))),
-				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
 					Tokens.GENERATE,
 					new AddTokenToListParser(
 						Tokens.NAME,"tokenName","token_names"),
 					new OptionalParser(
-							new WithParser((IRule)Rules.takes_statement,this.tabs)),
+							new WithParser((IRule)Rules.takes_statement,new Parameter<Integer>(0))),
 					new MultipleParser(
 							
 							new ChoiceParser(
-									new WithParser((IRule)Rules.entry_declaration,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
-									new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Parameter<Integer>(1))))))));
+									new WithParser((IRule)Rules.entry_declaration,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+									new WithParser((IRule)Rules.body_element,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1)))))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

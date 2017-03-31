@@ -9,8 +9,6 @@ import lists.*;
 public class FlipSwitch extends ConcreteRule {
 
 	public static final IRule parser = new FlipSwitch();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public FlipSwitch(){
 		super("flip_switch");
 	}
@@ -18,13 +16,13 @@ public class FlipSwitch extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
 					Tokens.FLIP,
-					new ListNameParser("variable_names"),
+					new ListNameElementParser("variable_names"),
 					new ManyParser(
 							
 								new ChainParser(
-									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Parameter<Integer>(1))),
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
 									new AddTokenParser(
 										
 									new ChoiceParser(
@@ -38,12 +36,8 @@ public class FlipSwitch extends ConcreteRule {
 											Tokens.NON_SPACE),"right"))),
 					new OptionalParser(
 							
-									new WithParser((IRule)Rules.else_statement,new Argument.Add(this.tabs,new Parameter<Integer>(1))))));
+									new WithParser((IRule)Rules.else_statement,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

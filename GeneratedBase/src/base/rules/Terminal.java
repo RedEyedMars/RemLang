@@ -9,7 +9,6 @@ import lists.*;
 public class Terminal extends ConcreteRule {
 
 	public static final IRule parser = new Terminal();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Terminal(){
 		super("terminal");
 	}
@@ -22,15 +21,11 @@ public class Terminal extends ConcreteRule {
 							Tokens.ANYLIST,"anyListNameToken"),
 					new AddTokenParser(
 						
-							com.rem.parser.parser.Listnames.parser,"listsToken"),
+							ListNameParser.parser,"listsToken"),
 					new AddTokenParser(
 						
 							AnyListNameParser.parser,"listToken")));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

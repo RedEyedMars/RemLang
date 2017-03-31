@@ -9,7 +9,6 @@ import lists.*;
 public class Atom extends ConcreteRule {
 
 	public static final IRule parser = new Atom();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Atom(){
 		super("atom");
 	}
@@ -23,10 +22,6 @@ public class Atom extends ConcreteRule {
 					new OptionalParser(
 							Braces.PARAM_BRACE)));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

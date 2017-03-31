@@ -9,7 +9,6 @@ import lists.*;
 public class VariableOrTokenName extends ConcreteRule {
 
 	public static final IRule parser = new VariableOrTokenName();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public VariableOrTokenName(){
 		super("variable_or_token_name");
 	}
@@ -25,7 +24,7 @@ public class VariableOrTokenName extends ConcreteRule {
 					
 					new ChoiceParser(
 						new ChainParser(
-							new ListNameParser("token_names"),
+							new ListNameElementParser("token_names"),
 							new MultipleParser(
 									
 										new ChainParser(
@@ -38,12 +37,8 @@ public class VariableOrTokenName extends ConcreteRule {
 							
 									new AddTokenParser(
 										Tokens.PRIME,"getString")),
-					new ListNameParser("token_names"))));
+					new ListNameElementParser("token_names"))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

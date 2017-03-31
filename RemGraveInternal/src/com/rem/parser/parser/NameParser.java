@@ -6,6 +6,7 @@ import com.rem.parser.ParseContext;
 import com.rem.parser.ParseList;
 
 import java.util.Comparator;
+import java.util.Set;
 
 public class NameParser extends RegexParser{
 	public static IParser lazyParser = null;
@@ -102,11 +103,8 @@ public class NameParser extends RegexParser{
 		parsers.clear();
 	}
 
-	public ParseContext getParent(){
-		return this.parent;
+
+	public Set<String> getElements() {
+		return parsers;
 	}
-/*
-	public void setParentContext(ParseContext parentContext) {
-		this.parent = parentContext;
-	}*/
 }

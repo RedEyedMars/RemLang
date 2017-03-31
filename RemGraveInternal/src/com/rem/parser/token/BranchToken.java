@@ -13,12 +13,11 @@ import com.rem.parser.ParseList;
 
 public class BranchToken implements IToken {
 	private Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
-	private LinkedListSet<IToken.Key> keys = new LinkedListSet<IToken.Key>();
+	protected LinkedListSet<IToken.Key> keys = new LinkedListSet<IToken.Key>();
 	private IToken parent;
-	private String listName = null;
-	private String name;
-	private int position = -1;
-	
+	protected String listName = null;
+	protected String name;
+
 	@Override
 	public Object getValue(){
 		return keys.isEmpty()?"empty":get(keys.getFirst()).getValue();
@@ -48,7 +47,7 @@ public class BranchToken implements IToken {
 	public List<IToken> getAll(String key){
 		return tokens.get(key);
 	}
-	
+
 	public int getLineNumber(String file){
 		if(keys.size()>0){
 			return get(keys.get(0)).getLineNumber(file);
@@ -57,7 +56,7 @@ public class BranchToken implements IToken {
 	}
 
 	@Override
-	public void accumlateLists(ParseContext data){
+	public void accumulateLists(ParseContext data){
 		if(listName!=null){
 			data.addList(listName);
 			data.getList(listName).put(new IToken.Key(name,-1,0),this);
@@ -68,17 +67,23 @@ public class BranchToken implements IToken {
 			}
 		}
 		for(IToken.Key key:keys){
-			get(key).accumlateLists(data);
+			get(key).accumulateLists(data);
 		}
 	}
-	
+
 	public int getPosition(){
 		if(!keys.isEmpty()){
-		return tokens.get(keys.get(0).getName()).get(0).getPosition();
+			return tokens.get(keys.get(0).getName()).get(0).getPosition();
 		}
 		return -1;
 	}
-	
+	public String getFileName(){
+		if(!keys.isEmpty()){
+			return tokens.get(keys.get(0).getName()).get(0).getFileName();
+		}
+		return "none";
+	}
+
 	@Override
 	public void setName(String name){
 		this.name = name;

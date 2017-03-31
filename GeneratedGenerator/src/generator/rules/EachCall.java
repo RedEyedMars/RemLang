@@ -9,8 +9,6 @@ import lists.*;
 public class EachCall extends ConcreteRule {
 
 	public static final IRule parser = new EachCall();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public EachCall(){
 		super("each_call");
 	}
@@ -18,20 +16,16 @@ public class EachCall extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
 					Tokens.EACH,
 					new AddTokenToListParser(
 						Tokens.NAME,"eachName","variable_names"),
 					Tokens.IN,
 					new AddTokenParser(
-						new ListNameParser("variable_names"),"iterable"),
+						new ListNameElementParser("variable_names"),"iterable"),
 					new MultipleParser(
-							new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Parameter<Integer>(1))))));
+							new WithParser((IRule)Rules.body_element,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

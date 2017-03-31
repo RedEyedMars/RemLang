@@ -5,6 +5,7 @@ import java.io.File;
 import lists.Listnames;
 import lists.Rules;
 import base.rules.Base;
+import gen.BaseFlow;
 import gen.Generators;
 
 import com.rem.parser.ParseUtil;
@@ -14,7 +15,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("test.ruleset"), Generators.base,
+				Base.parser, new File("generator.ruleset"), new BaseFlow(),
 				Rules.parser, Listnames.parser);
 	}
 

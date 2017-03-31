@@ -16,7 +16,7 @@ public class Main {
 	public static void main(String[] args){
 
 		ParseUtil.parse(
-				Base.parser, new File("test.generator"), Generators.generator,
+				Base.parser, new File("base.generator"), new GeneratorFlow(),
 				Rules.parser,Listnames.parser);
 	}
 }

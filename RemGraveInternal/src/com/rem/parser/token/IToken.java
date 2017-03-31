@@ -10,11 +10,12 @@ public interface IToken extends Map<IToken.Key,IToken>{
 	public Object getValue();
 	public String getString();
 	public IToken getParent();
+	public String getFileName();
 	public void setParent(IToken parent);
 	public void put(NodeToken nodeToken);
 	public IToken getLast();
 	public List<IToken> getAll(String key);
-	public void accumlateLists(ParseContext data);
+	public void accumulateLists(ParseContext data);
 	public void setName(String name);
 	public void setList(String name);
 

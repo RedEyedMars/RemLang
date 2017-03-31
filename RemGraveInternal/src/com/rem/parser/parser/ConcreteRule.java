@@ -11,7 +11,7 @@ public abstract class ConcreteRule extends AddTokenParser implements IRule {
 	
 	@Override
 	public void parse(ParseContext data) {
-		data.setContextParameters(getParameters());
+		ParseUtil.currentRule = this;
 		ParseUtil.currentParser = this.getName();
 		super.parse(data);
 	}

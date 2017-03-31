@@ -9,7 +9,6 @@ import lists.*;
 public class UsedClassesList extends ConcreteRule {
 
 	public static final IRule parser = new UsedClassesList();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public UsedClassesList(){
 		super("used_classes_list");
 	}
@@ -23,10 +22,6 @@ public class UsedClassesList extends ConcreteRule {
 									new AddTokenToListParser(
 										Tokens.NAME,"className","class_names"))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

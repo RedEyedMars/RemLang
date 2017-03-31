@@ -38,9 +38,12 @@ public class ListGenerator extends Generator {
 		addElement("class",classElement);
 		addElement("parser",parserElement);
 	}
-	public void generate(ParseContext data){
+	public void setup(ParseContext data){
+		this.addPage();
 		directory = new File(Generators.base.getDirectory(),"lists");
 		directory.mkdirs();
+	}
+	public void generate(ParseContext data){
 		ParseList list_rules = (ParseList)data.getList("list_rules");
 		Generators.list.generateAll(list_rules.getNewTokens(),"list_rule");
 	}
@@ -155,9 +158,6 @@ public class ListGenerator extends Generator {
 
 	public String getName(){
 		return "List";
-	}
-
-	public void assignListElementNames(ParseContext context, IToken rootToken){
 	}
 
 	public IParser getLazyNameParser(){

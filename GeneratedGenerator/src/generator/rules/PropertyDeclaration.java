@@ -9,7 +9,6 @@ import lists.*;
 public class PropertyDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new PropertyDeclaration();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public PropertyDeclaration(){
 		super("property_declaration");
 	}
@@ -24,10 +23,6 @@ public class PropertyDeclaration extends ConcreteRule {
 					new ManyParser(
 							Rules.entry_class_element)));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

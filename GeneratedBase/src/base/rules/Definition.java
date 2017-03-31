@@ -9,7 +9,6 @@ import lists.*;
 public class Definition extends ConcreteRule {
 
 	public static final IRule parser = new Definition();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Definition(){
 		super("definition");
 	}
@@ -35,10 +34,6 @@ public class Definition extends ConcreteRule {
 											Tokens.TAB)),
 									Rules.definition)),"choice")));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

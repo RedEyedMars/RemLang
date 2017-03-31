@@ -6,6 +6,10 @@ public class StringEntry implements Entry{
 	public StringEntry(String value) {
 		this.value = value;
 	}
+	
+	public StringEntry(Integer value){
+		this.value = ""+value;
+	}
 
 	public void get(StringBuilder builder) {
 		builder.append(value);

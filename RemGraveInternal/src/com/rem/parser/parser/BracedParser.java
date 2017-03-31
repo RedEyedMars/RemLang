@@ -1,6 +1,7 @@
 package com.rem.parser.parser;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.token.IToken;
 
 public class BracedParser extends ConcreteParser implements IParser{
 	private IParser subParser;
@@ -90,7 +91,9 @@ public class BracedParser extends ConcreteParser implements IParser{
 			newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
 			newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			newParseData.setMustEnd(true);
+			IToken token = newParseData.addTokenLayer();
 			subParser.parse(newParseData);
+			newParseData.collectTokens();
 
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
@@ -110,6 +113,9 @@ public class BracedParser extends ConcreteParser implements IParser{
 				newParseData.setRangeBack(data.getFrontPosition()+found);
 				data.setFrontPosition(data.getFrontPosition()+found);
 				data.validate();
+				for(IToken.Key key:token.keySet()){
+					data.getToken().put(key,token.get(key));
+				}
 			}
 		}
 		else {

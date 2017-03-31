@@ -35,10 +35,10 @@ public class GeneratorGenerator extends Generator {
 	public void generateRoot(IToken root){
 	}
 
-	public void generate(ParseContext data){
+	public void setup(ParseContext data){
 	}
 
-	public void assignListElementNames(ParseContext listMap, IToken rootToken){
+	public void generate(ParseContext listMap){
 	}
 
 	public IParser getLazyNameParser(){

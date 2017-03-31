@@ -9,8 +9,6 @@ import lists.*;
 public class TokenExpansion extends ConcreteRule {
 
 	public static final IRule parser = new TokenExpansion();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public TokenExpansion(){
 		super("token_expansion");
 	}
@@ -18,19 +16,15 @@ public class TokenExpansion extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
-					new ListNameParser("token_names"),
+					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
+					new ListNameElementParser("token_names"),
 					
 					new ChoiceParser(
 							new AddTokenParser(
 								Tokens.NAME_WORD,"getName"),
-							new WithParser((IRule)Rules.clause_type_tokens,this.tabs),
-							new WithParser((IRule)Rules.all_type_tokens,this.tabs))));
+							new WithParser((IRule)Rules.clause_type_tokens,new Parameter<Integer>(0)),
+							new WithParser((IRule)Rules.all_type_tokens,new Parameter<Integer>(0)))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

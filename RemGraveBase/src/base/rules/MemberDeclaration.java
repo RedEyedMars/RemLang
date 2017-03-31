@@ -29,9 +29,5 @@ public class MemberDeclaration extends ConcreteRule {
 										Tokens.NAME,"rule_param","rule_parameters")))));
 
 	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
-	}
 
 }

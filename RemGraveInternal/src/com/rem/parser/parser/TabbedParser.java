@@ -1,51 +1,59 @@
 package com.rem.parser.parser;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.ParseUtil;
 
 public class TabbedParser extends ConcreteRule {
+	
+	public static boolean debug_flag = false;
 
-	private Parameter<Integer> tabCount = new Parameter<Integer>(0);
-	private Parameter<?>[] params = new Parameter<?>[]{tabCount};
-	private String regex;
 	private String original_regex;
 	private String name;
 	private String listName;
-	private List<RegexParser> regexParsers = new ArrayList<RegexParser>();
+	private Map<String,LinkedList<ExactParser>> regexParsers = new HashMap<String,LinkedList<ExactParser>>();
 
 	public TabbedParser(String name, String listName, String regex){
 		super(name);
 		this.name = name;
-		this.regex = regex;
 		this.original_regex = regex;
 		this.listName = listName;
-		regexParsers.add(
-				new RegexParser(name,listName,"("+regex+")*"));
 	}
 
 	@Override
 	public void setup() {		
 	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Parameter<?>[] getParameters() {		
-		return params;
-	}
-
 	@Override
 	public void real_parse(ParseContext data) {
-		int tabs = tabCount.evaluate();
+		int tabs = (Integer) data.getParameter(0);
+		if(debug_flag){
+			System.out.println("TabParser:"+tabs+":"+data.getLineNumber(data.getFrontPosition())+":"+data.getFileName()+":"+data.getLine());
+
+			debug_flag = false;
+		}
 		if(tabs==-1){
 			tabs=0;
 		}
-		while(tabs>=regexParsers.size()){			
-			regexParsers.add(new RegexParser(name,listName,regex));
-			regex = regex + original_regex;
+		String fileName = data.getFileName();
+		LinkedList<ExactParser> parsers;
+		if(!regexParsers.containsKey(fileName)){
+			parsers = new LinkedList<ExactParser>();
+			regexParsers.put(fileName, parsers);
+			parsers.add(
+					new ExactParser(name,listName,""));
 		}
-		regexParsers.get(tabs).real_parse(data);
+		else {
+			 parsers = regexParsers.get(fileName);
+		}
+		while(tabs>=parsers.size()){			
+			parsers.add(new ExactParser(name,listName,parsers.getLast().getPattern()+original_regex));
+		}
+		parsers.get(tabs).real_parse(data);
 	}	
 
 }

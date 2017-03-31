@@ -16,14 +16,21 @@ public class WithParser extends ConcreteParser{
 	
 	@Override
 	public void real_parse(ParseContext data) {
-		List<Object> originalValues = new ArrayList<Object>();
+		Object[] values = new Object[args.length];
 		for(int i=0;i<args.length;++i){
-			originalValues.add(this.subParser.getParameters()[i].evaluate());
-			this.subParser.getParameters()[i].set(args[i].evaluate());
+			values[i] = args[i].evaluate(data);
 		}
+		if(TabbedParser.debug_flag){
+			System.out.println("with>"+data.getFileName());
+		data.pushParameters(values);
 		this.subParser.parse(data);
-		for(int i=0;i<originalValues.size();++i){
-			this.subParser.getParameters()[i].set(originalValues.get(i));
+		data.popParameters();
+		System.out.println("with<"+data.getFileName());
+		}
+		else {
+			data.pushParameters(values);
+			this.subParser.parse(data);
+			data.popParameters();
 		}
 	}
 

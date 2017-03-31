@@ -21,6 +21,8 @@ public class Rulenames extends ParseList {
 	public static final RegexParser base = new RegexParser("base","rulenames","base");
 	public static final RegexParser whitetab = new RegexParser("whitetab","rulenames","whitetab");
 	public static final RegexParser used_classes_list = new RegexParser("used_classes_list","rulenames","used_classes_list");
+	public static final RegexParser meta_declaration = new RegexParser("meta_declaration","rulenames","meta_declaration");
+	public static final RegexParser meta_method_declaration = new RegexParser("meta_method_declaration","rulenames","meta_method_declaration");
 	public static final RegexParser property_declaration = new RegexParser("property_declaration","rulenames","property_declaration");
 	public static final RegexParser entry_class_declaration = new RegexParser("entry_class_declaration","rulenames","entry_class_declaration");
 	public static final RegexParser entry_class_element = new RegexParser("entry_class_element","rulenames","entry_class_element");
@@ -60,5 +62,5 @@ public class Rulenames extends ParseList {
 	public static final RegexParser cast_as_statement = new RegexParser("cast_as_statement","rulenames","cast_as_statement");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
+				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
 }

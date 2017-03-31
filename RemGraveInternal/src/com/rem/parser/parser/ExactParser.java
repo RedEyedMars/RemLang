@@ -27,7 +27,7 @@ public class ExactParser extends ConcreteParser {
 	}
 	protected void setup(String regex){
 		if("".equals(regex)){
-			fail = true;
+			//fail = true;
 		}
 		this.pattern = regex;
 	}
@@ -44,7 +44,7 @@ public class ExactParser extends ConcreteParser {
 
 		String toExamine = data.get();
 		if(toExamine.startsWith(pattern)){
-			data.getToken().put(new NodeToken(name,pattern,data.getFrontPosition()));
+			data.getToken().put(new NodeToken(name,data.getFileName(),pattern,data.getFrontPosition()));
 			int found = pattern.length();
 			for(;found<toExamine.length();++found){
 				if(toExamine.charAt(found)!=' '&&toExamine.charAt(found)!='\t'){
@@ -63,6 +63,9 @@ public class ExactParser extends ConcreteParser {
 	@Override
 	public String getName(){
 		return name;
+	}
+	public String getPattern() {
+		return pattern;
 	}
 	
 }

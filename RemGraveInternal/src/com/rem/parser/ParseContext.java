@@ -6,42 +6,58 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.TreeSet;
 
+import com.rem.parser.generation.FlowController;
 import com.rem.parser.generation.Generator;
+import com.rem.parser.parser.ConcreteParser;
 import com.rem.parser.parser.IParser;
+import com.rem.parser.parser.IRule;
 import com.rem.parser.parser.Parameter;
 import com.rem.parser.token.BranchToken;
 import com.rem.parser.token.IToken;
+import com.rem.parser.token.NewFileBranchToken;
 
 public class ParseContext {
 
 	private static Set<String> listnames = new HashSet<String>();
 	private Map<String,ParseList> lists = new HashMap<String,ParseList>();
 
-	private static IToken currentToken = new BranchToken();
-	private static IToken rootToken = currentToken;
-	private static Object[] contextParameters;
+	private static IParser rootParser;
+	private IToken currentToken;
+	private IToken rootToken;
+	private Stack<Object[]> parameters;// = new Stack<Object[]>();
 	private Map<Integer,Map<IParser,Set<AccessPoint>>> paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
 	private List<Range> subContextRanges = new ArrayList<Range>();
 	private List<ParseContext> subContexts = new ArrayList<ParseContext>();
 	private ParseContext parentContext;
 	private int id;
-	private int length;
+	
 
 	private boolean valid = true;
 	private int frontPosition = 0;
 	private int backPosition = -1;
-	static int furthestPosition = 0;
-	private String furthestParser = "";
+	private static Map<String,FurthestPoint> furthestPosition = new HashMap<String,FurthestPoint>();
+	private FurthestPoint furthestPoint;
 	private String file;
+	private int length;
 	private boolean mustEnd;
 	private String fileName;
+	private List<ParseContext> doneDependencies;
 
-	public ParseContext(String fileName, String file){
+	public ParseContext(IParser rootParser, String fileName, String file){
+		ParseContext.rootParser = rootParser;
 		this.length = file.length();
 		this.file = file;
 		this.fileName = fileName;
+		this.currentToken = new BranchToken();
+		this.rootToken = currentToken;
+		this.furthestPoint = new FurthestPoint();
+		this.furthestPoint.position=0;
+		this.furthestPoint.parser=rootParser.getName();
+		this.parameters = new Stack<Object[]>();
+		furthestPosition.put(fileName, this.furthestPoint);
 	}
 
 	private ParseContext(ParseContext data) {
@@ -49,20 +65,31 @@ public class ParseContext {
 		this.length = data.length;
 		this.file = data.file;
 		this.parentContext = data;
+		this.rootToken = data.rootToken;
+		this.currentToken = new BranchToken();
+		this.currentToken.setParent(data.currentToken);
+		this.furthestPoint = data.furthestPoint;
+		this.parameters = data.parameters;
+		List<String> newListNames = new ArrayList<String>();
+		List<String> newSingleNames = new ArrayList<String>();
 		for(String listName:data.getListNames()){
 			ParseList parentList = data.getList(listName);
 			if(parentList==null){
-				addList(listName);
+				newListNames.add(ParseList.createPluralName(listName));
+				newSingleNames.add(ParseList.createSingleName(listName));
 			}
 			else {
-				ParseList newList = ParseList.createNew(listName,parentList.getSingular(),data);
-				addList(newList);
+				newListNames.add(listName);
+				newSingleNames.add(parentList.getSingular());
 			}
+		}
+		for(int i=0;i<newListNames.size();++i){
+			addList(newListNames.get(i),newSingleNames.get(i));			
 		}
 	}
 
 	public static ParseContext copy(ParseContext data) {
-		ParseContext copy = new ParseContext(data.fileName, data.file);
+		ParseContext copy = new ParseContext(rootParser,data.fileName, data.file);
 		copy.lists = data.lists;
 		copy.subContextRanges = data.subContextRanges;
 		copy.subContexts = data.subContexts;
@@ -70,7 +97,7 @@ public class ParseContext {
 		return copy;
 	}
 	
-	public void resetPaps(){
+	private void resetPaps(){
 		this.paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
 		for(ParseContext subContext:subContexts){
 			subContext.resetPaps();
@@ -100,11 +127,20 @@ public class ParseContext {
 	}
 
 	public boolean isDone() {
-		if(backPosition==-1){
-			return valid&&frontPosition==length;
+		boolean dependencyDone = true;
+		if(doneDependencies!=null){
+			for(ParseContext dependency:doneDependencies){
+				if(!dependency.isDone()){
+					dependencyDone = false;
+					break;
+				}
+			}
+		}
+		if(backPosition==-1){			
+			return dependencyDone&&valid&&frontPosition==length;
 		}
 		else {
-			return valid&&frontPosition==backPosition; 
+			return dependencyDone&&valid&&frontPosition==backPosition; 
 		}
 	}
 
@@ -131,18 +167,18 @@ public class ParseContext {
 	}
 
 	public int getFurthestPosition(){
-		return furthestPosition;
+		return furthestPosition.get(fileName).position;
 	}
 
 	public String getFurthestParser(){
-		return furthestParser;
+		return furthestPosition.get(fileName).parser;
 	}
 
 	public void setFrontPosition(int newPosition) {
 		frontPosition = newPosition;
-		if(newPosition>furthestPosition){
-			furthestPosition = newPosition;
-			furthestParser = ParseUtil.currentParser;
+		if(newPosition>furthestPoint.position){
+			furthestPoint.position = newPosition;
+			furthestPoint.parser = ParseUtil.currentParser;
 		}
 	}
 	public void setBackPosition(int newPosition) {
@@ -151,6 +187,7 @@ public class ParseContext {
 
 	public String get(){
 		if(backPosition==-1){
+			//System.out.println(fileName+":"+frontPosition+":"+length+":"+file.length()+":"+getLineNumber(frontPosition));
 			return file.substring(frontPosition);
 		}
 		else {
@@ -210,11 +247,11 @@ public class ParseContext {
 		if(!paps.get(frontPosition).containsKey(parent)){
 			paps.get(frontPosition).put(parent, new TreeSet<AccessPoint>());
 		}
-		if(ParseContext.contextParameters==null){
+		if(parameters.isEmpty()){
 			paps.get(frontPosition).get(parent).add(new AccessPoint(index));
 		}
 		else {
-			paps.get(frontPosition).get(parent).add(new AccessPoint(index,ParseContext.contextParameters));
+			paps.get(frontPosition).get(parent).add(new AccessPoint(index,parameters.peek()));
 		}
 	}
 	public void resetPap(int pos, IParser parent, int index){
@@ -236,13 +273,13 @@ public class ParseContext {
 		}
 		for(AccessPoint point: paps.get(frontPosition).get(parent)){
 			if(point.index == index){
-				if(contextParameters==null&&point.context==null){
+				if(parameters.isEmpty()&&point.context==null){
 					return true;
 				}
-				else if(contextParameters!=null&&point.context!=null&&contextParameters.length==point.context.length){
+				else if(!parameters.isEmpty()&&point.context!=null&&parameters.peek().length==point.context.length){
 					boolean isSame = true;
 					for(int i=0;i<point.context.length;++i){
-						if(!point.context[i].equals(contextParameters[i])){
+						if(!point.context[i].equals(parameters.peek()[i])){
 							isSame = false;
 							break;
 						}
@@ -286,6 +323,14 @@ public class ParseContext {
 					ParseList.createSingleName(listName), parentContext));
 		}		
 	}
+	public void addList(String pluralName, String singleName) {
+		listnames.add(pluralName);
+		if(!lists.containsKey(pluralName)){
+			lists.put(pluralName, ParseList.createNew(
+					pluralName,
+					singleName, parentContext));
+		}		
+	}
 
 	public void removeList(ParseList list){
 		listnames.remove(list.getName());
@@ -293,16 +338,20 @@ public class ParseContext {
 	}
 
 
-	public void accumlateLists(Generator generator) {
-		rootToken.accumlateLists(this);
-		if(generator!=null){
-			generator.assignListElementNames(this, rootToken);
+	public void accumulateLists(FlowController controller) {
+		rootToken.accumulateLists(this);
+		if(controller!=null){
+			controller.assignListElementNames(this, rootToken);
 		}
 	}
+	
 
 	public void resetLists(){
 		for(String listName:lists.keySet()){
 			lists.get(listName).reset();
+		}
+		for(ParseContext subContext:subContexts){
+			subContext.resetLists();
 		}
 	}
 
@@ -335,6 +384,14 @@ public class ParseContext {
 		currentToken.setParent(previousToken);
 		return currentToken;
 	}
+	
+
+	public IToken addTokenLayer(IToken newToken) {
+		IToken previousToken = currentToken;
+		currentToken = newToken;
+		currentToken.setParent(previousToken);
+		return currentToken;
+	}
 
 	public void addError(String error) {
 		System.err.println(ParseUtil.currentParser+"("+frontPosition +"):"+ error);
@@ -351,16 +408,14 @@ public class ParseContext {
 		this.mustEnd = me;
 	}
 
-	public void setContextParameters(Parameter<Object>[] parameters) {
-		if(parameters.length>0){
-			ParseContext.contextParameters = new Object[parameters.length];
-			for(int i=0;i<parameters.length;++i){
-				ParseContext.contextParameters[i] = parameters[i].evaluate();	
-			}
-		}
-		else {
-			ParseContext.contextParameters = null;
-		}
+	public Object getParameter(int i) {
+		return parameters.peek()[i];
+	}
+	public void pushParameters(Object[] values){
+		parameters.push(values);
+	}
+	public void popParameters(){
+		parameters.pop();
 	}
 
 
@@ -372,6 +427,60 @@ public class ParseContext {
 		else {
 			System.out.println("root:"+this);
 		}
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+		if(!furthestPosition.containsKey(fileName)){
+			this.furthestPoint = new FurthestPoint();
+			this.furthestPoint.position=0;
+			this.furthestPoint.parser=rootParser.getName();
+			furthestPosition.put(fileName, this.furthestPoint);
+		}
+		this.furthestPoint = furthestPosition.get(fileName);
+	}
+	public void setFile(String file){
+		this.file = file;
+		this.length = file.length();
+		this.parameters = new Stack<Object[]>();
+	}
+
+	public IParser getRootParser() {
+		return rootParser;
+	}
+
+	public void resetFurthestPosition() {
+		this.furthestPoint.position=0;
+		this.furthestPoint.parser=rootParser.getName();
+		for(ParseContext subContext:subContexts){
+			subContext.resetFurthestPosition();
+		}
+	}
+	public int getLineNumber(int position){
+		int current = 0;
+		for(int i=0;i<position&&i<file.length();){
+			int next = file.indexOf('\n',i);
+			if(next==-1){
+				return current;
+			}
+			else {
+				++current;
+				i=next+1;
+			}
+		}
+		return current;
+	}
+
+	private static class FurthestPoint {
+		private int position;
+		private String parser;
+	}
+
+	public void addDoneDependency(ParseContext newContext) {
+		if(doneDependencies==null){
+			 doneDependencies = new ArrayList<ParseContext>();
+		}
+		doneDependencies .add(newContext);
 	}
 
 

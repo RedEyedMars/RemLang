@@ -1,0 +1,261 @@
+
+list
+	var listAssociatedClass
+		new HashMap<String,String>
+	var directory
+		null
+	
+	elements
+		outline
+			"package lists;\n\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import com.rem.parser.parser.*;\n" Other Imports	"\n"+
+			"public class " Class Name " extends ParseList {\n\n"+
+			"\t@Override\n"+
+			"\tpublic String getName() {\n"+
+			"\t\treturn \"" Plural Name "\";\n"+
+			"\t}\n"+
+			"\t@Override\n"+
+			"\tpublic String getSingular() {\n"+
+			"\t\treturn \"" Singular Name "\";\n"+
+			"\t}\n\n" Entries "}"	
+		importRules 
+			"import base.rules.*;\n"
+		class
+			"\tpublic static final " Class "Parser " Name " = new " Class "Parser(" Parameters ");\n"
+		parser
+			"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t" Rules ");\n"
+	
+	aux setup takes data as ParseContext
+		set directory	
+			new File
+				base getDirectory
+				"lists"
+		directory mkdirs
+	aux generate takes data as ParseContext	
+		var list_rules as ParseList			
+			data getList
+				"list_rules"
+		list generateAll
+			list_rules getNewTokens
+			"list_rule"
+	
+	generate root
+		var listName
+			'root -> listname
+		var indexOfDash
+			listName indexOf
+				"-"
+		var singleListName
+			listName
+		if indexOfDash > -1
+			set singleListName
+				listName substring
+					0
+					indexOfDash
+			set listName
+				list buildString
+					singleListName
+					listName substring
+						indexOfDash+1
+						listName length
+		entry fileParameters = {
+					{}
+					["Listnames"]
+					["listnames"]
+					["listname"] }
+		list addFile
+			directory
+			"Listnames.java"
+			fileParameters
+		
+		list addClassList
+			"listnames"
+			singleListName
+			listName
+			null
+		
+		var token_contains_list
+			root contains listType
+		if token_contains_list is true
+			listAssociatedClass put
+				listName
+				list camelize
+					'root -> listType
+		
+		var className
+			list camelize
+				listName
+		var fileName
+			list buildString
+				className
+				".java"
+		
+		var hasDefinition
+			false
+		
+		root to element
+			list_def
+				var name
+					'element -> parameters -> name
+				
+				token regexToken
+					element -> regex
+				var listAssociatedClassContainsKey
+					listAssociatedClass containsKey
+						listName
+				if regexToken is null
+					set regexToken
+						element -> quote
+					
+					if not listAssociatedClassContainsKey
+						listAssociatedClass put
+							listName
+							"Exact"
+					else
+						var listAssociatedClassListName
+							listAssociatedClass get
+								listName
+						if listAssociatedClassListName is "Regex"
+							listAssociatedClass put
+								listName
+								"Exact"
+				else					
+					if not listAssociatedClassContainsKey
+						listAssociatedClass put
+							listName
+							"Regex"
+					else
+						var listAssociatedClassListName
+							listAssociatedClass get
+								listName
+						if listAssociatedClassListName is "Exact"
+							listAssociatedClass put
+								listName
+								"Regex"
+				var regex
+					'regexToken	
+				token parameter
+					element -> parameter
+				entry parameterEntry = null
+				if parameter is not null
+					set parameterEntry
+						rule generateDefinition
+							parameter -> definition
+							list buildString
+								listName
+								"$HIDDEN"
+							5
+				
+				list addClassList
+					listName
+					name
+					regex
+					parameterEntry
+				set hasDefinition
+					true
+	
+	aux addClassList takes
+			listName
+			name
+			regex
+			parameter as Entry
+		var containsAssociatedClass
+			listAssociatedClass containsKey
+				listName
+		if not containsAssociatedClass
+			listAssociatedClass put
+				listName
+				"Regex"
+		
+		entry params = {}
+		if parameter is not null
+			params add
+				parameter
+		params add
+			``name``
+		params add
+			``listName``
+		
+		if "listnames" is listName		
+			set regex
+				list buildString
+					regex					
+					"\\b"
+		params add
+			``regex``
+		
+		var associatedClassName
+			listAssociatedClass get
+				listName
+		entry listEntry = class {
+			[associatedClassName]
+			[name]
+			[associatedClassName]
+			params }
+		list addList
+			{}
+			listName
+			name
+			listEntry
+	
+	aux addList takes
+			imports
+			listName
+			name
+			listEntry as Entry
+		var className
+			list camelize
+				listName
+		var fileName
+			list buildString
+				className
+				".java"
+		var listNameLength
+			listName length
+		var singularListName
+			listName substring
+				0
+				listNameLength-1
+		entry parameters = {
+			imports
+			[className]
+			[listName]
+			[singularListName] }
+		
+		list addFile
+			directory
+			fileName
+			parameters
+				
+		var main as ListEntry
+			list getOrAddEntry
+				directory
+				fileName
+				"main"
+				{}
+		main setDelimiter
+			""
+		
+		entry subs "" = {}
+		if main is empty
+			main add
+				subs
+			
+			main add
+				parser {{}}
+		
+		var main0 as ListEntry
+			main get
+				0
+		main0 add
+			listEntry
+		var main1 as ElementEntry
+			main get
+				1
+		var main10 as ListEntry
+			main1 get
+				0 
+		main10 add
+			name

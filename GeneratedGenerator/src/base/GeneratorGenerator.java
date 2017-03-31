@@ -12,13 +12,7 @@ import java.util.Set;
 import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
-import com.rem.parser.parser.*;
 
-
-import base.GeneratorGenerator.VariableEntry;
-import lists.ClassNames;
-import lists.Listnames;
-import lists.Tokens;
 
 public class GeneratorGenerator extends Generator {
 
@@ -26,7 +20,7 @@ public class GeneratorGenerator extends Generator {
 	private static final String DEFAULT_TOKEN = "$token";
 	private static final String TYPE_UNKNOWN = "$UNKNOWN";
 	private static final Entry METHOD_NEW = new StringEntry("new");
-	private VariableEntry NO_DEFAULT_TOKEN = null;
+	static VariableEntry NO_DEFAULT_TOKEN = null;
 	private File directory;
 	private Set<String> classNames = new HashSet<String>();
 	private List<String> generatorNames = new ArrayList<String>();
@@ -54,10 +48,15 @@ public class GeneratorGenerator extends Generator {
 			"",/*Type Name*/" ",/*Variable Name*/" = ",/*Assignment*/";"};
 	private String[] variablePrototype = new String[]{
 			"",/*Type Name*/" ",/*Variable Name*/""};
+	private String[] flowMain = new String[]{
+			"\tpublic static void main(String[] args){\n"+
+			"\t\tif(args.length==1){\n\t\t\tnew ",/*Meta Name*/"Flow().parse(args[0]);\n\t\t}\n\t\telse {\n\t\t\tSystem.err.println(\"No filename provided!\");\n\t\t}\n\t}\n"};
 	private String[] generatorCall = new String[]{
 			"Generators.",/*Generator Name*/""};
 	private String[] generatorDeclaration = new String[]{
 			"",/*Class Name*/"Generator ",/*Class name*/" = new ",/*Assignment*/"Generator();"};
+	private String[] generatorListDeclaration = new String[]{
+			"Generator[] _ = new Generator[]{",/*Gen names*/"};"};
 	private String[] methodCall = new String[]{
 			"",/*Subject Name*/".",/*Method Name*/"(",/*Parameters*/")"};
 	private String[] generatorElement = new String[]{
@@ -122,8 +121,10 @@ public class GeneratorGenerator extends Generator {
 		addElement("outline",outline);
 		addElement("variableDeclaration",variableDeclaration);
 		addElement("variablePrototype",variablePrototype);
+		addElement("flowMain",flowMain);
 		addElement("generatorCall",generatorCall);
 		addElement("generatorDeclaration",generatorDeclaration);
+		addElement("generatorListDeclaration",generatorListDeclaration);
 		addElement("methodCall",methodCall);
 		addElement("castCall",castCall);
 		addElement("exactCall",exactCall);
@@ -193,7 +194,7 @@ public class GeneratorGenerator extends Generator {
 				methodDeclarations.add(new ElementEntry(Generators.generator,"constructor",new ListEntry(new StringEntry(className),constructorBodies.get(className))));
 			}
 			else if("auxillary_declaration".equals(key.getName())){
-				methodDeclarations.add(generateAuxillaryDeclaration(root.get(key),className,LOCAL_CONTEXT));
+				methodDeclarations.add(generateAuxillaryDeclaration(root.get(key),className,LOCAL_CONTEXT,true));
 			}
 			else if("variable_declaration".equals(key.getName())){
 				VariableEntry variable = (VariableEntry) generateVariableDeclaration(root.get(key),className,LOCAL_CONTEXT);
@@ -236,8 +237,8 @@ public class GeneratorGenerator extends Generator {
 		if(!contexts.get(className).containsKey("generate")){
 			classElements.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry("generate"),new StringEntry("ParseContext data"),new ListEntry()))));
 		}		
-		if(!contexts.get(className).containsKey("assignListElementNames")){
-			classElements.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry("assignListElementNames"),new StringEntry("ParseContext context, IToken rootToken"),new ListEntry()))));
+		if(!contexts.get(className).containsKey("setup")){
+			classElements.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry("setup"),new StringEntry("ParseContext context"),new ListEntry()))));
 		}
 		if(!contexts.get(className).get(LOCAL_CONTEXT).containsKey("lazyNameParser")){
 			classElements.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("IParser"),new StringEntry("getLazyNameParser"),new ListEntry(),
@@ -252,12 +253,13 @@ public class GeneratorGenerator extends Generator {
 	//	whitetab{tabs} AUXILLARY NAME as methodName 
 	//			( TAKES NAME as takeName in variable_names ( COMMA NAME as takeName in variable_names )* )? 
 	//			( entry_declaration{tabs+1} | body_element{tabs+1} )+
-	public Entry generateAuxillaryDeclaration(IToken auxillary, String contextName, String contextSubName){
+	public Entry generateAuxillaryDeclaration(IToken auxillary, String contextName, String contextSubName, boolean addSuper){
 		Entry ret = null;
 		String methodName = "";
 		ListEntry parameters = new ListEntry();
 		ListEntry body = new ListEntry();
 		body.setDelimiter("");
+		
 		for(IToken.Key key:auxillary.keySet()){
 			if("methodName".equals(key.getName())){
 				String auxillaryName = auxillary.get(key).getString();
@@ -265,6 +267,12 @@ public class GeneratorGenerator extends Generator {
 				addContext(contextName,contextSubName,methodName,NO_DEFAULT_TOKEN);
 
 				ret = new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry(methodName),parameters,body));
+				if(addSuper&&"setup".equals(methodName)){
+					body.add(
+						new TabEntry(2,
+							new ElementEntry(this,"semicoloned",new ListEntry(new MethodEntry(
+							new StringEntry("this"),"addPage",new ListEntry())))));
+				}
 			}
 			else if("parameter".equals(key.getName())){
 				VariableEntry var = getParameter(auxillary.get(key),contextName,contextSubName,methodName);
@@ -1280,7 +1288,7 @@ all_type_tokens has tabs
 						new ListEntry(ret,new StringEntry(arithmatic.get(key).getString())));
 				mustBeNumber = true;
 			}
-			else if("variable_names".equals(key.getName())){
+			else if("variable_names".equals(key.getName())){				
 				String variableName = arithmatic.get(key).getString();
 				VariableEntry var = contexts.get(contextName).get(contextSubName).get(variableName);
 				if(var==null){
@@ -1707,67 +1715,8 @@ all_type_tokens has tabs
 		}
 	}
 
-	@Override
-	public IParser getLazyNameParser(){
-		return Tokens.NAME;
-	}
-
 	public String getName(){
 		return "gen";
-	}
-
-	@Override
-	public void generate(ParseContext data) {
-		NO_DEFAULT_TOKEN = new VariableEntry("$NO_DEFAULT","IToken",null);
-		file = data.getFile();
-		String fileName = data.getFileName();
-		int indexOfDot = fileName.lastIndexOf('.');
-		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
-		directory = new File("../Generated"+camelize(fileName)+"/src/gen/");
-		directory.mkdirs();
-
-		System.out.println(directory.getAbsolutePath());
-
-		Generators.property.generate(data);
-		Generators.entryClass.generate(data);
-		generateAll(data.getList("class_definitions").getNewTokens(),"class_dec");
-
-		addFile(directory,"Generators.java",new ListEntry(new StringEntry("Generators"),new StringEntry("Object")));
-		ListEntry genNames = new ListEntry();
-		genNames.setDelimiter("\n\tpublic static final ");
-		genNames.startWithDelimiter(true);
-		for(String className:generatorNames){
-			StringEntry generatorName = new StringEntry(camelize(className));
-			genNames.add(new ElementEntry(Generators.generator,"generatorDeclaration",new ListEntry(generatorName,new StringEntry(className),generatorName)));
-		}
-		addEntry(getName(),directory,"Generators.java","generators",new ListEntry(genNames));
-		Generators.property.outputAll();
-		Generators.entryClass.outputAll();
-		outputAll();
-
-	}
-
-	@Override
-	public void assignListElementNames(ParseContext context, IToken root){
-		
-		for(IParser parser:Listnames.parser){
-			String pattern = ((RegexParser)parser).getPattern();
-			String listName = pattern.substring(0, pattern.length()-1);
-			context.addList(listName);
-		}
-		context.addList("class_names");
-		for(IParser parser:ClassNames.parser){
-			String className = ((RegexParser)parser).getPattern();
-			context.getList("class_names").getNamesParser().addName(className);
-		}
-		if(context.getList("class_definitions")!=null){
-			context.addList("generator_names");
-			NameParser generatorNames = context.getList("generator_names").getNamesParser();
-			List<IToken> classDefs = context.getList("class_definitions").getNewTokens().getAll("class_dec");
-			for(IToken token:classDefs){
-				generatorNames.addName(token.get("className").getString());
-			}
-		}
 	}
 
 	public String getCastType(IToken castToken, String contextName, String contextSubName){
@@ -2120,4 +2069,110 @@ all_type_tokens has tabs
 		this.checks.add(check);
 	}
 
+	public void setup(ParseContext data) {
+		NO_DEFAULT_TOKEN = new VariableEntry("$NO_DEFAULT","IToken",null);
+		file = data.getFile();
+		String fileName = data.getFileName();
+		int indexOfDot = fileName.lastIndexOf('.');
+		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);
+		directory = new File("../Generated"+camelize(fileName)+"/src/gen/");
+		directory.mkdirs();
+
+		System.out.println(directory.getAbsolutePath());
+	}
+
+	public void generate(ParseContext data){
+		generateAll(data.getList("class_definitions").getNewTokens(),"class_dec");
+
+		addFile(directory,"Generators.java",new ListEntry(new StringEntry("Generators"),new StringEntry("Object")));
+		ListEntry genNames = new ListEntry();
+		genNames.setDelimiter("\n\tpublic static final ");
+		genNames.startWithDelimiter(true);
+		ListEntry genList = new ListEntry();
+		IToken metaTokens = data.getList("meta_declarations").getNewTokens();
+		
+		if(metaTokens!=null){
+			for(IToken.Key metaToken:metaTokens.keySet()){
+				String pureName = metaTokens.get(metaToken).get("metaName").getString();
+				String metaName = camelize(pureName)+"Flow";
+				addFile(directory,metaName+".java",new ListEntry(new StringEntry(metaName),new StringEntry("FlowController")));
+				addEntry(directory,metaName+".java","meta",new ListEntry(generateMeta(metaTokens.get(metaToken))));			
+				
+			}
+		}
+		for(String className:generatorNames){
+			StringEntry generatorName = new StringEntry(camelize(className));
+			genNames.add(new ElementEntry(Generators.generator,"generatorDeclaration",new ListEntry(generatorName,new StringEntry(className),generatorName)));
+			genList.add(className);			
+		}
+		ListEntry entry = new ListEntry(genNames,new ElementEntry(Generators.generator,"generatorListDeclaration",new ListEntry(genList)));
+		entry.setDelimiter("\n\tpublic static final ");
+		addEntry(getName(),directory,"Generators.java","generators",entry);
+	}
+	
+
+	public Entry generateMeta(IToken metaToken){
+		String metaName = metaToken.get("metaName").getString();
+		Entry mainCall = new ElementEntry(Generators.generator,"flowMain",new ListEntry(new StringEntry(camelize(metaName))));
+		ListEntry variableDeclarations = new ListEntry();
+		variableDeclarations.setDelimiter("\n\tprivate ");
+		variableDeclarations.startWithDelimiter(true);
+		ListEntry methodDeclarations = new ListEntry();
+		methodDeclarations.setDelimiter("");
+		ListEntry generateDeclaration = new ListEntry();
+		generateDeclaration.setDelimiter("");
+		ListEntry ret = new ListEntry(
+				mainCall,
+				variableDeclarations,generateDeclaration,methodDeclarations);
+		ret.setDelimiter("\n");
+		addContext(metaName,null,LOCAL_CONTEXT,NO_DEFAULT_TOKEN);
+		for(IToken.Key key:metaToken.keySet()){
+			if("variable_declaration".equals(key.getName())){
+				VariableEntry var = (VariableEntry) generateVariableDeclaration(metaToken.get(key),metaName,LOCAL_CONTEXT);
+				variableDeclarations.add(var);
+				TypeEntry type = new TypeEntry(var);
+				methodDeclarations.add(new TabEntry(0,new ElementEntry(this,"methodDeclaration",
+						new ListEntry(type,new StringEntry("get"+camelize(var.getName())),new ListEntry(),
+								new TabEntry(2,new ElementEntry(this,"returnCall",new ListEntry(new StringEntry(var.getName()))))))));
+			}
+			else if("meta_method_declaration".equals(key.getName())){
+
+				String methodName = metaToken.get(key).get("methodName").getString();
+				addContext(metaName,LOCAL_CONTEXT,methodName,NO_DEFAULT_TOKEN);
+				ListEntry parameters = new ListEntry();
+
+				ListEntry body = new ListEntry();
+				body.setDelimiter("");
+				for(IToken.Key paramKey: metaToken.get(key).keySet()){
+					if("parameter".equals(paramKey.getName())){
+						VariableEntry param = getParameter(metaToken.get(key).get(paramKey),metaName,LOCAL_CONTEXT,methodName);
+						if("generate".equals(methodName)){
+							param.changeType("ParseContext");
+						}
+						parameters.add(param);
+					}
+					else if("entry_declaration".equals(paramKey.getName())){
+						body.add(generateEntryDeclaration(metaToken.get(key).get(paramKey),2,metaName,methodName));
+					}
+					else if("body_element".equals(paramKey.getName())){
+						body.add(generateBodyElement(metaToken.get(key).get(paramKey),2,metaName,methodName));
+					}
+				}
+				methodDeclarations.add(new TabEntry(0,new ElementEntry(this,"methodDeclaration",
+						new ListEntry(new StringEntry("void"),new StringEntry(methodName),new ListEntry(parameters),
+								body))));
+			}
+		}
+
+		if(!contexts.get(metaName).containsKey("assignListElementNames")){
+			//methodDeclarations.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry("assignListElementNames"),new StringEntry("ParseContext data, IToken rootToken"),new ListEntry()))));
+		}		
+		if(!contexts.get(metaName).containsKey("setup")){
+			methodDeclarations.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(new StringEntry("void"),new StringEntry("setup"),new StringEntry("ParseContext context"),new ListEntry()))));
+		}
+		methodDeclarations.add(new TabEntry(0,new ElementEntry(this,"methodDeclaration",
+				new ListEntry(new StringEntry("Generator[]"),new StringEntry("getGenerators"),new ListEntry(),
+						new TabEntry(2,new ElementEntry(this,"returnCall",new ListEntry(new StringEntry("Generators._"))))))));
+		return ret;
+	}
 }

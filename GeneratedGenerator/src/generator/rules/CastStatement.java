@@ -9,8 +9,6 @@ import lists.*;
 public class CastStatement extends ConcreteRule {
 
 	public static final IRule parser = new CastStatement();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public CastStatement(){
 		super("cast_statement");
 	}
@@ -18,15 +16,11 @@ public class CastStatement extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
 					Tokens.CAST,
-					new ListNameParser("variable_names"),
+					new ListNameElementParser("variable_names"),
 					Rules.cast_as_statement));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

@@ -9,7 +9,6 @@ import lists.*;
 public class Base extends ConcreteRule {
 
 	public static final IRule parser = new Base();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Base(){
 		super("base");
 	}
@@ -27,10 +26,6 @@ public class Base extends ConcreteRule {
 									new AddTokenToListParser(
 										Rules.list_rule,"list_rule","list_rules"))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

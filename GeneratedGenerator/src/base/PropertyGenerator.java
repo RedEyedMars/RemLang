@@ -134,20 +134,15 @@ public class PropertyGenerator extends Generator{
 		}
 	}
 	@Override
-	public void generate(ParseContext data) {
+	public void setup(ParseContext data) {
 
 		directory = new File(Generators.generator.getDirectory(),"properties");
 		directory.mkdirs();
+	}
+	
+	@Override
+	public void generate(ParseContext data){		
 		generateAll(data.getList("property_definitions").getNewTokens(),"property_dec");
-	}
-	@Override
-	public IParser getLazyNameParser() {
-		return null;
-	}
-
-	@Override
-	public void assignListElementNames(ParseContext listMap, IToken rootToken) {
-
 	}
 
 	@Override

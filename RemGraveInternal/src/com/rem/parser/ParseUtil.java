@@ -9,7 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.rem.parser.generation.FlowController;
 import com.rem.parser.generation.Generator;
+import com.rem.parser.parallelism.JobCreator;
 import com.rem.parser.parser.ChoiceParser;
 import com.rem.parser.parser.ConcreteListParser;
 import com.rem.parser.parser.IParser;
@@ -22,6 +24,7 @@ public class ParseUtil {
 
 	public static Map<String,PrintStream> debugStreams = new HashMap<String,PrintStream>();
 	public static String currentParser = "";
+	public static IRule currentRule = null;
 	public static boolean debug = false;
 
 	public static String getString(File file){
@@ -68,24 +71,25 @@ public class ParseUtil {
 		}
 	}
 
-	public static void parse(IParser parser, File file, Generator generator, List<IParser> rules, List<IParser> listnames) {
+	public static void parse(IParser parser, File file, FlowController controller, List<IParser> rules, List<IParser> listnames) {
 		long time = System.currentTimeMillis();
 		for(int i=0;i<rules.size();++i){
 			((IRule)rules.get(i)).setup();
 		}
 		String fileString = getString(file);
-		ParseContext data = new ParseContext(file.getName(),fileString);			
+		ParseContext data = new ParseContext(parser,file.getName(),fileString);			
 		System.out.println("File Length:"+data.getFile().length());
-		if(generator!=null&&generator.getLazyNameParser()!=null){
-			NameParser.lazyParser=generator.getLazyNameParser();
+		if(controller!=null&&controller.getLazyNameParser()!=null){
+			NameParser.lazyParser=controller.getLazyNameParser();
 			parser.parse(data);
+			JobCreator.waitUntilDoneProcessing();
 			NameParser.lazyParser=null;
 			if(!data.isDone()){
-				System.out.println("First-Pass Failed!"+data.getLine());
+				System.out.println("First-Pass Failed!");
 				data.invalidate();
 			}
 			else {
-				data.accumlateLists(generator);
+				data.accumulateLists(controller);
 				for(IParser list:listnames){
 					String pattern = ((RegexParser)list).getPattern();
 					String listName = pattern.substring(0, pattern.length()-1);
@@ -93,32 +97,33 @@ public class ParseUtil {
 				}
 				data.resetLists();
 				data = ParseContext.copy(data);
-				ParseContext.furthestPosition = 0;
+				data.resetFurthestPosition();
 				System.out.println("First-Pass Successful");
 			}
 		}
 		if(data.isValid()){
 			parser.parse(data);
-			data.accumlateLists(generator);
+			JobCreator.waitUntilDoneProcessing();
+			data.accumulateLists(controller);
 		}
 
 		result(data,time);
-		if(generator!=null&&data.isDone()){
-			generator.generate(data);
+		if(controller!=null&&data.isDone()){
+			controller.generate(data);
 		}
 	}
 
-	public static void debug_parse(IParser parser, File file, Generator generator, ParseList rules, ParseList listnames) {
+	public static void debug_parse(IParser parser, File file, FlowController controller, ParseList rules, ParseList listnames) {
 		for(IToken.Key key:rules.keySet()){
 			((IRule)rules.get(key).getValue()).setup();
 		}
-		ParseContext data = new ParseContext(file.getName(),getString(file));
+		ParseContext data = new ParseContext(parser,file.getName(),getString(file));
 		debug = true;
 		parser.debug_parse(data);
 
 		result(data,0);
-		if(generator!=null){
-			generator.generate(data);
+		if(controller!=null){
+			controller.generate(data);
 		}
 	}
 
@@ -129,11 +134,13 @@ public class ParseUtil {
 		if(data.getFrontPosition()!=data.getFurthestPosition()){
 			System.out.println("Furthest Valid Position:"+data.getFrontPosition());
 			System.out.println("Furthest:"+data.getFurthestParser()+":"+data.getFurthestPosition());
-			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getFrontPosition())+"$"+data.get().substring(data.getFurthestPosition()-data.getFrontPosition()));
+			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getFrontPosition())+"$>"+data.get().substring(data.getFurthestPosition()-data.getFrontPosition()));
 		}
 		else {
 			System.out.println("Furthest Position:"+data.getFrontPosition());
-			System.out.println(data.get());
+			if(!data.isDone()){
+				System.out.println("$>"+data.get());
+			}
 		}
 	}
 

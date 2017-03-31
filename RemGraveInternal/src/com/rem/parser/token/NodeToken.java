@@ -16,18 +16,20 @@ public class NodeToken implements IToken{
 	private IToken parent;
 	private String listName = null;
 	private int position;
-	public NodeToken(Object obj, int position){
-		this.value = obj;
-		this.position = position;
-	}
-	public NodeToken(String name,Object obj, int position){
+	private String fileName;
+	public NodeToken(String name,String fileName, Object obj, int position){
 		this.name = name;
 		this.value = obj;
 		this.position = position;
+		this.fileName = fileName;
 	}
 
 	public int getPosition() {
 		return position;
+	}
+	
+	public String getFileName(){
+		return fileName;
 	}
 	
 	
@@ -84,7 +86,7 @@ public class NodeToken implements IToken{
 	}
 
 	@Override
-	public void accumlateLists(ParseContext data){
+	public void accumulateLists(ParseContext data){
 		if(listName!=null){
 			data.getList(listName).put(this);
 			listName = null;

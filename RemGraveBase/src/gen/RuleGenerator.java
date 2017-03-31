@@ -45,7 +45,7 @@ public class RuleGenerator extends Generator {
 	public static final Element multipleElement = new Element("multiple",new String[]{"new ",/*Parser Class Name*/"Parser(",/*Inner Rule*/")"});
 	public static final Element listElementElement = new Element("listElement",new String[]{"",/*List Name*/".",/*Parser Name*/""});
 	public static final Element rule_parserElement = new Element("rule_parser",new String[]{"",/*Name*/".parser"});
-	public static final Element rule_name_parserElement = new Element("rule_name_parser",new String[]{"new ListNameParser(\"",/*Name*/"\")"});
+	public static final Element rule_name_parserElement = new Element("rule_name_parser",new String[]{"new ListNameElementParser(\"",/*Name*/"\")"});
 	public static final Element rule_any_list_nameElement = new Element("rule_any_list_name",new String[]{"AnyListNameParser.parser"});
 	public static final Element parameterMemberElement = new Element("parameterMember",new String[]{"\tprivate Parameter<",/*Type*/"> ",/*Parameter Name*/" = new Parameter<",/*Type*/">(",/*Default Value*/");\n"});
 	public static final Element parameterIndexElement = new Element("parameterIndex",new String[]{"\t\tcase ",/*Index*/": return ",/*Parameter Name*/";\n"});
@@ -78,10 +78,13 @@ public class RuleGenerator extends Generator {
 		addElement("parameterNewNumber",parameterNewNumberElement);
 		addElement("parameterExisting",parameterExistingElement);
 	}
-	public void generate(ParseContext data){
+	public void setup(ParseContext data){
+		this.addPage();
 		packageName = Generators.rule.buildString(Generators.base.getSeedName(),".rules");
 		directory = new File(Generators.base.getDirectory(),packageName.replace(".","/"));
 		directory.mkdirs();
+	}
+	public void generate(ParseContext data){
 		ParseList rules = (ParseList)data.getList("rules");
 		Generators.rule.generateAll(rules.getNewTokens(),"rule");
 	}
@@ -197,6 +200,16 @@ public class RuleGenerator extends Generator {
 			}
 			else {
 				returnEntry = new ElementEntry(RuleGenerator.asElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName));
+			}
+		}
+		else {
+			if((enclosingList != null)){
+				if((enclosingTokenName != null)){
+					returnEntry = new ElementEntry(RuleGenerator.addToListWithTokenElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList,enclosingTokenName));
+				}
+				else {
+					returnEntry = new ElementEntry(RuleGenerator.addToListElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList));
+				}
 			}
 		}
 		ListEntry enclosingArgumentsStatement = new ListEntry();
@@ -334,7 +347,7 @@ public class RuleGenerator extends Generator {
 				IToken token = terminal.get(tokenKey);
 				String listName = Generators.rule.camelize(token.getString());
 				if((listName.equals("Listnames"))){
-					return new ListEntry(new StringEntry("com.rem.parser.parser.Listnames.parser"));
+					return new ListEntry(new StringEntry("ListNameParser.parser"));
 				}
 				else {
 					return new ElementEntry(RuleGenerator.rule_parserElement,new ListEntry(new ListEntry(new StringEntry(listName))));
@@ -387,9 +400,6 @@ public class RuleGenerator extends Generator {
 
 	public String getName(){
 		return "Rule";
-	}
-
-	public void assignListElementNames(ParseContext context, IToken rootToken){
 	}
 
 	public IParser getLazyNameParser(){

@@ -23,7 +23,7 @@ public class BaseGenerator extends Generator{
 	private RuleGenerator ruleGen;
 	private BaseGenerator self = this;
 
-
+/*
 	@Override
 	public void generate(ParseContext data) {
 		String fileName = data.getFileName();
@@ -41,7 +41,7 @@ public class BaseGenerator extends Generator{
 		generateAll(ruleGen,((ParseList)data.getList("rules")).getNewTokens(),"rule");
 		outputAll();
 
-	}
+	}*/
 	
 	@Override
 	public String getName(){
@@ -51,12 +51,12 @@ public class BaseGenerator extends Generator{
 	@Override
 	public void generateRoot(IToken root){
 	}
+	public void setup(ParseContext data){
 
-	@Override
-	public IParser getLazyNameParser(){
-		return Tokens.LISTNAME;
 	}
+	public void generate(ParseContext data){
 
+	}
 	public void assignListElementNames(ParseContext data, IToken root){
 
 	}

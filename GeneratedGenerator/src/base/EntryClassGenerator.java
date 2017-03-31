@@ -53,9 +53,14 @@ public class EntryClassGenerator extends Generator{
 	}
 
 	@Override
-	public void generate(ParseContext data) {
+	public void setup(ParseContext data) {
 		directory = new File(Generators.generator.getDirectory(),"entries");
 		directory.mkdirs();
+		
+	}
+	
+	@Override
+	public void generate(ParseContext data){
 		generateAll(data.getList("entry_class_definitions").getNewTokens(),"entry_dec");
 	}
 
@@ -335,16 +340,6 @@ public class EntryClassGenerator extends Generator{
 		else {
 			return new ElementEntry(Generators.entryClass,"body",new ListEntry(body));
 		}
-	}
-
-	@Override
-	public IParser getLazyNameParser() {
-		return null;
-	}
-
-	@Override
-	public void assignListElementNames(ParseContext listMap, IToken rootToken) {
-
 	}
 
 	@Override

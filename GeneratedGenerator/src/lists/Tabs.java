@@ -15,7 +15,7 @@ public class Tabs extends ParseList {
 		return "tab";
 	}
 
-	public static final TabbedParser TAB = new TabbedParser("TAB","tabs","\\t");
+	public static final TabbedParser TAB = new TabbedParser("TAB","tabs","\t");
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				TAB);

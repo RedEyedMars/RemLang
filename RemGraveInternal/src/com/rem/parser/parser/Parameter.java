@@ -1,17 +1,17 @@
 package com.rem.parser.parser;
 
+import com.rem.parser.ParseContext;
+
 public class Parameter <ValueType extends Object> extends Argument<ValueType>{
 	
-	private ValueType value;
-	public Parameter(ValueType value){
-		this.value = value;
-	}
-	public void set(ValueType value){
-		this.value = value;
+	private int index;
+	public Parameter(int index){
+		this.index = index;
 	}
 
-	public ValueType evaluate() {
-		return value;
+	@SuppressWarnings("unchecked")
+	public ValueType evaluate(ParseContext context) {
+		return (ValueType) context.getParameter(index);
 	}
 
 }

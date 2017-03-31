@@ -86,7 +86,7 @@ public class AnyListNameParser extends ConcreteParser {
 						break;
 					}
 				}
-				data.getToken().put(new NodeToken("listnames",listName,data.getFrontPosition()));
+				data.getToken().put(new NodeToken("listnames",data.getFileName(),listName,data.getFrontPosition()));
 				data.setFrontPosition(data.getFrontPosition()+found);
 				data.validate();
 				return;

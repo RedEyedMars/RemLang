@@ -9,7 +9,6 @@ import lists.*;
 public class ListEntryDefinition extends ConcreteRule {
 
 	public static final IRule parser = new ListEntryDefinition();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public ListEntryDefinition(){
 		super("list_entry_definition");
 	}
@@ -25,13 +24,9 @@ public class ListEntryDefinition extends ConcreteRule {
 						
 						new ChainParser(
 							Tokens.PIPE,
-							new ListNameParser("variable_names"),
+							new ListNameElementParser("variable_names"),
 							Tokens.PIPE),"exact_variable")));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

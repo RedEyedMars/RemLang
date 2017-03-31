@@ -9,7 +9,6 @@ import lists.*;
 public class MethodParameter extends ConcreteRule {
 
 	public static final IRule parser = new MethodParameter();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public MethodParameter(){
 		super("method_parameter");
 	}
@@ -28,17 +27,13 @@ public class MethodParameter extends ConcreteRule {
 					new AddTokenParser(
 						Tokens.NAME_WORD,"getKeyName")),
 					Rules.variable_or_token_name,
-					new ListNameParser("class_names"),
-					new ListNameParser("generator_names"),
-					new ListNameParser("property_names"),
-					new ListNameParser("entry_class_names"),
-					new ListNameParser("entry_names"),
+					new ListNameElementParser("class_names"),
+					new ListNameElementParser("generator_names"),
+					new ListNameElementParser("property_names"),
+					new ListNameElementParser("entry_class_names"),
+					new ListNameElementParser("entry_names"),
 					Tokens.NUMBER));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

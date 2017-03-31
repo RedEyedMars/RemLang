@@ -91,4 +91,8 @@ public class AddTokenParser extends ConcreteParser implements IParser {
 			}
 		}
 	}
+	
+	public String getTokenName(){
+		return name;
+	}
 }

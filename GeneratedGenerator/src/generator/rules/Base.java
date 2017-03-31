@@ -9,7 +9,6 @@ import lists.*;
 public class Base extends ConcreteRule {
 
 	public static final IRule parser = new Base();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Base(){
 		super("base");
 	}
@@ -21,7 +20,10 @@ public class Base extends ConcreteRule {
 							
 							new ChoiceParser(
 									Tokens.NEWLINE,
+									Ingests.IMPORT,
 									Rules.used_classes_list,
+									new AddTokenToListParser(
+										Rules.meta_declaration,null,"meta_declarations"),
 									new AddTokenToListParser(
 										Rules.property_declaration,"property_dec","property_definitions"),
 									new AddTokenToListParser(
@@ -29,10 +31,6 @@ public class Base extends ConcreteRule {
 									new AddTokenToListParser(
 										Rules.class_declaration,"class_dec","class_definitions"))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

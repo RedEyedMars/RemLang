@@ -9,7 +9,6 @@ import lists.*;
 public class BooleanStatement extends ConcreteRule {
 
 	public static final IRule parser = new BooleanStatement();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public BooleanStatement(){
 		super("boolean_statement");
 	}
@@ -30,10 +29,6 @@ public class BooleanStatement extends ConcreteRule {
 													Tokens.OR),"continuationOperator"),
 											Rules.boolean_clause),"continuationStatement"))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

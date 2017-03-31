@@ -9,8 +9,6 @@ import lists.*;
 public class BodyElement extends ConcreteRule {
 
 	public static final IRule parser = new BodyElement();
-	private Parameter<Integer> tabs = new Parameter<Integer>(0);
-	private Parameter<?>[] parameters = new Parameter<?>[]{tabs};
 	public BodyElement(){
 		super("body_element");
 	}
@@ -18,21 +16,17 @@ public class BodyElement extends ConcreteRule {
 	public void setup(){
 		set(
 			new ChoiceParser(
-					new WithParser((IRule)Rules.error_statement,this.tabs),
-					new WithParser((IRule)Rules.return_statement,this.tabs),
-					new WithParser((IRule)Rules.if_statement,this.tabs),
-					new WithParser((IRule)Rules.token_declaration,this.tabs),
-					new WithParser((IRule)Rules.variable_declaration,this.tabs),
-					new WithParser((IRule)Rules.set_call,this.tabs),
-					new WithParser((IRule)Rules.each_call,this.tabs),
-					new WithParser((IRule)Rules.flip_switch,this.tabs),
-					new WithParser((IRule)Rules.token_expansion,this.tabs),
-					new WithParser((IRule)Rules.method_call,this.tabs)));
+					new WithParser((IRule)Rules.error_statement,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.return_statement,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.if_statement,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.token_declaration,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.variable_declaration,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.set_call,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.each_call,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.flip_switch,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.token_expansion,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.method_call,new Parameter<Integer>(0))));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

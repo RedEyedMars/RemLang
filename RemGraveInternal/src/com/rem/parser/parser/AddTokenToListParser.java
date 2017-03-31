@@ -20,6 +20,11 @@ public class AddTokenToListParser extends AddTokenParser implements IParser {
 		listName = initialListName;
 		
 	}
+	public AddTokenToListParser(IRule initialRule,String initialName, String initialListName){
+		super(initialRule,initialName==null?initialRule.getTokenName():initialName);
+		listName = initialListName;
+		
+	}
 	public AddTokenToListParser(IParser initialParser,String initialName, String initialListName, String initialWithTokenName){
 		super(initialParser,initialName);
 		listName = initialListName;

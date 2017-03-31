@@ -20,14 +20,11 @@ public abstract class Generator {
 	private Map<String, PageOverview> pages = new HashMap<String, PageOverview>();
 	private Map<String, Element> elements = new LinkedHashMap<String, Element>();
 
-	public abstract void generate(ParseContext data);
-
-	public abstract IParser getLazyNameParser();
-
-	public abstract void assignListElementNames(ParseContext data, IToken rootToken);
 
 	public abstract String getName();
 
+	public abstract void setup(ParseContext data);
+	public abstract void generate(ParseContext data);
 	public abstract void generateRoot(IToken rootToken);
 	
 	public Element getElement(String elementName){
@@ -53,7 +50,6 @@ public abstract class Generator {
 	}
 
 	protected void generateAll(Generator gen, IToken token, String name) {
-		addPage(gen.getName(), elements.get("outline").getOutline());
 		List<IToken> list = token.getAll(name);
 		if(list!=null){
 			for (IToken subToken : token.getAll(name)) {
@@ -123,6 +119,7 @@ public abstract class Generator {
 	public void outputAll() {
 		for (String pageName : pages.keySet()) {
 			pages.get(pageName).output();
+			
 		}
 	}
 
@@ -157,6 +154,15 @@ public abstract class Generator {
 			pages.put(pageName, new PageOverview());
 		}
 		pages.get(pageName).setOutline(pageOutline);
+	}
+	
+	protected void addPage(String[] pageOutline) {
+		addPage(getName(),pageOutline);
+	}
+	protected void addPage() {
+		if(elements.containsKey("outline")){
+			addPage(getName(),elements.get("outline").getOutline());
+		}
 	}
 
 	protected void addFile(String pageName, File directory, String fileName, ListEntry parameters) {
@@ -309,7 +315,7 @@ public abstract class Generator {
 						}
 						writer = new BufferedWriter(
 								new FileWriter(new File(dirs.get(i), details.get(i).get(j).filename)));
-
+						//System.out.println(new File(dirs.get(i), details.get(i).get(j).filename).getAbsolutePath());
 						writer.write(builder.toString());
 						writer.write(outLineEnd);
 					} catch (IOException e) {

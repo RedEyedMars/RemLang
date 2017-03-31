@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.NameParser;
 import com.rem.parser.token.BranchToken;
 import com.rem.parser.token.IToken;
@@ -60,7 +61,7 @@ public abstract class ParseList extends BranchToken{
 					continue;
 				}
 				else {
-					newList.put(new NodeToken(field.getName(),field.get(newList),-1));
+					newList.put(new NodeToken(field.getName(),IParser.DEFAULT,field.get(newList),-1));
 				}
 			}
 		} catch (IllegalArgumentException e) {

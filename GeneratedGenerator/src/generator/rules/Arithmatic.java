@@ -9,7 +9,6 @@ import lists.*;
 public class Arithmatic extends ConcreteRule {
 
 	public static final IRule parser = new Arithmatic();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public Arithmatic(){
 		super("arithmatic");
 	}
@@ -27,13 +26,9 @@ public class Arithmatic extends ConcreteRule {
 					new AddTokenParser(
 						Tokens.MULTIPLICATIVE_OPERAND,"operand"),
 					Rules.arithmatic),
-					new ListNameParser("variable_names"),
+					new ListNameElementParser("variable_names"),
 					Tokens.NUMBER));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

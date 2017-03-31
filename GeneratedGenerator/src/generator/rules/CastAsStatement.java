@@ -9,7 +9,6 @@ import lists.*;
 public class CastAsStatement extends ConcreteRule {
 
 	public static final IRule parser = new CastAsStatement();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public CastAsStatement(){
 		super("cast_as_statement");
 	}
@@ -27,10 +26,6 @@ public class CastAsStatement extends ConcreteRule {
 									new AddTokenParser(
 										Braces.ANGLE_BRACES,"angle_braces"))),"castToType")));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }

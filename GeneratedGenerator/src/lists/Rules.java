@@ -22,6 +22,8 @@ public class Rules extends ParseList {
 	public static final IRule base = Base.parser;
 	public static final IRule whitetab = Whitetab.parser;
 	public static final IRule used_classes_list = UsedClassesList.parser;
+	public static final IRule meta_declaration = MetaDeclaration.parser;
+	public static final IRule meta_method_declaration = MetaMethodDeclaration.parser;
 	public static final IRule property_declaration = PropertyDeclaration.parser;
 	public static final IRule entry_class_declaration = EntryClassDeclaration.parser;
 	public static final IRule entry_class_element = EntryClassElement.parser;
@@ -61,5 +63,5 @@ public class Rules extends ParseList {
 	public static final IRule cast_as_statement = CastAsStatement.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
+				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
 }

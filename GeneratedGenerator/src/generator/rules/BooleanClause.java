@@ -9,7 +9,6 @@ import lists.*;
 public class BooleanClause extends ConcreteRule {
 
 	public static final IRule parser = new BooleanClause();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
 	public BooleanClause(){
 		super("boolean_clause");
 	}
@@ -25,7 +24,7 @@ public class BooleanClause extends ConcreteRule {
 					new AddTokenParser(
 						
 						new ChainParser(
-							new ListNameParser("token_names"),
+							new ListNameElementParser("token_names"),
 							Tokens.CONTAINS,
 							new AddTokenParser(
 								Tokens.NAME,"argument")),"containsStatement"),
@@ -49,10 +48,6 @@ public class BooleanClause extends ConcreteRule {
 									Tokens.EMPTY,
 									Tokens.SINGULAR),"right")),"operatedStatement")));
 
-	}
-	@Override @SuppressWarnings("unchecked")
-	public Parameter<?>[] getParameters(){
-		return parameters;
 	}
 
 }
