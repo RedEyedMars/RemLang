@@ -1,8 +1,5 @@
 package com.rem.parser.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.rem.parser.ParseContext;
 
 public class WithParser extends ConcreteParser{
@@ -19,8 +16,12 @@ public class WithParser extends ConcreteParser{
 		Object[] values = new Object[args.length];
 		for(int i=0;i<args.length;++i){
 			values[i] = args[i].evaluate(data);
+			if(TabbedParser.debug_flag&&data.getFileName().equals("generator/entries.generator")){
+			System.out.println(values[i]);
+			}
 		}
-		if(TabbedParser.debug_flag){
+		//System.out.println(ParseUtil.currentRule+":"+data.getFileName()+":"+data.getLineNumber(data.getFrontPosition()));
+		if(TabbedParser.debug_flag&&data.getFileName().equals("generator/entries.generator")){
 			System.out.println("with>"+data.getFileName());
 		data.pushParameters(values);
 		this.subParser.parse(data);

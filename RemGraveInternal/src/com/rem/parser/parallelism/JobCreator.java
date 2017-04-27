@@ -3,7 +3,6 @@ package com.rem.parser.parallelism;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.rem.parser.ParseUtil;
 
 public class JobCreator extends Thread{
 

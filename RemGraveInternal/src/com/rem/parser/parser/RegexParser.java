@@ -69,7 +69,10 @@ public class RegexParser extends ConcreteParser implements IParser{
 	public String getName(){
 		return name;
 	}
-	
+
+	public void setName(String name){
+		this.name = name;
+	}
 	public String getPattern(){
 		return pattern==null?"pattern is null":regex;
 	}

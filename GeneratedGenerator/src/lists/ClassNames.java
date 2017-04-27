@@ -25,9 +25,16 @@ public class ClassNames extends ParseList {
 	public static final RegexParser IToken = new RegexParser("IToken","class_names","IToken");
 	public static final RegexParser Listnames = new RegexParser("Listnames","class_names","Listnames");
 	public static final RegexParser List = new RegexParser("List","class_names","List");
+	public static final RegexParser ArrayList = new RegexParser("ArrayList","class_names","ArrayList");
 	public static final RegexParser Map = new RegexParser("Map","class_names","Map");
+	public static final RegexParser HashMap = new RegexParser("HashMap","class_names","HashMap");
+	public static final RegexParser Set = new RegexParser("Set","class_names","Set");
+	public static final RegexParser HashSet = new RegexParser("HashSet","class_names","HashSet");
+	public static final RegexParser TreeSet = new RegexParser("TreeSet","class_names","TreeSet");
 	public static final RegexParser File = new RegexParser("File","class_names","File");
+	public static final RegexParser Entry = new RegexParser("Entry","class_names","Entry");
+	public static final RegexParser ListEntry = new RegexParser("ListEntry","class_names","ListEntry");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				String,StringBuilder,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,Map,File);
+				String,StringBuilder,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,ArrayList,Map,HashMap,Set,HashSet,TreeSet,File,Entry,ListEntry);
 }

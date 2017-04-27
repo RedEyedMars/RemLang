@@ -11,14 +11,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.rem.parser.ParseContext;
-import com.rem.parser.ParseList;
-import com.rem.parser.parser.IParser;
 import com.rem.parser.token.IToken;
+import com.rem.parser.token.NodeToken;
+
 
 public abstract class Generator {
 
 	private Map<String, PageOverview> pages = new HashMap<String, PageOverview>();
 	private Map<String, Element> elements = new LinkedHashMap<String, Element>();
+	protected List<ICheck> checks = new ArrayList<ICheck>();
 
 
 	public abstract String getName();
@@ -437,10 +438,47 @@ public abstract class Generator {
 	}
 
 	public String tokenErrorMessage(IToken offender){
-		String error = "";
+		StringBuilder builder = new StringBuilder();
+		tokenErrorMessage(offender,builder);
+		return builder.toString();
+	}
+	private void tokenErrorMessage(IToken offender, StringBuilder builder){		
 		for(IToken.Key key:offender.keySet()){
-			error+="("+key.getName()+":"+offender.get(key).getString()+")"+",";
+			builder.append("(");
+			builder.append(key.getName());
+			builder.append(":");
+			builder.append(offender.get(key).getString());
+			builder.append("),");
 		}
-		return error;
+	}
+	public String completeTokenErrorMessage(IToken offender){
+		StringBuilder builder = new StringBuilder();
+		completeTokenErrorMessage(offender,0,builder);
+		return builder.toString();
+	}
+	private void completeTokenErrorMessage(IToken offender, int tab, StringBuilder builder){		
+		for(IToken.Key key:offender.keySet()){
+			builder.append('\n');
+			for(int i=0;i<tab;++i){
+				builder.append('\t');
+			}
+			builder.append(key.getName());
+			builder.append(":");
+			if(offender.get(key) instanceof NodeToken){
+				builder.append(offender.get(key).getString().replace("\n", "$\\n"));
+			}
+			else {
+				completeTokenErrorMessage(offender.get(key),tab+1,builder);
+			}
+		}
+	}
+
+	public void addCheck(ICheck check) {
+		this.checks.add(check);
+	}
+	public void check(){
+		for(ICheck check:checks){
+			check.check();
+		}
 	}
 }

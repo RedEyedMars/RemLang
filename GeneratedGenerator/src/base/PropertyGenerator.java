@@ -38,6 +38,9 @@ public class PropertyGenerator extends Generator{
 						"import com.rem.parser.*;\n"+
 						"import com.rem.parser.generation.*;\n"+
 						"import com.rem.parser.token.*;\n"+
+						"import gen.*;\n"+
+						"import gen.checks.*;\n"+
+						"import gen.properties.*;\n"+
 						"import lists.*;\n\n"+
 						"public interface ",/*Class Name*/" {\n",/*Contents*/"\n}"});
 

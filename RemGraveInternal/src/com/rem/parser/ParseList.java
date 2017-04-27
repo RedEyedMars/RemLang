@@ -1,25 +1,24 @@
 package com.rem.parser;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.NameParser;
 import com.rem.parser.token.BranchToken;
 import com.rem.parser.token.IToken;
 import com.rem.parser.token.NodeToken;
+import com.rem.parser.token.ParseListToken;
 
 public abstract class ParseList extends BranchToken{
 
-	private BranchToken newTokensToken;
-	private NameParser name_parser;
+	private ParseListToken newTokensToken;
+	private NameParser defaultNameParser;
 	
 	public abstract String getName();	
 	public abstract String getSingular();
 	
 	public NameParser getNamesParser(){
-		return name_parser;
+		return defaultNameParser;
 	}
 	
 	
@@ -29,12 +28,12 @@ public abstract class ParseList extends BranchToken{
 		return newTokensToken.put(key, value);
 	}
 	
-	public IToken getNewTokens(){
+	public ParseListToken getNewTokens(){
 		return newTokensToken;
 	}
 
 	public void reset() {
-		newTokensToken = new BranchToken();
+		newTokensToken = new ParseListToken();
 	}
 	
 	static ParseList createNew(final String listName, final String singleName, final ParseContext parentContext){
@@ -54,7 +53,7 @@ public abstract class ParseList extends BranchToken{
 			for(Field field:ParseList.class.getDeclaredFields()){
 				if("serialVersionUID".equals(field.getName())||
 						"parser".equals(field.getName())||
-						"name_parser".equals(field.getName())||
+						"defaultNameParser".equals(field.getName())||
 						"this$0".equals(field.getName())||
 						"val$listName".equals(field.getName())||
 						"val$singleName".equals(field.getName())){
@@ -70,8 +69,8 @@ public abstract class ParseList extends BranchToken{
 			e.printStackTrace();
 		}
 		
-		newList.newTokensToken = new BranchToken();
-		newList.name_parser = new NameParser(parentContext,listName);
+		newList.newTokensToken = new ParseListToken();
+		newList.defaultNameParser = new NameParser(parentContext,listName);
 		return newList;
 	}
 

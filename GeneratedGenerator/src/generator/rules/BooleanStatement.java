@@ -9,6 +9,7 @@ import lists.*;
 public class BooleanStatement extends ConcreteRule {
 
 	public static final IRule parser = new BooleanStatement();
+
 	public BooleanStatement(){
 		super("boolean_statement");
 	}

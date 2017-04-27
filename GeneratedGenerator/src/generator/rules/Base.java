@@ -9,6 +9,7 @@ import lists.*;
 public class Base extends ConcreteRule {
 
 	public static final IRule parser = new Base();
+
 	public Base(){
 		super("base");
 	}
@@ -29,7 +30,7 @@ public class Base extends ConcreteRule {
 									new AddTokenToListParser(
 										Rules.entry_class_declaration,"entry_dec","entry_class_definitions"),
 									new AddTokenToListParser(
-										Rules.class_declaration,"class_dec","class_definitions"))));
+										Rules.class_declaration,"class_dec","class_definitions","className"))));
 
 	}
 

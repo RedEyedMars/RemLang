@@ -9,6 +9,7 @@ import lists.*;
 public class EntryClassDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new EntryClassDeclaration();
+
 	public EntryClassDeclaration(){
 		super("entry_class_declaration");
 	}

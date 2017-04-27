@@ -9,6 +9,7 @@ import lists.*;
 public class Arithmatic extends ConcreteRule {
 
 	public static final IRule parser = new Arithmatic();
+
 	public Arithmatic(){
 		super("arithmatic");
 	}

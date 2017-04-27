@@ -1,0 +1,253 @@
+uses Listnames Tokens
+import "generator/gentries.generator"
+
+
+generator
+	
+	constant DEFAULT_TOKEN
+		"$token"
+	constant NO_DEFAULT_TOKEN
+		null
+	constant LOCAL_CONTEXT
+		"$LOCAL"
+	
+	var directory as File
+		null
+	var classNames as Set<String>
+		new HashSet<String>
+	var generatorNames as List<String>
+		new ArrayList<String>
+	var contexts as Map<String,Map<String,Map<String,variable>>>
+		new HashMap<String,Map<String,Map<String,variable>>>
+	var methodParameters as Map<String,Map<String,List<type_listener>>>
+		new HashMap<String,Map<String,List<type_listener>>>
+	var elementBodies as Map<String,ListEntry>
+		new HashMap<String,ListEntry>
+	var constructorBodies as Map<String,ListEntry>
+		new HashMap<String,ListEntry>
+	var ifIndex
+		0
+	var generatorName
+		""
+	
+	elements
+		
+		outline
+			"package gen;\n\n"+
+			"import java.io.*;\n"+
+			"import java.util.*;\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import com.rem.parser.parser.*;\n"+
+			"import gen.checks.*;\n"+
+			"import gen.entries.*;\n"+
+			"import gen.properties.*;\n"+
+			"import lists.*;\n\n"+
+			"public class " Class Name " extends " Extension " {\n" Contents "\n}"			
+		typeAndName
+			"" Type " " Name ""
+		variableDeclaration
+			"" Type Name " " Variable Name " = " Assignment ";"
+		variablePrototype
+			"" Type Name " " Variable Name ""
+		flowMain
+			"\tpublic static void main(String[] args){\n"+
+			"\t\tif(args.length==1){\n\t\t\tnew " Meta Name "Flow().parse(args[0]);\n\t\t}\n\t\telse {\n\t\t\tSystem.err.println(\"No filename provided!\");\n\t\t}\n\t}\n"
+		generatorCall
+			"Generators." Generator Name ""
+		generatorDeclaration
+			"" Class Name "Generator " Class name " = new " Assignment "Generator();"
+		generatorListDeclaration
+			"Generator[] _ = new Generator[]{" Generator Names "};"
+		methodCall
+			"" Subject Name "." Method Name "(" Parameters ")"
+		generatorElement
+			"" Generator Name "Generator." Element Name "Element"
+		generatorElementWithVariable
+			"Generators." Generator Name "," Variable Name ""
+		castCall
+			"(" Type Name ")" Subject ""
+		exactCall
+			"" Method Name ""
+		exactDuoCall
+			"" First "" Second ""
+		exactWithAngleCall
+			"" Method Name "<" Parameters ">"
+		newObjectCall
+			"new " Type Name "(" Parameters ")"
+		newMethodWithBracesCall
+			"new "	Type Name "<" Parameters ">()"
+		operatorCall
+			"" Left " " Operator " " Right ""
+		noSubjectCall
+			"" Method Name "(" Parameter ")"
+		errorCall
+			"System.err.println(" Error Output ");"
+		returnCall
+			"return " Output ";"
+		newBooleanCall
+			"(" Parameters ")"
+		setCall
+			"" Subject " = " Argument ";"
+		equalsCall
+			"" Subject ".equals(" Argument ")"
+		notEqualsCall
+			"!" Subject ".equals(" Argument ")"
+		newStringListCall
+			"new String[]{" Parameters "}"
+		staticGetVariableCall
+			"" Class Name "." Variable Name "" Blank ""
+		staticMethodCall
+			"" Class Name "." Method Name "(" Parameters ")"
+		ifStatementCall
+			"if(" Boolean "){" Body ""
+		elseIfStatementCall
+			"else if(" Boolean "){" Body ""
+		elseStatementCall
+			"else {" Body ""
+		forStatementCall
+			"for(" Key Name ":" Token Name "){" Body ""
+		tokenForStatementCall
+			"for(IToken.Key " Key Name ":" Token Name ".keySet()){" Body ""
+		methodDeclaration
+			"public " Method Type " " Method Name "(" Method Parameters "){" Body "\n\t}"
+		getMethodDeclaration
+			"public " Method Type " get" Variable Name "(){\n\t\treturn " Member Name ";\n\t}"
+		constructor
+			"\tpublic " Class Name "Generator(){" Constructor Body "\n\t}"
+		publicStaticFinalVariableDeclaration
+			"public static final " Type " " Name " = " Assignement ";"
+		semicoloned
+			"" Body ";"
+	
+	generate root
+		var className
+			"$"
+		entry variableDeclarations "\n\tprivate " = {}
+		entry methodDeclarations "\n" = {}
+		entry variableMethods "\n" = {}
+		entry classElements "\n" = {
+			variableDeclarations
+			[""]
+			methodDeclarations
+			variableMethods }
+		
+		var newContext
+			new HashMap<String,Map<String,variable>>
+		root to classElement
+			className
+				var genName
+					'classElement
+				set generatorName
+					genName
+				set className
+					generator camelize
+						genName
+				classNames add
+					className
+				generatorNames add
+					genName
+				contexts put
+					className
+					newContext
+				entry elementBody "" = {}
+				entry constructorBody "" = {}
+				elementBodies put
+					className
+					elementBody
+				constructorBodies put
+					className
+					constructorBody
+				methodParameters put
+					className
+					new HashMap<String,List<type_listener>>
+				var varMap
+					new HashMap<String,variable>
+				varMap put
+					DEFAULT_TOKEN
+					@variable "root" "IToken" null@ 
+				newContext put
+					LOCAL_CONTEXT
+					varMap
+				methodDeclarations add
+					elementBodies get
+						className
+				methodDeclarations add
+					constructor {[className] constructorBody}
+			
+			auxillary_declaration
+				methodDeclarations add
+					generate auxillaryDeclaration < className, LOCAL_CONTEXT, true >
+			
+			variable_declaration
+				var variable as variable
+					generate variableDeclaration < className, LOCAL_CONTEXT >
+				variableDeclarations add
+					variable
+				
+				var variableName
+					generator camelize
+						variable getName
+				var memberName
+					variable getName
+				entry type = @type variable@
+				variableMethods add
+					(1 getMethodDeclaration {type [variableName] [memberName] } )
+			
+			constant_declaration
+				var variable as variable
+					generate variableDeclaration < className, LOCAL_CONTEXT >
+				variable setStatic
+					true
+				variable setFinal
+					true
+				variableDeclarations add
+					variable
+			element_declaration
+				generate elementDeclaration < className, LOCAL_CONTEXT >
+			
+			generation_declaration
+				methodDeclarations add
+					generate generationDeclaration < className, LOCAL_CONTEXT >
+		
+		classElements add
+			(1 getMethodDeclaration { ["String"] ["Name"] ``className`` } )
+		
+		if newContext does not containsKey "generateRoot"
+			classElements add
+				(1 methodDeclaration { ["void"]  ["generateRoot"] ["IToken root"] {} } )
+		
+		if newContext does not containsKey "generate"
+			classElements add
+				(1 methodDeclaration {["void"] ["generate"] ["ParseContext data"] {} } )
+			
+		if newContext does not containsKey "setup"
+			classElements add
+				(1 methodDeclaration {["void"] ["setup"] ["ParseContext context"] {} } )
+		
+		var local_context
+			newContext get
+				LOCAL_CONTEXT
+		if local_context does not containsKey "lazyNameParser"
+			classElements add
+				(1 getMethodDeclaration { ["IParser"] ["LazyNameParser"] ["null"] } )
+		
+		var javaClassName
+			generator buildString
+				className
+				"Generator"
+		var fileName
+			generator buildString
+				javaClassName
+				".java"
+		generator addFile
+			directory
+			fileName
+			{[javaClassName] ["Generator"]}
+		generator addEntry
+			directory
+			fileName
+			"celements"
+			{classElements}
+

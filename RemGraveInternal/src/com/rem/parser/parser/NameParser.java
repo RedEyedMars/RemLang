@@ -37,7 +37,7 @@ public class NameParser extends RegexParser{
 	public void real_parse(ParseContext data){
 
 		if(lazyParser!=null){
-			lazyParser.parse(data);
+			new AddTokenParser(lazyParser,name).parse(data);
 			return;
 		}
 		else if(!containsNames()){
@@ -107,4 +107,13 @@ public class NameParser extends RegexParser{
 	public Set<String> getElements() {
 		return parsers;
 	}
+
+	public ParseContext getParent() {
+		return parent;
+	}
+
+	public void setParent(ParseContext newParent) {
+		this.parent = newParent;
+	}
+
 }

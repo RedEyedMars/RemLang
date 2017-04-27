@@ -1,0 +1,17 @@
+uses Listnames Tokens
+import "generator/entries.generator"
+
+
+generator
+	elements
+		typeAndName
+			"" Type " " Name ""
+		methodCall
+			"" Subject "." Method "(" Parameters ")"
+		exactCall
+			"" Contents ""
+		variableDeclaration
+			"" Type " " Name " = " Assignment ";"
+		newObjectCall
+			"new " Type Name "(" Parameters ")"
+

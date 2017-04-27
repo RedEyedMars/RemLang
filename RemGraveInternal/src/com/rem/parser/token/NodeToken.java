@@ -23,7 +23,16 @@ public class NodeToken implements IToken{
 		this.position = position;
 		this.fileName = fileName;
 	}
-
+	@Override
+	public ParseContext getContext(ParseContext rootContext){
+		if(parent==null){
+			return rootContext;
+		}
+		else {
+			return parent.getContext(rootContext);
+		}
+	}
+	@Override
 	public int getPosition() {
 		return position;
 	}
@@ -82,6 +91,10 @@ public class NodeToken implements IToken{
 	
 	@Override
 	public IToken getLast(){
+		return null;
+	}
+	@Override
+	public IToken getLast(String tokenName){
 		return null;
 	}
 

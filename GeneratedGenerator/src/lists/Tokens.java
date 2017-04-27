@@ -52,6 +52,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser EMPTY = new ExactParser("EMPTY","tokens","empty");
 	public static final ExactParser SINGULAR = new ExactParser("SINGULAR","tokens","singular");
 	public static final ExactParser SINGLE = new ExactParser("SINGLE","tokens","single");
+	public static final ExactParser DOES = new ExactParser("DOES","tokens","does ");
 	public static final RegexParser ACCESS = new RegexParser("ACCESS","tokens","[-][>]");
 	public static final RegexParser NON_SPACE = new RegexParser("NON_SPACE","tokens","[^\\s]+");
 	public static final ExactParser FLIP = new ExactParser("FLIP","tokens","flip ");
@@ -72,7 +73,9 @@ public class Tokens extends ParseList {
 	public static final ExactParser OTHERWISE = new ExactParser("OTHERWISE","tokens","otherwise");
 	public static final ExactParser PIPE = new ExactParser("PIPE","tokens","|");
 	public static final ExactParser META = new ExactParser("META","tokens","meta");
+	public static final ExactParser CHECK = new ExactParser("CHECK","tokens","check ");
+	public static final RegexParser NON_NEWLINE = new RegexParser("NON_NEWLINE","tokens","[^\\n]+");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NEWLINE,NAME_WORD,NAME,WILD,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,CONTAINS,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,STATIC,ORDINAL_OPERATOR,EMPTY,SINGULAR,SINGLE,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN,PROPERTY,EACH,IN,CONSTRUCTOR,OUTPUT,THIS,CONSTANT,OTHERWISE,PIPE,META);
+				NEWLINE,NAME_WORD,NAME,WILD,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,CONTAINS,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,STATIC,ORDINAL_OPERATOR,EMPTY,SINGULAR,SINGLE,DOES,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN,PROPERTY,EACH,IN,CONSTRUCTOR,OUTPUT,THIS,CONSTANT,OTHERWISE,PIPE,META,CHECK,NON_NEWLINE);
 }

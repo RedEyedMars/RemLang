@@ -1,9 +1,5 @@
 package com.rem.parser.parallelism;
 
-import java.io.File;
-
-import com.rem.parser.ParseUtil;
-
 public class JobProcessor extends Thread {
 
 	private ParallelJob job;

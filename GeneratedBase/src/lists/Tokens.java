@@ -24,6 +24,8 @@ public class Tokens extends ParseList {
 	public static final ExactParser WITH = new ExactParser("WITH","tokens","with");
 	public static final ExactParser ARE = new ExactParser("ARE","tokens","are");
 	public static final ExactParser COMMA = new ExactParser("COMMA","tokens",",");
+	public static final ExactParser FROM = new ExactParser("FROM","tokens","from");
+	public static final ExactParser DOT = new ExactParser("DOT","tokens",".");
 	public static final RegexParser ADDITIVE_OPERAND = new RegexParser("ADDITIVE_OPERAND","tokens","[+-]");
 	public static final RegexParser MULTIPLICATIVE_OPERAND = new RegexParser("MULTIPLICATIVE_OPERAND","tokens","[*/]");
 	public static final ExactParser HAS = new ExactParser("HAS","tokens","has");
@@ -38,5 +40,5 @@ public class Tokens extends ParseList {
 	public static final RegexParser NUMBER = new RegexParser("NUMBER","tokens","[-]?\\d+");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,HAS,SILENCE,ANYLIST,TAB,NEWLINE,NAME,LISTNAME,SPACES,WILD,NUMBER);
+				PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,HAS,SILENCE,ANYLIST,TAB,NEWLINE,NAME,LISTNAME,SPACES,WILD,NUMBER);
 }

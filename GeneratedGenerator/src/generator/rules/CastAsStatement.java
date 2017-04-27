@@ -9,6 +9,7 @@ import lists.*;
 public class CastAsStatement extends ConcreteRule {
 
 	public static final IRule parser = new CastAsStatement();
+
 	public CastAsStatement(){
 		super("cast_as_statement");
 	}

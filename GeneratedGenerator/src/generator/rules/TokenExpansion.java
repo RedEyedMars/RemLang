@@ -9,6 +9,8 @@ import lists.*;
 public class TokenExpansion extends ConcreteRule {
 
 	public static final IRule parser = new TokenExpansion();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public TokenExpansion(){
 		super("token_expansion");
 	}
@@ -16,14 +18,14 @@ public class TokenExpansion extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.whitetab,this.tabs),
 					new ListNameElementParser("token_names"),
 					
 					new ChoiceParser(
 							new AddTokenParser(
 								Tokens.NAME_WORD,"getName"),
-							new WithParser((IRule)Rules.clause_type_tokens,new Parameter<Integer>(0)),
-							new WithParser((IRule)Rules.all_type_tokens,new Parameter<Integer>(0)))));
+							new WithParser((IRule)Rules.clause_type_tokens,this.tabs),
+							new WithParser((IRule)Rules.all_type_tokens,this.tabs))));
 
 	}
 

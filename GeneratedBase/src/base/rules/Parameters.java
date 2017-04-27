@@ -9,6 +9,7 @@ import lists.*;
 public class Parameters extends ConcreteRule {
 
 	public static final IRule parser = new Parameters();
+
 	public Parameters(){
 		super("parameters");
 	}
@@ -16,6 +17,13 @@ public class Parameters extends ConcreteRule {
 	public void setup(){
 		set(
 			new ChoiceParser(
+				new ChainParser(
+					Tokens.FROM,
+					new AddTokenParser(
+						Tokens.NAME,"contextName"),
+					Tokens.IN,
+					new AddTokenParser(
+						ListNameParser.parser,"list")),
 				new ChainParser(
 					new OptionalParser(
 							

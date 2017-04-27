@@ -1,0 +1,146 @@
+
+entry variable uses type_listener
+	constant DEFAULT_ACCESS
+		0
+	constant PUBLIC_ACCESS
+		1
+	constant PRIVATE_ACCESS
+		2	
+	var name
+		null
+	entry assignment = {}
+	var defined
+		true
+	var isFinal
+		false
+	var isStatic
+		false
+	var access
+		DEFAULT_ACCESS
+	var showType
+		true
+	setAccess takes newAccess
+		set access
+			newAccess
+	setDefined takes isDefined
+		set defined
+			isDefined
+	constructor takes initialName
+		set name
+			initialName		
+		set assignment
+			null
+		set showType
+			false
+	constructor takes initialName, initialType
+		set name
+			initialName
+		this changeType
+			initialType
+		set assignment
+			null
+	constructor takes initialName, initialType, newAssignment
+		set name
+			initialName
+		this changeType
+			initialType
+		set assignment
+			newAssignment
+	
+	output
+			[name] if assignment is null and showType is false
+			+
+			["private "] if access is PRIVATE_ACCESS and showType is true
+			["public "] if access is PUBLIC_ACCESS and showType is true
+			+
+			["static "] if isStatic is true and showType is true
+			+
+			["final "] if isFinal is true and showType is true
+			+
+			generator typeAndName [type name] if assignment is null and showType is true
+			generator variableDeclaration {[type] [name] assignment} if showType is true
+		if type is "$UNKNOWN"
+			this changeType
+				defaultType
+entry method uses type_listener
+	constant NEW_METHOD
+		["new"]
+	var subject
+		null
+	var methodName
+		"$NO_METHOD_NAME"
+	var parameters
+		{}
+	var isNull
+		false
+	var elementName
+		null
+	setIsNull takes b
+		set isNull
+			b
+	setMethodNames takes newName
+		set methodName
+			newName
+	constructor takes
+			initialElementName
+			initialParameters as ListEntry
+		set elementName
+			initialElementName
+		set parameters
+			initialParameters	
+	constructor takes
+			initialMethodName
+		set methodName
+			initialMethodName	
+	constructor takes
+			initialSubject as Entry
+			initialMethodName
+			initialParameters as ListEntry
+		set methodName
+			initialMethodName
+		set subject
+			initialSubject
+		set parameters
+			initialParameters
+	output
+			generator elementName |parameters| if elementName is not null
+			generator exactCall { [methodName] } if subject is null
+			generator newObjectCall { [methodName] { parameters } } if NEW_METHOD is subject
+			generator methodCall {subject [methodName] { parameters } } otherwise
+		if type is "$UNKNOWN"
+			this changeType
+				defaultType
+
+
+property type_listener
+	constant TYPE_UNKNOWN	
+		"$UNKNOWN"
+	var type
+		static type_listener TYPE_UNKNOWN
+	var defaultType
+		"String"
+	var listeners as List<type_listener>
+		null		
+	setDefaultType takes newDefaultType
+		if listeners is not null
+			each listener in listeners
+				listener setDefaultType
+					newDefaultType
+		set defaultType
+			newDefaultType
+	addListener takes listener as ITypeListener
+		if listeners is null
+			set listeners
+				new ArrayList<type_listener>
+		listeners add
+			listener
+	changeType takes newType
+		if listeners is not null
+			each listener in listeners
+				listener changeType
+					newType
+		set type
+			newType
+	hasType
+		return
+			type is "$UNKNOWN"

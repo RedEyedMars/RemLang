@@ -9,6 +9,7 @@ import lists.*;
 public class Terminal extends ConcreteRule {
 
 	public static final IRule parser = new Terminal();
+
 	public Terminal(){
 		super("terminal");
 	}

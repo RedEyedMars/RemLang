@@ -33,23 +33,28 @@ public class AddTokenToListParser extends AddTokenParser implements IParser {
 	@Override
 	public void real_parse(ParseContext data) {
 		if(subParser==null) return;
-		ParseContext newContext = data.getContextFromPosition(data.getFrontPosition());
+		ParseContext newContext = data.getContextFromPosition();
 		newContext.setBackPosition(data.getBackPosition());
 		newContext.setFrontPosition(data.getFrontPosition());
 		IToken token = newContext.addTokenLayer();
 		subParser.parse(newContext);
 		newContext.collectTokens();
 		if(newContext.isValid()){
-			newContext.setRangeBack(newContext.getFrontPosition());
 			data.getToken().put(new IToken.Key(name,-1,data.getFrontPosition()), token);
 			token.setList(listName);
 			token.setName(name);
+			//System.out.println("Add to "+listName+":"+name+":"+token.getString());
+			if(withTokenName!=null){
+				//System.out.println("ADD NEW CONTEXT:"+newContext);
+				data.mergeNamedContext(listName,token.get(withTokenName).getString(),newContext);
+			}
 			data.validate();
 			data.setFrontPosition(newContext.getFrontPosition());
+
 		}
 		else {
-			newContext.setRangeBack(-1);
 			newContext.setFrontPosition(data.getFrontPosition());
+			newContext.resetPaps();
 			data.invalidate();
 		}
 	}

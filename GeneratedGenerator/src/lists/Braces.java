@@ -74,7 +74,9 @@ public class Braces extends ParseList {
 							new ListNameElementParser("entry_class_names"),
 							new ManyParser(
 									Rules.method_parameter)),"CUSTOM_ENTRY_DEFINITION","braces","@,@");
+	public static final BracedParser PIPE_ENTRY = new BracedParser(
+							new ListNameElementParser("variable_names"),"PIPE_ENTRY","braces","|,|");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_BRACES,TAB_BRACES,CUSTOM_ENTRY_DEFINITION);
+				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_BRACES,TAB_BRACES,CUSTOM_ENTRY_DEFINITION,PIPE_ENTRY);
 }

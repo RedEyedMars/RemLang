@@ -51,7 +51,6 @@ public class BracedParser extends ConcreteParser implements IParser{
 				}
 			}
 
-			//System.out.println(open+","+close+data.getLine());
 			for(;sectionLength+(close.length()-1)<toExamine.length();++sectionLength){
 				if(sectionLength+2<toExamine.length()&&toExamine.substring(sectionLength,sectionLength+2).equals("\\\"")){
 					++sectionLength;
@@ -76,10 +75,12 @@ public class BracedParser extends ConcreteParser implements IParser{
 				}
 				else if(open.equals("")){					
 				}
-				else if(toExamine.substring(sectionLength,sectionLength+escapeOpen.length()).equals(escapeOpen)){
+				else if(sectionLength+escapeOpen.length()<toExamine.length()&&
+						toExamine.substring(sectionLength,sectionLength+escapeOpen.length()).equals(escapeOpen)){
 					sectionLength+=escapeOpen.length()-1;
 				}
-				else if(toExamine.substring(sectionLength,sectionLength+open.length()).equals(open)){
+				else if(sectionLength+open.length()<toExamine.length()&&
+						toExamine.substring(sectionLength,sectionLength+open.length()).equals(open)){
 					++currentLayer;
 				}
 			}
@@ -87,7 +88,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 				data.invalidate();
 				return;
 			}
-			ParseContext newParseData = data.getContextFromPosition(position);
+			ParseContext newParseData = data.getContextFromPosition();
 			newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
 			newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			newParseData.setMustEnd(true);
@@ -98,7 +99,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setFrontPosition(position);
-				newParseData.setRangeBack(-1 );
+				newParseData.resetPaps();
 				newParseData.setFrontPosition(data.getFrontPosition());
 				data.invalidate();
 			}
@@ -110,7 +111,6 @@ public class BracedParser extends ConcreteParser implements IParser{
 						break;
 					}
 				}
-				newParseData.setRangeBack(data.getFrontPosition()+found);
 				data.setFrontPosition(data.getFrontPosition()+found);
 				data.validate();
 				for(IToken.Key key:token.keySet()){

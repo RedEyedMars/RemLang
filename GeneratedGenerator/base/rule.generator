@@ -15,16 +15,12 @@ rule
 			"import com.rem.parser.parser.*;\n"+
 			"import lists.*;\n\n"+
 			"public class " Class Name " extends ConcreteRule {\n\n"+
-			"\tpublic static final IRule parser = new " Class Name "();\n" Parameter Declarations
-			"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{" Parameter List "};\n"+									
+			"\tpublic static final IRule parser = new " Class Name "();\n" Parameter Declarations "\n"+									
 			"\tpublic " Class Name "(){\n"+
 			"\t\tsuper(\"" Rule Name "\");\n"+
 			"\t}\n"+
 			"\t@Override\n"+
-			"\tpublic void setup(){\n" RuleSetup "\n\t}\n"+
-			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
-			"\tpublic Parameter<?>[] getParameters(){\n"+
-			"\t\treturn parameters;\n\t}\n\n}"				
+			"\tpublic void setup(){\n" RuleSetup "\n\t}\n\n}"				
 		importRules 
 			"import " Seed Name ".rules.*;\n"
 		ruleElement
@@ -35,6 +31,8 @@ rule
 			"\t\tset(" Rule Definition ");\n"		
 		as
 			"new AddTokenParser(" Inner Rule "," Token Name ")"
+		recontextualizationParser
+			"new ReContextParser(" Inner Rule "," Context Name "," List Name ")"
 		addToList
 			"new AddTokenToListParser(" Inner Rule "," Token Name "," List Name ")"
 		addToListWithToken
@@ -67,7 +65,7 @@ rule
 		parameterOperator
 			"new Argument." OperatorName "(" Left "," Right ")"
 		parameterNewNumber
-			"new Parameter<Integer>(" Value ")"
+			"new Argument.Number(" Value ")"
 		parameterExisting
 			"this." Parameter Name ""
 	
@@ -118,14 +116,12 @@ rule
 			ruleName
 			rulenames
 		
-		entry param_list = {}
 		entry param_declarations "" = {}
 		entry parameters = {
 			[packageName]
 			[className]
 			[className]
 			param_declarations
-			param_list
 			[className]
 			[ruleName] }
 		rule addFile
@@ -177,8 +173,6 @@ rule
 					rule_param
 				param_declarations add
 					parameterMember ["Integer" rule_param "Integer" "0"]
-				param_list add
-					[rule_param]
 				parameterIndexEntries add 
 					parameterIndex ['param_count rule_param]
 				set param_count
@@ -198,6 +192,8 @@ rule
 			null
 		var enclosingTokenName
 			null
+		var enclosingFromName
+			null
 		atom to quark
 			parameters
 				var name
@@ -205,7 +201,9 @@ rule
 				var listVar
 					quark -> list
 				var withToken
-					quark -> tokenName
+					quark -> tokenName					
+				var fromToken
+					quark -> contextName
 				if name is not null
 					set enclosingName
 						``'name``
@@ -214,7 +212,10 @@ rule
 						``'listVar``
 				if withToken is not null
 					set enclosingTokenName
-						``'withToken``		
+						``'withToken``				
+				if fromToken is not null
+					set enclosingFromName
+						``'fromToken``
 			terminal
 				set returnEntry
 					generate terminal
@@ -232,26 +233,29 @@ rule
 				quark definition to energy
 					set returnEntry
 						multiple {[option] generate definition <ruleName,tabs>}
-		
-		if enclosingName is not null
-			if enclosingList is not null
-				if enclosingTokenName is not null
-					set returnEntry
-						addToListWithToken { (tabs+1 returnEntry) enclosingName enclosingList enclosingTokenName }
+		if enclosingFromName is not null
+			set returnEntry
+				recontextualizationParser { (tabs+1 returnEntry) enclosingFromName enclosingList }
+		else		
+			if enclosingName is not null
+				if enclosingList is not null
+					if enclosingTokenName is not null
+						set returnEntry
+							addToListWithToken { (tabs+1 returnEntry) enclosingName enclosingList enclosingTokenName }
+					else
+						set returnEntry
+							addToList { (tabs+1 returnEntry) enclosingName enclosingList }
 				else
 					set returnEntry
-						addToList { (tabs+1 returnEntry) enclosingName enclosingList }
+						as { (tabs+1 returnEntry) enclosingName }
 			else
-				set returnEntry
-					as { (tabs+1 returnEntry) enclosingName }
-		else
-			if enclosingList is not null
-				if enclosingTokenName is not null
-					set returnEntry
-						addToListWithToken { (tabs+1 returnEntry) ["null"] enclosingList enclosingTokenName }
-				else
-					set returnEntry
-						addToList { (tabs+1 returnEntry) ["null"] enclosingList }
+				if enclosingList is not null
+					if enclosingTokenName is not null
+						set returnEntry
+							addToListWithToken { (tabs+1 returnEntry) ["null"] enclosingList enclosingTokenName }
+					else
+						set returnEntry
+							addToList { (tabs+1 returnEntry) ["null"] enclosingList }
 		
 		entry enclosingArgumentsStatement = {}
 		atom parameter to energy

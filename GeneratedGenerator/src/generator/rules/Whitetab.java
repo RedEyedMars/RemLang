@@ -9,6 +9,8 @@ import lists.*;
 public class Whitetab extends ConcreteRule {
 
 	public static final IRule parser = new Whitetab();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public Whitetab(){
 		super("whitetab");
 	}
@@ -20,7 +22,7 @@ public class Whitetab extends ConcreteRule {
 							
 								new ChainParser(
 									Tokens.NEWLINE,
-									new WithParser((IRule)Tabs.TAB,new Parameter<Integer>(0)))));
+									new WithParser((IRule)Tabs.TAB,this.tabs))));
 
 	}
 

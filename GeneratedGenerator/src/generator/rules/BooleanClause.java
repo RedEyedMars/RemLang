@@ -9,6 +9,7 @@ import lists.*;
 public class BooleanClause extends ConcreteRule {
 
 	public static final IRule parser = new BooleanClause();
+
 	public BooleanClause(){
 		super("boolean_clause");
 	}
@@ -40,7 +41,13 @@ public class BooleanClause extends ConcreteRule {
 									Tokens.IS,
 									new OptionalParser(
 											Tokens.NOT)),
-									Tokens.ORDINAL_OPERATOR),"operator"),
+									Tokens.ORDINAL_OPERATOR,
+								new ChainParser(
+									Tokens.DOES,
+									new OptionalParser(
+											Tokens.NOT),
+									new AddTokenParser(
+										Tokens.NAME,"methodName"))),"operator"),
 							new AddTokenParser(
 								
 							new ChoiceParser(

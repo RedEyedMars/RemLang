@@ -9,6 +9,7 @@ import lists.*;
 public class VariableOrTokenName extends ConcreteRule {
 
 	public static final IRule parser = new VariableOrTokenName();
+
 	public VariableOrTokenName(){
 		super("variable_or_token_name");
 	}

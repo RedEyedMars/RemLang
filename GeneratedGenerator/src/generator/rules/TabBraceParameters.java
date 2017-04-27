@@ -9,6 +9,7 @@ import lists.*;
 public class TabBraceParameters extends ConcreteRule {
 
 	public static final IRule parser = new TabBraceParameters();
+
 	public TabBraceParameters(){
 		super("tab_brace_parameters");
 	}
@@ -20,7 +21,7 @@ public class TabBraceParameters extends ConcreteRule {
 					Rules.arithmatic,
 					
 					new ChoiceParser(
-							Rules.entry_definition,
+							new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
 							new ListNameElementParser("entry_names"))));
 
 	}

@@ -52,6 +52,7 @@ public class Rulenames extends ParseList {
 	public static final RegexParser else_statement = new RegexParser("else_statement","rulenames","else_statement");
 	public static final RegexParser boolean_statement = new RegexParser("boolean_statement","rulenames","boolean_statement");
 	public static final RegexParser boolean_clause = new RegexParser("boolean_clause","rulenames","boolean_clause");
+	public static final RegexParser check_call = new RegexParser("check_call","rulenames","check_call");
 	public static final RegexParser method_call = new RegexParser("method_call","rulenames","method_call");
 	public static final RegexParser set_call = new RegexParser("set_call","rulenames","set_call");
 	public static final RegexParser generate_call = new RegexParser("generate_call","rulenames","generate_call");
@@ -62,5 +63,5 @@ public class Rulenames extends ParseList {
 	public static final RegexParser cast_as_statement = new RegexParser("cast_as_statement","rulenames","cast_as_statement");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
+				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,check_call,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
 }

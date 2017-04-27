@@ -44,6 +44,9 @@ public abstract class FlowController {
 			gen.generate(data);
 		}
 		for(Generator gen:getGenerators()){
+			gen.check();
+		}
+		for(Generator gen:getGenerators()){
 			gen.outputAll();
 		}
 	}

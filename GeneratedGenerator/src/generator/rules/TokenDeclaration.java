@@ -9,6 +9,8 @@ import lists.*;
 public class TokenDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new TokenDeclaration();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public TokenDeclaration(){
 		super("token_declaration");
 	}
@@ -16,19 +18,19 @@ public class TokenDeclaration extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.TOKEN,
 					new AddTokenToListParser(
 						Tokens.NAME,"tokenName","token_names"),
 					
 					new ChoiceParser(
-							new WithParser((IRule)Rules.method_call,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+							new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
 							new AddTokenParser(
 								
 									new AddTokenParser(
 										
 										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
 											new ListNameElementParser("token_names"),
 											new MultipleParser(
 													

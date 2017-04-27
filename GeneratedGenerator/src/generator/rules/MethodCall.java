@@ -9,6 +9,8 @@ import lists.*;
 public class MethodCall extends ConcreteRule {
 
 	public static final IRule parser = new MethodCall();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public MethodCall(){
 		super("method_call");
 	}
@@ -16,7 +18,7 @@ public class MethodCall extends ConcreteRule {
 	public void setup(){
 		set(
 				new ChainParser(
-					new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
+					new WithParser((IRule)Rules.whitetab,this.tabs),
 					new OptionalParser(
 							new AddTokenParser(
 								Tokens.STATIC,"isStatic")),
@@ -37,11 +39,11 @@ public class MethodCall extends ConcreteRule {
 									
 									new ChoiceParser(
 										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
 											Rules.boolean_statement),
-											new WithParser((IRule)Rules.method_call,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+											new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
 										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(1))),
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
 											Rules.method_parameter))))));
 
 	}

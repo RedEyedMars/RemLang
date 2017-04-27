@@ -9,6 +9,8 @@ import lists.*;
 public class TakesStatement extends ConcreteRule {
 
 	public static final IRule parser = new TakesStatement();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public TakesStatement(){
 		super("takes_statement");
 	}
@@ -22,7 +24,7 @@ public class TakesStatement extends ConcreteRule {
 						
 						new ChainParser(
 							new OptionalParser(
-									new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(2)))),
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(2)))),
 							new AddTokenToListParser(
 								Tokens.NAME,"takeName","variable_names"),
 							new OptionalParser(
@@ -33,7 +35,7 @@ public class TakesStatement extends ConcreteRule {
 									
 									new ChoiceParser(
 											Tokens.COMMA,
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(new Parameter<Integer>(0),new Argument.Number(2)))),
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(2)))),
 									new AddTokenParser(
 										
 										new ChainParser(

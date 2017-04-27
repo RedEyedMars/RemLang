@@ -9,6 +9,8 @@ import lists.*;
 public class EntryDefinition extends ConcreteRule {
 
 	public static final IRule parser = new EntryDefinition();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public EntryDefinition(){
 		super("entry_definition");
 	}
@@ -17,7 +19,7 @@ public class EntryDefinition extends ConcreteRule {
 		set(
 				new ChainParser(
 					new OptionalParser(
-							new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0))),
+							new WithParser((IRule)Rules.whitetab,this.tabs)),
 					
 					new ChoiceParser(
 							new AddTokenParser(
@@ -29,11 +31,13 @@ public class EntryDefinition extends ConcreteRule {
 							new AddTokenParser(
 								Braces.QUOTE_ENTRY,"quoted"),
 						new ChainParser(
-							new ListNameElementParser("generator_names"),
-							
+							new AddTokenToListParser(
+								new ListNameElementParser("generator_names"),"gen","variable_names"),
+							new ReContextParser(
+								
 							new ChoiceParser(
 									new ListNameElementParser("element_names"),
-									new ListNameElementParser("variable_names")),
+									new ListNameElementParser("variable_names")),"gen","class_definitions"),
 							Rules.list_entry_definition),
 						new ChainParser(
 							new ListNameElementParser("element_names"),

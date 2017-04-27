@@ -9,6 +9,7 @@ import lists.*;
 public class MethodParameter extends ConcreteRule {
 
 	public static final IRule parser = new MethodParameter();
+
 	public MethodParameter(){
 		super("method_parameter");
 	}
@@ -19,7 +20,7 @@ public class MethodParameter extends ConcreteRule {
 					Tokens.NULL,
 					Tokens.TRUE,
 					Tokens.FALSE,
-					Rules.entry_definition,
+					new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
 					new AddTokenParser(
 						Braces.QUOTE,"string"),
 				new ChainParser(

@@ -9,6 +9,7 @@ import lists.*;
 public class AngleBraceParameters extends ConcreteRule {
 
 	public static final IRule parser = new AngleBraceParameters();
+
 	public AngleBraceParameters(){
 		super("angle_brace_parameters");
 	}
@@ -24,6 +25,7 @@ public class AngleBraceParameters extends ConcreteRule {
 						new ChainParser(
 							
 							new ChoiceParser(
+									new ListNameElementParser("entry_class_names"),
 									new ListNameElementParser("class_names"),
 									new ListNameElementParser("property_names")),
 							new OptionalParser(
@@ -31,7 +33,10 @@ public class AngleBraceParameters extends ConcreteRule {
 										Braces.ANGLE_BRACES,"braces"))),
 							Rules.arithmatic,
 							new ListNameElementParser("generator_names"),
-							new ListNameElementParser("entry_names")),"parameter"),
+							new ListNameElementParser("entry_names"),
+							Tokens.TRUE,
+							Tokens.FALSE,
+							Tokens.NULL),"parameter"),
 					new ManyParser(
 							
 								new ChainParser(
@@ -43,6 +48,7 @@ public class AngleBraceParameters extends ConcreteRule {
 										new ChainParser(
 											
 											new ChoiceParser(
+													new ListNameElementParser("entry_class_names"),
 													new ListNameElementParser("class_names"),
 													new ListNameElementParser("property_names")),
 											new OptionalParser(
@@ -50,7 +56,10 @@ public class AngleBraceParameters extends ConcreteRule {
 														Braces.ANGLE_BRACES,"braces"))),
 											Rules.arithmatic,
 											new ListNameElementParser("generator_names"),
-											new ListNameElementParser("entry_names")),"parameter")))));
+											new ListNameElementParser("entry_names"),
+											Tokens.TRUE,
+											Tokens.FALSE,
+											Tokens.NULL),"parameter")))));
 
 	}
 

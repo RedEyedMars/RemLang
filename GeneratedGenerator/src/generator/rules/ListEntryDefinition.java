@@ -9,6 +9,7 @@ import lists.*;
 public class ListEntryDefinition extends ConcreteRule {
 
 	public static final IRule parser = new ListEntryDefinition();
+
 	public ListEntryDefinition(){
 		super("list_entry_definition");
 	}
@@ -21,11 +22,7 @@ public class ListEntryDefinition extends ConcreteRule {
 					new AddTokenParser(
 						Braces.ENTRY_STRING,"string"),
 					new AddTokenParser(
-						
-						new ChainParser(
-							Tokens.PIPE,
-							new ListNameElementParser("variable_names"),
-							Tokens.PIPE),"exact_variable")));
+						Braces.PIPE_ENTRY,"exact_variable")));
 
 	}
 

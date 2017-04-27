@@ -58,26 +58,24 @@ public class ImportParser extends ConcreteParser{
 					if(closeMatcher.matches()){
 						final IToken currentToken = data.getToken();
 						final int parentPosition = data.getFrontPosition();
-						final ParseContext newContext = data.getContextFromPosition(parentPosition);
+						final ParseContext newContext = data.getContextFromPosition();
 						if(!newContext.getFileName().equals(fileName)){
 							newContext.setFileName(fileName);
 							newContext.setFile(ParseUtil.getString(file));
 						}
 						data.addDoneDependency(newContext);
 						data.validate();							
-						data.setFrontPosition(data.getFrontPosition()+closeMatcher.group(1).length());
-						newContext.setRangeBack(parentPosition+1);						
+						data.setFrontPosition(data.getFrontPosition()+closeMatcher.group(1).length());						
 
-						token = newContext.addTokenLayer(new NewFileBranchToken(newContext));						
-						currentToken.put(new IToken.Key(name,-1,parentPosition), token);
-						token.setList(listName);
-						token.setName(name);
+						final IToken newRoot = newContext.addTokenLayer(new NewFileBranchToken(newContext));						
+						currentToken.put(new IToken.Key(name,-1,parentPosition), newRoot);
+						newRoot.setList(listName);
+						newRoot.setName(name);
 						JobCreator.add(new ParallelJob(){
 							@Override
 							public void act(){
 								newContext.setBackPosition(-1);
 								newContext.setFrontPosition(0);
-								newContext.resetFurthestPosition();
 								newContext.getRootParser().parse(newContext);
 								newContext.collectTokens();
 								if(!newContext.isDone()){

@@ -9,15 +9,24 @@ import java.util.Map;
 import java.util.Set;
 
 import com.rem.parser.ParseContext;
-import com.rem.parser.ParseList;
 
 public class BranchToken implements IToken {
-	private Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
+	protected Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
 	protected LinkedListSet<IToken.Key> keys = new LinkedListSet<IToken.Key>();
 	private IToken parent;
 	protected String listName = null;
 	protected String name;
-
+	
+	@Override
+	public ParseContext getContext(ParseContext rootContext){
+		if(parent==null){
+			return rootContext;
+		}
+		else {
+			return parent.getContext(rootContext);
+		}
+	}
+	
 	@Override
 	public Object getValue(){
 		return keys.isEmpty()?"empty":get(keys.getFirst()).getValue();
@@ -35,12 +44,29 @@ public class BranchToken implements IToken {
 
 	@Override
 	public void setParent(IToken parent){
+
 		this.parent = parent;
 	}
 
 	@Override
 	public IToken getLast(){
 		return tokens.get(keys.getLast().getName()).get(keys.getLast().getIndex());
+	}
+	
+	@Override
+	public IToken getLast(String tokenName){
+		if(tokens.containsKey(tokenName)){
+			List<IToken> ts = tokens.get(tokenName);
+			if(ts.isEmpty()){
+				return null;
+			}
+			else {
+				return ts.get(ts.size()-1);
+			}
+		}
+		else {
+			return null;
+		}
 	}
 
 	@Override
@@ -63,7 +89,7 @@ public class BranchToken implements IToken {
 			listName = null;
 			int position = getPosition();
 			if(position>-1){
-				data = data.getContextFromPosition(position);
+				data = data.getContextFromPosition(position,false);
 			}
 		}
 		for(IToken.Key key:keys){

@@ -10,10 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.rem.parser.generation.FlowController;
-import com.rem.parser.generation.Generator;
 import com.rem.parser.parallelism.JobCreator;
-import com.rem.parser.parser.ChoiceParser;
-import com.rem.parser.parser.ConcreteListParser;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.IRule;
 import com.rem.parser.parser.NameParser;
@@ -95,9 +92,8 @@ public class ParseUtil {
 					String listName = pattern.substring(0, pattern.length()-1);
 					data.addList(listName);
 				}
-				data.resetLists();
 				data = ParseContext.copy(data);
-				data.resetFurthestPosition();
+				ParseContext.reset();
 				System.out.println("First-Pass Successful");
 			}
 		}
@@ -137,9 +133,13 @@ public class ParseUtil {
 			System.out.println(data.get().substring(0,data.getFurthestPosition()-data.getFrontPosition())+"$>"+data.get().substring(data.getFurthestPosition()-data.getFrontPosition()));
 		}
 		else {
-			System.out.println("Furthest Position:"+data.getFrontPosition());
+			System.out.print("Furthest Position:"+data.getFrontPosition());
 			if(!data.isDone()){
+				System.out.println("\nLine Number:"+data.getLineNumber(data.getFrontPosition()));
 				System.out.println("$>"+data.get());
+			}
+			else {
+				System.out.println();
 			}
 		}
 	}

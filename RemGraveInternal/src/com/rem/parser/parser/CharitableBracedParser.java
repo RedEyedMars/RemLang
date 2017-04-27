@@ -82,7 +82,7 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			ParseContext newParseData = null;
 			if(currentLayer>0){
 				if(currentLayer==1){
-					newParseData = data.getContextFromPosition(position);
+					newParseData = data.getContextFromPosition();
 					newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
 					newParseData.setBackPosition(data.getFrontPosition()+toExamine.length());
 				}
@@ -93,7 +93,7 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			}
 			else {
 
-				newParseData = data.getContextFromPosition(position);
+				newParseData = data.getContextFromPosition();
 				newParseData.setFrontPosition(data.getFrontPosition()+sectionStart);
 				newParseData.setBackPosition(data.getFrontPosition()+sectionLength);
 			}
@@ -105,13 +105,12 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setFrontPosition(position);
-				newParseData.setRangeBack(-1);
+				newParseData.resetPaps();
 				newParseData.setFrontPosition(data.getFrontPosition());
 				data.invalidate();
 			}
 			else {
 				data.setFrontPosition(data.getFrontPosition()+sectionLength);
-				newParseData.setRangeBack(data.getFrontPosition()+sectionLength);
 				for(IToken.Key key:token.keySet()){
 					data.getToken().put(key,token.get(key));
 				}

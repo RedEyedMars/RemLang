@@ -13,8 +13,6 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 
-import base.GeneratorGenerator.Check;
-
 import com.rem.parser.parser.*;
 
 
@@ -31,6 +29,7 @@ public class EntryClassGenerator extends Generator{
 						"import com.rem.parser.generation.*;\n"+
 						"import com.rem.parser.token.*;\n"+
 						"import gen.*;\n"+
+						"import gen.checks.*;\n"+
 						"import gen.properties.*;\n"+
 						"import lists.*;\n\n"+
 						"public class ",/*Class Name*/"Entry implements Entry",/*Properties*/" {\n",/*Contents*/"\n}"});
@@ -312,7 +311,7 @@ public class EntryClassGenerator extends Generator{
 	public Entry generateEntryMethodBody(IToken entryMethod, GeneratorGenerator.MethodEntry method, String contextName, String methodName) {
 		ListEntry body = new ListEntry();
 		body.setDelimiter("");
-		Generators.generator.setReturnType();
+		GeneratorGenerator.TypeEntry retType = Generators.generator.new TypeEntry();
 		boolean isOutput = methodName == null;
 		if(isOutput){
 			methodName = "$OUTPUT";
@@ -326,14 +325,15 @@ public class EntryClassGenerator extends Generator{
 			else if("body_element".equals(key.getName())){
 				body.add(
 						Generators.generator.
-						generateBodyElement(entryMethod.get(key),2,contextName, methodName));
+						generateBodyElement(entryMethod.get(key),2,contextName, methodName,retType));
 			}
 		}
-		GeneratorGenerator.MethodEntry returnType = Generators.generator.getReturnType();
-		if(method!=null&&returnType.hasType()){
-			method.changeType(returnType.getType());
+		if(method!=null&&retType.getSubject()!=null&&retType.getSubject().hasType()){
+			method.changeType(retType.getSubject().getType());
 		}
-		Generators.generator.resetReturnType();
+		else if(method!=null){
+			method.changeType(retType.getDefaultType());
+		}
 		if(isOutput){
 			return body;
 		}
@@ -347,7 +347,7 @@ public class EntryClassGenerator extends Generator{
 		return "Entry";
 	}
 
-	public class PropertyDefinedCheck implements Check {
+	public class PropertyDefinedCheck implements ICheck {
 		private String propertyName;
 		private String errorMessage;
 		public PropertyDefinedCheck(String propertyName, String errorMessage){

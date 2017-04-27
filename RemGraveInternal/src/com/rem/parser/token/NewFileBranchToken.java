@@ -9,6 +9,10 @@ public class NewFileBranchToken extends BranchToken {
 		this.context = parentContext;
 	}
 	@Override
+	public ParseContext getContext(ParseContext rootContext){
+		return context;
+	}
+	@Override
 	public void accumulateLists(ParseContext data){
 		for(IToken.Key key:keys){
 			get(key).accumulateLists(context);

@@ -14,10 +14,12 @@ public interface IToken extends Map<IToken.Key,IToken>{
 	public void setParent(IToken parent);
 	public void put(NodeToken nodeToken);
 	public IToken getLast();
+	public IToken getLast(String tokenName);
 	public List<IToken> getAll(String key);
 	public void accumulateLists(ParseContext data);
 	public void setName(String name);
 	public void setList(String name);
+	public ParseContext getContext(ParseContext rootContext);
 
 	public int getPosition();
 	public int getLineNumber(String file);
@@ -45,6 +47,8 @@ public interface IToken extends Map<IToken.Key,IToken>{
 			return position;
 		}
 	}
+
+
 
 
 

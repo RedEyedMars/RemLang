@@ -1,7 +1,6 @@
 package com.rem.parser.parser;
 
 import com.rem.parser.ParseContext;
-import com.rem.parser.ParseUtil;
 import com.rem.parser.token.IToken;
 
 public class ChoiceParser extends ConcreteListParser implements IParser{

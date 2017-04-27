@@ -9,6 +9,8 @@ import lists.*;
 public class ElementEntry extends ConcreteRule {
 
 	public static final IRule parser = new ElementEntry();
+	private Parameter<Integer> tabs = new Parameter<Integer>(0);
+
 	public ElementEntry(){
 		super("element_entry");
 	}
@@ -17,13 +19,13 @@ public class ElementEntry extends ConcreteRule {
 		set(
 				new ChainParser(
 					new OptionalParser(
-							new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0))),
+							new WithParser((IRule)Rules.whitetab,this.tabs)),
 					Braces.QUOTE,
 					new ManyParser(
 							
 								new ChainParser(
 									Tokens.PLUS,
-									new WithParser((IRule)Rules.whitetab,new Parameter<Integer>(0)),
+									new WithParser((IRule)Rules.whitetab,this.tabs),
 									Braces.QUOTE))));
 
 	}

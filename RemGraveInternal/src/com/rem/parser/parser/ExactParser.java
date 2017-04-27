@@ -1,8 +1,5 @@
 package com.rem.parser.parser;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.rem.parser.ParseContext;
 import com.rem.parser.token.NodeToken;
 
@@ -41,7 +38,6 @@ public class ExactParser extends ConcreteParser {
 		if(this.pattern ==  null){
 			setup((data.getList(listName).get(name).getString()));
 		}
-
 		String toExamine = data.get();
 		if(toExamine.startsWith(pattern)){
 			data.getToken().put(new NodeToken(name,data.getFileName(),pattern,data.getFrontPosition()));
