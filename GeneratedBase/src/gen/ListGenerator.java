@@ -79,7 +79,6 @@ public class ListGenerator extends Generator {
 					}
 					else {
 						String listAssociatedClassListName = listAssociatedClass.get(listName);
-
 						if((listAssociatedClassListName.equals("Regex"))){
 							listAssociatedClass.put(listName,"Exact");
 						}
@@ -91,7 +90,6 @@ public class ListGenerator extends Generator {
 					}
 					else {
 						String listAssociatedClassListName = listAssociatedClass.get(listName);
-
 						if((listAssociatedClassListName.equals("Exact"))){
 							listAssociatedClass.put(listName,"Regex");
 						}
@@ -103,12 +101,20 @@ public class ListGenerator extends Generator {
 				if((parameter != null)){
 					parameterEntry = Generators.rule.generateDefinition(parameter.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
 				}
-				Generators.list.addClassList(listName,name,regex,parameterEntry);
+				IToken parser = element.get("parser");
+				Entry parserEntry = null;
+				if((parser != null)){
+					parserEntry = Generators.rule.generateDefinition(parser.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
+				}
+				Generators.list.addClassList(listName,name,regex,parameterEntry,parserEntry);
 				hasDefinition = true;
 			}
 		}
 	}
 	public void addClassList(String listName,String name,String regex,Entry parameter){
+		Generators.list.addClassList(listName,name,regex,parameter,null);
+	}
+	public void addClassList(String listName,String name,String regex,Entry parameter,Entry parser){
 		Boolean containsAssociatedClass = listAssociatedClass.containsKey(listName);
 		if((!containsAssociatedClass)){
 			listAssociatedClass.put(listName,"Regex");
@@ -116,6 +122,9 @@ public class ListGenerator extends Generator {
 		ListEntry params = new ListEntry();
 		if((parameter != null)){
 			params.add(parameter);
+		}
+		if((parser != null)){
+			params.add(parser);
 		}
 		params.add(new QuoteEntry(name));
 		params.add(new QuoteEntry(listName));

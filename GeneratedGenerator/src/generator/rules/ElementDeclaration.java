@@ -20,8 +20,11 @@ public class ElementDeclaration extends ConcreteRule {
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.ELEMENTS,
-					new MultipleParser(
-							new WithParser((IRule)Rules.element_definition,new Argument.Add(this.tabs,new Argument.Number(1))))));
+					
+					new ChoiceParser(
+							Ingests.ELEMENT_IMPORT,
+							new MultipleParser(
+									new WithParser((IRule)Rules.element_definition,new Argument.Add(this.tabs,new Argument.Number(1)))))));
 
 	}
 

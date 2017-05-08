@@ -149,7 +149,7 @@ rule
 					ruleEntry add
 						setupSilence {}
 				ruleEntry add
-					setupAdd {generate definition<ruleName,3>}
+					setupAdd {generate definition:ruleName 3;}
 				rule addEntry
 					rule getDirectory
 					fileName
@@ -222,7 +222,7 @@ rule
 			braced
 				quark definition to energy					
 					set returnEntry
-						generate definition <ruleName,tabs>
+						generate definition:ruleName tabs;
 			multiple
 				var option
 					'quark -> option
@@ -232,7 +232,7 @@ rule
 					+ = Multiple
 				quark definition to energy
 					set returnEntry
-						multiple {[option] generate definition <ruleName,tabs>}
+						multiple {[option] generate definition:ruleName tabs;}
 		if enclosingFromName is not null
 			set returnEntry
 				recontextualizationParser { (tabs+1 returnEntry) enclosingFromName enclosingList }
@@ -328,7 +328,7 @@ rule
 	
 	generate definition takes ruleName, tabs
 		return
-			generate definition2<ruleName,tabs,{}>
+			generate definition2:ruleName tabs {};
 	
 	generate definition2 takes ruleName, tabs, entries
 		definition2 to element				
@@ -336,7 +336,7 @@ rule
 				element to choice
 					definition
 						entry nextChoices = {}
-						generate definition2<ruleName,tabs,nextChoices>							
+						generate definition2:ruleName tabs nextChoices;							
 						entries addAll
 							nextChoices
 			chain
@@ -361,6 +361,8 @@ rule
 				(tabs choice {entries})
 	
 	generate terminal
+		var Xxx
+			null
 		terminal to token
 			ruleToken
 				var ruleName
@@ -392,11 +394,11 @@ rule
 					return
 						rule_name_parser {[name]}
 				else
-					var name
+					set listName
 						rule camelize
 							listName
 					return
-						listElement [name 'token]
+						listElement [listName 'token]
 			anyListNameToken					
 				return
 					rule_any_list_name {}

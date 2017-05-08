@@ -24,6 +24,9 @@ public abstract class ParseList extends BranchToken{
 	
 	@Override
 	public IToken put(IToken.Key key,IToken value){
+		if(getNamesParser().getName()!=null&&getNamesParser().getName().equals("variable_names")&&value!=null&&value.getString().equals("generator")){
+			System.out.println("!"+value.getPosition());
+		}
 		getNamesParser().addName(value.getString());
 		return newTokensToken.put(key, value);
 	}

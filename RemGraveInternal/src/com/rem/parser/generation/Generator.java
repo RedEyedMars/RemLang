@@ -85,11 +85,11 @@ public abstract class Generator {
 		}
 	}
 
-	protected void println(String... subStrings){
+	public void println(String... subStrings){
 		System.out.println(buildString(subStrings));
 	}
 
-	protected String buildString(String... subStrings){
+	public String buildString(String... subStrings){
 		StringBuilder builder = new StringBuilder();
 		for(String subString:subStrings){
 			builder.append(subString);
@@ -97,7 +97,7 @@ public abstract class Generator {
 		return builder.toString();
 	}
 
-	protected String camelize(String name) {
+	public String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(("" + name.charAt(0)).toUpperCase());
 		boolean cap = false;
@@ -437,12 +437,12 @@ public abstract class Generator {
 		}
 	}
 
-	public String tokenErrorMessage(IToken offender){
+	public static String tokenErrorMessage(IToken offender){
 		StringBuilder builder = new StringBuilder();
 		tokenErrorMessage(offender,builder);
 		return builder.toString();
 	}
-	private void tokenErrorMessage(IToken offender, StringBuilder builder){		
+	private static void tokenErrorMessage(IToken offender, StringBuilder builder){		
 		for(IToken.Key key:offender.keySet()){
 			builder.append("(");
 			builder.append(key.getName());

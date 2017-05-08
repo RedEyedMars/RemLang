@@ -28,6 +28,7 @@ public class BodyElement extends ConcreteRule {
 					new WithParser((IRule)Rules.each_call,this.tabs),
 					new WithParser((IRule)Rules.flip_switch,this.tabs),
 					new WithParser((IRule)Rules.token_expansion,this.tabs),
+					new WithParser((IRule)Rules.inline_addition_call,this.tabs),
 					new WithParser((IRule)Rules.method_call,this.tabs)));
 
 	}

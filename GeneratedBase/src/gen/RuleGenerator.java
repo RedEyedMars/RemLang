@@ -236,7 +236,7 @@ public class RuleGenerator extends Generator {
 		for(IToken.Key pKey:parameter.keySet()){
 			if("definition".equals(pKey.getName())){
 				IToken p = parameter.get(pKey);
-				System.err.println("Rules cannot have definitons as their parameter");
+				throw new UnableToGenerateException("Rules cannot have definitons as their parameter",p);
 			}
 			else if("arithmatic".equals(pKey.getName())){
 				IToken p = parameter.get(pKey);
@@ -275,7 +275,7 @@ public class RuleGenerator extends Generator {
 					operand = "Subtract";
 				}
 				else {
-					System.err.println("Operand:"+operand+" not recognized.");
+					throw new UnableToGenerateException("Operand:"+operand+" not recognized.",element);
 				}
 			}
 			else if("NUMBER".equals(elementKey.getName())){
@@ -345,6 +345,7 @@ public class RuleGenerator extends Generator {
 		}
 	}
 	public Entry generateTerminal(IToken terminal){
+		String Xxx = null;
 		for(IToken.Key tokenKey:terminal.keySet()){
 			if("ruleToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
@@ -363,7 +364,7 @@ public class RuleGenerator extends Generator {
 			}
 			else if("listToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
-				String listName = Generators.rule.camelize(token.getString());
+				String listName = "#NO_LISTNAME_FOUND";
 				for(IToken.Key atomKey:token.keySet()){
 					IToken atom = token.get(atomKey);
 					listName = atomKey.getName();
@@ -373,9 +374,8 @@ public class RuleGenerator extends Generator {
 					return new ElementEntry(RuleGenerator.rule_name_parserElement,new ListEntry(new ListEntry(new StringEntry(name))));
 				}
 				else {
-					String name = Generators.rule.camelize(listName);
-
-					return new ElementEntry(RuleGenerator.listElementElement,new ListEntry(new StringEntry(name),new StringEntry(token.getString())));
+					listName = Generators.rule.camelize(listName);
+					return new ElementEntry(RuleGenerator.listElementElement,new ListEntry(new StringEntry(listName),new StringEntry(token.getString())));
 				}
 			}
 			else if("anyListNameToken".equals(tokenKey.getName())){

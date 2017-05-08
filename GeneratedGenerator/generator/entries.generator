@@ -8,7 +8,7 @@ entry variable uses type_listener
 		2	
 	var name
 		null
-	entry assignment = {}
+	entry assignment = null
 	var defined
 		true
 	var isFinal
@@ -22,9 +22,22 @@ entry variable uses type_listener
 	setAccess takes newAccess
 		set access
 			newAccess
+		set assignment as Entry = {}
 	setDefined takes isDefined
 		set defined
 			isDefined
+	setStatic takes newStatic
+		set isStatic
+			newStatic
+	setFinal takes newFinal
+		set isFinal
+			newFinal
+	isDefined takes checkCase
+		return
+			defined is checkCase
+	constructor
+		set name
+			"null"
 	constructor takes initialName
 		set name
 			initialName		
@@ -47,6 +60,9 @@ entry variable uses type_listener
 		set assignment
 			newAssignment
 	
+	setAssignment takes newAssignment
+		set assignment
+			newAssignment
 	output
 			[name] if assignment is null and showType is false
 			+
@@ -62,9 +78,90 @@ entry variable uses type_listener
 		if type is "$UNKNOWN"
 			this changeType
 				defaultType
+
+entry parameters
+	var undefined
+		false
+	var contextName
+		null
+	var contextSubName
+		null
+	entry listEntry = {}
+	constructor takes initialUndefined, initialContextName, initialContextSubName
+		set undefined = initialUndefined
+		set contextName = initialContextName
+		set contextSubName = initialContextSubName
+	
+	isEmpty
+		return
+			listEntry is empty
+	
+	add takes entry as Entry
+		var methodParameters as Map<String,Map<String,List<type_listener>>>
+			generator getMethodParameters
+		var listener_entry as type_listener
+			entry
+		if undefined is true
+			methodParameters->contextName->contextSubName += listener_entry
+		else
+			var listSize as Integer
+				listEntry size
+			if methodParameters->contextName->contextSubName->listSize does not hasType
+				methodParameters->contextName->contextSubName->listSize changeType
+					listener_entry getType
+		var result as Boolean
+			listEntry add
+				entry
+		return
+			result
+	
+	output
+			listEntry if listEntry is not null
+
+entry type
+	var subject as type_listener
+		null
+	var defaultType
+		"void"
+	setSubject takes newSubject
+		set subject
+			newSubject
+	setDefaultType takes newDefaultType
+		set defaultType
+			newDefaultType
+	
+	constructor takes initialSubject
+		set subject
+			initialSubject
+	
+	constructor
+		set subject
+			null
+	
+	output
+			[defaultType] if subject is null
+			get_type: subject; otherwise
+
+entry get_type
+	var type
+		""
+	constructor takes subject as type_listener
+		var hasType
+			subject hasType
+		if hasType is true
+			set type
+				subject getType
+		else
+			set type
+				subject getDefaultType
+	
+	output
+			[type] if type is not null
+
+
 entry method uses type_listener
 	constant NEW_METHOD
-		["new"]
+		\"new"
 	var subject
 		null
 	var methodName
@@ -80,6 +177,9 @@ entry method uses type_listener
 			b
 	setMethodNames takes newName
 		set methodName
+			newName
+	setElementName takes newName
+		set elementName
 			newName
 	constructor takes
 			initialElementName
@@ -102,6 +202,18 @@ entry method uses type_listener
 			initialSubject
 		set parameters
 			initialParameters
+	
+	constructor takes
+			initialSubject as Entry
+			initialMethodName
+			initialParameters as parameters
+		set methodName
+			initialMethodName
+		set subject
+			initialSubject
+		set parameters
+			initialParameters getListEntry
+	
 	output
 			generator elementName |parameters| if elementName is not null
 			generator exactCall { [methodName] } if subject is null
@@ -128,7 +240,7 @@ property type_listener
 					newDefaultType
 		set defaultType
 			newDefaultType
-	addListener takes listener as ITypeListener
+	addListener takes listener as type_listener
 		if listeners is null
 			set listeners
 				new ArrayList<type_listener>

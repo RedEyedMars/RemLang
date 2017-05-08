@@ -22,15 +22,6 @@ public class AngleBraceParameters extends ConcreteRule {
 						
 					new ChoiceParser(
 							new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
-						new ChainParser(
-							
-							new ChoiceParser(
-									new ListNameElementParser("entry_class_names"),
-									new ListNameElementParser("class_names"),
-									new ListNameElementParser("property_names")),
-							new OptionalParser(
-									new AddTokenParser(
-										Braces.ANGLE_BRACES,"braces"))),
 							Rules.arithmatic,
 							new ListNameElementParser("generator_names"),
 							new ListNameElementParser("entry_names"),
@@ -45,15 +36,6 @@ public class AngleBraceParameters extends ConcreteRule {
 										
 									new ChoiceParser(
 											new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
-										new ChainParser(
-											
-											new ChoiceParser(
-													new ListNameElementParser("entry_class_names"),
-													new ListNameElementParser("class_names"),
-													new ListNameElementParser("property_names")),
-											new OptionalParser(
-													new AddTokenParser(
-														Braces.ANGLE_BRACES,"braces"))),
 											Rules.arithmatic,
 											new ListNameElementParser("generator_names"),
 											new ListNameElementParser("entry_names"),

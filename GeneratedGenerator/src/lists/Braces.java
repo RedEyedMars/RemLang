@@ -64,19 +64,26 @@ public class Braces extends ParseList {
 													Braces.QUOTE_ENTRY,
 													Braces.QUOTE,
 													Rules.variable_or_token_name))),"ENTRY_STRING","braces","[,]");
-	public static final BracedParser ANGLE_BRACES = new BracedParser(
-							Rules.angle_brace_parameters,"ANGLE_BRACES","braces","<,>");
+	public static final BracedParser ANGLE_CLASSES = new BracedParser(
+						new ChainParser(
+							Rules.angle_brace_class,
+							new ManyParser(
+									
+										new ChainParser(
+											Tokens.COMMA,
+											Rules.angle_brace_class))),"ANGLE_CLASSES","braces","<,>");
+	public static final BracedParser INLINE_PARAMETERS = new BracedParser(
+							new ManyParser(
+									Rules.method_parameter),"INLINE_PARAMETERS","braces",":,;");
 	public static final BracedParser TAB_BRACES = new BracedParser(
 							new AddTokenParser(
 								Rules.tab_brace_parameters,"tab_braces"),"TAB_BRACES","braces","(,)");
 	public static final BracedParser CUSTOM_ENTRY_DEFINITION = new BracedParser(
-						new ChainParser(
-							new ListNameElementParser("entry_class_names"),
 							new ManyParser(
-									Rules.method_parameter)),"CUSTOM_ENTRY_DEFINITION","braces","@,@");
+									Rules.method_parameter),"CUSTOM_ENTRY_DEFINITION","braces",":,;");
 	public static final BracedParser PIPE_ENTRY = new BracedParser(
 							new ListNameElementParser("variable_names"),"PIPE_ENTRY","braces","|,|");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_BRACES,TAB_BRACES,CUSTOM_ENTRY_DEFINITION,PIPE_ENTRY);
+				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_CLASSES,INLINE_PARAMETERS,TAB_BRACES,CUSTOM_ENTRY_DEFINITION,PIPE_ENTRY);
 }

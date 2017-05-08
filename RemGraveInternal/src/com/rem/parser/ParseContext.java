@@ -52,6 +52,7 @@ public class ParseContext {
 		this.furthestPoint.position=0;
 		this.furthestPoint.parser=rootParser.getName();
 		this.parameters = new Stack<Object[]>();
+
 		furthestPosition.put(fileName, this.furthestPoint);
 		if(!allSubContexts.containsKey(fileName)){
 			allSubContexts.put(fileName, new HashMap<Integer,ParseContext>());
@@ -181,7 +182,7 @@ public class ParseContext {
 				}
 			}
 		}
-		if(backPosition==-1){			
+		if(backPosition==-1){
 			return dependencyDone&&valid&&frontPosition==length;
 		}
 		else {
@@ -553,6 +554,25 @@ public class ParseContext {
 			firstContext.parentContext = newContext;
 		}
 	}
+
+	public String getParameters() {
+		List<Object[]> nParameters = new ArrayList<Object[]>();
+		StringBuilder builder = new StringBuilder();
+		builder.append("\n");
+		while(!parameters.isEmpty()){
+			Object[] objs = parameters.pop();
+			for(Object obj:objs){
+				builder.append(obj);
+			}
+			builder.append(("\n"));
+			nParameters.add(objs);
+		}
+		for(int i=nParameters.size()-1;i>=0;--i){
+			parameters.push(nParameters.get(i));
+		}
+		return builder.toString();
+	}
+
 
 
 }

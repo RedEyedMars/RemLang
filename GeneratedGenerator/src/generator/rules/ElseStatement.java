@@ -22,7 +22,9 @@ public class ElseStatement extends ConcreteRule {
 					Tokens.ELSE,
 					new MultipleParser(
 							
-									new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Argument.Number(1))))));
+							new ChoiceParser(
+									new WithParser((IRule)Rules.entry_declaration,new Argument.Add(this.tabs,new Argument.Number(1))),
+									new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Argument.Number(1)))))));
 
 	}
 

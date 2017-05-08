@@ -21,6 +21,7 @@ public class MethodParameter extends ConcreteRule {
 					Tokens.TRUE,
 					Tokens.FALSE,
 					new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
+					new WithParser((IRule)Rules.generate_call,new Argument.Number(-1)),
 					new AddTokenParser(
 						Braces.QUOTE,"string"),
 				new ChainParser(
@@ -28,11 +29,16 @@ public class MethodParameter extends ConcreteRule {
 					new AddTokenParser(
 						Tokens.NAME_WORD,"getKeyName")),
 					Rules.variable_or_token_name,
+				new ChainParser(
+					new OptionalParser(
+							
+									new AddTokenParser(
+										Tokens.PRIME,"getString")),
+					new ListNameElementParser("entry_names")),
 					new ListNameElementParser("class_names"),
 					new ListNameElementParser("generator_names"),
 					new ListNameElementParser("property_names"),
 					new ListNameElementParser("entry_class_names"),
-					new ListNameElementParser("entry_names"),
 					Tokens.NUMBER));
 
 	}

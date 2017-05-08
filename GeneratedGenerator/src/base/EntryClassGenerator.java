@@ -32,7 +32,7 @@ public class EntryClassGenerator extends Generator{
 						"import gen.checks.*;\n"+
 						"import gen.properties.*;\n"+
 						"import lists.*;\n\n"+
-						"public class ",/*Class Name*/"Entry implements Entry",/*Properties*/" {\n",/*Contents*/"\n}"});
+						"public class ",/*Class Name*/"Entry implements Entry",/*Properties*/" {\n\tpublic ",/*Class name*/"Entry getSelf(){\n\t\treturn this;\n\t}\n",/*Contents*/"\n}"});
 		addElement("body",new String[]{
 				"{",/*Body*/"\n\t}"});
 		addElement("implements",new String[]{
@@ -55,9 +55,9 @@ public class EntryClassGenerator extends Generator{
 	public void setup(ParseContext data) {
 		directory = new File(Generators.generator.getDirectory(),"entries");
 		directory.mkdirs();
-		
+
 	}
-	
+
 	@Override
 	public void generate(ParseContext data){
 		generateAll(data.getList("entry_class_definitions").getNewTokens(),"entry_dec");
@@ -89,7 +89,7 @@ public class EntryClassGenerator extends Generator{
 							variables.put(key,Generators.property.getPropertyVariables().get(propertyName).get(key));
 							variableNameSet.add(key);
 							Generators.generator.getContexts().get(className).get(Generators.generator.getLocalContext())
-							.put(key,Generators.property.getPropertyActualVariables().get(propertyName).get(key));
+								.put(key,Generators.property.getPropertyActualVariables().get(propertyName).get(key));
 						}
 					}
 					else {
@@ -177,49 +177,49 @@ public class EntryClassGenerator extends Generator{
 							first = true;
 						}
 						else {
-						IToken value = statement.get("value");
-						IToken ifStatement = statement.get("ifStatement");
-						if(ifStatement!=null){							
-							ListEntry ifBody = new ListEntry();
-							ifBody.setDelimiter("");
-							for(IToken.Key valueKey:value.keySet()){
-								if("entry_definition".equals(valueKey.getName())){
-									ifBody.add(new TabEntry(3,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
-											Generators.generator.generateEntryDefinition(value.get(valueKey), className, "$OUTPUT")))));
+							IToken value = statement.get("value");
+							IToken ifStatement = statement.get("ifStatement");
+							if(ifStatement!=null){							
+								ListEntry ifBody = new ListEntry();
+								ifBody.setDelimiter("");
+								for(IToken.Key valueKey:value.keySet()){
+									if("entry_definition".equals(valueKey.getName())){
+										ifBody.add(new TabEntry(3,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
+												Generators.generator.generateEntryDefinition(value.get(valueKey), className, "$OUTPUT")))));
+									}
+									else if("entry_names".equals(valueKey.getName())){
+										ifBody.add(new TabEntry(3,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
+												new StringEntry(value.get(valueKey).getString())))));
+									}
 								}
-								else if("entry_names".equals(valueKey.getName())){
-									ifBody.add(new TabEntry(3,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
-											new StringEntry(value.get(valueKey).getString())))));
-								}
-							}
-							if(ifStatement.get("otherwise")==null){
-								if(first){
-									body.add(new TabEntry(2,new ElementEntry(Generators.generator,"ifStatementCall",new ListEntry(Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"), className,"$OUTPUT"),ifBody))));							
+								if(ifStatement.get("otherwise")==null){
+									if(first){
+										body.add(new TabEntry(2,new ElementEntry(Generators.generator,"ifStatementCall",new ListEntry(Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"), className,"$OUTPUT"),ifBody))));							
+									}
+									else {
+										body.add(new TabEntry(2,new ElementEntry(Generators.generator,"elseIfStatementCall",new ListEntry(Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"), className,"$OUTPUT"),ifBody))));
+									}
 								}
 								else {
-									body.add(new TabEntry(2,new ElementEntry(Generators.generator,"elseIfStatementCall",new ListEntry(Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"), className,"$OUTPUT"),ifBody))));
+									body.add(new TabEntry(2,new ElementEntry(Generators.generator,"elseStatementCall",new ListEntry(ifBody))));
 								}
+								body.add(new TabEntry(2,new StringEntry("}")));
+								first = false;
 							}
 							else {
-								body.add(new TabEntry(2,new ElementEntry(Generators.generator,"elseStatementCall",new ListEntry(ifBody))));
-							}
-							body.add(new TabEntry(2,new StringEntry("}")));
-							first = false;
-						}
-						else {
-							first = true;
-							for(IToken.Key valueKey:value.keySet()){
-								if("entry_definition".equals(valueKey.getName())){
-									body.add(new TabEntry(2,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
-											Generators.generator.generateEntryDefinition(value.get(valueKey), className, "$OUTPUT")))));
-								}
-								else if("entry_names".equals(valueKey.getName())){
-									body.add(new TabEntry(2,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
-											new StringEntry(value.get(valueKey).getString())))));
+								first = true;
+								for(IToken.Key valueKey:value.keySet()){
+									if("entry_definition".equals(valueKey.getName())){
+										body.add(new TabEntry(2,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
+												Generators.generator.generateEntryDefinition(value.get(valueKey), className, "$OUTPUT")))));
+									}
+									else if("entry_names".equals(valueKey.getName())){
+										body.add(new TabEntry(2,new ElementEntry(Generators.entryClass,"appendToBuilder", new ListEntry(
+												new StringEntry(value.get(valueKey).getString())))));
+									}
 								}
 							}
 						}
-					}
 					}
 					methods.put("$OUTPUT",
 							new TabEntry(1,new ElementEntry(Generators.entryClass,"getMethodDeclaration",new ListEntry(body))));											
@@ -255,7 +255,7 @@ public class EntryClassGenerator extends Generator{
 		ListEntry complete = new ListEntry(constants,variableList,constructors,methodList);
 		complete.setDelimiter("\n");
 
-		addFile(directory,trueClassName+"Entry.java", new ListEntry(new StringEntry(trueClassName),implementsProperties,complete));
+		addFile(directory,trueClassName+"Entry.java", new ListEntry(new StringEntry(trueClassName),implementsProperties,new StringEntry(trueClassName),complete));
 	}
 	public Entry generateVariableDeclaration(IToken varDeclaration, String contextName, boolean isPublic){
 
@@ -362,20 +362,5 @@ public class EntryClassGenerator extends Generator{
 	}
 
 
-	public static class ClassNameEntry extends ElementEntry {
 
-		private StringEntry name;
-		public ClassNameEntry(Element element, ListEntry entry) {
-			super(element, entry);
-		}
-		public ClassNameEntry(){
-			super(Generators.generator,"exactCall",new ListEntry());
-			this.name = new StringEntry("");
-			this.getEntries().add(name);
-		}
-		public void setName(String newName){
-			this.name.set(newName);
-		}
-
-	}
 }

@@ -30,8 +30,14 @@ public class TokenDeclaration extends ConcreteRule {
 									new AddTokenParser(
 										
 										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-											new ListNameElementParser("token_names"),
+											
+											new ChoiceParser(
+													Tokens.EQUALSIGN,
+													new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1)))),
+											
+											new ChoiceParser(
+													new ListNameElementParser("token_names"),
+													new ListNameElementParser("variable_names")),
 											new MultipleParser(
 													
 														new ChainParser(

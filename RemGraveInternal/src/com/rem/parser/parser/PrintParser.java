@@ -12,7 +12,7 @@ public class PrintParser extends ConcreteParser implements IParser{
 	
 	@Override
 	public void real_parse(ParseContext data) {
-		System.out.println(phrase);
+		System.out.println(phrase+":"+data.getLineNumber(data.getFrontPosition()));
 	}
 
 }

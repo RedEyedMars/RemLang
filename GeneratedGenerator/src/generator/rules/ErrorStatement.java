@@ -20,6 +20,8 @@ public class ErrorStatement extends ConcreteRule {
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.ERROR,
+					new OptionalParser(
+							new ListNameElementParser("token_names")),
 					new MultipleParser(
 							
 								new ChainParser(

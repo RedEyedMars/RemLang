@@ -23,15 +23,25 @@ public class SetCall extends ConcreteRule {
 					Tokens.SET,
 					new AddTokenParser(
 						Tokens.NAME,"subject"),
+					new OptionalParser(
+							Rules.cast_as_statement),
 					
 					new ChoiceParser(
 						new ChainParser(
-							new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-							Rules.boolean_statement),
-							new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
-						new ChainParser(
-							new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-							Rules.method_parameter))));
+							Tokens.EQUALSIGN,
+							
+							new ChoiceParser(
+									Rules.boolean_statement,
+									Rules.method_parameter)),
+							
+							new ChoiceParser(
+								new ChainParser(
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+									Rules.boolean_statement),
+									new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
+								new ChainParser(
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+									Rules.method_parameter)))));
 
 	}
 

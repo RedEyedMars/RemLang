@@ -23,8 +23,11 @@ public class EachCall extends ConcreteRule {
 					new AddTokenToListParser(
 						Tokens.NAME,"eachName","variable_names"),
 					Tokens.IN,
-					new AddTokenParser(
-						new ListNameElementParser("variable_names"),"iterable"),
+					
+					new ChoiceParser(
+							Rules.range,
+							new AddTokenParser(
+								new ListNameElementParser("variable_names"),"iterable")),
 					new MultipleParser(
 							new WithParser((IRule)Rules.body_element,new Argument.Add(this.tabs,new Argument.Number(1))))));
 

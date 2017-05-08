@@ -206,20 +206,26 @@ public class CheckGenerator extends Generator {
 		private String leftName;
 		private String rightName;
 		private String eid;
+		private String rightId;
+		private String leftId;
 		public CheckEntry(int index,GeneratorGenerator.VariableEntry left,String operator,GeneratorGenerator.VariableEntry right){
 			super(Generators.check,"eid",new ListEntry(new StringEntry(left.getName()+index),new StringEntry(operator),new StringEntry(right.getName()+index)));
 			this.left = left;
 			this.right = right;
-			this.leftName = left.getName()+index;
-			this.rightName = right.getName()+index;
+			this.leftName = left.getName();
+			this.rightName = right.getName();
+			this.leftId = leftName+index;
+			this.rightId = rightName+index;
 			this.eid = "operator";
 		}
 		public CheckEntry(int index,GeneratorGenerator.VariableEntry left,StringEntry method,GeneratorGenerator.VariableEntry right){
 			super(Generators.check,"method",new ListEntry(new StringEntry(left.getName()+index),method,new StringEntry(right.getName()+index)));
 			this.left = left;
 			this.right = right;
-			this.leftName = left.getName()+index;
-			this.rightName = right.getName()+index;
+			this.leftName = left.getName();
+			this.rightName = right.getName();
+			this.leftId = leftName+index;
+			this.rightId = rightName+index;
 			this.eid = "method";
 		}
 
@@ -248,16 +254,16 @@ public class CheckGenerator extends Generator {
 			GeneratorGenerator.VariableEntry l = null;
 			GeneratorGenerator.VariableEntry r = null;
 			if(left.hasType()){
-				l = Generators.generator.new VariableEntry(leftName,left.getType());
+				l = Generators.generator.new VariableEntry(leftId,left.getType());
 			}
 			else {
-				l = Generators.generator.new VariableEntry(leftName,left.getDefaultType());
+				l = Generators.generator.new VariableEntry(leftId,left.getDefaultType());
 			}
 			if(right.hasType()){
-				r = Generators.generator.new VariableEntry(rightName,right.getType());
+				r = Generators.generator.new VariableEntry(rightId,right.getType());
 			}
 			else {
-				r = Generators.generator.new VariableEntry(rightName,right.getDefaultType());
+				r = Generators.generator.new VariableEntry(rightId,right.getDefaultType());
 			}
 			return new ListEntry(l,r);
 		}
@@ -269,8 +275,8 @@ public class CheckGenerator extends Generator {
 		}
 		public Entry asAssignment(){
 
-			Entry leftName = new StringEntry(this.leftName);
-			Entry rightName = new StringEntry(this.rightName);
+			Entry leftName = new StringEntry(this.leftId);
+			Entry rightName = new StringEntry(this.rightId);
 			ListEntry part = new ListEntry();
 			part.setDelimiter("");
 			part.add(new TabEntry(2,new ElementEntry(Generators.check,"constructorAssignment",new ListEntry(leftName,leftName))));
@@ -282,16 +288,16 @@ public class CheckGenerator extends Generator {
 			GeneratorGenerator.VariableEntry l = null;
 			GeneratorGenerator.VariableEntry r = null;
 			if(left.hasType()){
-				l = Generators.generator.new VariableEntry(leftName,left.getType());
+				l = Generators.generator.new VariableEntry(leftId,left.getType());
 			}
 			else {
-				l = Generators.generator.new VariableEntry(leftName,left.getDefaultType());
+				l = Generators.generator.new VariableEntry(leftId,left.getDefaultType());
 			}
 			if(right.hasType()){
-				r = Generators.generator.new VariableEntry(rightName,right.getType());
+				r = Generators.generator.new VariableEntry(rightId,right.getType());
 			}
 			else {
-				r = Generators.generator.new VariableEntry(rightName,right.getDefaultType());
+				r = Generators.generator.new VariableEntry(rightId,right.getDefaultType());
 			}
 			ListEntry part = new ListEntry();
 			part.setDelimiter("");

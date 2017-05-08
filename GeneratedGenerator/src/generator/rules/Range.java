@@ -6,22 +6,22 @@ import com.rem.parser.token.*;
 import com.rem.parser.parser.*;
 import lists.*;
 
-public class CastAsStatement extends ConcreteRule {
+public class Range extends ConcreteRule {
 
-	public static final IRule parser = new CastAsStatement();
+	public static final IRule parser = new Range();
 
-	public CastAsStatement(){
-		super("cast_as_statement");
+	public Range(){
+		super("range");
 	}
 	@Override
 	public void setup(){
-		isSilent(true);
 		set(
 				new ChainParser(
-					Tokens.AS,
 					new AddTokenParser(
-						
-							Rules.angle_brace_class,"castToType")));
+						Rules.arithmatic,"left"),
+					Tokens.DOTDOT,
+					new AddTokenParser(
+						Rules.arithmatic,"right")));
 
 	}
 

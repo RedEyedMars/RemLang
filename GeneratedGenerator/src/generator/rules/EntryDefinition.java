@@ -27,12 +27,22 @@ public class EntryDefinition extends ConcreteRule {
 								new ChainParser(
 									new ListNameElementParser("entry_names"),
 									Tokens.SINGLE),"getSingle"),
-							Braces.CUSTOM_ENTRY_DEFINITION,
+							Rules.generate_call,
+						new ChainParser(
+							new ListNameElementParser("entry_class_names"),
+							Braces.CUSTOM_ENTRY_DEFINITION),
+						new ChainParser(
+							Tokens.BACKSLASH,
+							new AddTokenParser(
+								
+							new ChoiceParser(
+									Braces.QUOTE,
+									Rules.variable_or_token_name),"string")),
 							new AddTokenParser(
 								Braces.QUOTE_ENTRY,"quoted"),
 						new ChainParser(
-							new AddTokenToListParser(
-								new ListNameElementParser("generator_names"),"gen","variable_names"),
+							new AddTokenParser(
+								new ListNameElementParser("generator_names"),"gen"),
 							new ReContextParser(
 								
 							new ChoiceParser(

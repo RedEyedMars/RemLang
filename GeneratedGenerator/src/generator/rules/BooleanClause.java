@@ -53,7 +53,20 @@ public class BooleanClause extends ConcreteRule {
 							new ChoiceParser(
 									Rules.method_parameter,
 									Tokens.EMPTY,
-									Tokens.SINGULAR),"right")),"operatedStatement")));
+									Tokens.SINGULAR),"right")),"operatedStatement"),
+					new AddTokenParser(
+						
+						new ChainParser(
+							new AddTokenParser(
+								Rules.method_parameter,"left"),
+							new AddTokenParser(
+								
+								new ChainParser(
+									Tokens.DOES,
+									new OptionalParser(
+											Tokens.NOT),
+									new AddTokenParser(
+										Tokens.NAME,"methodName")),"operator")),"methodWithNoArgument")));
 
 	}
 

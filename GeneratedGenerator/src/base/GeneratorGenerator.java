@@ -54,6 +54,8 @@ public class GeneratorGenerator extends Generator {
 					"\t\tif(args.length==1){\n\t\t\tnew ",/*Meta Name*/"Flow().parse(args[0]);\n\t\t}\n\t\telse {\n\t\t\tSystem.err.println(\"No filename provided!\");\n\t\t}\n\t}\n"};
 	private String[] generatorCall = new String[]{
 			"Generators.",/*Generator Name*/""};
+	private String[] generatorMethodCall = new String[]{
+			"Generators.",/*Generator Name*/".",/*Method*/""};
 	private String[] generatorDeclaration = new String[]{
 			"",/*Class Name*/"Generator ",/*Class name*/" = new ",/*Assignment*/"Generator();"};
 	private String[] generatorListDeclaration = new String[]{
@@ -70,6 +72,8 @@ public class GeneratorGenerator extends Generator {
 			"",/*Method Name*/""};
 	private String[] exactDuoCall = new String[]{
 			"",/*First*/"",/*Second*/""};
+	private String[] exactAngleBraces = new String[]{
+			"<",/*Parameters*/">"};
 	private String[] exactWithAngleCall = new String[]{
 			"",/*Method Name*/"<",/*Parameters*/">"};
 	private String[] newObjectCall = new String[]{
@@ -81,7 +85,7 @@ public class GeneratorGenerator extends Generator {
 	private String[] noSubjectCall = new String[]{
 			"",/*Method Name*/"(",/*Parameter*/")"};
 	private String[] errorCall = new String[]{
-			"System.err.println(",/*Error Output*/");"};
+			"throw new UnableToGenerateException(",/*Token Name*/",",/*Error Output*/");"};
 	private String[] returnCall = new String[]{
 			"return ",/*Output*/";"};
 	private String[] newBooleanCall = new String[]{
@@ -106,6 +110,8 @@ public class GeneratorGenerator extends Generator {
 			"else {",/*Body*/""};
 	private String[] forStatementCall = new String[]{
 			"for(",/*Key Name*/":",/*Token Name*/"){",/*Body*/""};
+	private String[] forNumberStatementCall = new String[]{
+			"for(",/*Initialization*/"",/*Left*/"<",/*Right*/";++",/*Iterate*/"){",/*Body*/""};
 	private String[] tokenForStatementCall = new String[]{
 			"for(IToken.Key ",/*Key Name*/":",/*Token Name*/".keySet()){",/*Body*/""};
 	private String[] methodDeclaration = new String[]{
@@ -124,6 +130,7 @@ public class GeneratorGenerator extends Generator {
 		addElement("variablePrototype",variablePrototype);
 		addElement("flowMain",flowMain);
 		addElement("generatorCall",generatorCall);
+		addElement("generatorMethodCall",generatorMethodCall);
 		addElement("generatorDeclaration",generatorDeclaration);
 		addElement("generatorListDeclaration",generatorListDeclaration);
 		addElement("methodCall",methodCall);
@@ -137,6 +144,7 @@ public class GeneratorGenerator extends Generator {
 		addElement("staticMethodCall",staticMethodCall);
 		addElement("errorCall",errorCall);
 		addElement("returnCall",returnCall);
+		addElement("exactAngleBraces",exactAngleBraces);
 		addElement("exactWithAngleCall",exactWithAngleCall);
 		addElement("newMethodWithBracesCall",newMethodWithBracesCall);
 		addElement("newBooleanCall",newBooleanCall);
@@ -148,6 +156,7 @@ public class GeneratorGenerator extends Generator {
 		addElement("elseIfStatementCall",elseIfStatementCall);
 		addElement("elseStatementCall",elseStatementCall);
 		addElement("forStatementCall",forStatementCall);
+		addElement("forNumberStatementCall",forNumberStatementCall);
 		addElement("tokenForStatementCall",tokenForStatementCall);
 		addElement("methodDeclaration",methodDeclaration);
 		addElement("generatorElement",generatorElement);
@@ -164,7 +173,7 @@ public class GeneratorGenerator extends Generator {
 		ListEntry classElements = new ListEntry();
 		classElements.setDelimiter("\n");
 		ListEntry variableDeclarations = new ListEntry();
-		variableDeclarations.setDelimiter("\n\tprivate ");
+		variableDeclarations.setDelimiter("\n\t");
 		variableDeclarations.startWithDelimiter(true);
 		classElements.add(variableDeclarations);
 		classElements.add(new StringEntry(""));
@@ -212,11 +221,13 @@ public class GeneratorGenerator extends Generator {
 				TypeEntry type = new TypeEntry(variable);
 				variableMethods.add(new TabEntry(0,new ElementEntry(Generators.generator,"methodDeclaration",new ListEntry(type,new StringEntry("get"+camelize(variable.getName())),new ListEntry(),
 						new TabEntry(2,new ElementEntry(Generators.generator,"returnCall", new ListEntry(new StringEntry(variable.getName()))))))));
+				variable.setAccess(VariableEntry.PRIVATE_ACCESS);
 			}
 			else if("constant_declaration".equals(key.getName())){
 				VariableEntry variable = (VariableEntry) generateVariableDeclaration(root.get(key),className,LOCAL_CONTEXT);
 				variable.setStatic(true);
 				variable.setFinal(true);
+				variable.setAccess(VariableEntry.PUBLIC_ACCESS);
 				variableDeclarations.add(variable);
 			}
 			else if("element_declaration".equals(key.getName())){
@@ -300,6 +311,9 @@ element_entry has tabs
 	whitetab{tabs}? QUOTE ( PLUS whitetab{tabs} QUOTE)*
 	 */
 	public Entry generateElementDeclaration(IToken declaration, String contextName, String contextSubName){
+		if(declaration.get("ELEMENT_IMPORT")!=null){
+			declaration = declaration.get("ELEMENT_IMPORT");
+		}
 		for(IToken.Key key:declaration.keySet()){
 			if("element_definition".equals(key.getName())){
 				IToken definition = declaration.get(key);
@@ -468,7 +482,6 @@ generation_declaration has tabs
 		}
 		return section;
 	}
-
 	/*
 	error_statement{tabs}
 	return_statement{tabs}
@@ -514,6 +527,11 @@ generation_declaration has tabs
 			else if("token_expansion".equals(key.getName())){
 				return generateTokenExpansion(bodyElement.get(key),tabs,contextName,contextSubName,retType);
 			}
+			else if("inline_addition_call".equals(key.getName())){
+				return 
+						new TabEntry(tabs,
+								new ListEntry(new ElementEntry(Generators.generator,"semicoloned",new ListEntry(generateInlineAddition(bodyElement.get(key),contextName,contextSubName)))));
+			}
 			else if("method_call".equals(key.getName())){
 				return 
 						new TabEntry(tabs,
@@ -528,6 +546,8 @@ generation_declaration has tabs
 	public Entry generateError(IToken error, String contextName, String contextSubName){
 		ListEntry output = new ListEntry();
 		output.setDelimiter("+");
+
+		Entry tokenName = new StringEntry(contexts.get(contextName).get(contextSubName).get(DEFAULT_TOKEN).getName());
 		for(IToken.Key key:error.keySet()){
 			if("entry".equals(key.getName())){
 				output.add(new QuoteEntry(error.get(key).getString()));
@@ -535,8 +555,12 @@ generation_declaration has tabs
 			else if("variable_or_token_name".equals(key.getName())){
 				output.add(generateVariableOrTokenName(error.get(key),contextName, contextSubName));
 			}
+			else if("token_names".equals(key.getName())){
+				tokenName = new StringEntry(error.get(key).getString());
+			}
 		}
-		return new ElementEntry(Generators.generator,"errorCall",new ListEntry(output));
+
+		return new ElementEntry(Generators.generator,"errorCall",new ListEntry(output,tokenName));
 	}
 	//whitetab{tabs} RETURN ( generate_call{tabs+1} | entry_definition{tabs+1} | method_call{tabs+1} | whitetab{tabs+1} (entry_name|NULL) )
 	public Entry generateReturn(IToken returnToken, String contextName, String contextSubName,TypeEntry retType){
@@ -583,21 +607,31 @@ generation_declaration has tabs
 		ListEntry forComplete = new ListEntry();
 		forComplete.setDelimiter("");
 		VariableEntry variable = new VariableEntry(each.get("eachName").getString(),TYPE_UNKNOWN);
-		String iterableName = each.get("iterable").getString();
 		VariableEntry iterable = null;
-		if(contexts.get(contextName).get(contextSubName).containsKey(iterableName)){
-			iterable = contexts.get(contextName).get(contextSubName).get(iterableName);
-			int indexOfAngle = iterable.getType().indexOf('<');
-			if(indexOfAngle>-1){
-				int indexOfSecond = iterable.getType().indexOf(',');
-				if(indexOfSecond==-1){
-					indexOfSecond = iterable.getType().lastIndexOf('>');
+		String iterableName = null;
+		//TODO IN GENERATOR.GENERATOR ADDDDD THE RANGE THINGY
+		MethodEntry left = null;
+		MethodEntry right = null;
+		if(each.get("iterable")!=null){
+			iterableName = each.get("iterable").getString();
+			if(contexts.get(contextName).get(contextSubName).containsKey(iterableName)){
+				iterable = contexts.get(contextName).get(contextSubName).get(iterableName);
+				int indexOfAngle = iterable.getType().indexOf('<');
+				if(indexOfAngle>-1){
+					int indexOfSecond = iterable.getType().indexOf(',');
+					if(indexOfSecond==-1){
+						indexOfSecond = iterable.getType().lastIndexOf('>');
+					}
+					variable.changeType(iterable.getType().substring(indexOfAngle+1, indexOfSecond));
 				}
-				variable.changeType(iterable.getType().substring(indexOfAngle+1, indexOfSecond));
+			}
+			else {
+				checks.add(new ContextCheck(contextName,contextSubName,iterableName,"Each (011)"));
 			}
 		}
 		else {
-			checks.add(new ContextCheck(contextName,contextSubName,iterableName,"Each (011)"));
+			left = (MethodEntry) generateArithmatic(each.get("range").get("left"), true, contextName, contextSubName);
+			right = (MethodEntry) generateArithmatic(each.get("range").get("right"), true, contextName, contextSubName);
 		}
 		String forName = contextSubName+".for"+ifIndex++;
 		addContext(contextName,contextSubName,forName,contexts.get(contextName).get(contextSubName).get(DEFAULT_TOKEN));
@@ -610,7 +644,17 @@ generation_declaration has tabs
 				forBody.add(generateBodyElement(bodyElement,tabs+1,contextName,forName,retType));
 			}
 		}
-		Entry forStatement = new ElementEntry(Generators.generator,"forStatementCall",new ListEntry(variable,new StringEntry(iterableName),forBody));
+		Entry forStatement = null;
+		if(iterable!=null){
+			forStatement = new ElementEntry(Generators.generator,"forStatementCall",new ListEntry(variable,new StringEntry(iterableName),forBody));
+			
+		}
+		else {
+			StringEntry varName = new StringEntry(variable.getName());
+			variable.setAssignment(left);
+			variable.changeType("Integer");
+			forStatement = new ElementEntry(Generators.generator,"forNumberStatementCall",new ListEntry(variable,varName,right,varName,forBody));
+		}
 		forComplete.add(new TabEntry(tabs,forStatement));
 		forComplete.add(new TabEntry(tabs,new StringEntry("}")));
 		return forComplete;
@@ -627,18 +671,24 @@ generation_declaration has tabs
 		addContext(contextName,contextSubName,ifContextName,contexts.get(contextName).get(contextSubName).get(DEFAULT_TOKEN));
 		for(IToken.Key key:ifStatement.keySet()){
 			if("boolean_statement".equals(key.getName())){
-				ifPart.add(generateBooleanStatement(ifStatement.get(key),contextName,contextSubName));
+				ifPart.add(generateBooleanStatement(ifStatement.get(key),contextName,ifContextName));
 			}
 			else if("body_element".equals(key.getName())){				
 				ifBody.add(generateBodyElement(ifStatement.get(key),tabs+1,contextName,ifContextName,retType));
 			}
+			else if("entry_declaration".equals(key.getName())){				
+				ifBody.add(generateEntryDeclaration(ifStatement.get(key),tabs+1,contextName,ifContextName));
+			}
 			else if("else_statement".equals(key.getName())){
 				IToken else_statement = ifStatement.get(key);
 				elseBody = new ListEntry();
-				elseBody.setDelimiter("\n");
+				elseBody.setDelimiter("");
 				for(IToken.Key subKey:else_statement.keySet()){
-					if("body_element".equals(subKey.getName())){
-						elseBody.add(generateBodyElement(else_statement.get(subKey),tabs+1,contextName,contextSubName,retType));
+					if("entry_declaration".equals(subKey.getName())){				
+						elseBody.add(generateEntryDeclaration(else_statement.get(subKey),tabs+1,contextName,ifContextName));
+					}
+					else if("body_element".equals(subKey.getName())){
+						elseBody.add(generateBodyElement(else_statement.get(subKey),tabs+1,contextName,ifContextName,retType));
 					}
 				}
 			}
@@ -654,7 +704,6 @@ generation_declaration has tabs
 		}
 		return ret;
 	}
-
 	/*
 	 * whitetab{tabs} FLIP variable_or_token_name 
 	 * 		( whitetab{tabs+1} (QUOTE|NON_SPACE) as left EQUALSIGN (QUOTE|NON_SPACE) as right )* 
@@ -709,6 +758,8 @@ generation_declaration has tabs
 		String varName = null;
 		VariableEntry variable = null;
 		ITypeListener assignment = null;
+		String typeName = null;
+		boolean cast = false;
 		for(IToken.Key key:call.keySet()){
 			if("subject".equals(key.getName())){
 				varName = call.get("subject").getString();
@@ -727,10 +778,13 @@ generation_declaration has tabs
 			}
 			else if("method_call".equals(key.getName())){
 				assignment = (MethodEntry) generateMethodCall(call.get(key),contextName,contextSubName);
-
 			}
 			else if("method_parameter".equals(key.getName())){
 				assignment = (MethodEntry) generateMethodParameter(call.get(key),false,contextName,contextSubName);
+			}
+			else if("castToType".equals(key.getName())){				
+				typeName = getCastType(call,contextName,contextSubName);
+				cast = true;
 			}
 		}
 		if(assignment.hasType()){
@@ -739,7 +793,32 @@ generation_declaration has tabs
 		else if(variable.hasType()){
 			assignment.changeType(variable.getType());
 		}
+		if(cast){
+			variable.changeType(typeName);
+			assignment = new MethodEntry("castCall",new ListEntry(new StringEntry(typeName),(Entry)assignment));
+		}
 		return new ElementEntry(Generators.generator,"setCall",new ListEntry(new StringEntry(varName),(Entry)assignment));
+	}
+
+	/*
+	 * 	whitetab{tabs} method_parameter as subject PLUS ( boolean_statement |  method_parameter | method_call{tabs+1} )
+
+	 */
+	public Entry generateInlineAddition(IToken call,String contextName, String contextSubName){
+		Entry subject = generateMethodParameter(call.get("subject").getLast(),false,contextName,contextSubName);
+		Entry parameter = null;
+		for(IToken.Key key:call.get("parameter").keySet()){
+			if("boolean_statement".equals(key.getName())){
+				parameter = generateBooleanStatement(call.get("parameter").get(key),contextName,contextSubName);
+			}
+			else if("method_parameter".equals(key.getName())){
+				parameter = generateMethodParameter(call.get("parameter").get(key),false,contextName,contextSubName);
+			}
+			else if("method_call".equals(key.getName())){
+				parameter = generateMethodCall(call.get("parameter").get(key),contextName,contextSubName);
+			}
+		}
+		return new MethodEntry(subject,"add",new ListEntry(parameter)); 
 	}
 	/*
 	 *
@@ -877,12 +956,14 @@ all_type_tokens has tabs
 						}
 						else {
 							clauseBody.add(new TabEntry(tabs+2,childToken));
+							String contextSpecificTokenSubName = contextTokenSubName+"."+clauseNameString;
+							this.addContext(contextName, contextTokenSubName, contextSpecificTokenSubName, childToken);
 							for(IToken.Key bodyKey:bodyToken.keySet()){
 								if("entry_declaration".equals(bodyKey.getName())){
-									clauseBody.add(generateEntryDeclaration(bodyToken.get(bodyKey),tabs+2,contextName,contextTokenSubName));
+									clauseBody.add(generateEntryDeclaration(bodyToken.get(bodyKey),tabs+2,contextName,contextSpecificTokenSubName));
 								}
 								else if("body_element".equals(bodyKey.getName())){
-									clauseBody.add(generateBodyElement(bodyToken.get(bodyKey),tabs+2,contextName,contextTokenSubName,retType));
+									clauseBody.add(generateBodyElement(bodyToken.get(bodyKey),tabs+2,contextName,contextSpecificTokenSubName,retType));
 								}
 							}
 							if(isElse){
@@ -922,7 +1003,6 @@ all_type_tokens has tabs
 		}
 		throw new UnableToGenerateException("Token Expansion (006)",expansion);
 	}
-	//TODO
 
 	public Entry generateVariableDeclaration(IToken varElement, String contextName, String contextSubName){
 		String varName = null;
@@ -934,7 +1014,7 @@ all_type_tokens has tabs
 				varName = varElement.get(key).getString();
 			}
 			else if("tokenName".equals(key.getName())){
-				varName = varElement.get(key).getString();
+				varName = varElement.get(key).getString();				
 			}
 			else if("castToType".equals(key.getName())){				
 				typeName = getCastType(varElement,contextName,contextSubName);
@@ -943,21 +1023,25 @@ all_type_tokens has tabs
 			else if("method_call".equals(key.getName())){
 				MethodEntry method = (MethodEntry)generateMethodCall(varElement.get(key),contextName, contextSubName);
 				assignment = method;
-				if(method.hasType()){
-					typeName = method.getType();
-				}
-				else {
-					method.changeType(typeName);
+				if(!cast){
+					if(method.hasType()){
+						typeName = method.getType();
+					}
+					else {
+						method.changeType(typeName);
+					}
 				}
 			}
 			else if("method_parameter".equals(key.getName())){
 				MethodEntry parameter = (MethodEntry)generateMethodParameter(varElement.get(key),false,contextName, contextSubName);
 				assignment = parameter;
-				if(parameter.hasType()){
-					typeName = parameter.getType();
-				}
-				else {
-					parameter.changeType(typeName);
+				if(!cast){
+					if(parameter.hasType()){
+						typeName = parameter.getType();
+					}
+					else {
+						parameter.changeType(typeName);
+					}
 				}
 			}
 			else if("boolean_statement".equals(key.getName())){
@@ -971,6 +1055,7 @@ all_type_tokens has tabs
 			var.changeType(typeName);
 			if(cast){
 				var.setAssignment(new ElementEntry(Generators.generator,"castCall",new ListEntry(new StringEntry(typeName),assignment)));
+				var.setCast(true);
 			}
 			else {
 				var.setAssignment(assignment);
@@ -983,6 +1068,7 @@ all_type_tokens has tabs
 				assignment = new ElementEntry(Generators.generator,"castCall",new ListEntry(new StringEntry(typeName),assignment));
 			}
 			VariableEntry var = new VariableEntry(varName,typeName,assignment);
+			var.setCast(cast);
 			contexts.get(contextName).get(contextSubName).put(varName,var);
 			return var;
 		}
@@ -1002,7 +1088,6 @@ all_type_tokens has tabs
 		boolean isStatic = method.get("isStatic")!=null;
 		IToken subject = method.get("subject");
 		IToken subjectAsMethodParameter = subject.get("method_parameter");
-
 		Entry subjectName = null;
 		boolean isGenerate = false;
 		if(subjectAsMethodParameter!=null){
@@ -1011,19 +1096,23 @@ all_type_tokens has tabs
 		else {
 			String subName = method.get("subject").getString();
 			subjectName = new StringEntry(subName);
-			if("generate".equals(subName)){
+			if("generate ".equals(subName)){
 				isGenerate = true;
 			}
 			else if("new ".equals(subName)){
 				subjectName = METHOD_NEW;
 			}
 		}
-		String methodName = method.get("methodName").getString();
+		String methodName = null;
 		if(subjectName.equals(METHOD_NEW)){
-			methodName = camelize(methodName);
+			methodName = "$constructorCall";
 		}
-		else if(!isGenerate&&methodName.equals("single")){
-			methodName = "getSingle";
+		else {
+			methodName = method.get("methodName").getString();
+			if(!isGenerate&&methodName.equals("single")){
+				methodName = "getSingle";
+
+			}
 		}
 		final String trueMethod;
 		final boolean undefined;
@@ -1077,17 +1166,13 @@ all_type_tokens has tabs
 		}
 
 		for(IToken.Key key:method.keySet()){
-			if("angle_braces".equals(key.getName())){
-				generateAngleBraces(method.get(key),parameters,contextName,contextSubName);
-				if(!isGenerate){
-					ret.setElementName(Generators.generator,"newMethodWithBracesCall");
-					StringBuilder typeBuilder = new StringBuilder();
-					typeBuilder.append(ret.getType());
-					typeBuilder.append("<");
-					parameters.get(typeBuilder);
-					typeBuilder.append(">");					
-					ret.changeType(typeBuilder.toString());
-				}
+			if("inline_parameters".equals(key.getName())){
+				generateInlineParameters(method.get(key),parameters,contextName,contextSubName);
+			}
+			else if("angle_class".equals(key.getName())){
+				MethodEntry entry = (MethodEntry)generateAngleClasses(method.get(key),contextName,contextSubName);
+				ret = new MethodEntry(subjectName,entry.getType(),parameters);
+				ret.changeType(entry.getType());
 			}
 			else if("boolean_statement".equals(key.getName())){
 				parameters.add(generateBooleanStatement(method.get(key),contextName,contextSubName));
@@ -1103,62 +1188,52 @@ all_type_tokens has tabs
 		if(isStatic&&!parameters.isEmpty()){
 			ret.setElementName(Generators.generator,"staticMethodCall");
 		}
+		else if(method.get("generator_names")!=null){
+			MethodEntry realRet = new MethodEntry("generatorMethodCall",new ListEntry(new StringEntry(method.get("generator_names").getString()),ret));
+			ret.addTypeListener(realRet);
+			realRet.changeType(ret.getType());
+			ret = realRet;
+		}
 		return ret;
 	}
 	/*
 	 * (entry_definition{-1}|arithmatic|class_name ANGLE_BRACES?|entry_name)
 	 */
-	public Entry generateAngleBraces(IToken angle_braces, ListEntry parameters, String contextName, String contextSubName){
-		for(IToken parameter:angle_braces.getAll("parameter")){
-			MethodEntry param = null;
-			for(IToken.Key key:parameter.keySet()){
-				if("TRUE".equals(key.getName())){
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry("true")));
-					param.changeType("Boolean");
-				}
-				else if("FALSE".equals(key.getName())){
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry("false")));
-					param.changeType("Boolean");
-				}
-				else if("NULL".equals(key.getName())){
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry("null")));
-					param.setIsNull(true);
-				}
-				else if("arithmatic".equals(key.getName())){
-					param = (MethodEntry) generateArithmatic(parameter.get(key), false, contextName, contextSubName);
-				}
-				else if("entry_definition".equals(key.getName())){
-					param = (MethodEntry) generateEntryDefinition(parameter.get(key),contextName,contextSubName);
-				}
-				else if("class_names".equals(key.getName())){
-					String type = parameter.get(key).getString();
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry(type)));
-					param.changeType(type);
-				}
-				else if("property_names".equals(key.getName())){
-					String type = "I"+camelize(parameter.get(key).getString());
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry(type)));
-					param.changeType(type);
-				}
-				else if("entry_names".equals(key.getName())){
-					param = new MethodEntry(null,parameter.get(key).getString(),null);
-					param.changeType("Entry");
-				}
-				else if("entry_class_names".equals(key.getName())){
-					String type = camelize(parameter.get(key).getString())+"Entry";
-					param = new MethodEntry("exactCall",new ListEntry(new StringEntry(type)));
-					param.changeType(type);
-				}
-				else if("braces".equals(key.getName())){
-					ListEntry braces = new ListEntry();
-					generateAngleBraces(parameter.get(key),braces,contextName,contextSubName);
-					param.getEntries().add(braces);
-					param.setElementName(Generators.generator,"exactWithAngleCall");
-				}
-			}
-			parameters.add(param);
+	public Entry generateInlineParameters(IToken inline_parameters, ListEntry parameters, String contextName, String contextSubName){
+		for(IToken parameter:inline_parameters.getAll("method_parameter")){
+			parameters.add(generateMethodParameter(parameter,false,contextName,contextSubName));
 		}
 		return null;
+	}
+
+	public Entry generateAngleClasses(IToken angleClass, String contextName, String contextSubName){
+		StringBuilder typeName = new StringBuilder();
+		String comma = "";
+		for(IToken.Key key:angleClass.keySet()){
+			if("class_names".equals(key.getName())){
+				typeName.append(comma);
+				typeName.append(angleClass.get(key).getString());
+			}
+			else if("property_names".equals(key.getName())){
+				typeName.append(comma);
+				typeName.append("I"+camelize(angleClass.get(key).getString()));
+			}			
+			else if("entry_class_names".equals(key.getName())){
+				typeName.append(comma);
+				typeName.append(camelize(angleClass.get(key).getString())+"Entry");
+			}
+			else if("braces".equals(key.getName())){
+				MethodEntry entry = (MethodEntry)generateAngleClasses(angleClass.get(key),contextName,contextSubName);
+				typeName.append("<");
+				typeName.append(entry.getType());
+				typeName.append(">");
+			}
+			comma = ",";
+		}
+
+		MethodEntry ret = new MethodEntry(null,typeName.toString(),null);
+		ret.changeType(typeName.toString());
+		return ret;
 	}
 
 	/**
@@ -1200,10 +1275,34 @@ all_type_tokens has tabs
 			else if("entry_definition".equals(key.getName())){
 				return generateEntryDefinition(parameter.get(key),contextName,contextSubName);
 			}
+			else if("generate_call".equals(key.getName())){
+				return generateMethodCall(parameter.get(key),contextName,contextSubName);
+			}
 			else if("entry_names".equals(key.getName())){
-				MethodEntry entry = new MethodEntry(null,parameter.getString(),null);
-				entry.changeType("");
-				return entry;
+				String variableName = parameter.get(key).getString();
+				MethodEntry entry = new MethodEntry(null,variableName,null);
+				VariableEntry var = contexts.get(contextName).get(contextSubName).get(variableName);
+				if(var==null){
+					var = new VariableEntry(variableName,TYPE_UNKNOWN,null);
+					var.setDefined(false);
+					contexts.get(contextName).get(contextSubName).put(variableName, var);
+					checks.add(new DefinedCheck(var,"(040) Variable name"));
+				}
+				entry = new MethodEntry(null,var.getName(),null);
+
+				if(var.hasType()){
+					entry.changeType(var.getType());
+				}
+				else {
+					entry.addTypeListener(var);
+				}
+				IToken getString = parameter.get("getString");
+				if(getString!=null){
+					return new MethodEntry(entry,"getString",new ListEntry());
+				}
+				else {
+					return entry;
+				}
 			}
 			else if("class_names".equals(key.getName())){
 				MethodEntry entry = null;
@@ -1230,7 +1329,7 @@ all_type_tokens has tabs
 				return entry;
 			}
 			else if("entry_class_names".equals(key.getName())){
-				String name = camelize(parameter.getString());
+				String name = camelize(parameter.getString())+"Entry";
 				MethodEntry entry = new MethodEntry(null,name,null);
 				entry.changeType(name);
 				return entry;
@@ -1255,15 +1354,40 @@ all_type_tokens has tabs
 		 */
 		boolean isGetString = votName.get("getString") != null;
 		MethodEntry ret = null;
+		boolean isToken = false;
 		for(IToken.Key key:votName.keySet()){
 			if("token_names".equals(key.getName())){
 
 				ret = new MethodEntry(null,votName.get(key).getString(),null);
 				ret.changeType("IToken");
+				isToken = true;
+			}
+			else if("variable_names".equals(key.getName())){
+				String varName = votName.get(key).getString();
+				VariableEntry variable = (VariableEntry)getVariable(varName,contextName,contextSubName,TYPE_UNKNOWN,"Variable or Token(123)");
+				ret = new MethodEntry(null,varName,null);
+				ret.changeType(variable.getType());
+				if(variable.getType().equals("IToken")){
+					isToken = true;
+				}
 			}
 			else if("option".equals(key.getName())){
-				ret = new MethodEntry(ret,"get",new ListEntry(new QuoteEntry(votName.get(key).getString())));
-				ret.changeType("IToken");
+				for(IToken.Key subKey:votName.get(key).keySet()){
+					if("NAME".equals(subKey.getName())){
+						ret = new MethodEntry(ret,"get",new ListEntry(new QuoteEntry(votName.get(key).getString())));
+					}
+					else if("variable_names".equals(subKey.getName())){
+						if(isToken){
+							ret = new MethodEntry(ret,"get",new ListEntry(new QuoteEntry(votName.get(key).getString())));
+						}
+						else {
+							ret = new MethodEntry(ret,"get",new ListEntry(new StringEntry(votName.get(key).getString())));
+						}
+					}
+				}
+				if(isToken){
+					ret.changeType("IToken");
+				}
 			}
 			else if("arithmatic".equals(key.getName())){
 				ret = (MethodEntry)generateArithmatic(votName.get(key),false, contextName, contextSubName);
@@ -1316,7 +1440,7 @@ all_type_tokens has tabs
 					var = new VariableEntry(variableName,TYPE_UNKNOWN,null);
 					var.setDefined(false);
 					contexts.get(contextName).get(contextSubName).put(variableName, var);
-					checks.add(new DefinedCheck(var,"(004) Variable name"));
+					checks.add(new DefinedCheck(var,"(004) Variable name["+contextName+":"+contextSubName+"]"));
 				}
 				ret = new MethodEntry(null,var.getName(),null);
 
@@ -1391,11 +1515,17 @@ all_type_tokens has tabs
 			}
 			else {
 				IToken statement = boolean_clause.get("operatedStatement");
+				boolean hasRight = true;
+				if(statement==null){
+					statement = boolean_clause.get("methodWithNoArgument");
+					hasRight = false;
+				}
 				int operatorState = -1;
 				String previousDefaultType = null;
 				MethodEntry left = (MethodEntry) generateMethodParameter(statement.get("left").get("method_parameter"),false,contextName,contextSubName);
 				IToken operator = statement.get("operator");
 				//left.setDefaultType("Boolean");
+				String doesMethodName = null;
 				if(operator.get("IS")!=null){
 					if(operator.get("NOT")!=null){						
 						operatorState = 1;
@@ -1405,94 +1535,98 @@ all_type_tokens has tabs
 					}
 				}
 				else {
-					operatorState = 2;
-				}
-				IToken rightToken = statement.get("right");
-				MethodEntry right = null;
-				boolean isPrimitive = false;
-				for(IToken.Key rightKey:rightToken.keySet()){
-					if("method_parameter".equals(rightKey.getName())){
-						right = (MethodEntry) generateMethodParameter(rightToken.get(rightKey),false,contextName,contextSubName);
-						isPrimitive = left.getType().equals("Integer")||left.getType().equals("Boolean")||
-								right.getType().equals("Integer")||right.getType().equals("Boolean")||
-								left.isNull()||right.isNull();
-						if(operatorState==2){
-							left.changeType("Integer");
-							right.changeType("Integer");
-							return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry(operator.getString()),right));
-						}
-						if(!left.hasType()&&right.hasType()){
-							left.changeType(right.getType());
-						}
-						else if(left.hasType()&&!right.hasType()){
-							right.changeType(left.getType());
-						}
-						if(isPrimitive){							
-							if(operatorState==0){
-								return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry("=="),right));
-							}
-							else if(operatorState==1){
-								return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry("!="),right));
-							}
+					if(operator.get("DOES")!=null){
+						if(operator.get("NOT")!=null){
+							operatorState = 4;
 						}
 						else {
-							if(operatorState==0){
-								return new MethodEntry("equalsCall",new ListEntry(left,right));
-							}
-							else if(operatorState==1){
-								return new MethodEntry("notEqualsCall",new ListEntry(left,right));
-							}
+							operatorState = 3;
 						}
+						doesMethodName = operator.get("methodName").getString();
 					}
-					else if("SINGULAR".equals(rightKey.getName())){
-						if(operatorState == 0){
-							return new MethodEntry(left,"isSingular",new ListEntry());
-						}
-						else if(operatorState==1){
-							return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
-									new MethodEntry(left,"isSingular",new ListEntry())));
-						}
+					else {
+						operatorState = 2;
 					}
-					else if("EMPTY".equals(rightKey.getName())){
-						if(operatorState==0){
-							return new MethodEntry(left,"isEmpty",new ListEntry());
-						}
-						else if(operatorState==1){
-							return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
-									new MethodEntry(left,"isEmpty",new ListEntry())));
-						}
-					} 
 				}
-
-				/*
-				for(IToken.Key key:statement.keySet()){
-					if("method_parameter".equals(key.getName())){
-						MethodEntry operand = (MethodEntry) generateMethodParameter(statement.get(key),false,contextName,contextSubName);
-						ret.getEntries().add(operand);
-						if(operand.isNull()&&previousDefaultType!=null){
-							((MethodEntry)ret.getEntries().get(0)).setDefaultType(previousDefaultType);
-						}
-						else if(!operand.hasType()){
-							previousDefaultType = operand.defaultType;
+				if(hasRight){
+					IToken rightToken = statement.get("right");
+					MethodEntry right = null;
+					boolean isPrimitive = false;
+					for(IToken.Key rightKey:rightToken.keySet()){
+						if("method_parameter".equals(rightKey.getName())){
+							right = (MethodEntry) generateMethodParameter(rightToken.get(rightKey),false,contextName,contextSubName);
+							isPrimitive = left.getType().equals("Integer")||left.getType().equals("Boolean")||
+									right.getType().equals("Integer")||right.getType().equals("Boolean")||
+									left.isNull()||right.isNull();
 							if(operatorState==2){
-								operand.changeType("Integer");
+								left.changeType("Integer");
+								right.changeType("Integer");
+								return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry(operator.getString()),right));
+							}
+							if(operatorState<=2){
+								if(!left.hasType()&&right.hasType()){
+									left.changeType(right.getType());
+								}
+								else if(left.hasType()&&!right.hasType()){
+									right.changeType(left.getType());
+								}
+							}
+							if(isPrimitive){							
+								if(operatorState==0){
+									return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry("=="),right));
+								}
+								else if(operatorState==1){
+									return new MethodEntry("operatorCall",new ListEntry(left,new StringEntry("!="),right));
+								}
 							}
 							else {
-								if(ret.getEntries().size()>0){
-									if(((MethodEntry)ret.getEntries().get(0)).hasType()){
-										operand.setDefaultType(((MethodEntry)ret.getEntries().get(0)).getType());
-									}
-									else {
-										operand.setDefaultType(((MethodEntry)ret.getEntries().get(0)).defaultType);
-									}
+								if(operatorState==0){
+									return new MethodEntry("equalsCall",new ListEntry(left,right));
 								}
-								else {
-									operand.setDefaultType("Boolean");									
+								else if(operatorState==1){
+									return new MethodEntry("notEqualsCall",new ListEntry(left,right));
+								}
+								else if(operatorState==3){
+									return new MethodEntry(left,doesMethodName,new ListEntry(right));
+								}
+								else if(operatorState==4){
+
+									return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
+											new MethodEntry(left,doesMethodName,new ListEntry(right))));
 								}
 							}
 						}
+						else if("SINGULAR".equals(rightKey.getName())){
+							if(operatorState == 0){
+								return new MethodEntry(left,"isSingular",new ListEntry());
+							}
+							else if(operatorState==1){
+								return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
+										new MethodEntry(left,"isSingular",new ListEntry())));
+							}
+						}
+						else if("EMPTY".equals(rightKey.getName())){
+							if(operatorState==0){
+								return new MethodEntry(left,"isEmpty",new ListEntry());
+							}
+							else if(operatorState==1){
+								return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
+										new MethodEntry(left,"isEmpty",new ListEntry())));
+							}
+						}
 					}
-				}*/
+
+				}
+				else {
+					if(operatorState==3){
+						return new MethodEntry(left,doesMethodName,new ListEntry());
+					}
+					else if(operatorState==4){
+
+						return new MethodEntry("exactDuoCall",new ListEntry(new StringEntry("!"),
+								new MethodEntry(left,doesMethodName,new ListEntry())));
+					}
+				}
 			}
 		}
 		throw new RuntimeException("(009)"+tokenErrorMessage(boolean_clause));
@@ -1503,6 +1637,9 @@ all_type_tokens has tabs
 	 */
 
 	public Entry generateEntryDefinition(IToken definition,String contextName, String contextSubName){
+		if(definition.get("generate_call")!=null){
+			return generateMethodCall(definition.get("generate_call"),contextName,contextSubName);
+		}
 		IToken getSingle = definition.get("getSingle");
 		if(getSingle!=null){
 			String entryName = getSingle.getString();
@@ -1534,6 +1671,23 @@ all_type_tokens has tabs
 			ret.changeType("QuoteEntry");
 			return ret;
 		}
+		IToken stringEntry = definition.get("string");
+		if(stringEntry!=null){
+			MethodEntry ret = null;
+			for(IToken.Key key:stringEntry.keySet()){
+				if("entry".equals(key.getName())){
+					ret = new MethodEntry(METHOD_NEW,"StringEntry",
+							new ListEntry(new QuoteEntry(stringEntry.get(key).getString())));
+				}
+				else if("variable_or_token_name".equals(key.getName())){
+					ret = new MethodEntry(METHOD_NEW,"StringEntry",
+							new ListEntry(generateVariableOrTokenName(stringEntry.get(key), contextName, contextSubName)));
+				}
+
+			}
+			ret.changeType("StringEntry");
+			return ret;
+		}
 
 		IToken elementNameToken = definition.get("element_names");
 		boolean isVariableName = false;
@@ -1550,26 +1704,43 @@ all_type_tokens has tabs
 		}
 		if(elementNameToken==null){
 			if(listEntryToken==null){
+				IToken entryClassName = definition.get("entry_class_names");
+				if(entryClassName!=null){
 
-				IToken tabBrace = definition.get("tab_braces");
-				IToken arithmatic = tabBrace.get("arithmatic");
-				IToken entryDefinition = tabBrace.get("entry_definition");
-				if(entryDefinition!=null){					
-					ret = new MethodEntry(METHOD_NEW,"TabEntry",new ListEntry(
-							generateArithmatic(arithmatic,false,contextName,contextSubName),
-							new MethodEntry(METHOD_NEW,"ListEntry",new ListEntry(generateEntryDefinition(entryDefinition,contextName,contextSubName)))
-							));
+					ListEntry parameters = new ListEntry();
+					List<IToken> methodParameters = definition.getAll("method_parameter");
+					if(methodParameters!=null){
+						for(IToken methodParameter:methodParameters){
+							parameters.add(generateMethodParameter(methodParameter,false,contextName,contextSubName));
+						}
+					}
+					String className = camelize(entryClassName.getString())+"Entry";
+					ret = new MethodEntry(METHOD_NEW,className,parameters);
+					ret.changeType(className);
+					return ret;
 				}
 				else {
-					ret = new MethodEntry(METHOD_NEW,"TabEntry",new ListEntry(
-							generateArithmatic(arithmatic,false,contextName,contextSubName),
-							new MethodEntry(
-									METHOD_NEW,
-									"ListEntry",
-									new ListEntry(
-											new StringEntry(
-													tabBrace.get("entry_names").getString())))
-							));
+
+					IToken tabBrace = definition.get("tab_braces");
+					IToken arithmatic = tabBrace.get("arithmatic");
+					IToken entryDefinition = tabBrace.get("entry_definition");
+					if(entryDefinition!=null){					
+						ret = new MethodEntry(METHOD_NEW,"TabEntry",new ListEntry(
+								generateArithmatic(arithmatic,false,contextName,contextSubName),
+								new MethodEntry(METHOD_NEW,"ListEntry",new ListEntry(generateEntryDefinition(entryDefinition,contextName,contextSubName)))
+								));
+					}
+					else {
+						ret = new MethodEntry(METHOD_NEW,"TabEntry",new ListEntry(
+								generateArithmatic(arithmatic,false,contextName,contextSubName),
+								new MethodEntry(
+										METHOD_NEW,
+										"ListEntry",
+										new ListEntry(
+												new StringEntry(
+														tabBrace.get("entry_names").getString())))
+								));
+					}
 				}
 			}
 			else {
@@ -1683,8 +1854,10 @@ all_type_tokens has tabs
 			}
 			else if("exact_variable".equals(key.getName())){
 				String variableName = led.get(key).get("variable_names").getString();
-				VariableEntry var = (VariableEntry) getVariable(variableName,contextName,contextSubName,"ListEntry","ListEntryDefinition (020)");				
-				var.changeType("ListEntry");
+				VariableEntry var = (VariableEntry) getVariable(variableName,contextName,contextSubName,"ListEntry","ListEntryDefinition (020)");
+				if(!var.hasType()){
+					var.changeType("Entry");
+				}
 				MethodEntry ret = new MethodEntry(null,variableName,null);
 				ret.changeType("ListEntry");
 				return ret;
@@ -1722,21 +1895,9 @@ all_type_tokens has tabs
 
 	public String getCastType(IToken castToken, String contextName, String contextSubName){
 		IToken castToType = castToken.get("castToType");
-		if(castToType!=null){
-			StringBuilder typeBuilder = new StringBuilder();
-			for(IToken.Key subKey:castToType.keySet()){
-				if("NAME".equals(subKey.getName())){
-					typeBuilder.append(castToType.get(subKey).getString());
-				}
-				else if("angle_braces".equals(subKey.getName())){
-					typeBuilder.append('<');
-					ListEntry params = new ListEntry();
-					generateAngleBraces(castToType.get(subKey),params,contextName,contextSubName);
-					params.get(typeBuilder);
-					typeBuilder.append('>');
-				}					
-			}
-			return typeBuilder.toString();
+		if(castToType!=null){			
+			MethodEntry entry = (MethodEntry) generateAngleClasses(castToType,contextName,contextSubName);
+			return entry.getType();
 		}
 		return null;
 	}
@@ -1779,6 +1940,10 @@ all_type_tokens has tabs
 		public void setDefaultType(String string);
 	}
 	public class VariableEntry extends ElementEntry implements ITypeListener{
+		public static final int PUBLIC_ACCESS = 1;
+		public static final int PRIVATE_ACCESS = 2;
+		public static final int PROTECTED_ACCESS = 3;
+		public static final int DEFAULT_ACCESS = 0;
 		private StringEntry typeEntry;
 		private String defaultType = "String";
 		private List<ITypeListener> typeListeners;
@@ -1786,6 +1951,8 @@ all_type_tokens has tabs
 		private boolean defined = true;
 		private boolean isFinal = false;
 		private boolean isStatic = false;
+		private boolean isCast = false;
+		private int access = DEFAULT_ACCESS;
 
 		public VariableEntry(String name, String type, Entry assignment) {
 			super(Generators.generator,
@@ -1801,6 +1968,15 @@ all_type_tokens has tabs
 			if(assignment!=null){
 				this.parameters.add(assignment);
 			}
+		}
+
+		public void setAccess(int newAccess) {
+			this.access = newAccess;
+		}
+
+
+		public void setCast(boolean cast) {
+			this.isCast = cast;
 		}
 
 		public VariableEntry(String name, String type) {
@@ -1858,6 +2034,7 @@ all_type_tokens has tabs
 
 		@Override
 		public void get(StringBuilder builder){
+			
 			if(typeEntry.getString().equals(TYPE_UNKNOWN)){
 				typeEntry.set(defaultType);
 				if(this.typeListeners!=null){
@@ -1866,7 +2043,15 @@ all_type_tokens has tabs
 					}
 				}
 			}
-
+			if(access == PUBLIC_ACCESS){
+				new StringEntry("public ").get(builder);
+			}
+			else if(access == PRIVATE_ACCESS){
+				new StringEntry("private ").get(builder);
+			}
+			else if(access == PROTECTED_ACCESS){
+				new StringEntry("protected ").get(builder);
+			}
 			if(isFinal){
 				new StringEntry("final ").get(builder);
 			}
@@ -1877,7 +2062,7 @@ all_type_tokens has tabs
 		}
 
 		public void changeType(String newType){
-			if(!this.hasType()){
+			if(!isCast&&(!this.hasType()||(getType().contains("Entry")&&newType.contains("Entry")))){
 				this.typeEntry.set(newType);
 				if(this.typeListeners!=null){
 					for(ITypeListener listener:this.typeListeners){
@@ -1929,7 +2114,7 @@ all_type_tokens has tabs
 				}
 			}
 		}
-		
+
 		public void setSubject(ITypeListener subject) {
 			this.subject = subject;
 		}
@@ -2007,7 +2192,7 @@ all_type_tokens has tabs
 		}
 
 		public void changeType(String newType){
-			if(!hasType()||newType.startsWith(typeEntry.getString())){
+			if(!hasType()||newType.startsWith(typeEntry.getString())||(newType.contains("Entry")&&this.typeEntry.getString().contains("Entry"))){
 				this.typeEntry.set(newType);
 				for(ITypeListener listener:typeListeners){
 					listener.changeType(newType);
@@ -2063,14 +2248,6 @@ all_type_tokens has tabs
 			if(!variable.isDefined()){
 				System.err.println(errorMessage+":"+variable.getName()+" was not defined previously.");
 			}
-		}
-	}
-
-	private class UnableToGenerateException extends RuntimeException {
-		private static final long serialVersionUID = -7770164685406782500L;
-
-		public UnableToGenerateException(String name, IToken offender){
-			super(name+" failed to generate:"+tokenErrorMessage(offender)+"!");
 		}
 	}
 

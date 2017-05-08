@@ -1,0 +1,334 @@
+check
+	var directory = null
+	var checkNames as Set<String>
+		new HashSet<String>
+	var checkTokens as Map<String,IToken>
+		new HashMap<String,IToken>
+	var vars as Map<String,List<cheque>>
+		new HashMap<String,List<cheque>>
+	elements
+		outline
+			"package gen.checks;\n\n"+
+			"import java.io.*;\n"+
+			"import java.util.*;\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import gen.*;\n"+
+			"import gen.entries.*;\n"+
+			"import gen.properties.*;\n"+
+			"import lists.*;\n\n"+
+			"public class " Class Name " implements ICheck {\n\tprivate String errorMessage;\n" Members "\n"+
+			"\tpublic " Class Name "(" Parameters ",String errorMessage){\n\t\tthis.errorMessage = errorMessage;\n"+
+			"" Assignment "\n\t}\n\n\tpublic void check(){\n\t\tif(" If Statement "){\n\t\t\tSystem.err.println(errorMessage);\n\t\t}\n\t}\n\n}"
+		operator
+			"" Left " " Operator " " Right ""
+		method
+			"" Left "." Method Name "(" Right ")"
+		NEGoperator
+			"!(" Left " " Operator " " Right ")"
+		NEGmethod
+			"!" Left "." MethodName "(" Right ")"
+		constructorAssignment
+			"this." Name " = " Name ";"
+		member
+			"private " Variable ";"
+	
+	aux setup takes data as ParseContext
+		set directory
+			new File
+				generator getDirectory
+				"checks"
+		directory mkdirs
+	
+	aux generate takes data as ParseContext
+		check addPage
+		each checkName in checkNames
+			check generateCheckClass
+				checkTokens->checkName
+				vars->checkName
+	
+	generate checkClass takes entries as List<cheque>
+		var checkNameVar
+			check buildString
+				check camelize
+					'checkClass->checkName
+				"Check"
+		entry checkName = \"checkNameVar"
+		entry parameters = {}
+		entry members "" = {}
+		entry assignment "" = {}
+		entry ifStatement "" = {}
+		each param in entries
+			members+=
+				param asMembers
+			parameters+=
+				param asParameters
+			assignment+=
+				param asAssignment
+			ifStatement+=
+				param asIfPart
+		check addFile
+			directory
+			check buildString
+				'checkName
+				".java"
+			{checkName members checkName parameters assignment}
+		check addEntry
+			directory			
+			check buildString
+				'checkName
+				".java"
+			"ret"
+			{ifStatement}
+		return
+			null
+	
+	generate checkCheck takes tabs as Integer, contextName, contextSubName
+		var checkName
+			check buildString
+				check camelize
+					'checkCheck->checkName
+				"Check"
+		entry checkEntry = null
+		var addToVars = false
+		var methodParams = {}
+		if checkNames does not contains checkName
+			checkNames+=checkName
+			checkTokens put
+				checkName
+				checkCheck
+			vars put
+				checkName
+				new ArrayList<cheque>
+			set addToVars = true
+		var index = 1
+		checkCheck to element
+			parameter
+				var leftVar as variable
+					generator getVariable
+						'element->left
+						contextName
+						contextSubName
+						static method TYPE_UNKNOWN
+						"Check (100)"
+				var rightVar as variable
+					generator getVariable
+						'element->right
+						contextName
+						contextSubName
+						static method TYPE_UNKNOWN
+						"Check (101)"
+				token checkMethod
+					element->method
+				if checkMethod is null
+					set checkEntry as cheque
+						check generateOperator
+							element->operator
+							index
+							leftVar
+							rightVar
+				else
+					set checkEntry = cheque:index leftVar \'checkMethod rightVar;
+				var con_op = element->con_op
+				if con_op is not null
+					checkEntry setContination
+						'con_op
+				if addToVars is true
+					vars->checkName += checkEntry
+				methodParams +=
+					checkEntry asMethodArguments
+				set index = index+1
+		entry new_method = \""
+		set new_method
+			static method NEW_METHOD
+		return
+				(tabs generator semicoloned { method: \"checks" "add" {
+					method: new_method checkName { methodParams  ``'checkCheck->errorMessage``};};})
+	
+	generate operator takes index as Integer, left as variable, right as variable
+		var leftType
+			left getType
+		var rightType
+			right getType
+		var leftName
+			left getName
+		var rightName
+			right getName
+		var isPrimitive = leftType is "Integer" or leftType is "Boolean" or rightType is "Integer" or rightType is "Boolean" or leftName is "null" or rightName is "null"
+		var operatorState = -1
+		if operator->IS is not null
+			if operator->NOT is not null						
+				set operatorState = 1
+			else
+				set operatorState = 0
+		else
+			set operatorState = 2
+		if operatorState is 2
+			left changeType
+				"Integer"
+			right changeType
+				"Integer"
+			return
+				cheque:index left 'operator right;
+		var leftHasType
+			left does hasType
+		var rightHasType
+			right does hasType
+		if leftHasType is false and rightHasType is true
+			left changeType
+				right getType
+		if leftHasType is true and rightHasType is false
+			right changeType
+				left getType
+		if isPrimitive is true
+			if operatorState is 0
+				return
+					cheque:index left "==" right;
+			else
+				if operatorState is 1
+					return
+						cheque:index left "!=" right;
+		else
+			if operatorState is 0
+				return
+					cheque:index left \"equals" right;
+			else
+				if operatorState is 1
+					entry ret = cheque:index left \"equals" right;
+					ret negify
+					return
+						ret
+		return
+			null
+entry cheque
+	var left as variable = null
+	var right as variable = null
+	entry continuationOperator = null
+	var leftName = null
+	var rightName = null
+	var eid = null
+	var rightId = null
+	var leftId = null
+	var negative = false
+	entry methodOrOperator = null
+	
+	constructor takes
+			initialIndex as Integer
+			initialLeft as variable
+			initialOperator
+			initialRight as variable
+		set left = initialLeft
+		set right = initialRight
+		set leftName
+			left getName
+		set rightName
+			right getName
+		set leftId
+			check buildString
+				leftName
+				'initialIndex
+		set rightId
+			check buildString
+				rightName
+				'initialIndex
+		set eid = "operator"
+		set methodOrOperator = \initialOperator
+	
+	constructor takes
+			initialIndex as Integer
+			initialLeft as variable
+			initialMethod as Entry
+			initialRight as variable
+		set left = initialLeft
+		set right = initialRight
+		set leftName
+			left getName
+		set rightName 
+			right getName
+		set leftId
+			check buildString
+				leftName
+				'initialIndex
+		set rightId
+			check buildString
+				rightName
+				'initialIndex
+		set eid = "method"
+		set methodOrOperator = initialMethod
+	
+	negify
+		set negative = true
+	
+	setContination takes op
+		if op is "and " 
+			set continuationOperator = \"&&"
+		else
+			set continuationOperator = \"||"
+	
+	asIfPart
+		var ret as Entry = null
+		if continuationOperator is not null
+			var self as cheque
+				this getSelf
+			entry part "" = {continuationOperator self}
+			set ret = part
+		else
+			set ret
+				this getSelf
+		return
+			ret
+	asParameters
+		var leftType = null
+		var rightType = null
+		if left does hasType
+			set leftType
+				left getType
+		else
+			set leftType
+				left getDefaultType
+		if right does hasType
+			set rightType
+				right getType
+		else
+			set rightType
+				right getDefaultType
+		return
+			{variable:leftId leftType; variable:rightId rightType;}
+	
+	asMethodArguments
+		return
+			{\leftName \rightName}
+	asAssignment
+		entry part "" = {}
+		part+=(2 check constructorAssignment {\leftId \leftId})
+		part+=(2 check constructorAssignment {\rightId \rightId})
+		return
+			part
+	asMembers
+		var leftType = null
+		var rightType = null
+		if left does hasType
+			set leftType
+				left getType 
+		else
+			set leftType
+				left getDefaultType
+		if right does hasType
+			set rightType
+				right getType
+		else
+			set rightType
+				right getDefaultType	
+		
+		entry part "" = {}
+		part+=(1 check member {variable:leftId leftType;})
+		part+=(1 check member {variable:rightId rightType;})
+		return
+			part
+	
+	output
+			check operator {\leftId methodOrOperator \rightId} if negative is false and eid is "operator"
+			check NEGoperator {\leftId methodOrOperator \rightId} if negative is true and eid is "operator"			
+			check method {\leftId methodOrOperator \rightId} if negative is false and eid is "method"
+			check NEGmethod {\leftId methodOrOperator \rightId} if negative is true and eid is "method"

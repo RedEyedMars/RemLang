@@ -19,13 +19,22 @@ public class ImportParser extends ConcreteParser{
 	private Pattern open;
 	private Pattern close;
 	private String tokenName;
+	private IParser startParser;
 
 	public ImportParser(IParser initialParser, String name, String listName, String parameters){
 		subParser = initialParser;
 		this.name = name;
 		this.listName = listName;
+		this.startParser = null;
 		this.setup(parameters);
-	}	
+	}
+	public ImportParser(IParser initialParser, IParser initialStartParser, String name, String listName, String parameters){
+		subParser = initialParser;
+		this.name = name;
+		this.listName = listName;
+		this.startParser = initialStartParser;
+		this.setup(parameters);
+	}
 
 	private void setup(String parameters) {
 		int left = parameters.indexOf("<<");
@@ -41,7 +50,7 @@ public class ImportParser extends ConcreteParser{
 	}
 
 	@Override
-	public void real_parse(ParseContext data) {
+	public void real_parse(final ParseContext data) {
 		String toExamine = data.get();
 		Matcher openMatcher = open.matcher(toExamine);
 		if(openMatcher.matches()){
@@ -58,7 +67,9 @@ public class ImportParser extends ConcreteParser{
 					if(closeMatcher.matches()){
 						final IToken currentToken = data.getToken();
 						final int parentPosition = data.getFrontPosition();
+						data.setFrontPosition(position+1);
 						final ParseContext newContext = data.getContextFromPosition();
+						data.setFrontPosition(parentPosition);
 						if(!newContext.getFileName().equals(fileName)){
 							newContext.setFileName(fileName);
 							newContext.setFile(ParseUtil.getString(file));
@@ -76,11 +87,22 @@ public class ImportParser extends ConcreteParser{
 							public void act(){
 								newContext.setBackPosition(-1);
 								newContext.setFrontPosition(0);
-								newContext.getRootParser().parse(newContext);
+								if(startParser==null){
+									newContext.getRootParser().parse(newContext);
+								}
+								else {
+									startParser.parse(newContext);
+								}
 								newContext.collectTokens();
+								
 								if(!newContext.isDone()){
-									newContext.setFrontPosition(0);							
-									System.err.println(newContext+":"+fileName+" error at("+newContext.getLineNumber(newContext.getFurthestPosition())+"):"+newContext.get().substring(0,newContext.getFurthestPosition())+"$>"+newContext.get().substring(newContext.getFurthestPosition()));
+									System.err.println(newContext+":"+fileName+" error at("+newContext.getFurthestPosition()+","+newContext.getLineNumber(newContext.getFurthestPosition())+
+										"):"+
+										newContext.get().substring(0,newContext.getFurthestPosition()-newContext.getFrontPosition())+
+										"$>"+
+										newContext.get().substring(newContext.getFurthestPosition()-newContext.getFrontPosition()));
+
+									newContext.setFrontPosition(0);	
 								}
 							}
 						});

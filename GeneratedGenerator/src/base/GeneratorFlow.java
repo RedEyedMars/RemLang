@@ -1,29 +1,18 @@
 package base;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.rem.parser.ParseContext;
-import com.rem.parser.ParseUtil;
-import com.rem.parser.generation.ElementEntry;
-import com.rem.parser.generation.Entry;
 import com.rem.parser.generation.FlowController;
 import com.rem.parser.generation.Generator;
-import com.rem.parser.generation.ListEntry;
-import com.rem.parser.generation.StringEntry;
-import com.rem.parser.generation.TabEntry;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.NameParser;
 import com.rem.parser.parser.RegexParser;
 import com.rem.parser.token.IToken;
 
-import base.GeneratorGenerator.MethodEntry;
-import base.GeneratorGenerator.TypeEntry;
-import base.GeneratorGenerator.VariableEntry;
-import generator.rules.Base;
 import lists.ClassNames;
 import lists.Listnames;
 import lists.Rules;
@@ -132,7 +121,6 @@ public class GeneratorFlow extends FlowController {
 						ParseContext specificContext = entryClass.getContext(context).getContextFromPosition(entryClass.getPosition(),false);
 
 						for(IToken.Key ikey:implement.keySet()){
-							System.out.println(entryClassName+":"+ikey.getName());
 							if("property_names".equals(ikey.getName())){
 								IToken propertyName = implement.get(ikey);
 								String propName = propertyName.getString();
@@ -143,7 +131,6 @@ public class GeneratorFlow extends FlowController {
 								NameParser entNames = specificContext.getList("entry_names").getNamesParser();
 								if(variableNames.containsKey(propName)){
 								for(String varName:variableNames.get(propName)){
-									System.out.println(varName+" added to "+entryClassName);
 									varNames.addName(varName);
 								}
 								for(String entName:entryNames.get(propName)){

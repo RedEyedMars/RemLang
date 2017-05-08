@@ -27,7 +27,7 @@ public class NewFileBranchToken extends BranchToken {
 					toList = data.getList(listName);
 				}
 				for(IToken.Key key:fromList.getNewTokens().keySet()){
-					toList.getNewTokens().put(key, fromList.getNewTokens().get(key));
+					toList.put(key, fromList.getNewTokens().get(key));
 				}
 			}
 		}

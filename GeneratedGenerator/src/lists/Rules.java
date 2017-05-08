@@ -16,7 +16,7 @@ public class Rules extends ParseList {
 		return "rule";
 	}
 
-	public static final IRule angle_brace_parameters = AngleBraceParameters.parser;
+	public static final IRule angle_brace_class = AngleBraceClass.parser;
 	public static final IRule tab_brace_parameters = TabBraceParameters.parser;
 	public static final IRule arithmatic = Arithmatic.parser;
 	public static final IRule base = Base.parser;
@@ -49,11 +49,13 @@ public class Rules extends ParseList {
 	public static final IRule return_statement = ReturnStatement.parser;
 	public static final IRule error_statement = ErrorStatement.parser;
 	public static final IRule each_call = EachCall.parser;
+	public static final IRule range = Range.parser;
 	public static final IRule if_statement = IfStatement.parser;
 	public static final IRule else_statement = ElseStatement.parser;
 	public static final IRule boolean_statement = BooleanStatement.parser;
 	public static final IRule boolean_clause = BooleanClause.parser;
 	public static final IRule check_call = CheckCall.parser;
+	public static final IRule inline_addition_call = InlineAdditionCall.parser;
 	public static final IRule method_call = MethodCall.parser;
 	public static final IRule set_call = SetCall.parser;
 	public static final IRule generate_call = GenerateCall.parser;
@@ -64,5 +66,5 @@ public class Rules extends ParseList {
 	public static final IRule cast_as_statement = CastAsStatement.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				angle_brace_parameters,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,if_statement,else_statement,boolean_statement,boolean_clause,check_call,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
+				angle_brace_class,tab_brace_parameters,arithmatic,base,whitetab,used_classes_list,meta_declaration,meta_method_declaration,property_declaration,entry_class_declaration,entry_class_element,class_declaration,class_element,element_declaration,element_definition,element_entry,takes_statement,auxillary_declaration,generation_declaration,entry_declaration,entry_definition,list_entry_definition,body_element,constant_declaration,variable_declaration,token_declaration,token_expansion,clause_type_tokens,token_clause,all_type_tokens,return_statement,error_statement,each_call,range,if_statement,else_statement,boolean_statement,boolean_clause,check_call,inline_addition_call,method_call,set_call,generate_call,method_parameter,variable_or_token_name,flip_switch,cast_statement,cast_as_statement);
 }

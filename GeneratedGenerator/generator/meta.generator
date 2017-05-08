@@ -1,0 +1,179 @@
+uses ClassNames Rules Listnames NameParser RegexParser
+meta generator
+	var lazyNameParser as IParser
+		static Tokens NAME
+	var rules as List<IParser>
+		static Rules parser
+	var listnames as List<IParser>
+		static Listnames parser
+	var rootParser as IParser
+		static Rules base
+	assignListElementNames takes
+			context as ParseContext
+			root as IToken
+		var listNames as List<IParser>
+			static Listnames parser
+		each parser in listNames
+			var iparser as IParser
+				parser
+			var regexParser as RegexParser
+				iparser
+			var pattern
+				regexParser getPattern
+			var patternLength
+				pattern length
+			var listName
+				pattern substring
+					0
+					patternLength-1
+			context addList
+				listName
+		context addList
+			"class_names"
+		var classNames as List<IParser>
+			static ClassNames parser
+		each parser in classNames
+			var iparser as IParser
+				parser
+			var regexParser as RegexParser
+				iparser
+			var className
+				regexParser getPattern
+			var contextList as ParseList
+				context getList
+					"class_names"
+			var namesParser as NameParser
+				contextList getNamesParser
+			namesParser addName
+				className
+		var classDefsList as ParseList
+			context getList
+				"class_definitions"
+		if classDefsList is not null
+			context addList
+				"generator_names"
+			var generatorNamesList as ParseList
+				context getList
+					"generator_names"
+			var generatorNames as NameParser
+				generatorNamesList getNamesParser
+			token classDefsToken
+				classDefsList getNewTokens
+			classDefsToken class_dec to classDef
+				generatorNames addName
+					'classDef->className
+		var metaDeclarations as ParseList
+			context getList
+				"meta_declarations"
+		if metaDeclarations is not null
+			context addList
+				"generator_names"
+			var generatorNamesList as ParseList
+				context getList
+					"generator_names"
+			var generatorNames as NameParser
+				generatorNamesList getNamesParser
+			token metaDefs
+				metaDeclarations getNewTokens
+			metaDefs * to metaDef
+				generatorNames addName
+					'metaDef->metaName
+		var variableNames as Map<String,List<String>>
+			new HashMap<String,List<String>>
+		var entryNames as Map<String,List<String>>
+			new HashMap<String,List<String>>
+		var propertyDefinitions as ParseList
+			context getList
+				"property_definitions"
+		if propertyDefinitions is not null
+			context addList
+				"property_names"
+			var propertyList as ParseList
+				context getList
+					"property_names"
+			var propertyNames as NameParser
+				propertyList getNamesParser
+			token propertyDefs
+				propertyDefinitions getNewTokens
+			if propertyDefs is not null
+				propertyDefs * to propertyDef
+					var propName = 'propertyDef->propertyName
+					propertyNames addName
+						propName
+					var varNames as List<String>
+						new ArrayList<String>
+					var entNames as List<String>
+						new ArrayList<String>
+					variableNames put
+						propName
+						varNames
+					entryNames put
+						propName
+						entNames
+					propertyDef entry_class_element to element
+						var varDef = element->variable_declaration
+						if varDef is not null
+							varNames+='varDef->variableName
+						else
+							set varDef = element->constant_declaration
+							if varDef is not null
+								varNames += 'varDef->variableName
+							else
+								set varDef = element->entry_declaration
+								if varDef is not null
+									entNames+='varDef->entryName
+		var entryClassDefinitions as ParseList
+			context getList
+				"entry_class_definitions"
+		if entryClassDefinitions is not null
+			context addList
+				"entry_class_names"
+			var entryClassList as ParseList
+				context getList
+					"entry_class_names"
+			var entryClassNames as NameParser
+				entryClassList getNamesParser
+			token classDefs
+				entryClassDefinitions getNewTokens
+			classDefs * to entryClass
+				var entryClassName = 'entryClass->entryClassName
+				entryClassNames addName
+					entryClassName
+				token implement
+					entryClass->implements
+				if implement is not null
+					var parentContext as ParseContext
+						entryClass getContext
+							context
+					var specificContext as ParseContext
+						parentContext getContextFromPosition
+							entryClass getPosition
+							false
+					implement to element
+						property_names
+							var propName = 'element
+							specificContext addList
+								"variable_names"
+							specificContext addList
+								"entry_names"
+							var varNamesList as ParseList
+								specificContext getList
+									"variable_names"
+							var varNames as NameParser
+								varNamesList getNamesParser
+							var entNamesList as ParseList
+								specificContext getList
+									"entry_names"
+							var entNames as NameParser
+								entNamesList getNamesParser
+							if variableNames does containsKey propName
+								var varList as List<String>
+									variableNames->propName
+								each varName in varList
+									varNames addName
+										varName
+								var entList as List<String>
+									entryNames->propName
+								each entName in entList
+									entNames addName
+										entName

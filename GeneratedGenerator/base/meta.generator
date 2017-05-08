@@ -1,4 +1,4 @@
-uses Listnames Rules Tokens Base
+uses Listnames Rules Tokens Base NameParser
 meta base
 	var lazyNameParser as IParser
 		static Tokens LISTNAME

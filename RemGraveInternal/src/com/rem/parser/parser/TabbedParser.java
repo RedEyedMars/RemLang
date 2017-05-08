@@ -27,15 +27,15 @@ public class TabbedParser extends ConcreteRule {
 	}
 	@Override
 	public void real_parse(ParseContext data) {
-		int tabs = (Integer) data.getParameter(0);
-		if(debug_flag&&data.getFileName().equals("generator/entries.generator")){
+		int tabs = (Integer) data.getParameter(0);/*
+		if(data.getFileName().equals("generator/generator.elements")){
 			System.out.println("TabParser:"+tabs+":"+data.getLineNumber(data.getFrontPosition())+":"+data.getFileName()+":"+data.getLine());
 
 			debug_flag = false;
 		}
 		else if(debug_flag){
 			debug_flag = false;
-		}
+		}*/
 		if(tabs==-1){
 			tabs=0;
 		}

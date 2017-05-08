@@ -33,7 +33,9 @@ public class Braces extends ParseList {
 											Tokens.COMMA,
 											new AddTokenParser(
 												Rules.arithmatic,"parameter")))),"PARAM_BRACE","braces","{,}");
+	public static final BracedParser SEMICOLONED = new BracedParser(
+							Rules.definition,"SEMICOLONED","braces",",;");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,SQUARE,QUOTE,PARAM_BRACE);
+				BRACE,SQUARE,QUOTE,PARAM_BRACE,SEMICOLONED);
 }

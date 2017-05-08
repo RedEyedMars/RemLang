@@ -17,6 +17,7 @@ public class ClassNames extends ParseList {
 
 	public static final RegexParser String = new RegexParser("String","class_names","String");
 	public static final RegexParser StringBuilder = new RegexParser("StringBuilder","class_names","StringBuilder");
+	public static final RegexParser Boolean = new RegexParser("Boolean","class_names","Boolean");
 	public static final RegexParser Integer = new RegexParser("Integer","class_names","Integer");
 	public static final RegexParser ParseList = new RegexParser("ParseList","class_names","ParseList");
 	public static final RegexParser ParseContext = new RegexParser("ParseContext","class_names","ParseContext");
@@ -36,5 +37,5 @@ public class ClassNames extends ParseList {
 	public static final RegexParser ListEntry = new RegexParser("ListEntry","class_names","ListEntry");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				String,StringBuilder,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,ArrayList,Map,HashMap,Set,HashSet,TreeSet,File,Entry,ListEntry);
+				String,StringBuilder,Boolean,Integer,ParseList,ParseContext,ParseUtil,IParser,IToken,Listnames,List,ArrayList,Map,HashMap,Set,HashSet,TreeSet,File,Entry,ListEntry);
 }

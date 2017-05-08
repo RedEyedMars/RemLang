@@ -17,24 +17,48 @@ public class MethodCall extends ConcreteRule {
 	@Override
 	public void setup(){
 		set(
+			new ChoiceParser(
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
+					new AddTokenParser(
+						Tokens.NEW,"subject"),
 					new OptionalParser(
 							new AddTokenParser(
-								Tokens.STATIC,"isStatic")),
+								Rules.angle_brace_class,"angle_class")),
+					new ManyParser(
+							
+							new ChoiceParser(
+								new ChainParser(
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+									Rules.boolean_statement),
+									new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
+								new ChainParser(
+									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+									Rules.method_parameter)))),
+				new ChainParser(
+					new WithParser((IRule)Rules.whitetab,this.tabs),
+					
+							new OptionalParser(
+									new AddTokenParser(
+										Tokens.STATIC,"isStatic")),
 					new AddTokenParser(
 						
 					new ChoiceParser(
-							Tokens.NEW,
-							Tokens.GENERATE,
+							Tokens.ASTRO_GENERATE,
 							Tokens.THIS,
 							Rules.method_parameter),"subject"),
-					new AddTokenParser(
-						Tokens.NAME,"methodName"),
+					
+					new ChoiceParser(
+						new ChainParser(
+							new ListNameElementParser("generator_names"),
+							new AddTokenParser(
+								Tokens.NAME,"methodName")),
+							new AddTokenParser(
+								Tokens.NAME,"methodName")),
 					
 					new ChoiceParser(
 							new AddTokenParser(
-								Braces.ANGLE_BRACES,"angle_braces"),
+								Braces.INLINE_PARAMETERS,"inline_parameters"),
 							new ManyParser(
 									
 									new ChoiceParser(
@@ -44,7 +68,7 @@ public class MethodCall extends ConcreteRule {
 											new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
 										new ChainParser(
 											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-											Rules.method_parameter))))));
+											Rules.method_parameter)))))));
 
 	}
 

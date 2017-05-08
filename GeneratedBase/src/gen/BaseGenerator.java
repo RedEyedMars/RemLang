@@ -27,7 +27,9 @@ public class BaseGenerator extends Generator {
 			fileName = fileName.substring(0,indexOfDot);
 		}
 		seedName = fileName;
-		directory = new File(Generators.base.buildString("../Generated",Generators.base.camelize(fileName),"/src/"));
+		directory = new File(
+				Generators.base.buildString("../Generated",
+						Generators.base.camelize(fileName),"/src/"));
 		directory.mkdirs();
 	}
 

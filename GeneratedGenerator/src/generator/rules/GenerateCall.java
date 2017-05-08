@@ -21,12 +21,18 @@ public class GenerateCall extends ConcreteRule {
 					new OptionalParser(
 							new WithParser((IRule)Rules.whitetab,this.tabs)),
 					new AddTokenParser(
-						Tokens.GENERATE,"subject"),
-					new AddTokenParser(
-						Tokens.NAME,"methodName"),
+						Tokens.ASTRO_GENERATE,"subject"),
+					
+					new ChoiceParser(
+						new ChainParser(
+							new ListNameElementParser("generator_names"),
+							new AddTokenParser(
+								Tokens.NAME,"methodName")),
+							new AddTokenParser(
+								Tokens.NAME,"methodName")),
 					new OptionalParser(
 							new AddTokenParser(
-								Braces.ANGLE_BRACES,"angle_braces"))));
+								Braces.INLINE_PARAMETERS,"inline_parameters"))));
 
 	}
 

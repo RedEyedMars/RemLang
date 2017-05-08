@@ -17,8 +17,9 @@ public class Tokens extends ParseList {
 
 	public static final RegexParser NEWLINE = new RegexParser("NEWLINE","tokens","\\n");
 	public static final ExactParser NAME_WORD = new ExactParser("NAME_WORD","tokens","name");
-	public static final RegexParser NAME = new RegexParser("NAME","tokens","[a-zA-Z_][a-zA-Z0-9_-]*");
+	public static final RegexParser NAME = new RegexParser("NAME","tokens","[a-zA-Z_][a-zA-Z0-9_]*");
 	public static final RegexParser WILD = new RegexParser("WILD","tokens",".*");
+	public static final ExactParser ASTRO_GENERATE = new ExactParser("ASTRO_GENERATE","tokens","generate ");
 	public static final ExactParser EQUALSIGN = new ExactParser("EQUALSIGN","tokens","=");
 	public static final ExactParser PLUS = new ExactParser("PLUS","tokens","+");
 	public static final ExactParser STAR = new ExactParser("STAR","tokens","*");
@@ -37,6 +38,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser TO = new ExactParser("TO","tokens","to");
 	public static final ExactParser NEW = new ExactParser("NEW","tokens","new ");
 	public static final ExactParser CONTAINS = new ExactParser("CONTAINS","tokens","contains ");
+	public static final ExactParser BACKSLASH = new ExactParser("BACKSLASH","tokens","\\");
 	public static final RegexParser ADDITIVE_OPERAND = new RegexParser("ADDITIVE_OPERAND","tokens","[+-]");
 	public static final RegexParser MULTIPLICATIVE_OPERAND = new RegexParser("MULTIPLICATIVE_OPERAND","tokens","[*/]");
 	public static final RegexParser NUMBER = new RegexParser("NUMBER","tokens","(-)?\\d+");
@@ -75,7 +77,8 @@ public class Tokens extends ParseList {
 	public static final ExactParser META = new ExactParser("META","tokens","meta");
 	public static final ExactParser CHECK = new ExactParser("CHECK","tokens","check ");
 	public static final RegexParser NON_NEWLINE = new RegexParser("NON_NEWLINE","tokens","[^\\n]+");
+	public static final ExactParser DOTDOT = new ExactParser("DOTDOT","tokens","..");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NEWLINE,NAME_WORD,NAME,WILD,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,CONTAINS,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,STATIC,ORDINAL_OPERATOR,EMPTY,SINGULAR,SINGLE,DOES,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN,PROPERTY,EACH,IN,CONSTRUCTOR,OUTPUT,THIS,CONSTANT,OTHERWISE,PIPE,META,CHECK,NON_NEWLINE);
+				NEWLINE,NAME_WORD,NAME,WILD,ASTRO_GENERATE,EQUALSIGN,PLUS,STAR,USES,ELEMENTS,GENERATE,TAKES,VARIABLE,SET,ENTRY,RETURN,BACK_SLASH,COLON,COMMA,PRIME,TO,NEW,CONTAINS,BACKSLASH,ADDITIVE_OPERAND,MULTIPLICATIVE_OPERAND,NUMBER,NULL,IF,ELSE,AND,OR,NOT,IS,STATIC,ORDINAL_OPERATOR,EMPTY,SINGULAR,SINGLE,DOES,ACCESS,NON_SPACE,FLIP,ERROR,TRUE,FALSE,AUXILLARY,CAST,AS,TOKEN,PROPERTY,EACH,IN,CONSTRUCTOR,OUTPUT,THIS,CONSTANT,OTHERWISE,PIPE,META,CHECK,NON_NEWLINE,DOTDOT);
 }

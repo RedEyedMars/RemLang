@@ -25,13 +25,19 @@ public class VariableOrTokenName extends ConcreteRule {
 					
 					new ChoiceParser(
 						new ChainParser(
-							new ListNameElementParser("token_names"),
+							
+							new ChoiceParser(
+									new ListNameElementParser("token_names"),
+									new ListNameElementParser("variable_names")),
 							new MultipleParser(
 									
 										new ChainParser(
 											Tokens.ACCESS,
 											new AddTokenParser(
-												Tokens.NAME,"option")))),
+												
+											new ChoiceParser(
+													new ListNameElementParser("variable_names"),
+													Tokens.NAME),"option")))),
 							Rules.arithmatic)),
 				new ChainParser(
 					new OptionalParser(

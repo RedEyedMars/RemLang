@@ -1,0 +1,647 @@
+uses LinkedHashMap
+entryClass
+	var directory = null
+	var constructorIndex = 0
+	elements
+		outline
+			"package gen.entries;\n\n"+
+			"import java.io.*;\n"+
+			"import java.util.*;\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import gen.*;\n"+
+			"import gen.checks.*;\n"+
+			"import gen.properties.*;\n"+
+			"import lists.*;\n\n"+
+			"public class " Class Name "Entry implements Entry" Properties" {\n\tpublic " Class name "Entry getSelf(){\n\t\treturn this;\n\t}\n" Contents "\n}"
+		body
+			"{" Body "\n\t}"
+		implements
+			"," Properties ""
+		publicCall
+			"public " Contents ""
+		privateCall
+			"private " Contents ""
+		appendToBuilder
+			"" Entry ".get(builder);"
+		methodDeclaration
+			"public " Type " " Method Header "" MethodBody ""
+		getMethodDeclaration
+			"public void get(StringBuilder builder){" MethodBody "\n\t}"
+		constructorDeclaration
+			"public " Type "Entry(" Parameters ")" MethodBody ""
+	
+	aux setup takes data as ParseContext
+		set directory
+			new File
+				generator getDirectory
+				"entries"
+		directory mkdirs
+	
+	aux generate takes data as ParseContext
+		var dataList as ParseList
+			data getList
+				"entry_class_definitions"
+		entryClass generateAll
+			dataList getNewTokens
+			"entry_dec"
+	
+	generate root
+		var className = 'root->entryClassName
+		var variables as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		var methods as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		entry propertyNames = {}
+		entry constants "" = {}
+		var methodNameSet as Set<String>
+			new HashSet<String>
+		var variableNameSet as Set<String>
+			new HashSet<String>
+		entry constructors "" = {}
+		var realClassName
+			entryClass camelize
+				className
+		generator addContext
+			className
+			null
+			static generator LOCAL_CONTEXT
+			static generator NO_DEFAULT_TOKEN
+		if root->implements is not null
+			var properties as List<IToken>
+				root->implements getAll
+					"property_names"
+			if properties is not null
+				each properT in properties
+					var propToken as IToken
+						properT
+					var propertyName = 'propToken
+					var propertyClassName
+						entryClass buildString
+							"I"
+							entryClass camelize
+								propertyName
+					propertyNames += \propertyClassName
+					var propertyVariables as Map<String,Map<String,Entry>>
+						property getVariablesOfProperties
+					if propertyVariables does containsKey propertyName
+						var varKeySet as Set<String>
+							propertyVariables->propertyName keySet
+						each key in varKeySet
+							variables put
+								key
+								propertyVariables->propertyName->key
+							variableNameSet+=key
+							var contexts as Map<String,Map<String,Map<String,variable>>>
+								generator getContexts
+							var localContext
+								static generator LOCAL_CONTEXT
+							var actualProperies as Map<String,Map<String,variable>>
+								property getActualVariablesOfProperties
+							contexts->className->localContext put
+								key
+								actualProperies->propertyName->key
+					else
+						entry listener = {}
+						property addVariableListener
+							propertyName
+							className
+							listener
+							variableNameSet
+						variables put
+							entryClass buildString
+								"$"
+								propertyName
+							listener
+						check propertyDefined propertyVariables containsKey propertyName 
+							EntryClass generateRoot(001)
+					var propertyMethods as Map<String,Map<String,Entry>>
+						property getMethodsOfProperties
+					if propertyMethods does containsKey propertyName
+						var keySet as Set<String>
+							propertyMethods keySet
+						each key in keySet
+							methods	put
+								key
+								propertyMethods->propertyName->key
+							methodNameSet+=key
+					else
+						entry listener = {}
+						property addMethodListener
+							propertyName
+							listener
+							methodNameSet
+						methods put
+							entryClass buildString
+								"$"
+								propertyName
+							listener
+						check propertyDefined propertyVariables containsKey propertyName
+							EntryClass generateRoot(002)
+		
+		root entry_class_element to element
+			element to atom
+				constant_declaration
+					var variableName = 'atom->variableName
+					constants+=(1 generate variableDeclaration:className true;)
+					variableNameSet+=variableName
+					var contexts as Map<String,Map<String,Map<String,variable>>>
+						generator getContexts
+					var localContext
+						static generator LOCAL_CONTEXT
+					contexts->className->localContext->variableName setFinal
+						true
+					contexts->className->localContext->variableName setStatic
+						true
+				variable_declaration
+					var variableName = 'atom->variableName
+					variables put
+						variableName
+						(1 generate variableDeclaration:className false;)
+					methods put
+						variableName
+						(0 generate variableDeclarationMethod:className;)
+					variableNameSet+=variableName
+				entry_declaration					
+					var variableName = 'atom->entryName
+					var contexts as Map<String,Map<String,Map<String,variable>>>
+						generator getContexts
+					var localContext
+						static generator LOCAL_CONTEXT
+					
+					entry koodo = generate generator entryDeclaration:1 className localContext;
+					var variable as variable
+						contexts->className->localContext->variableName
+					entry type = type:variable;
+					variables put
+						variableName
+						(1 privateCall {variable})
+					var getMethodName
+						entryClass buildString
+							"get"
+							entryClass camelize
+								variableName
+					methods put
+						variableName
+						generator methodDeclaration {type \getMethodName {} (2 generator returnCall {\variableName})}
+					variableNameSet+=variableName
+				constructor
+					var constructorName
+						entryClass buildString
+							"constructor"
+							'constructorIndex					
+					set constructorIndex = constructorIndex+1
+					generator addContext
+						className
+						static generator LOCAL_CONTEXT
+						constructorName
+						static generator NO_DEFAULT_TOKEN
+					entry parameters = {}
+					atom parameter to parameter
+						var variable as variable
+							generator getParameter
+								parameter
+								className
+								static generator LOCAL_CONTEXT
+								constructorName
+						parameters+=variable
+					constructors+=(1 constructorDeclaration {\realClassName parameters  generate entryMethodBody:null className constructorName;})										
+				output_method
+					entry header = method: "noSubjectCall" {\"get" \"StringBuilder builder"};
+					generator addContext
+						className
+						static generator LOCAL_CONTEXT
+						"$OUTPUT"
+						static generator NO_DEFAULT_TOKEN
+					entry body "" = {}
+					if atom->body is not null
+						body+=
+							entryClass generateEntryMethodBody
+								atom->body
+								header
+								className
+								null
+					var first = true
+					atom entry_values to statement
+						var breck = statement->break
+						if breck is not null
+							set first = true
+						else
+							token value = statement->value
+							var ifStatement = statement->ifStatement
+							if ifStatement is not null
+								entry ifBody "" = {}
+								value to quark
+									entry_definition
+										var ifLine
+											generator generateEntryDefinition
+												quark
+												className
+												"$OUTPUT"
+										ifBody+=(3 appendToBuilder {ifLine})
+									entry_names
+										ifBody+=(3 appendToBuilder {\'quark})
+								if ifStatement->otherwise is null
+									var booleanStatement
+										generator generateBooleanStatement
+											ifStatement->boolean_statement
+											className
+											"$OUTPUT"
+									if first is true
+										body+=(2 generator ifStatementCall {booleanStatement ifBody})
+									else
+										body+=(2 generator elseIfStatementCall {booleanStatement ifBody})
+								else
+									body+=(2 generator elseStatementCall {ifBody})
+								body+=(2 \"}")
+								set first = false
+							else
+								set first = true								
+								value to quark
+									entry_definition
+										var ifLine
+											generator generateEntryDefinition
+												quark
+												className
+												"$OUTPUT"
+										body+=(2 appendToBuilder {ifLine})
+									entry_names
+										body+=(2 appendToBuilder {\'quark})
+					methods put
+						"$OUTPUT"
+						(1 getMethodDeclaration {body})
+				entry_method
+					var header as method = generate entryMethodHeader:className;
+					entry type = type:header;
+					var methodName
+						header getMethodName
+					methods put
+						methodName
+						(1 methodDeclaration {type header generate entryMethodBody:header className methodName;})
+		
+		entry implementsProperties = {}
+		if propertyNames is not empty
+			set implementsProperties = implements {propertyNames}
+		entry variableList "" = {}
+		var variablesKeySet as Set<String>
+			variables keySet
+		each varName in variablesKeySet
+			variableList+=variables->varName
+		entry methodList "" = {}
+		var methodsKeySet as Set<String>
+			methods keySet
+		each methodName in methodsKeySet
+			methodList+=methods->method
+		entry complete "\n" = {constants variableList constructors methodList}
+		
+		entryClass addFile
+			directory
+			entryClass buildString
+				realClassName
+				"Entry.java"
+			{\realClassName implementsProperties \realClassName complete}
+	
+	generate variableDeclaration takes contextName, isPublic as Boolean
+		var localContext
+			static generator LOCAL_CONTEXT
+		if isPublic is true
+			return
+				publicCall { generate generator variableDeclaration: contextName localContext; }
+		else
+			return 
+				privateCall { generate generator variableDeclaration: contextName localContext; }
+	generate variableDeclarationMethod takes contextName
+		var variableName = 'variableDeclarationMethod->variableName
+		var variable = null
+		var localContext
+			static generator LOCAL_CONTEXT
+		var contexts as Map<String,Map<String,Map<String,variable>>>
+			generator getContexts
+		if contexts->contextName->localContext does not containsKey variableName
+			var unknownType
+				static type_listener TYPE_UNKNOWN
+			set variable = variable:variableName unknownType;
+			var castToType
+				generator getCastType
+					variableDeclarationMethod
+					contextName
+					localContext
+			if castToType is not null
+				variable changeType
+					castToType
+			contexts->contextName->localContext put
+				variableName
+				variable
+		else
+			set variable 
+				contexts->contextName->localContext->variableName
+		entry type = type:variable;	
+		var getMethodName
+			entryClass buildString
+				"get"
+				entryClass camelize
+					variableName
+		return
+			generator methodDeclaration {type \getMethodName {} (2 generator returnCall {\variableName})}
+	
+	generate entryMethodHeader takes contextName		
+		var localContext
+			static generator LOCAL_CONTEXT
+		var contexts as Map<String,Map<String,Map<String,variable>>>
+			generator getContexts
+		var returnType
+			generator getCastType
+				entryMethodHeader
+				contextName
+				static generator LOCAL_CONTEXT
+		
+		entry parameters = {}
+		var methodName = null
+		entryMethodHeader to element
+			methodName
+				set methodName = 'element
+				generator addContext
+					contextName
+					static generator LOCAL_CONTEXT
+					methodName
+					static generator NO_DEFAULT_TOKEN
+			parameter
+				parameters +=
+					generator getParameter
+						element
+						contextName
+						static generator LOCAL_CONTEXT
+						methodName
+		entry ret = method:"noSubjectCall" {\methodName parameters};
+		if returnType is not null
+			ret changeType
+				returnType
+		else
+			ret setDefaultType
+				"void"
+		ret setMethodNames
+			methodName
+		return
+			ret
+	
+	generate entryMethodBody takes method as method, contextName, methodName
+		entry methodBody "" = {}
+		entry retType = type:;
+		var isOutput = methodName is null
+		if isOutput is true
+			set methodName = "$OUTPUT"
+		entryMethodBody to element
+			entry_declaration
+				methodBody+=
+					generator generateEntryDeclaration
+						element
+						2
+						contextName
+						methodName
+			body_element
+				methodBody+=
+					generator generateBodyElement
+						element
+						2
+						contextName
+						methodName
+						retType
+		var subject as type_listener
+			retType getSubject
+		if method is not null and subject is not null and subject does hasType
+			method changeType
+				subject getType
+		else
+			if method is not null
+				method changeType
+					retType getDefaultType
+		if isOutput is true
+			return
+				methodBody
+		else
+			return
+				body {methodBody}
+
+property
+	var directory = null
+	var methodsOfProperties as Map<String, Map<String,Entry>>
+		new HashMap<String,Map<String,Entry>>		
+	var variablesOfProperties as Map<String, Map<String,Entry>>
+		new HashMap<String,Map<String,Entry>>
+	var actualVariablesOfProperties as Map<String,Map<String,variable>>
+		new HashMap<String,Map<String,variable>>
+	
+	var variablesOfPropertiesContexts as Map<String,List<String>>
+		new HashMap<String,List<String>>
+	var variablesOfPropertiesAcceptors as Map<String,List<ListEntry>>
+		new HashMap<String,List<ListEntry>>
+	var variablesOfPropertiesRejectors as Map<String,List<Set<String>>>
+		new HashMap<String,List<Set<String>>>
+	var methodsOfPropertiesAcceptors as Map<String,List<ListEntry>>
+		new HashMap<String,List<ListEntry>>
+	var methodsOfPropertiesRejectors as Map<String, List<Set<String>>>
+		new HashMap<String, List<Set<String>>>
+	
+	elements
+		outline
+			"package gen.properties;\n\n"+
+			"import java.io.*;\n"+
+			"import java.util.*;\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import gen.*;\n"+
+			"import gen.checks.*;\n"+
+			"import gen.properties.*;\n"+
+			"import lists.*;\n\n"+
+			"public interface " Class Name " {\n" Contents "\n}"
+		variableMethod
+			"public " Type " get" Variable Name "();"
+		method
+			"public " Type " " Method ";"
+	
+	generate root
+		var propertyName = 'root->propertyName
+		var className
+			property buildString
+				"I"
+				property camelize
+					propertyName
+		property addFile
+			directory
+			property buildString
+				className
+				".java"
+			{\className}
+		entry constants "" = {}
+		var actualVariables as Map<String, variable>
+			new LinkedHashMap<String,variable>
+		var propertyVariables as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		var propertyMethods as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		entry bareProperty "" = {}
+		var contexts as Map<String,Map<String,Map<String,variable>>>
+			generator getContexts
+		var localContext
+			static generator LOCAL_CONTEXT
+		generator addContext
+			className
+			null
+			static generator LOCAL_CONTEXT
+			static generator NO_DEFAULT_TOKEN
+		root entry_class_element to element
+			element to atom
+				constant_declaration					
+					var variableName = 'atom->variableName
+					constants+=(1 generate entryClass variableDeclaration: className true;)
+					contexts->className->localContext->variableName setFinal:true;
+					contexts->className->localContext->variableName setStatic:true;
+				variable_declaration					
+					var variableName = 'atom->variableName
+					entry variable = generate entryClass variableDeclaration:className false;
+					entry method = generate entryClass VariableDeclarationMethod:className;
+					propertyVariables put
+						variableName
+						(1 variable)
+					propertyMethods put
+						variableName
+						(0 method)
+					var realVar as variable
+						contexts->className->localContext->variableName
+					actualVariables put
+						variableName
+						realVar
+					entry type = type:realVar;
+					var varClassName
+						property camelize
+							variableName
+					bareProperty+=(1 variableMethod {type \varClassName})
+				entry_method
+					var header as method
+						entryClass generateEntryMethodHeader
+							atom
+							className
+					entry type = type:header;
+					var methodBody as Entry
+						entryClass generateEntryMethodBody
+							atom
+							header
+							className
+							header getMethodName
+					entry method "" = {\"\tpublic " type \" " methodBody}
+					propertyMethods put 
+						header getMethodName
+						(0 method)
+					bareProperty+=(1 method {type header})						
+		
+		entry complete "\n" = {constants bareProperty}
+		property addEntry
+			directory
+			property buildString
+				className
+				".java"
+			"property"
+			complete
+		
+		methodsOfProperties put
+			propertyName
+			propertyMethods
+		variablesOfProperties put
+			propertyName
+			propertyVariables
+		actualVariablesOfProperties put
+			propertyName
+			actualVariables
+		if methodsOfPropertiesAcceptors does containsKey propertyName
+			var acceptors as List<ListEntry>
+				methodsOfPropertiesAcceptors->propertyName
+			var rejects as List<Set<String>>
+				methodsOfPropertiesRejectors->propertyName
+			var size
+				acceptors size
+			each i in 0..size
+				var keySet as Set<String>
+					propertyMethods keySet
+				each key in keySet
+					if rejects->i does not contains key
+						acceptors->i += propertyMethods->key
+		if variablesOfPropertiesAcceptors does containsKey propertyName
+			var acceptors as List<ListEntry> 
+				variablesOfPropertiesAcceptors->propertyName
+			var rejects as List<Set<String>>
+				variablesOfPropertiesRejectors->propertyName
+			var size
+				acceptors size				
+			each i in 0..size
+				var keySet as Set<String>
+					propertyVariables keySet
+				each key in keySet
+					if rejects does not contains key
+						acceptors->i += propertyVariables->key
+			
+			var variableOfPropertiesContextsNames as List<String>
+				variablesOfPropertiesContexts->propertyName
+			each contextName in variableOfPropertiesContextsNames
+				var context as Set<String>
+					contexts->contextName->localContext keySet
+				each variableName in context
+					property println
+						property buildString
+							"PROPERTYGENERATOR>"
+							variableName
+				var varKeySet as Set<String>
+					actualVariables keySet
+				each variableName in varKeySet
+					contexts->contextName-> localContext put
+						variableName
+						actualVariables->variableName
+	
+	aux setup takes data as ParseContext
+		set directory
+			new File
+				generator getDirectory
+				"properties"
+		directory mkdirs
+	
+	aux generate takes data as ParseContext
+		var dataList as ParseList
+			data getList
+				"property_definitions"		
+		property generateAll
+			dataList getNewTokens
+			"property_dec"
+	
+	aux addVariableListener takes
+			proprety
+			contextName
+			acceptor as ListEntry
+			rejects as Set<String>
+		if variablesOfPropertiesAcceptors does not containsKey proprety
+			variablesOfPropertiesAcceptors put
+				proprety
+				new ArrayList<ListEntry>
+			variablesOfPropertiesRejectors put
+				proprety
+				new ArrayList<Set<String>>
+			variablesOfPropertiesContexts put
+				proprety
+				new ArrayList<String>
+		variablesOfPropertiesAcceptors->proprety += acceptor
+		variablesOfPropertiesRejectors->proprety += rejects
+		variablesOfPropertiesContexts->proprety += contextName
+	
+	aux addMethodListener takes
+			proprety
+			acceptor as ListEntry
+			rejects as Set<String>
+		if methodsOfPropertiesAcceptors does not containsKey proprety
+			methodsOfPropertiesAcceptors put
+				proprety
+				new ArrayList<ListEntry>
+			methodsOfPropertiesRejectors put
+				proprety
+				new ArrayList<Set<String>>
+		methodsOfPropertiesAcceptors->proprety += acceptor
+		methodsOfPropertiesRejectors->proprety += rejects

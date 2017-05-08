@@ -1,4 +1,4 @@
-
+uses ElementEntry
 list
 	var listAssociatedClass
 		new HashMap<String,String>
@@ -147,12 +147,23 @@ list
 								listName
 								"$HIDDEN"
 							5
-				
+				token parser
+					element -> parser
+				entry parserEntry = null
+				if parser is not null
+					set parserEntry
+						rule generateDefinition
+							parser -> definition
+							list buildString
+								listName
+								"$HIDDEN"
+							5
 				list addClassList
 					listName
 					name
 					regex
 					parameterEntry
+					parserEntry
 				set hasDefinition
 					true
 	
@@ -161,6 +172,18 @@ list
 			name
 			regex
 			parameter as Entry
+		list addClassList
+			listName
+			name
+			regex
+			parameter
+			null
+	aux addClassList takes
+			listName
+			name
+			regex
+			parameter as Entry
+			parser as Entry
 		var containsAssociatedClass
 			listAssociatedClass containsKey
 				listName
@@ -173,6 +196,9 @@ list
 		if parameter is not null
 			params add
 				parameter
+		if parser is not null
+			params add
+				parser
 		params add
 			``name``
 		params add

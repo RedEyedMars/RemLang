@@ -17,7 +17,14 @@ public class Ingests extends ParseList {
 
 	public static final ImportParser IMPORT = new ImportParser(
 							Braces.QUOTE,"IMPORT","ingests","import<<entry>>\\n");
+	public static final ImportParser ELEMENT_IMPORT = new ImportParser(
+							Braces.QUOTE,
+							new MultipleParser(
+									
+									new ChoiceParser(
+											new WithParser((IRule)Rules.element_definition,new Argument.Number(0)),
+											Tokens.NEWLINE)),"ELEMENT_IMPORT","ingests","from<<entry>>");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				IMPORT);
+				IMPORT,ELEMENT_IMPORT);
 }
