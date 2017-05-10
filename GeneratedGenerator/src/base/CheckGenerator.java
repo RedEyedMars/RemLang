@@ -45,7 +45,7 @@ public class CheckGenerator extends Generator {
 						/*Members*/"\n"+
 						"\tpublic ",/*Class Name*/"(",/*Parameters*/",String errorMessage){\n\t\tthis.errorMessage = errorMessage;\n"+
 						"",/*Assignment*/
-						"\n\t}\n\n\tpublic void check(){\n\t\tif(",/*If Statement*/"){\n\t\t\tSystem.err.println(errorMessage);\n\t\t}\n\t}\n\n}"});
+						"\n\t}\n\n\tpublic void check(){\n\t\tif(!(",/*If Statement*/")){\n\t\t\tSystem.err.println(errorMessage);\n\t\t}\n\t}\n\n}"});
 		addElement("operator",new String[]{
 				"",/*Left*/" ",/*Operator*/" ",/*Right*/""});
 		addElement("method",new String[]{

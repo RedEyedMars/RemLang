@@ -1,4 +1,228 @@
 uses LinkedHashMap
+
+property
+	var directory = null
+	var methodsOfProperties as Map<String, Map<String,Entry>>
+		new HashMap<String,Map<String,Entry>>		
+	var variablesOfProperties as Map<String, Map<String,Entry>>
+		new HashMap<String,Map<String,Entry>>
+	var actualVariablesOfProperties as Map<String,Map<String,variable>>
+		new HashMap<String,Map<String,variable>>
+	
+	var variablesOfPropertiesContexts as Map<String,List<String>>
+		new HashMap<String,List<String>>
+	var variablesOfPropertiesAcceptors as Map<String,List<ListEntry>>
+		new HashMap<String,List<ListEntry>>
+	var variablesOfPropertiesRejectors as Map<String,List<Set<String>>>
+		new HashMap<String,List<Set<String>>>
+	var methodsOfPropertiesAcceptors as Map<String,List<ListEntry>>
+		new HashMap<String,List<ListEntry>>
+	var methodsOfPropertiesRejectors as Map<String, List<Set<String>>>
+		new HashMap<String, List<Set<String>>>
+	
+	elements
+		outline
+			"package gen.properties;\n\n"+
+			"import java.io.*;\n"+
+			"import java.util.*;\n"+
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import gen.*;\n"+
+			"import gen.checks.*;\n"+
+			"import gen.properties.*;\n"+
+			"import lists.*;\n\n"+
+			"public interface " Class Name " {\n" Contents "\n}"
+		variableMethod
+			"public " Type " get" Variable Name "();"
+		method
+			"public " Type " " Method ";"
+	
+	generate root
+		var propertyName = 'root->propertyName
+		var className
+			property buildString
+				"I"
+				property camelize
+					propertyName
+		property addFile
+			directory
+			property buildString
+				className
+				".java"
+			{\className}
+		entry constants "" = {}
+		var actualVariables as Map<String, variable>
+			new LinkedHashMap<String,variable>
+		var propertyVariables as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		var propertyMethods as Map<String,Entry>
+			new LinkedHashMap<String,Entry>
+		entry bareProperty "" = {}
+		var contexts as Map<String,Map<String,Map<String,variable>>>
+			generator getContexts
+		var localContext
+			static generator LOCAL_CONTEXT
+		generator addContext
+			className
+			null
+			static generator LOCAL_CONTEXT
+			static generator NO_DEFAULT_TOKEN
+		root entry_class_element to element
+			element to atom
+				constant_declaration					
+					var variableName = 'atom->variableName
+					constants+=(1 generate entryClass variableDeclaration: className true;)
+					contexts->className->localContext->variableName setFinal:true;
+					contexts->className->localContext->variableName setStatic:true;
+				variable_declaration					
+					var variableName = 'atom->variableName
+					entry variable = generate entryClass variableDeclaration:className false;
+					entry method = generate entryClass VariableDeclarationMethod:className;
+					propertyVariables put
+						variableName
+						(1 variable)
+					propertyMethods put
+						variableName
+						(0 method)
+					var realVar as variable
+						contexts->className->localContext->variableName
+					actualVariables put
+						variableName
+						realVar
+					entry type = type:realVar;
+					var varClassName
+						property camelize
+							variableName
+					bareProperty+=(1 variableMethod {type \varClassName})
+				entry_method
+					var header as method
+						entryClass generateEntryMethodHeader
+							atom
+							className
+					entry type = type:header;
+					var methodBody as Entry
+						entryClass generateEntryMethodBody
+							atom
+							header
+							className
+							header getMethodName
+					entry method "" = {\"\tpublic " type \" " header \" " methodBody}
+					propertyMethods put 
+						header getMethodName
+						(0 method)
+					bareProperty+=(1 method {type header})						
+		
+		entry complete "\n" = {constants bareProperty}
+		property addEntry
+			directory
+			property buildString
+				className
+				".java"
+			"property"
+			complete
+		
+		methodsOfProperties put
+			propertyName
+			propertyMethods
+		variablesOfProperties put
+			propertyName
+			propertyVariables
+		actualVariablesOfProperties put
+			propertyName
+			actualVariables
+		if methodsOfPropertiesAcceptors does containsKey propertyName
+			var acceptors as List<ListEntry>
+				methodsOfPropertiesAcceptors->propertyName
+			var rejects as List<Set<String>>
+				methodsOfPropertiesRejectors->propertyName
+			var size
+				acceptors size
+			each i in 0..size
+				var keySet as Set<String>
+					propertyMethods keySet
+				each key in keySet
+					if rejects->i does not contains key
+						acceptors->i += propertyMethods->key
+		if variablesOfPropertiesAcceptors does containsKey propertyName
+			var acceptors as List<ListEntry> 
+				variablesOfPropertiesAcceptors->propertyName
+			var rejects as List<Set<String>>
+				variablesOfPropertiesRejectors->propertyName
+			var size
+				acceptors size				
+			each i in 0..size
+				var keySet as Set<String>
+					propertyVariables keySet
+				each key in keySet
+					if rejects does not contains key
+						acceptors->i += propertyVariables->key
+			
+			var variableOfPropertiesContextsNames as List<String>
+				variablesOfPropertiesContexts->propertyName
+			each contextName in variableOfPropertiesContextsNames
+				var context as Set<String>
+					contexts->contextName->localContext keySet
+				each variableName in context
+					property println
+						property buildString
+							"PROPERTYGENERATOR>"
+							variableName
+				var varKeySet as Set<String>
+					actualVariables keySet
+				each variableName in varKeySet
+					contexts->contextName-> localContext put
+						variableName
+						actualVariables->variableName
+	
+	aux setup takes data as ParseContext
+		set directory
+			new File
+				generator getDirectory
+				"properties"
+		directory mkdirs
+	
+	aux generate takes data as ParseContext
+		var dataList as ParseList
+			data getList
+				"property_definitions"		
+		property generateAll
+			dataList getNewTokens
+			"property_dec"
+	
+	aux addVariableListener takes
+			proprety
+			contextName
+			acceptor as ListEntry
+			rejects as Set<String>
+		if variablesOfPropertiesAcceptors does not containsKey proprety
+			variablesOfPropertiesAcceptors put
+				proprety
+				new ArrayList<ListEntry>
+			variablesOfPropertiesRejectors put
+				proprety
+				new ArrayList<Set<String>>
+			variablesOfPropertiesContexts put
+				proprety
+				new ArrayList<String>
+		variablesOfPropertiesAcceptors->proprety += acceptor
+		variablesOfPropertiesRejectors->proprety += rejects
+		variablesOfPropertiesContexts->proprety += contextName
+	
+	aux addMethodListener takes
+			proprety
+			acceptor as ListEntry
+			rejects as Set<String>
+		if methodsOfPropertiesAcceptors does not containsKey proprety
+			methodsOfPropertiesAcceptors put
+				proprety
+				new ArrayList<ListEntry>
+			methodsOfPropertiesRejectors put
+				proprety
+				new ArrayList<Set<String>>
+		methodsOfPropertiesAcceptors->proprety += acceptor
+		methodsOfPropertiesRejectors->proprety += rejects
+
 entryClass
 	var directory = null
 	var constructorIndex = 0
@@ -119,12 +343,14 @@ entryClass
 					var propertyMethods as Map<String,Map<String,Entry>>
 						property getMethodsOfProperties
 					if propertyMethods does containsKey propertyName
+						var methodMap as Map<String,Entry>
+							propertyMethods -> propertyName
 						var keySet as Set<String>
-							propertyMethods keySet
+							methodMap keySet
 						each key in keySet
 							methods	put
 								key
-								propertyMethods->propertyName->key
+								methodMap->key
 							methodNameSet+=key
 					else
 						entry listener = {}
@@ -292,7 +518,7 @@ entryClass
 		var methodsKeySet as Set<String>
 			methods keySet
 		each methodName in methodsKeySet
-			methodList+=methods->method
+			methodList+=methods->methodName
 		entry complete "\n" = {constants variableList constructors methodList}
 		
 		entryClass addFile
@@ -422,226 +648,3 @@ entryClass
 		else
 			return
 				body {methodBody}
-
-property
-	var directory = null
-	var methodsOfProperties as Map<String, Map<String,Entry>>
-		new HashMap<String,Map<String,Entry>>		
-	var variablesOfProperties as Map<String, Map<String,Entry>>
-		new HashMap<String,Map<String,Entry>>
-	var actualVariablesOfProperties as Map<String,Map<String,variable>>
-		new HashMap<String,Map<String,variable>>
-	
-	var variablesOfPropertiesContexts as Map<String,List<String>>
-		new HashMap<String,List<String>>
-	var variablesOfPropertiesAcceptors as Map<String,List<ListEntry>>
-		new HashMap<String,List<ListEntry>>
-	var variablesOfPropertiesRejectors as Map<String,List<Set<String>>>
-		new HashMap<String,List<Set<String>>>
-	var methodsOfPropertiesAcceptors as Map<String,List<ListEntry>>
-		new HashMap<String,List<ListEntry>>
-	var methodsOfPropertiesRejectors as Map<String, List<Set<String>>>
-		new HashMap<String, List<Set<String>>>
-	
-	elements
-		outline
-			"package gen.properties;\n\n"+
-			"import java.io.*;\n"+
-			"import java.util.*;\n"+
-			"import com.rem.parser.*;\n"+
-			"import com.rem.parser.generation.*;\n"+
-			"import com.rem.parser.token.*;\n"+
-			"import gen.*;\n"+
-			"import gen.checks.*;\n"+
-			"import gen.properties.*;\n"+
-			"import lists.*;\n\n"+
-			"public interface " Class Name " {\n" Contents "\n}"
-		variableMethod
-			"public " Type " get" Variable Name "();"
-		method
-			"public " Type " " Method ";"
-	
-	generate root
-		var propertyName = 'root->propertyName
-		var className
-			property buildString
-				"I"
-				property camelize
-					propertyName
-		property addFile
-			directory
-			property buildString
-				className
-				".java"
-			{\className}
-		entry constants "" = {}
-		var actualVariables as Map<String, variable>
-			new LinkedHashMap<String,variable>
-		var propertyVariables as Map<String,Entry>
-			new LinkedHashMap<String,Entry>
-		var propertyMethods as Map<String,Entry>
-			new LinkedHashMap<String,Entry>
-		entry bareProperty "" = {}
-		var contexts as Map<String,Map<String,Map<String,variable>>>
-			generator getContexts
-		var localContext
-			static generator LOCAL_CONTEXT
-		generator addContext
-			className
-			null
-			static generator LOCAL_CONTEXT
-			static generator NO_DEFAULT_TOKEN
-		root entry_class_element to element
-			element to atom
-				constant_declaration					
-					var variableName = 'atom->variableName
-					constants+=(1 generate entryClass variableDeclaration: className true;)
-					contexts->className->localContext->variableName setFinal:true;
-					contexts->className->localContext->variableName setStatic:true;
-				variable_declaration					
-					var variableName = 'atom->variableName
-					entry variable = generate entryClass variableDeclaration:className false;
-					entry method = generate entryClass VariableDeclarationMethod:className;
-					propertyVariables put
-						variableName
-						(1 variable)
-					propertyMethods put
-						variableName
-						(0 method)
-					var realVar as variable
-						contexts->className->localContext->variableName
-					actualVariables put
-						variableName
-						realVar
-					entry type = type:realVar;
-					var varClassName
-						property camelize
-							variableName
-					bareProperty+=(1 variableMethod {type \varClassName})
-				entry_method
-					var header as method
-						entryClass generateEntryMethodHeader
-							atom
-							className
-					entry type = type:header;
-					var methodBody as Entry
-						entryClass generateEntryMethodBody
-							atom
-							header
-							className
-							header getMethodName
-					entry method "" = {\"\tpublic " type \" " methodBody}
-					propertyMethods put 
-						header getMethodName
-						(0 method)
-					bareProperty+=(1 method {type header})						
-		
-		entry complete "\n" = {constants bareProperty}
-		property addEntry
-			directory
-			property buildString
-				className
-				".java"
-			"property"
-			complete
-		
-		methodsOfProperties put
-			propertyName
-			propertyMethods
-		variablesOfProperties put
-			propertyName
-			propertyVariables
-		actualVariablesOfProperties put
-			propertyName
-			actualVariables
-		if methodsOfPropertiesAcceptors does containsKey propertyName
-			var acceptors as List<ListEntry>
-				methodsOfPropertiesAcceptors->propertyName
-			var rejects as List<Set<String>>
-				methodsOfPropertiesRejectors->propertyName
-			var size
-				acceptors size
-			each i in 0..size
-				var keySet as Set<String>
-					propertyMethods keySet
-				each key in keySet
-					if rejects->i does not contains key
-						acceptors->i += propertyMethods->key
-		if variablesOfPropertiesAcceptors does containsKey propertyName
-			var acceptors as List<ListEntry> 
-				variablesOfPropertiesAcceptors->propertyName
-			var rejects as List<Set<String>>
-				variablesOfPropertiesRejectors->propertyName
-			var size
-				acceptors size				
-			each i in 0..size
-				var keySet as Set<String>
-					propertyVariables keySet
-				each key in keySet
-					if rejects does not contains key
-						acceptors->i += propertyVariables->key
-			
-			var variableOfPropertiesContextsNames as List<String>
-				variablesOfPropertiesContexts->propertyName
-			each contextName in variableOfPropertiesContextsNames
-				var context as Set<String>
-					contexts->contextName->localContext keySet
-				each variableName in context
-					property println
-						property buildString
-							"PROPERTYGENERATOR>"
-							variableName
-				var varKeySet as Set<String>
-					actualVariables keySet
-				each variableName in varKeySet
-					contexts->contextName-> localContext put
-						variableName
-						actualVariables->variableName
-	
-	aux setup takes data as ParseContext
-		set directory
-			new File
-				generator getDirectory
-				"properties"
-		directory mkdirs
-	
-	aux generate takes data as ParseContext
-		var dataList as ParseList
-			data getList
-				"property_definitions"		
-		property generateAll
-			dataList getNewTokens
-			"property_dec"
-	
-	aux addVariableListener takes
-			proprety
-			contextName
-			acceptor as ListEntry
-			rejects as Set<String>
-		if variablesOfPropertiesAcceptors does not containsKey proprety
-			variablesOfPropertiesAcceptors put
-				proprety
-				new ArrayList<ListEntry>
-			variablesOfPropertiesRejectors put
-				proprety
-				new ArrayList<Set<String>>
-			variablesOfPropertiesContexts put
-				proprety
-				new ArrayList<String>
-		variablesOfPropertiesAcceptors->proprety += acceptor
-		variablesOfPropertiesRejectors->proprety += rejects
-		variablesOfPropertiesContexts->proprety += contextName
-	
-	aux addMethodListener takes
-			proprety
-			acceptor as ListEntry
-			rejects as Set<String>
-		if methodsOfPropertiesAcceptors does not containsKey proprety
-			methodsOfPropertiesAcceptors put
-				proprety
-				new ArrayList<ListEntry>
-			methodsOfPropertiesRejectors put
-				proprety
-				new ArrayList<Set<String>>
-		methodsOfPropertiesAcceptors->proprety += acceptor
-		methodsOfPropertiesRejectors->proprety += rejects

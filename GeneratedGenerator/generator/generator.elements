@@ -60,7 +60,7 @@ operatorCall
 noSubjectCall
 	"" Method Name "(" Parameter ")"
 errorCall
-	"System.err.println(" Error Output ");"
+	"throw new UnableToGenerateException(" Token Name "," Error Output ");"
 returnCall
 	"return " Output ";"
 newBooleanCall
@@ -90,7 +90,7 @@ forNumberStatementCall
 tokenForStatementCall
 	"for(IToken.Key " Key Name ":" Token Name ".keySet()){" Body ""
 methodDeclaration
-	"public " Method Type " " Method Name "(" Method Parameters "){" Body "\n\t}"
+	"\tpublic " Method Type " " Method Name "(" Method Parameters "){" Body "\n\t}"
 getMethodDeclaration
 	"public " Method Type " get" Variable Name "(){\n\t\treturn " Member Name ";\n\t}"
 constructor

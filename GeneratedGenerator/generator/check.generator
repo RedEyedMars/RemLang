@@ -20,7 +20,7 @@ check
 			"import lists.*;\n\n"+
 			"public class " Class Name " implements ICheck {\n\tprivate String errorMessage;\n" Members "\n"+
 			"\tpublic " Class Name "(" Parameters ",String errorMessage){\n\t\tthis.errorMessage = errorMessage;\n"+
-			"" Assignment "\n\t}\n\n\tpublic void check(){\n\t\tif(" If Statement "){\n\t\t\tSystem.err.println(errorMessage);\n\t\t}\n\t}\n\n}"
+			"" Assignment "\n\t}\n\n\tpublic void check(){\n\t\tif(!(" If Statement ")){\n\t\t\tSystem.err.println(errorMessage);\n\t\t}\n\t}\n\n}"
 		operator
 			"" Left " " Operator " " Right ""
 		method
@@ -54,7 +54,7 @@ check
 				check camelize
 					'checkClass->checkName
 				"Check"
-		entry checkName = \"checkNameVar"
+		entry checkName = \checkNameVar
 		entry parameters = {}
 		entry members "" = {}
 		entry assignment "" = {}

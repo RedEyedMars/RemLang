@@ -83,6 +83,7 @@ public class ListEntry implements Entry {
 					e.get(builder);
 					delim = delimiter;
 				}
+				
 			}
 		}
 		/*

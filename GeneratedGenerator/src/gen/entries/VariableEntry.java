@@ -6,10 +6,14 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import gen.*;
+import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
 public class VariableEntry implements Entry,ITypeListener {
+	public VariableEntry getSelf(){
+		return this;
+	}
 
 	public final static Integer DEFAULT_ACCESS = 0;
 	public final static Integer PUBLIC_ACCESS = 1;
@@ -18,14 +22,19 @@ public class VariableEntry implements Entry,ITypeListener {
 	private String type = ITypeListener.TYPE_UNKNOWN;
 	private String defaultType = "String";
 	private List<ITypeListener> listeners = (List<ITypeListener>)null;
+	private Boolean isCast = false;
+	private Boolean isEntry = false;
 	private String name = null;
-	private ListEntry assignment = new ListEntry();
+	private Entry assignment = null;
 	private Boolean defined = true;
 	private Boolean isFinal = false;
 	private Boolean isStatic = false;
 	private Integer access = DEFAULT_ACCESS;
 	private Boolean showType = true;
 
+	public VariableEntry(){
+		name = "null";
+	}
 	public VariableEntry(String initialName){
 		name = initialName;
 		assignment = null;
@@ -36,7 +45,7 @@ public class VariableEntry implements Entry,ITypeListener {
 		this.changeType(initialType);
 		assignment = null;
 	}
-	public VariableEntry(String initialName,String initialType,ListEntry newAssignment){
+	public VariableEntry(String initialName,String initialType,Entry newAssignment){
 		name = initialName;
 		this.changeType(initialType);
 		assignment = newAssignment;
@@ -50,6 +59,15 @@ public class VariableEntry implements Entry,ITypeListener {
 	}
 	public List<ITypeListener> getListeners(){
 		return listeners;
+	}
+	public Boolean getIsCast(){
+		return isCast;
+	}
+	public Boolean getIsEntry(){
+		return isEntry;
+	}
+	public void setCast(Boolean newCast){
+		isCast = newCast;
 	}
 	public void setDefaultType(String newDefaultType){
 		if((listeners != null)){
@@ -66,19 +84,27 @@ public class VariableEntry implements Entry,ITypeListener {
 		listeners.add(listener);
 	}
 	public void changeType(String newType){
-		if((listeners != null)){
-			for(ITypeListener listener:listeners){
-				listener.changeType(newType);
+		Boolean myHasType = this.hasType();
+		Boolean leftClause = (isCast == false && myHasType == false);
+		Boolean rightClause = (isCast == false && isEntry == true && newType.contains("Entry"));
+		if((leftClause == true || rightClause == true)){
+			if((listeners != null)){
+				for(ITypeListener listener:listeners){
+					listener.changeType(newType);
+				}
+			}
+			type = newType;
+			if((newType.contains("Entry"))){
+				isEntry = true;
 			}
 		}
-		type = newType;
 	}
 	public Boolean hasType(){
-		return (type.equals("$UNKNOWN"));
+		return (!type.equals("$UNKNOWN"));
 	}
 	public String getName(){
 		return name;
-	}	public ListEntry getAssignment(){
+	}	public Entry getAssignment(){
 		return assignment;
 	}
 	public Boolean getDefined(){
@@ -98,9 +124,24 @@ public class VariableEntry implements Entry,ITypeListener {
 	}
 	public void setAccess(Integer newAccess){
 		access = newAccess;
+		if((assignment == null)){
+			assignment = (Entry)new ListEntry();
+		}
 	}
 	public void setDefined(Boolean isDefined){
 		defined = isDefined;
+	}
+	public void setStatic(Boolean newStatic){
+		isStatic = newStatic;
+	}
+	public void setFinal(Boolean newFinal){
+		isFinal = newFinal;
+	}
+	public Boolean isDefined(Boolean checkCase){
+		return (defined == checkCase);
+	}
+	public void setAssignment(Entry newAssignment){
+		assignment = newAssignment;
 	}
 	public void get(StringBuilder builder){
 		if((type.equals("$UNKNOWN"))){

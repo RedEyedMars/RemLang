@@ -22,7 +22,8 @@ entry variable uses type_listener
 	setAccess takes newAccess
 		set access
 			newAccess
-		set assignment as Entry = {}
+		if assignment is null
+			set assignment as Entry = {}
 	setDefined takes isDefined
 		set defined
 			isDefined
@@ -223,7 +224,6 @@ entry method uses type_listener
 			this changeType
 				defaultType
 
-
 property type_listener
 	constant TYPE_UNKNOWN	
 		"$UNKNOWN"
@@ -232,7 +232,13 @@ property type_listener
 	var defaultType
 		"String"
 	var listeners as List<type_listener>
-		null		
+		null
+	var isCast
+		false
+	var isEntry
+		false
+	setCast takes newCast
+		set isCast = newCast
 	setDefaultType takes newDefaultType
 		if listeners is not null
 			each listener in listeners
@@ -247,12 +253,21 @@ property type_listener
 		listeners add
 			listener
 	changeType takes newType
-		if listeners is not null
-			each listener in listeners
-				listener changeType
-					newType
-		set type
-			newType
+		var myHasType
+			this hasType
+		var leftClause
+			isCast is false and myHasType is false
+		var rightClause
+			isCast is false and isEntry is true and newType does contains "Entry"
+		if leftClause is true or rightClause is true
+			if listeners is not null
+				each listener in listeners
+					listener changeType
+						newType
+			set type
+				newType
+			if newType does contains "Entry"
+				set isEntry = true
 	hasType
 		return
-			type is "$UNKNOWN"
+			type is not "$UNKNOWN"

@@ -6,16 +6,22 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import gen.*;
+import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
 public class MethodEntry implements Entry,ITypeListener {
+	public MethodEntry getSelf(){
+		return this;
+	}
 
-	public final static ListEntry NEW_METHOD = new ListEntry(new StringEntry("new"));
+	public final static StringEntry NEW_METHOD = new StringEntry("new");
 
 	private String type = ITypeListener.TYPE_UNKNOWN;
 	private String defaultType = "String";
 	private List<ITypeListener> listeners = (List<ITypeListener>)null;
+	private Boolean isCast = false;
+	private Boolean isEntry = false;
 	private Entry subject = null;
 	private String methodName = "$NO_METHOD_NAME";
 	private ListEntry parameters = new ListEntry();
@@ -34,6 +40,11 @@ public class MethodEntry implements Entry,ITypeListener {
 		subject = initialSubject;
 		parameters = initialParameters;
 	}
+	public MethodEntry(Entry initialSubject,String initialMethodName,ParametersEntry initialParameters){
+		methodName = initialMethodName;
+		subject = initialSubject;
+		parameters = initialParameters.getListEntry();
+	}
 
 	public String getType(){
 		return type;
@@ -43,6 +54,15 @@ public class MethodEntry implements Entry,ITypeListener {
 	}
 	public List<ITypeListener> getListeners(){
 		return listeners;
+	}
+	public Boolean getIsCast(){
+		return isCast;
+	}
+	public Boolean getIsEntry(){
+		return isEntry;
+	}
+	public void setCast(Boolean newCast){
+		isCast = newCast;
 	}
 	public void setDefaultType(String newDefaultType){
 		if((listeners != null)){
@@ -59,15 +79,23 @@ public class MethodEntry implements Entry,ITypeListener {
 		listeners.add(listener);
 	}
 	public void changeType(String newType){
-		if((listeners != null)){
-			for(ITypeListener listener:listeners){
-				listener.changeType(newType);
+		Boolean myHasType = this.hasType();
+		Boolean leftClause = (isCast == false && myHasType == false);
+		Boolean rightClause = (isCast == false && isEntry == true && newType.contains("Entry"));
+		if((leftClause == true || rightClause == true)){
+			if((listeners != null)){
+				for(ITypeListener listener:listeners){
+					listener.changeType(newType);
+				}
+			}
+			type = newType;
+			if((newType.contains("Entry"))){
+				isEntry = true;
 			}
 		}
-		type = newType;
 	}
 	public Boolean hasType(){
-		return (type.equals("$UNKNOWN"));
+		return (!type.equals("$UNKNOWN"));
 	}
 	public Entry getSubject(){
 		return subject;
@@ -89,6 +117,9 @@ public class MethodEntry implements Entry,ITypeListener {
 	}
 	public void setMethodNames(String newName){
 		methodName = newName;
+	}
+	public void setElementName(String newName){
+		elementName = newName;
 	}
 	public void get(StringBuilder builder){
 		if((type.equals("$UNKNOWN"))){

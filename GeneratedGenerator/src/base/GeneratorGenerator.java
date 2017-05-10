@@ -609,7 +609,6 @@ generation_declaration has tabs
 		VariableEntry variable = new VariableEntry(each.get("eachName").getString(),TYPE_UNKNOWN);
 		VariableEntry iterable = null;
 		String iterableName = null;
-		//TODO IN GENERATOR.GENERATOR ADDDDD THE RANGE THINGY
 		MethodEntry left = null;
 		MethodEntry right = null;
 		if(each.get("iterable")!=null){
@@ -638,16 +637,18 @@ generation_declaration has tabs
 		contexts.get(contextName).get(forName).put(variable.getName(), variable);
 		ListEntry forBody = new ListEntry();
 		forBody.setDelimiter("");
-		List<IToken> bodyElements = each.getAll("body_element");
-		if(bodyElements!=null){
-			for(IToken bodyElement:bodyElements){
-				forBody.add(generateBodyElement(bodyElement,tabs+1,contextName,forName,retType));
+		for(IToken.Key element:each.keySet()){
+			if("body_element".equals(element.getName())){
+				forBody.add(generateBodyElement(each.get(element),tabs+1,contextName,forName,retType));
+			}
+			else if("entry_declaration".equals(element.getName())){
+				forBody.add(generateEntryDeclaration(each.get(element),tabs+1,contextName,forName));
 			}
 		}
 		Entry forStatement = null;
 		if(iterable!=null){
 			forStatement = new ElementEntry(Generators.generator,"forStatementCall",new ListEntry(variable,new StringEntry(iterableName),forBody));
-			
+
 		}
 		else {
 			StringEntry varName = new StringEntry(variable.getName());
@@ -1200,8 +1201,11 @@ all_type_tokens has tabs
 	 * (entry_definition{-1}|arithmatic|class_name ANGLE_BRACES?|entry_name)
 	 */
 	public Entry generateInlineParameters(IToken inline_parameters, ListEntry parameters, String contextName, String contextSubName){
-		for(IToken parameter:inline_parameters.getAll("method_parameter")){
-			parameters.add(generateMethodParameter(parameter,false,contextName,contextSubName));
+		List<IToken> params = inline_parameters.getAll("method_parameter");
+		if(params!=null){
+			for(IToken parameter:params){
+				parameters.add(generateMethodParameter(parameter,false,contextName,contextSubName));
+			}
 		}
 		return null;
 	}
@@ -2034,7 +2038,7 @@ all_type_tokens has tabs
 
 		@Override
 		public void get(StringBuilder builder){
-			
+
 			if(typeEntry.getString().equals(TYPE_UNKNOWN)){
 				typeEntry.set(defaultType);
 				if(this.typeListeners!=null){
@@ -2062,7 +2066,8 @@ all_type_tokens has tabs
 		}
 
 		public void changeType(String newType){
-			if(!isCast&&(!this.hasType()||(getType().contains("Entry")&&newType.contains("Entry")))){
+			if(!isCast&&(!this.hasType()||
+					(getType().contains("Entry")&&newType.contains("Entry")))){
 				this.typeEntry.set(newType);
 				if(this.typeListeners!=null){
 					for(ITypeListener listener:this.typeListeners){
@@ -2192,7 +2197,8 @@ all_type_tokens has tabs
 		}
 
 		public void changeType(String newType){
-			if(!hasType()||newType.startsWith(typeEntry.getString())||(newType.contains("Entry")&&this.typeEntry.getString().contains("Entry"))){
+			if(!hasType()||
+					newType.startsWith(typeEntry.getString())||(newType.contains("Entry")&&this.typeEntry.getString().contains("Entry"))){
 				this.typeEntry.set(newType);
 				for(ITypeListener listener:typeListeners){
 					listener.changeType(newType);

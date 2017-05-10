@@ -5,6 +5,9 @@ import java.util.*;
 import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
+import gen.*;
+import gen.checks.*;
+import gen.properties.*;
 import lists.*;
 
 public interface ITypeListener {
@@ -14,6 +17,9 @@ public interface ITypeListener {
 	public String getType();
 	public String getDefaultType();
 	public List<ITypeListener> getListeners();
+	public Boolean getIsCast();
+	public Boolean getIsEntry();
+	public void setCast(Boolean newCast);
 	public void setDefaultType(String newDefaultType);
 	public void addListener(ITypeListener listener);
 	public void changeType(String newType);

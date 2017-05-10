@@ -255,7 +255,11 @@ public class EntryClassGenerator extends Generator{
 		ListEntry complete = new ListEntry(constants,variableList,constructors,methodList);
 		complete.setDelimiter("\n");
 
-		addFile(directory,trueClassName+"Entry.java", new ListEntry(new StringEntry(trueClassName),implementsProperties,new StringEntry(trueClassName),complete));
+		addFile(directory,trueClassName+"Entry.java", 
+				new ListEntry(new StringEntry(trueClassName),
+						implementsProperties,
+						new StringEntry(trueClassName),
+						complete));
 	}
 	public Entry generateVariableDeclaration(IToken varDeclaration, String contextName, boolean isPublic){
 
