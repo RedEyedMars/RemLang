@@ -1,0 +1,23 @@
+String {
+  value
+  define [" initialValue=[.*] "] { value = initialValue }
+  operator + right {
+    value = concat(value,right)
+    return this
+  }
+  
+}
+Integer {
+  value
+  
+  define left \* right {
+  }
+  define left \+ right {
+  }
+  
+  define initialValue=[[-]?\d+] {
+  	value = initialValue
+  }
+}
+b = 6*3+7*2
+println(b)

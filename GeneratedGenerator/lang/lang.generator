@@ -1,0 +1,389 @@
+uses Listnames Tokens ClassNames IRule Rules NameParser RegexParser MethodNames VariableNames
+import "lang/lang.entries"
+meta base
+	var lazyNameParser as RegexParser
+		static Tokens NAME
+	var rules as List<IParser>
+		static Rules parser
+	var listnames as List<IParser>
+		static Listnames parser
+	var rootParser as IParser
+		static Rules base
+	assignListElementNames takes
+			context as ParseContext
+			root as IToken
+		context addList
+			"method_names"
+		var contextList as ParseList
+			context getList
+				"method_names"
+		var namesParser as NameParser
+			contextList getNamesParser
+		var methodNames as List<IParser>
+			static MethodNames parser
+		each parser as IParser in methodNames
+			var regexParser as RegexParser = parser
+			var methodName
+				regexParser getPattern
+			namesParser addName
+				methodName
+		context addList
+			"variable_names"
+		set contextList as ParseList
+			context getList
+				"variable_names"
+		set namesParser as NameParser
+			contextList getNamesParser
+		var variableNames as List<IParser>
+			static VariableNames parser
+		each parser as IParser in variableNames
+			var regexParser as RegexParser = parser
+			var variableName
+				regexParser getPattern
+			namesParser addName
+				variableName
+		namesParser addName
+			"this"
+		context addList
+			"class_names"
+		var names as ParseList
+			context getList
+				"class_names"
+		var classes as ParseList
+			context getList
+				"class_declarations"
+		token newClassTokens
+			classes getNewTokens
+		var namesNames as NameParser
+			names getNamesParser
+		newClassTokens * to classToken
+			namesNames addName
+				'classToken->className
+		var definedConstructor as IRule
+			static Rules defined_method
+		definedConstructor setup
+
+classifier
+	
+	var classes
+		new HashMap<String,class>
+	var defaultContext
+		class:"$";
+	var constructorAssociations
+		new HashMap<String,String>
+	aux getType takes className
+		return as class
+			classes->className
+	aux getClassNameFromConstructor takes constructorName
+		return
+			constructorAssociations->constructorName
+	aux getStaticMethod takes methodName
+		return as method
+			defaultContext getMethod
+				methodName
+	
+	aux generate takes data as ParseContext
+		entry systemMethod = method:system:; "println";
+		systemMethod addParameter
+			"default"
+		defaultContext setMethod
+			"println(1)"
+			systemMethod
+		set systemMethod = method:system:; "concat";
+		systemMethod addParameter
+			"leftParameter"
+		systemMethod addParameter
+			"rightParameter"
+		defaultContext setMethod
+			"concat(2)"
+			systemMethod
+		var classDecs as ParseList
+			data getList
+				"class_declarations"
+		classifier generateAll			
+			classDecs getNewTokens
+			"class"
+		token rootX
+			data getRoot
+		
+		classifier println
+			classifier completeTokenErrorMessage
+				rootX
+		rootX runtime to element
+			element * to atom
+				generate bodyElement:defaultContext;
+		defaultContext execute
+			defaultContext
+	generate root		
+		entry newClass = null
+		root to element
+			className
+				set newClass as class
+					defaultContext createChild
+						'element 
+				classes put
+					'element
+					newClass
+			definition
+				element class_definition to atom
+					generate classDefinition:newClass;
+	generate classDefinition takes newClass as class
+		classDefinition variable_declaration to element
+			var newBody as executable = newClass
+			generate variableDeclaration:newBody;
+		var className
+			newClass getClassName
+		var defaultConstructor = method:"$()";		
+		defaultConstructor addToBody
+			makeNewObject:className;
+		classDefinition to element
+			variable_declaration
+				generate variableDeclaration:newClass;
+			method_declaration
+				token parameters
+					element->parameters				
+				var parameterNames
+					new ArrayList<String>
+				var methodName
+					new StringBuilder
+				methodName append
+					'element->methodName
+				methodName append
+					"("
+				parameters to parameter
+					variableName
+						parameterNames += 'parameter
+				methodName append
+					parameterNames size
+				methodName append
+					")"
+				entry method = method:'methodName parameterNames;
+				token body
+					element->body
+				body to action
+					body_element
+						generate bodyElement:method;
+					return_call
+						generate returnCall:method;
+				newClass setMethod
+					method getMethodName
+					method
+			define_declaration
+				token parameters
+					element->parameters				
+				var parameterNames
+					new ArrayList<String>
+				var methodName
+					new StringBuilder
+				if element->DEFINE is not null		
+					methodName append
+						"$"
+				parameters to parameter
+					left
+						methodName append
+							'parameter				
+					right
+						methodName append
+							'parameter
+					syntax
+						methodName append
+							'parameter->NON_SPACE
+					namedSyntax
+						methodName append
+							'parameter->NON_SPACE
+				methodName append
+					"("
+				parameters to parameter
+					syntax
+						parameterNames += 'parameter->NON_SPACE
+						methodName append
+							"s"
+					namedSyntax
+						parameterNames += 'parameter->syntaxName
+						methodName append
+							"s"
+					variableName
+						parameterNames += 'parameter
+						methodName append
+							"v"
+				methodName append
+					")"
+				entry method = method:'methodName parameterNames;
+				token body
+					element->body
+				body to action
+					body_element
+						generate bodyElement:method;
+					return_call
+						generate returnCall:method;
+				newClass setMethod
+					method getMethodName
+					method
+				constructorAssociations put
+					method getMethodName
+					newClass getClassName
+		
+		return
+			null
+	generate variableDeclaration takes body as executable
+		if variableDeclaration->method_parameter is null
+			body addToBody
+				setToNull:'variableDeclaration->variableName;
+		else
+			var assignment as executable
+				classifier generateMethodParameter
+					variableDeclaration->method_parameter
+			body addToBody
+				setVariable:'variableDeclaration->variableName assignment;
+		return
+			null
+	
+	generate methodCall takes body as executable
+		var ret as executable = null
+		var subject as executable
+		if methodCall->subject is not null
+			set subject as executable
+				classifier generateMethodParameter
+					methodCall->subject->method_parameter
+		methodCall name_parameter_pair to element
+			if element->defined_operator is not null
+				element defined_operator to operator
+					operator * to atom
+						var currentName
+							->name
+						var parameters
+							new ArrayList<executable>
+						atom to quark
+							syntax
+								parameters+=
+									getData:'quark;
+							else
+								parameters add
+									classifier generateMethodParameter:quark->method_parameter; as executable
+						if subject is not null
+							set ret = callMethodFromScope:subject currentName parameters;
+							set subject = null
+						else
+							set ret = callMethodFromScope:ret currentName parameters;	
+						
+			else
+				var currentName
+					'element->method_names
+				var parameters
+					new ArrayList<executable>
+				element method_parameter to parameter
+					parameters add
+						generate methodParameter:; as executable
+				set currentName
+					classifier buildString
+						currentName
+						"("
+						parameters size :; as Integer
+						")"
+				if subject is not null
+					set ret = callMethodFromScope:subject currentName parameters;
+					set subject = null
+				else
+					set ret = callMethodFromScope:ret currentName parameters;
+		if body is null
+			return as Entry
+				ret
+		else
+			body addToBody
+				ret
+			return
+				null
+	generate constructorCall takes body as executable
+		var constructorName
+		var className
+		var parameters
+			new ArrayList<executable>
+		if constructorCall->class_names is not null
+			constructorCall to element
+				class_names
+					set className = 'className
+				methodParameter
+					parameters add
+						generate methodParameter:; as executable
+			var parameterSize as Integer
+				parameters size
+			set constructorName
+				classifier buildString
+					className
+					"$("
+					'parameterSize
+					")"
+		else
+			token definedMethod
+				constructorCall->defined_method
+			definedMethod * to parameterTokens
+				set constructorName
+					->name
+				var charArray as List<Integer>
+					classifier getCharArray
+						constructorName				
+				var index as Integer
+					constructorName lastIndexOf
+						"("
+				
+				parameterTokens * to parameter
+					set index = index + 1 
+					if charArray->index is 118
+						var methodParameter as executable
+							classifier generateMethodParameter
+								parameter->method_parameter
+						parameters add
+							methodParameter
+					else
+						if charArray->index is 115
+							parameters add
+								getData:'parameter;
+				
+		if body is null
+			return
+				callConstructor:className constructorName parameters;
+		else
+			body addToBody
+				callConstructor:className constructorName parameters;
+			return
+				null
+	generate methodParameter
+		methodParameter to parameter
+			method_parameter
+				return
+					generate methodParameter:;
+			variable_names
+				return
+					getVariable:'parameter;
+			constructor_call
+				return
+					generate constructorCall:null;
+			method_call
+				return
+					generate methodCall:null;
+		return
+			null
+	
+	generate bodyElement takes body as executable
+		bodyElement to element
+			variable_declaration
+				generate variableDeclaration:body;				
+			method_call
+				generate methodCall:body;
+		return
+			null
+	
+	generate returnCall takes body as executable
+		returnCall method_parameter to element
+			var parameter as executable
+				generate methodParameter:;
+			if body is not null
+				body addToBody	
+					executeReturn:parameter;
+				return
+					null
+			else
+				return
+					executeReturn:parameter;
+		return
+			null

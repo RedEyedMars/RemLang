@@ -1,0 +1,193 @@
+custom
+	var packageName = null
+	var directory as File = null
+	elements
+		outline
+			"package " Package Name ";\n\n"+
+			"import java.util.*;\n"+			
+			"import com.rem.parser.*;\n"+
+			"import com.rem.parser.generation.*;\n"+
+			"import com.rem.parser.token.*;\n"+
+			"import com.rem.parser.parser.*;\n"+
+			"import lists.*;\n\n"+
+			"public class " Class Name " extends DefineParser {\n\n"+
+			"\tpublic static final IRule parser = new " Class Name "();\n"+									
+			"\tpublic " Class Name "(){\n"+
+			"\t\tsuper(" Sub Parser ", \"" Rule Name "\");\n"+
+			"\t}\n"+
+			"\t@Override\n"+
+			"\tpublic void setup(){\n" Parameters "\n" Events  "\n\t}\n\n}"		
+		eventDefinition
+			"addEvent(new DefineParser.Event(\"" Event Name "\"){\n"+
+			"\t\t\t@Override\n"+
+			"\t\t\tpublic void onValidate(IToken successfulToken, Map<String,DefineParser.Parameter<?>> parameters){" On Validate Actions "\n\t\t\t}});"		
+		parameterDeclaration
+			"addParameter(\"" Parameter Name "\", " Parameter ");"
+		acceptCall
+			"accept(parameters, \"" Parameter Name "\", " Accept Action ");"
+		parserParameterDefinition
+			"new DefineParser.ParserParameter(" Parser ")"
+		stringParameterDefinition
+			"new DefineParser.StringParameter(" String ")"
+		intParameterDefinition
+			"new DefineParser.IntParameter(" Int ")"			
+		parameterParameterDefinition
+			"((" Cast Name ")parameters.get(\"" Parameter "\"))"				
+		tokenGetString
+			"successfulToken" Steps ".getString()"
+		tokenStep
+			".get(\"" Step Name "\")"
+		newParserCall
+			"new " Parser Class Name "Parser( " Parameters " )"
+		getValueCall
+			"" Argument ".getValue()"
+	aux setup takes data as ParseContext
+		set packageName
+			rule buildString
+				base getSeedName
+				".rules"
+		set directory			
+			new File
+				base getDirectory
+				packageName replace
+					"."
+					"/"
+		directory mkdirs
+	aux generate takes data as ParseContext
+		var decs as ParseList			
+			data getList
+				"rules"
+		custom generateAll
+			decs getNewTokens
+			"custom_declaration"
+	
+	
+	generate root
+		custom generateCustomDefinition
+			root->custom_definition
+	generate customDefinition
+		var name = 'customDefinition->name
+		entry parameters "" = {}
+		entry subParser = null
+		entry events "" = {}
+		var eventMap
+			new HashMap<String,ListEntry>
+		var classMap
+			new HashMap<String,String>
+		customDefinition custom_element to element
+			element to atom
+				definition
+					set subParser = generate rule definition:name 0;
+				define_variable
+					var assignment
+						rule generateDefinition
+							atom->definition
+							'atom -> variableName
+							2
+					classMap put
+						'atom -> variableName
+						"DefineParser.ParserParameter"
+					parameters+=(2 parameterDeclaration { \'atom->variableName parserParameterDefinition { assignment }})
+				event_definition
+					generate custom eventDefinition:events eventMap classMap;
+		var className
+			custom camelize
+				name
+		custom addFile
+			directory
+			custom buildString
+				className
+				".java"
+			{ \packageName \className \className \className subParser \name parameters events }
+		
+		var fileName
+			rule buildString
+				className
+				".java"
+		
+		list addClassList
+			"rulenames"
+			name
+			name
+			null
+		
+		entry rulenames = rule ruleElement [name className]
+		
+		var seedName
+			base getSeedName
+		list addList
+			{rule importRules {[seedName]}}
+			"rules"
+			name
+			rulenames
+		return
+			null
+	generate event_definition takes events as ListEntry, eventMap as Map<String,ListEntry>, classMap as Map<String,String>
+		var eventName = 'event_definition->eventName
+		var acceptorName = 'event_definition->variableName
+		var assignment = null
+		event_definition event_element to element
+			set assignment = generate eventElement:acceptorName classMap;
+		entry actions "" = {}		
+		if eventMap does containsKey eventName
+			set actions as ListEntry = eventMap->eventName 
+			actions+=(4 acceptCall { \acceptorName assignment })
+		else
+			actions+=(4 acceptCall { \acceptorName assignment })
+			eventMap put
+				eventName
+				actions
+			events+=(2 eventDefinition { \eventName actions})
+		return
+			null
+	
+	generate eventElement takes resultName, classMap as Map<String,String>
+		eventElement to atom
+			quote
+				classMap put
+					resultName
+					"DefineParser.StringParameter"
+				return
+					stringParameterDefinition {``'atom`` }
+			NUMBER
+				classMap put
+					resultName
+					"DefineParser.IntParameter"
+				return
+					intParameterDefinition {\'atom }
+			token
+				classMap put
+					resultName
+					"DefineParser.StringParameter"
+				return
+					stringParameterDefinition { generate tokenDef:; }
+			classDefinition				
+				classMap put
+					resultName
+					"DefineParser.ParserParameter"
+				return
+					parserParameterDefinition { generate classDef:classMap; }					
+			custom_variable_names
+				var variableClass
+					classMap get
+						'atom
+				return
+					parameterParameterDefinition {\variableClass \'atom }
+		error eventElement
+			"(999) eventElement could not find appropriate subToken"
+	
+	generate tokenDef
+		entry steps "" = {}
+		tokenDef to element
+			tokenName
+				steps+= tokenStep { \'element }
+		return
+			tokenGetString { steps }
+	
+	generate classDef takes classMap as Map<String,String>
+		entry parameters = {}
+		entry className = \'classDef->className
+		classDef event_element to element
+			parameters+=getValueCall { generate eventElement:"$HIDDEN" classMap; }
+		return
+			newParserCall { className parameters }

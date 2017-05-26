@@ -1,0 +1,152 @@
+token-s
+	[[a-zA-Z0-9]+] as NAME
+	"class " as CLASS
+	"=" as EQUALSIGN
+	"," as COMMA
+	"this " as THIS
+	"->" as FOR_ARROW
+	"new " as NEW
+	"\\" as BACKSLASH
+	[\\s+] as NEWLINE
+	[[^\\s]+] as NON_SPACE
+	"define " as DEFINE
+	"operator " as OPERATOR
+	"return " as RETURN
+	[.*] as WILD
+
+brace-s are Braced
+	[{,}] as METHOD_BODY with ( NEWLINE  | return_call | body_element )*
+	[{,}] as CLASS_BODY with ( NEWLINE  | class_definition )*
+	[[,]] as REGEX with NON_SPACE
+	[[,]] as BRACED_CONSTRUCTOR with NON_SPACE as left define_parameter* NON_SPACE as right
+	[\",\"] as QUOTE with WILD as NON_SPACE 
+	[(,)] as PARAMETERS with  ( variable_declaration ( COMMA variable_declaration )* )?
+	[(,)] as METHOD_PARAMETERS with  ( method_parameter ( COMMA method_parameter )* )? 
+	[(,)] as METHOD_PARAMETER with method_parameter 
+
+define_parameter is silent
+	( NAME as syntaxName in variable_names EQUALSIGN REGEX ) as namedSyntax 
+	NAME as variableName in variable_names
+	(BACKSLASH NON_SPACE) as syntax
+
+custom as define_braced_constructor
+	with BRACED_CONSTRUCTOR
+	define
+		output:defined_method
+		input:method_parameter
+	START: chain<-Chain()		
+	START: parameters <- ""		
+	START: header <- ""
+		variableName: chain<-AddToken(input,->)
+		variableName: parameters<-"v"
+		namedSyntax: chain<-Regex(->syntaxName,->NON_SPACE)
+		namedSyntax: header<-->NON_SPACE
+		namedSyntax: parameters<-"s"
+		syntax: chain<-Exact("syntax",->NON_SPACE)
+		syntax: header<-->NON_SPACE
+		syntax: parameters<-"s"
+		left: open<-->NON_SPACE
+		left: header<-->
+		right: method<-Braced(chain,open,->NON_SPACE)
+		right: header<-->
+	END: constructorName<-"$"
+	END: constructorName<-header	
+	END: constructorName<-"("
+	END: constructorName<-parameters	
+	END: constructorName<-")"
+	END: output<-AddToken(method,constructorName)
+custom as define_constructor
+	with define_parameter+
+	define
+		output:defined_method
+		input:method_parameter
+	START: chain<-Chain()	
+	START: parameters <- ""		
+	START: header <- ""
+		variableName: chain<-AddToken(input,->)
+		variableName: parameters<-"v"
+		namedSyntax: chain<-Regex(->syntaxName,->NON_SPACE)
+		namedSyntax: parameters<-"s"		
+		namedSyntax: header<-->NON_SPACE
+		syntax: chain<-Exact("syntax",->NON_SPACE)		
+		syntax: header<-->NON_SPACE
+		syntax: parameters<-"s"
+	END: constructorName<-"$"
+	END: constructorName<-header	
+	END: constructorName<-"("
+	END: constructorName<-parameters	
+	END: constructorName<-")"
+	END:output<-AddToken(chain,constructorName)
+
+
+custom as define_operator
+	with NON_SPACE as syntax NAME as variableName in variable_names?
+	define
+		output:defined_operator
+		input:method_parameter
+	START: chain<-Chain()	
+	START: parameters <- ""		
+	START: header <- ""
+		variableName: chain<-AddToken(input,->)
+		variableName: parameters<-"v"
+		syntax: chain<-Exact("syntax",->NON_SPACE)		
+		syntax: header<-->NON_SPACE
+		syntax: parameters<-"s"
+	END: constructorName<-header	
+	END: constructorName<-"("
+	END: constructorName<-parameters	
+	END: constructorName<-")"
+	END: output<-AddToken(chain,constructorName)
+
+defined_method is empty choice
+defined_operator is empty choice
+
+
+class_declaration-s are empty
+class_definition-s are empty
+class_name-s are empty
+variable_name-s are empty
+method_name-s
+	[println] as println
+	[concat] as concat
+
+base is silent
+	( NEWLINE | class_declaration as class in class_declarations | body_element as runtime )+
+
+class_declaration is silent
+	NAME as className in class_names CLASS_BODY as definition in class_definitions
+
+class_definition
+	define_declaration
+	method_declaration
+	variable_declaration
+
+body_element
+	method_call
+	variable_declaration
+
+define_declaration	
+	OPERATOR define_operator as parameters METHOD_BODY as body
+	DEFINE define_braced_constructor as parameters METHOD_BODY as body
+	DEFINE define_constructor as parameters METHOD_BODY as body
+
+variable_declaration
+	NAME as variableName in variable_names ( EQUALSIGN method_parameter)?
+
+method_declaration
+	NAME as methodName in method_names PARAMETERS as parameters METHOD_BODY as body
+
+method_parameter
+	method_call
+	METHOD_PARAMETER
+	NEW class_name METHOD_PARAMETERS  as constructor_call
+	defined_method as constructor_call	
+	variable_name
+
+method_call
+	method_parameter as subject ( defined_operator | method_name METHOD_PARAMETERS  ) as name_parameter_pair+
+	( method_name METHOD_PARAMETERS ) as name_parameter_pair+
+
+
+return_call
+	RETURN method_parameter
