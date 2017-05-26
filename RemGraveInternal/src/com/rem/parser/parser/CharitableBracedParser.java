@@ -105,7 +105,7 @@ public class CharitableBracedParser extends ConcreteParser implements IParser{
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setFrontPosition(position);
-				newParseData.resetPaps();
+				newParseData.resetAccessPoints();
 				newParseData.setFrontPosition(data.getFrontPosition());
 				data.invalidate();
 			}

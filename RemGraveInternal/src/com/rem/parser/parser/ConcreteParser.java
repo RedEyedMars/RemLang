@@ -1,11 +1,15 @@
 package com.rem.parser.parser;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.ParseProfiler;
 import com.rem.parser.ParseUtil;
 
 public abstract class ConcreteParser implements IParser{
 
 
+	public boolean isTerminalParser(){
+		return false;
+	}
 	public abstract void real_parse(ParseContext data);
 	
 	protected String name = getClass().getSimpleName();
@@ -15,6 +19,11 @@ public abstract class ConcreteParser implements IParser{
 		handleMustEnd(data);
 		if(ParseUtil.debug){
 			debug_parse(data);
+		}
+		else if(ParseProfiler.running){
+			ParseProfiler.open(data.getFileName(),this.getClass().getName(),System.nanoTime());
+			real_parse(data);
+			ParseProfiler.close(data.getFileName(),this.getClass().getName(),System.nanoTime());
 		}
 		else {
 			real_parse(data);
@@ -40,6 +49,5 @@ public abstract class ConcreteParser implements IParser{
 	public String getName() {
 		return name;
 	}
-	
 	
 }

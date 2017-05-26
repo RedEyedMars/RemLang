@@ -25,19 +25,13 @@ public class AnyListNameParser extends ConcreteParser {
 			return;
 		}
 		data.invalidate();
-		//System.out.println(data+":"+data.getListNames().isEmpty());
-		//data.listParents();
 		for(String listName:data.getListNames()){
 			ParseList list = data.getList(listName); 
 			if(list!=null){
 				NameParser nameParser = data.getList(listName).getNamesParser();
-				if(nameParser.containsNames()){
-					//System.out.println(data.getLine());
-					nameParser.parse(data);
-					//System.out.println(listName+":"+nameParser.getParent()+":"+data.isValid()+":"+data+":"+nameParser.getPattern());
-					if(data.isValid()){
-						return;
-					}
+				nameParser.parse(data);
+				if(data.isValid()){
+					return;
 				}
 			}
 		}

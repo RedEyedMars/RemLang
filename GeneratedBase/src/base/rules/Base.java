@@ -18,14 +18,7 @@ public class Base extends ConcreteRule {
 		isSilent(true);
 		set(
 					new MultipleParser(
-							
-							new ChoiceParser(
-									Tokens.NEWLINE,
-									Comments.parser,
-									new AddTokenToListParser(
-										Rules.rule,"rule","rules"),
-									new AddTokenToListParser(
-										Rules.list_rule,"list_rule","list_rules"))));
+							Rules.base_element));
 
 	}
 

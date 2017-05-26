@@ -55,7 +55,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser SINGULAR = new ExactParser("SINGULAR","tokens","singular");
 	public static final ExactParser SINGLE = new ExactParser("SINGLE","tokens","single");
 	public static final ExactParser DOES = new ExactParser("DOES","tokens","does ");
-	public static final RegexParser ACCESS = new RegexParser("ACCESS","tokens","[-][>]");
+	public static final ExactParser ACCESS = new ExactParser("ACCESS","tokens","->");
 	public static final RegexParser NON_SPACE = new RegexParser("NON_SPACE","tokens","[^\\s]+");
 	public static final ExactParser FLIP = new ExactParser("FLIP","tokens","flip ");
 	public static final ExactParser ERROR = new ExactParser("ERROR","tokens","error");

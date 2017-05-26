@@ -11,10 +11,17 @@ public class BracedParser extends ConcreteParser implements IParser{
 	private String close;
 	private String escapeOpen;
 	private String escapeClose;
-	public BracedParser(IParser initialParser, String name, String listName){
+
+	public BracedParser(IParser initialParser, String parameters){
 		subParser = initialParser;
-		this.name = name;
-		this.listName = listName;
+		this.setup(parameters);
+	}
+	public BracedParser(IParser initialParser, String left, String right){
+		subParser = initialParser;
+		this.open = left;
+		this.close = right;
+		this.escapeOpen = "\\"+left;
+		this.escapeClose = "\\"+right;
 	}
 	public BracedParser(IParser initialParser, String name, String listName, String parameters){
 		subParser = initialParser;
@@ -32,7 +39,14 @@ public class BracedParser extends ConcreteParser implements IParser{
 	@Override
 	public void real_parse(ParseContext data) {
 		if(this.open ==  null || this.close == null){
-			setup(data.getList(listName).get(name).getString());
+			if(listName!=null){
+				setup(data.getList(listName).get(name).getString());
+			}
+			else {
+				data.invalidate();
+				System.err.println("BraceParser has no parameters!");
+				return;
+			}
 		}
 
 		if(data.get().startsWith(open)){
@@ -99,7 +113,7 @@ public class BracedParser extends ConcreteParser implements IParser{
 			//ParseUtil.debug("internal",this,subParser.getClass().getSimpleName()+"{"+newParseData.get()+"}:"+newParseData.isValid());
 			if(!newParseData.isDone()){
 				data.setFrontPosition(position);
-				newParseData.resetPaps();
+				newParseData.resetAccessPoints();
 				newParseData.setFrontPosition(data.getFrontPosition());
 				data.invalidate();
 			}

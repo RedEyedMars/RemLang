@@ -22,8 +22,6 @@ public class TokenExpansion extends ConcreteRule {
 					new ListNameElementParser("token_names"),
 					
 					new ChoiceParser(
-							new AddTokenParser(
-								Tokens.NAME_WORD,"getName"),
 							new WithParser((IRule)Rules.clause_type_tokens,this.tabs),
 							new WithParser((IRule)Rules.all_type_tokens,this.tabs))));
 

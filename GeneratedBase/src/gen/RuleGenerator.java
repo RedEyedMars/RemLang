@@ -103,35 +103,46 @@ public class RuleGenerator extends Generator {
 		IToken silence = root.get("silence");
 		Boolean isSilent = (silence != null && !silence.isEmpty());
 		Generators.rule.println(">",ruleName);
-		ListEntry parameterIndexEntries = new ListEntry();
-		parameterIndexEntries.setDelimiter("");
-		Integer param_count = 0;
-		for(IToken.Key branchKey:root.keySet()){
-			if("definition".equals(branchKey.getName())){
-				IToken branch = root.get(branchKey);
-				ListEntry ruleEntry = new ListEntry();
-				ruleEntry.setDelimiter("");
-				if((isSilent == true)){
-					ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
-				}
-				ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(generateDefinition(branch,ruleName,3))));
-				Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
+		if((root.get("isChoosy") != null)){
+			ListEntry ruleEntry = new ListEntry();
+			ruleEntry.setDelimiter("");
+			if((isSilent == true)){
+				ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
 			}
-			else if("rule_param".equals(branchKey.getName())){
-				IToken branch = root.get(branchKey);
-				String rule_param = branch.getString();
-				Boolean rules_contains = ruleParameterNames.containsKey(ruleName);
-				if((!rules_contains)){
-					ruleParameterNames.put(ruleName,new ArrayList<String>());
-				}
-				List<String> ruleParameterNamesList = (List<String>)ruleParameterNames.get(ruleName);
-				ruleParameterNamesList.add(rule_param);
-				param_declarations.add(new ElementEntry(RuleGenerator.parameterMemberElement,new ListEntry(new StringEntry("Integer"),new StringEntry(rule_param),new StringEntry("Integer"),new StringEntry("0"))));
-				parameterIndexEntries.add(new ElementEntry(RuleGenerator.parameterIndexElement,new ListEntry(new StringEntry(param_count.toString()),new StringEntry(rule_param))));
-				param_count = param_count + 1;
-			}
+			ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(new ElementEntry(RuleGenerator.choiceElement,new ListEntry(new ListEntry())))));
+			Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
 		}
-		Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"params",new ElementEntry(RuleGenerator.parameterGetElement,new ListEntry(parameterIndexEntries)));
+		else {
+			ListEntry parameterIndexEntries = new ListEntry();
+			parameterIndexEntries.setDelimiter("");
+			Integer param_count = 0;
+			for(IToken.Key branchKey:root.keySet()){
+				if("definition".equals(branchKey.getName())){
+					IToken branch = root.get(branchKey);
+					ListEntry ruleEntry = new ListEntry();
+					ruleEntry.setDelimiter("");
+					if((isSilent == true)){
+						ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
+					}
+					ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(generateDefinition(branch,ruleName,3))));
+					Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
+				}
+				else if("rule_param".equals(branchKey.getName())){
+					IToken branch = root.get(branchKey);
+					String rule_param = branch.getString();
+					Boolean rules_contains = ruleParameterNames.containsKey(ruleName);
+					if((!rules_contains)){
+						ruleParameterNames.put(ruleName,new ArrayList<String>());
+					}
+					List<String> ruleParameterNamesList = (List<String>)ruleParameterNames.get(ruleName);
+					ruleParameterNamesList.add(rule_param);
+					param_declarations.add(new ElementEntry(RuleGenerator.parameterMemberElement,new ListEntry(new StringEntry("Integer"),new StringEntry(rule_param),new StringEntry("Integer"),new StringEntry("0"))));
+					parameterIndexEntries.add(new ElementEntry(RuleGenerator.parameterIndexElement,new ListEntry(new StringEntry(param_count.toString()),new StringEntry(rule_param))));
+					param_count = param_count + 1;
+				}
+			}
+			Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"params",new ElementEntry(RuleGenerator.parameterGetElement,new ListEntry(parameterIndexEntries)));
+		}
 	}
 	public Entry generateAtom(IToken atom,String ruleName,Integer tabs){
 		Entry returnEntry = null;

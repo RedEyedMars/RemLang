@@ -36,6 +36,7 @@ public class EntryClassGenerator extends Generator {
 	public static final Element methodDeclarationElement = new Element("methodDeclaration",new String[]{"public ",/*Type*/" ",/*Method Header*/"",/*MethodBody*/""});
 	public static final Element getMethodDeclarationElement = new Element("getMethodDeclaration",new String[]{"public void get(StringBuilder builder){",/*MethodBody*/"\n\t}"});
 	public static final Element constructorDeclarationElement = new Element("constructorDeclaration",new String[]{"public ",/*Type*/"Entry(",/*Parameters*/")",/*MethodBody*/""});
+	public static final Element blankOutputMethodElement = new Element("blankOutputMethod",new String[]{"\n\tpublic void get(StringBuilder builder){\n\t}"});
 	public EntryClassGenerator(){
 		addElement("outline",outlineElement);
 		addElement("body",bodyElement);
@@ -46,6 +47,7 @@ public class EntryClassGenerator extends Generator {
 		addElement("methodDeclaration",methodDeclarationElement);
 		addElement("getMethodDeclaration",getMethodDeclarationElement);
 		addElement("constructorDeclaration",constructorDeclarationElement);
+		addElement("blankOutputMethod",blankOutputMethodElement);
 	}
 	public void setup(ParseContext data){
 		this.addPage();
@@ -60,6 +62,7 @@ public class EntryClassGenerator extends Generator {
 		String className = root.get("entryClassName").getString();
 		Map<String,Entry> variables = (Map<String,Entry>)new LinkedHashMap<String,Entry>();
 		Map<String,Entry> methods = (Map<String,Entry>)new LinkedHashMap<String,Entry>();
+		Map<String,String> methodTypes = (Map<String,String>)new LinkedHashMap<String,String>();
 		ListEntry propertyNames = new ListEntry();
 		ListEntry constants = new ListEntry();
 		constants.setDelimiter("");
@@ -98,10 +101,20 @@ public class EntryClassGenerator extends Generator {
 					Map<String,Map<String,Entry>> propertyMethods = (Map<String,Map<String,Entry>>)Generators.property.getMethodsOfProperties();
 					if((propertyMethods.containsKey(propertyName))){
 						Map<String,Entry> methodMap = (Map<String,Entry>)propertyMethods.get(propertyName);
+						Map<String,Map<String,ITypeListener>> propertyMethodTypes = (Map<String,Map<String,ITypeListener>>)Generators.property.getMethodTypesOfProperties();
+						Map<String,ITypeListener> typeMap = (Map<String,ITypeListener>)propertyMethodTypes.get(propertyName);
 						Set<String> keySet = (Set<String>)methodMap.keySet();
 						for(String key:keySet){
 							methods.put(key,methodMap.get(key));
 							methodNameSet.add(key);
+							if((typeMap.containsKey(key))){
+								if((typeMap.get(key).hasType())){
+									methodTypes.put(key,typeMap.get(key).getType());
+								}
+								else {
+									methodTypes.put(key,typeMap.get(key).getDefaultType());
+								}
+							}
 						}
 					}
 					else {
@@ -113,6 +126,7 @@ public class EntryClassGenerator extends Generator {
 				}
 			}
 		}
+		Boolean hasOutput = false;
 		List<IToken> elementEntryClassElement = root.getAll("entry_class_element");
 		if(elementEntryClassElement != null){
 			for(IToken element:elementEntryClassElement){
@@ -131,7 +145,8 @@ public class EntryClassGenerator extends Generator {
 						IToken atom = element.get(atomKey);
 						String variableName = atom.get("variableName").getString();
 						variables.put(variableName,new TabEntry(1,new ListEntry(generateVariableDeclaration(atom,className,false))));
-						methods.put(variableName,new TabEntry(0,new ListEntry(generateVariableDeclarationMethod(atom,className))));
+						MethodEntry variableGetMethod = (MethodEntry)generateVariableDeclarationMethod(atom,className);
+						methods.put(variableGetMethod.getMethodName(),new TabEntry(0,new ListEntry(variableGetMethod)));
 						variableNameSet.add(variableName);
 					}
 					else if("entry_declaration".equals(atomKey.getName())){
@@ -164,6 +179,7 @@ public class EntryClassGenerator extends Generator {
 					}
 					else if("output_method".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
+						hasOutput = true;
 						MethodEntry header = new MethodEntry("noSubjectCall",new ListEntry(new StringEntry("get"),new StringEntry("StringBuilder builder")));
 						Generators.generator.addContext(className,Generators.generator.LOCAL_CONTEXT,"$OUTPUT",Generators.generator.NO_DEFAULT_TOKEN);
 						ListEntry body = new ListEntry();
@@ -233,8 +249,11 @@ public class EntryClassGenerator extends Generator {
 					else if("entry_method".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
 						MethodEntry header = (MethodEntry)generateEntryMethodHeader(atom,className);
-						TypeEntry type = new TypeEntry(header);
 						String methodName = header.getMethodName();
+						if((methodNameSet.contains(methodName))){
+							header.setDefaultType(methodTypes.get(methodName));
+						}
+						TypeEntry type = new TypeEntry(header);
 						methods.put(methodName,new TabEntry(1,new ListEntry(new ElementEntry(EntryClassGenerator.methodDeclarationElement,new ListEntry(type,header,generateEntryMethodBody(atom,header,className,methodName))))));
 					}
 				}
@@ -258,6 +277,9 @@ public class EntryClassGenerator extends Generator {
 		}
 		ListEntry complete = new ListEntry(constants,variableList,constructors,methodList);
 		complete.setDelimiter("\n");
+		if((hasOutput == false)){
+			methodList.add(new ElementEntry(EntryClassGenerator.blankOutputMethodElement,new ListEntry()));
+		}
 		Generators.entryClass.addFile(directory,Generators.entryClass.buildString(realClassName,"Entry.java"),new ListEntry(new StringEntry(realClassName),implementsProperties,new StringEntry(realClassName),complete));
 	}
 	public Entry generateVariableDeclaration(IToken variableDeclaration,String contextName,Boolean isPublic){
@@ -288,7 +310,9 @@ public class EntryClassGenerator extends Generator {
 		}
 		TypeEntry type = new TypeEntry(variable);
 		String getMethodName = Generators.entryClass.buildString("get",Generators.entryClass.camelize(variableName));
-		return new ElementEntry(GeneratorGenerator.methodDeclarationElement,new ListEntry(type,new StringEntry(getMethodName),new ListEntry(),new TabEntry(2,new ListEntry(new ElementEntry(GeneratorGenerator.returnCallElement,new ListEntry(new StringEntry(variableName)))))));
+		MethodEntry ret = (MethodEntry)new MethodEntry("methodDeclaration",new ListEntry(type,new StringEntry(getMethodName),new ListEntry(),new TabEntry(2,new ListEntry(new ElementEntry(GeneratorGenerator.returnCallElement,new ListEntry(new StringEntry(variableName)))))));
+		ret.setMethodNames(getMethodName);
+		return ret;
 	}
 	public Entry generateEntryMethodHeader(IToken entryMethodHeader,String contextName){
 		String localContext = Generators.generator.LOCAL_CONTEXT;
@@ -305,6 +329,10 @@ public class EntryClassGenerator extends Generator {
 			else if("parameter".equals(elementKey.getName())){
 				IToken element = entryMethodHeader.get(elementKey);
 				parameters.add(Generators.generator.getParameter(element,contextName,Generators.generator.LOCAL_CONTEXT,methodName));
+			}
+			else if("methodType".equals(elementKey.getName())){
+				IToken element = entryMethodHeader.get(elementKey);
+				returnType = element.getString();
 			}
 		}
 		MethodEntry ret = new MethodEntry("noSubjectCall",new ListEntry(new StringEntry(methodName),parameters));

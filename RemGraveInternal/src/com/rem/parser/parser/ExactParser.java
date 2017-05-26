@@ -10,12 +10,12 @@ public class ExactParser extends ConcreteParser {
 	protected String pattern;
 	protected boolean fail;
 
-	public ExactParser(String name, String listName){
+	public ExactParser(String name, String regex){
 		this.name = name;
-		this.listName = listName;
+		setup(regex);		
 	}
-	public ExactParser(String listName){
-		this(IParser.DEFAULT,listName);
+	public ExactParser(String regex){
+		this(IParser.DEFAULT,regex);
 	}
 	
 	public ExactParser(String name, String listName, String regex) {
@@ -23,9 +23,6 @@ public class ExactParser extends ConcreteParser {
 		setup(regex);		
 	}
 	protected void setup(String regex){
-		if("".equals(regex)){
-			//fail = true;
-		}
 		this.pattern = regex;
 	}
 	@Override
@@ -63,5 +60,8 @@ public class ExactParser extends ConcreteParser {
 	public String getPattern() {
 		return pattern;
 	}
-	
+	@Override
+	public boolean isTerminalParser(){
+		return true;
+	}
 }

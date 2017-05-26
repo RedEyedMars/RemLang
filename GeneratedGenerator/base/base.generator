@@ -2,4 +2,5 @@ uses Listnames Rules Tokens Base
 import "base/meta.generator"
 import "base/rule.generator"
 import "base/list.generator"
+import "base/custom.generator"
 

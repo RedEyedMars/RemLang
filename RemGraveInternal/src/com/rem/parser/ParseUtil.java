@@ -94,7 +94,11 @@ public class ParseUtil {
 				}
 				data = ParseContext.copy(data);
 				ParseContext.reset();
+				
 				System.out.println("First-Pass Successful");
+				if(ParseProfiler.running){
+					ParseProfiler.getTop(5);
+				}
 			}
 		}
 		if(data.isValid()){
@@ -103,6 +107,9 @@ public class ParseUtil {
 			data.accumulateLists(controller);
 		}
 
+		if(ParseProfiler.running){
+			ParseProfiler.getTop(5);
+		}
 		result(data,time);
 		if(controller!=null&&data.isDone()){
 			controller.generate(data);

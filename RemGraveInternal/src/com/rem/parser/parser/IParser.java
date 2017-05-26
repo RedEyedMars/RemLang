@@ -11,4 +11,6 @@ public interface IParser {
 
 	public void debug_parse(ParseContext data);
 
+	public boolean isTerminalParser();
+
 }

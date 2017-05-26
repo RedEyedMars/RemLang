@@ -62,8 +62,11 @@ public abstract class Generator {
 		}
 	}
 
+	
 	public void generateAll(ParseContext data) {
-		addPage(getName(), elements.get("outline").getOutline());
+		if(elements.containsKey("outline")){
+			addPage(getName(), elements.get("outline").getOutline());
+		}
 
 		for (IToken.Key key : data.getRoot().keySet()) {
 			generateRoot(data.getRoot().get(key));
@@ -71,7 +74,9 @@ public abstract class Generator {
 	}
 
 	public void generateAll(IToken root,String name) {
-		addPage(getName(), elements.get("outline").getOutline());
+		if(elements.containsKey("outline")){
+			addPage(getName(), elements.get("outline").getOutline());
+		}
 
 		List<IToken> list =root.getAll(name);
 		if(list!=null){
@@ -85,14 +90,19 @@ public abstract class Generator {
 		}
 	}
 
-	public void println(String... subStrings){
+	public void println(Object... subStrings){
 		System.out.println(buildString(subStrings));
 	}
 
-	public String buildString(String... subStrings){
+	public String buildString(Object... objs){
 		StringBuilder builder = new StringBuilder();
-		for(String subString:subStrings){
-			builder.append(subString);
+		for(Object obj:objs){
+			if(obj!=null){
+				builder.append(obj.toString());
+			}
+			else {
+				builder.append("null");
+			}
 		}
 		return builder.toString();
 	}
@@ -117,6 +127,13 @@ public abstract class Generator {
 
 	}
 
+	public List<Integer> getCharArray(String str){
+		List<Integer> ints = new ArrayList<Integer>(str.length());
+		for(int c:str.getBytes()){
+			ints.add(c);
+		}
+		return ints;
+	}
 	public void outputAll() {
 		for (String pageName : pages.keySet()) {
 			pages.get(pageName).output();
@@ -310,9 +327,15 @@ public abstract class Generator {
 					BufferedWriter writer = null;
 					try {
 						StringBuilder builder = new StringBuilder();
+						try {
 						for (int k = 0; k < outLineParts.length; ++k) {
 							builder.append(outLineParts[k]);
 							details.get(i).get(j).getParameter(k).get(builder);
+						}
+						}
+						catch (Exception e){
+							System.err.println(e.getMessage());
+							System.err.println(details.get(i).get(j).filename+":"+builder.toString());
 						}
 						writer = new BufferedWriter(
 								new FileWriter(new File(dirs.get(i), details.get(i).get(j).filename)));
@@ -442,7 +465,8 @@ public abstract class Generator {
 		tokenErrorMessage(offender,builder);
 		return builder.toString();
 	}
-	private static void tokenErrorMessage(IToken offender, StringBuilder builder){		
+	private static void tokenErrorMessage(IToken offender, StringBuilder builder){
+		if(offender!=null)
 		for(IToken.Key key:offender.keySet()){
 			builder.append("(");
 			builder.append(key.getName());

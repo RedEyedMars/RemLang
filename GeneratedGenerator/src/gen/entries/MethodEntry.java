@@ -15,7 +15,7 @@ public class MethodEntry implements Entry,ITypeListener {
 		return this;
 	}
 
-	public final static StringEntry NEW_METHOD = new StringEntry("new");
+	public static final StringEntry NEW_METHOD = new StringEntry("new");
 
 	private String type = ITypeListener.TYPE_UNKNOWN;
 	private String defaultType = "String";
@@ -61,10 +61,10 @@ public class MethodEntry implements Entry,ITypeListener {
 	public Boolean getIsEntry(){
 		return isEntry;
 	}
-	public void setCast(Boolean newCast){
+	public void setCast(Boolean newCast) {
 		isCast = newCast;
 	}
-	public void setDefaultType(String newDefaultType){
+	public void setDefaultType(String newDefaultType) {
 		if((listeners != null)){
 			for(ITypeListener listener:listeners){
 				listener.setDefaultType(newDefaultType);
@@ -72,13 +72,13 @@ public class MethodEntry implements Entry,ITypeListener {
 		}
 		defaultType = newDefaultType;
 	}
-	public void addListener(ITypeListener listener){
+	public void addListener(ITypeListener listener) {
 		if((listeners == null)){
 			listeners = new ArrayList<ITypeListener>();
 		}
 		listeners.add(listener);
 	}
-	public void changeType(String newType){
+	public void changeType(String newType) {
 		Boolean myHasType = this.hasType();
 		Boolean leftClause = (isCast == false && myHasType == false);
 		Boolean rightClause = (isCast == false && isEntry == true && newType.contains("Entry"));
@@ -94,7 +94,16 @@ public class MethodEntry implements Entry,ITypeListener {
 			}
 		}
 	}
-	public Boolean hasType(){
+	public void setType(String newType) {
+		if((listeners != null)){
+			for(ITypeListener listener:listeners){
+				listener.setType(newType);
+			}
+		}
+		type = newType;
+		isEntry = newType.contains("Entry");
+	}
+	public Boolean hasType() {
 		return (!type.equals("$UNKNOWN"));
 	}
 	public Entry getSubject(){

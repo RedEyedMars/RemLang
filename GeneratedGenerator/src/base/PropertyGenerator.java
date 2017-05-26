@@ -183,4 +183,9 @@ public class PropertyGenerator extends Generator{
 		methodsOfPropertiesAcceptors.get(proprety).add(acceptor);
 		methodsOfPropertiesRejectors.get(proprety).add(rejects);
 	}
+
+	public String getPropertyMethodType(String key) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

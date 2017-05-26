@@ -1,8 +1,11 @@
 package com.rem.parser;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,15 +13,18 @@ import java.util.Stack;
 import java.util.TreeSet;
 
 import com.rem.parser.generation.FlowController;
+import com.rem.parser.parser.ConcreteListParser;
 import com.rem.parser.parser.IParser;import com.rem.parser.parser.NameParser;
 import com.rem.parser.token.BranchToken;
 import com.rem.parser.token.IToken;
+import com.rem.parser.token.IToken.Key;
 
 public class ParseContext {
 
 	private static Set<String> listnames = new HashSet<String>();
 	private static Map<String,Map<String,ParseContext>> namedContexts = new HashMap<String,Map<String,ParseContext>>();
 	private static Map<String,Map<Integer,ParseContext>> allSubContexts = new HashMap<String,Map<Integer,ParseContext>>();
+	private static List<Object[]> parameterList = new ArrayList<Object[]>();;
 	//private List<ParseContext> subContexts = new ArrayList<ParseContext>();
 
 	private Map<String,ParseList> lists = new HashMap<String,ParseList>();
@@ -26,8 +32,9 @@ public class ParseContext {
 	private static IParser rootParser;
 	private IToken currentToken;
 	private IToken rootToken;
-	private Stack<Object[]> parameters;// = new Stack<Object[]>();
-	private Map<Integer,Map<IParser,Set<AccessPoint>>> paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
+	private Stack<Integer> parameterIndex;
+	private Map</*Position*/Integer,Map</*Parameter*/Integer,AccessPoint>> accessPoints = 
+			new HashMap</*Position*/Integer,Map</*Parameter*/Integer,AccessPoint>>();
 
 	private ParseContext parentContext;
 
@@ -51,7 +58,8 @@ public class ParseContext {
 		this.furthestPoint = new FurthestPoint();
 		this.furthestPoint.position=0;
 		this.furthestPoint.parser=rootParser.getName();
-		this.parameters = new Stack<Object[]>();
+		parameterIndex = new Stack<Integer>();
+		parameterIndex.push(-1);	
 
 		furthestPosition.put(fileName, this.furthestPoint);
 		if(!allSubContexts.containsKey(fileName)){
@@ -69,7 +77,7 @@ public class ParseContext {
 		this.currentToken = new BranchToken();
 		this.currentToken.setParent(data.currentToken);
 		this.furthestPoint = data.furthestPoint;
-		this.parameters = data.parameters;
+		this.parameterIndex = data.parameterIndex;
 		List<String> newListNames = new ArrayList<String>();
 		List<String> newSingleNames = new ArrayList<String>();
 		for(String listName:data.getListNames()){
@@ -96,7 +104,7 @@ public class ParseContext {
 		this.rootToken = positional.rootToken;
 		this.currentToken = positional.currentToken;
 		this.furthestPoint = positional.furthestPoint;
-		this.parameters = positional.parameters;
+		this.parameterIndex = positional.parameterIndex;
 		this.frontPosition = positional.frontPosition;
 		//if(fileName.contains("test")){
 		//	//System.out.println("Create::"+this+":2:"+positional.getLineNumber(positional.getFrontPosition()));
@@ -131,6 +139,7 @@ public class ParseContext {
 	public static ParseContext copy(ParseContext data) {
 		ParseContext copy = new ParseContext(rootParser,data.fileName, data.file);
 		copy.lists = data.lists;
+		copy.resetAccessPoints();
 		return copy;
 	}
 
@@ -143,15 +152,15 @@ public class ParseContext {
 				for(String listName:context.lists.keySet()){
 					context.lists.get(listName).reset();
 				}
-				context.paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
+				context.accessPoints.clear();
 				context.furthestPoint.position=0;
 				context.furthestPoint.parser=rootParser.getName();
 			}
 		}
 	}
 
-	public void resetPaps(){
-		this.paps = new HashMap<Integer,Map<IParser,Set<AccessPoint>>>();
+	public void resetAccessPoints(){
+		this.accessPoints.clear();
 	}
 
 	public ParseContext getContextFromPosition(){
@@ -245,100 +254,139 @@ public class ParseContext {
 		return file;
 	}
 
-	private class AccessPoint implements Comparable<AccessPoint>{
-		private int index;
-		private Object[] context = null;
-		public AccessPoint(int index){
-			this.index = index;
-		}
-		public AccessPoint(int index, Object[] context){
-			this.index = index;
-			this.context = context;
-		}
-		@Override
-		public int hashCode(){
-			return index;
-		}
-		@Override
-		public boolean equals(Object obj){
-			if(obj instanceof Integer){
-				return ((Integer)obj) == index; 
-			}
-			else return super.equals(obj);
-		}
-		@Override
-		public int compareTo(AccessPoint o) {
-			if(o.context == null||context==null){
-				return o.index-index;
-			}
-			else if(o.context != null&&context!=null&&context.length==o.context.length){
-				if(o.index!=index){
-					return o.index-index;
-				}
-				for(int i=0;i<context.length;++i){
-					if(!context[i].equals(o.context)){
-						return -1;
-					}
-				}
-				return 0;
-			}
-			else return o.index-index;
-		}
-	}
 
-	public void setPap(IParser parent, int index){
-		if(!paps.containsKey(frontPosition)){
-			paps.put(frontPosition,new HashMap<IParser,Set<AccessPoint>>());
+	public static class AccessSuccess {
+		private IToken token;
+		private IParser path;
+		private int position;
+		public AccessSuccess(IParser newPath,int newPosition, IToken newToken) {
+			token = newToken;
+			position = newPosition;
+			path = newPath;
 		}
-		if(!paps.get(frontPosition).containsKey(parent)){
-			paps.get(frontPosition).put(parent, new TreeSet<AccessPoint>());
+		public IToken getToken() {
+			return token;
 		}
-		if(parameters.isEmpty()){
-			paps.get(frontPosition).get(parent).add(new AccessPoint(index));
-		}
-		else {
-			paps.get(frontPosition).get(parent).add(new AccessPoint(index,parameters.peek()));
+		public int getPosition(){
+			return position;
 		}
 	}
-	public void resetPap(int pos, IParser parent, int index){
-		Map<IParser,Set<AccessPoint>> pap = paps.get(pos);
-
-		if(pap!=null){
-			Set<AccessPoint> set = pap.get(parent);
-			if(set!=null){
-				set.remove(new AccessPoint(index));
+	public static class AccessPoint {
+		private List<AccessSuccess> successes = new ArrayList<AccessSuccess>(); 
+		private LinkedList<IParser> path = new LinkedList<IParser>();
+		public void printPath(IParser[] printPath){
+			System.out.print("[");
+			for(IParser parser:printPath){
+				System.out.print(parser);
+				System.out.print(",");
 			}
+			System.out.print("]");
 		}
-	}
-	public boolean isAtPreviousAccessPoint(IParser parent, int index){
-		if(!paps.containsKey(frontPosition)){
-			paps.put(frontPosition,new HashMap<IParser,Set<AccessPoint>>());
+		private List<IParser[]> restricted = new ArrayList<IParser[]>();
+		public AccessPoint(){
 		}
-		if(!paps.get(frontPosition).containsKey(parent)){
-			paps.get(frontPosition).put(parent, new TreeSet<AccessPoint>());
-		}
-		for(AccessPoint point: paps.get(frontPosition).get(parent)){
-			if(point.index == index){
-				if(parameters.isEmpty()&&point.context==null){
-					return true;
+		public AccessSuccess access(IParser incoming){
+			IParser[] path = getPathWith(incoming);
+			for(int i=0;i<successes.size();++i){
+				if(successes.get(i).path==incoming){
+					return successes.get(i);
 				}
-				else if(!parameters.isEmpty()&&point.context!=null&&parameters.peek().length==point.context.length){
-					boolean isSame = true;
-					for(int i=0;i<point.context.length;++i){
-						if(!point.context[i].equals(parameters.peek()[i])){
-							isSame = false;
+			}
+			return null;
+		}
+		public void succeed(IParser parser,int newPosition, IToken token) {
+			//printPath(getPath());
+			//System.out.println("<");
+			successes.add(new AccessSuccess(parser,newPosition,token));
+		}
+		public void ascend(){
+			path.pop();
+		}
+		public void descend(IParser newParser){
+			restricted.add(getPathWith(newParser));
+			path.add(newParser);
+		}
+
+		public boolean canUse(IParser question){
+			IParser[] other = getSingletonPathWith(question);
+			for(IParser[] mine:restricted){
+				int shorten = mine.length-other.length;
+				for(;shorten>=0;--shorten){
+					boolean same = true;
+					int j=mine.length-1;
+					int i=other.length-1;
+					for(;i>=0;--i){
+						if(other[i]!=mine[j]){
+							same = false;
 							break;
-						}
+						}						
+						--j;
 					}
-					if(isSame){
-						return true;
+					if(same){
+						return false;
 					}
 				}
+
+				//printPath(mine);
+				//System.out.println("VS");
+				//printPath(other);
+				//System.out.println(":<!");
 			}
+			return true;
 		}
-		return false;
+		private IParser[] getSingletonPathWith(IParser addition){
+			int start=path.size()-1;
+			while(start>=0){
+				if(path.get(start)==addition){
+					break;
+				}
+				else {
+					--start;
+				}
+			}
+			++start;
+			IParser[] newPath = new IParser[path.size()-start+1];
+			int i=0;
+			for(;start<path.size();++start){
+				newPath[i] = path.get(start);
+				++i;
+			}
+			newPath[i] = addition;
+			return newPath;
+		}
+		private IParser[] getPathWith(IParser addition){
+			IParser[] newPath = new IParser[path.size()+1];
+			int i=0;
+			for(;i<path.size();++i){
+				newPath[i] = path.get(i);
+			}
+			newPath[i] = addition;
+			return newPath;
+		}
+		private IParser[] getPath(){
+			IParser[] newPath = new IParser[path.size()];
+			
+			for(int i=0;i<path.size();++i){
+				newPath[i] = path.get(i);
+			}
+			return newPath;
+		}
 	}
 
+
+	public AccessPoint getAccessPoint() {
+		Map<Integer,AccessPoint> points = accessPoints.get(frontPosition);
+		if(points == null){
+			points = new HashMap<Integer,AccessPoint>();
+			accessPoints.put(frontPosition, points);
+		}
+		AccessPoint accessPoint = points.get(parameterIndex.peek());
+		if(accessPoint == null){
+			accessPoint = new AccessPoint();
+			points.put(parameterIndex.peek(), accessPoint);
+		}
+		return accessPoint;
+	}
 	public ParseList getList(String listName) {
 		if(lists.containsKey(listName)){
 			return lists.get(listName);
@@ -435,10 +483,6 @@ public class ParseContext {
 		System.err.println(ParseUtil.currentParser+"("+frontPosition +"):"+ error);
 	}
 
-	public String printPap(IParser parser) {
-		return paps.get(frontPosition).get(parser).contains(parser)+" at "+frontPosition;
-	}
-
 	public boolean mustEnd() {
 		return mustEnd;
 	}
@@ -447,13 +491,33 @@ public class ParseContext {
 	}
 
 	public Object getParameter(int i) {
-		return parameters.peek()[i];
+		return parameterList.get(parameterIndex.peek())[i];
 	}
-	public void pushParameters(Object[] values){
-		parameters.push(values);
+	public synchronized void pushParameters(Object[] values){
+		for(int i=0;i<parameterList.size();++i){
+			if(parameterList.get(i)!=null&&parameterList.get(i).length==values.length){
+				Object[] compare = parameterList.get(i);
+				boolean isSame = true;
+				for(int j=0;j<compare.length;++j){
+					if(!compare[j].equals(values[j])){
+						isSame = false;
+						break;
+					}
+				}
+				if(isSame){
+					parameterIndex.push(i);
+					return;
+				}
+			}
+		}
+		parameterIndex.push(addParameters(values));
+	}
+	private synchronized int addParameters(Object[] values){
+		parameterList.add(values);
+		return parameterList.size()-1;
 	}
 	public void popParameters(){
-		parameters.pop();
+		parameterIndex.pop();
 	}
 
 
@@ -484,7 +548,8 @@ public class ParseContext {
 	public void setFile(String file){
 		this.file = file;
 		this.length = file.length();
-		this.parameters = new Stack<Object[]>();
+		this.parameterIndex = new Stack<Integer>();
+		this.parameterIndex.push(-1);	
 	}
 
 	public IParser getRootParser() {
@@ -556,21 +621,28 @@ public class ParseContext {
 	}
 
 	public String getParameters() {
-		List<Object[]> nParameters = new ArrayList<Object[]>();
+		List<Integer> nParameters = new ArrayList<Integer>();
 		StringBuilder builder = new StringBuilder();
 		builder.append("\n");
-		while(!parameters.isEmpty()){
-			Object[] objs = parameters.pop();
-			for(Object obj:objs){
+		while(!parameterIndex.isEmpty()){
+			Integer objs = parameterIndex.pop();
+			for(Object obj:parameterList.get(objs)){
 				builder.append(obj);
 			}
 			builder.append(("\n"));
 			nParameters.add(objs);
 		}
 		for(int i=nParameters.size()-1;i>=0;--i){
-			parameters.push(nParameters.get(i));
+			parameterIndex.push(nParameters.get(i));
 		}
 		return builder.toString();
+	}
+
+	public int getEnd() {
+		if(backPosition==-1){
+			return length;
+		}
+		else return backPosition;
 	}
 
 

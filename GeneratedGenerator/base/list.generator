@@ -26,6 +26,8 @@ list
 			"\tpublic static final " Class "Parser " Name " = new " Class "Parser(" Parameters ");\n"
 		parser
 			"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t" Rules ");\n"
+		parserContainer
+			"new NamedParserContainer(" Name "," Parser ")"
 	
 	aux setup takes data as ParseContext
 		set directory	
@@ -147,17 +149,24 @@ list
 								listName
 								"$HIDDEN"
 							5
-				token parser
-					element -> parser
-				entry parserEntry = null
-				if parser is not null
-					set parserEntry
+				
+				entry parserEntry = {}
+				element parser to parserToken
+					var newParserEntry = {}
+					newParserEntry +=
 						rule generateDefinition
-							parser -> definition
+							parserToken -> definition
 							list buildString
 								listName
 								"$HIDDEN"
-							5
+							5					
+					if parserToken->parserName is not null
+						newParserEntry += ``'parserToken->parserName``
+						parserEntry += parserContainer |newParserEntry|
+					else
+						parserEntry += newParserEntry
+				if parserEntry is empty
+					set parserEntry = null
 				list addClassList
 					listName
 					name
@@ -196,9 +205,6 @@ list
 		if parameter is not null
 			params add
 				parameter
-		if parser is not null
-			params add
-				parser
 		params add
 			``name``
 		params add
@@ -214,7 +220,10 @@ list
 		
 		var associatedClassName
 			listAssociatedClass get
-				listName
+				listName		
+		if parser is not null
+			params add
+				parser
 		entry listEntry = class {
 			[associatedClassName]
 			[name]

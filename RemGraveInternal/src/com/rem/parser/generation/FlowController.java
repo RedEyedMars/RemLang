@@ -7,6 +7,7 @@ import com.rem.parser.ParseContext;
 import com.rem.parser.ParseUtil;
 import com.rem.parser.parallelism.JobCreator;
 import com.rem.parser.parser.IParser;
+import com.rem.parser.parser.RegexParser;
 import com.rem.parser.token.IToken;
 
 public abstract class FlowController {
@@ -31,7 +32,7 @@ public abstract class FlowController {
 	public abstract List<IParser> getRules();
 	public abstract List<IParser> getListnames();
 	public abstract Generator[] getGenerators();
-	public abstract IParser getLazyNameParser();
+	public abstract RegexParser getLazyNameParser();
 	public abstract void assignListElementNames(ParseContext data, IToken rootToken);
 	public abstract void setup(ParseContext data);
 	

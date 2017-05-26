@@ -43,8 +43,17 @@ public class ListRule extends ConcreteRule {
 													
 														new ChainParser(
 															Tokens.FROM,
-															new AddTokenParser(
-																Braces.SEMICOLONED,"parser"))),
+															new ManyParser(
+																	new AddTokenParser(
+																		
+																		new ChainParser(
+																			new OptionalParser(
+																					
+																						new ChainParser(
+																							new AddTokenParser(
+																								Tokens.NAME,"parserName"),
+																							Tokens.COLON)),
+																			Braces.SEMICOLONED),"parser")))),
 											new OptionalParser(
 													
 														new ChainParser(

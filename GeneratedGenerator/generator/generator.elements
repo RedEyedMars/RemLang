@@ -63,6 +63,8 @@ errorCall
 	"throw new UnableToGenerateException(" Token Name "," Error Output ");"
 returnCall
 	"return " Output ";"
+returnCallWithCast
+	"return (" Type ")" Output ";"
 newBooleanCall
 	"(" Parameters ")"
 setCall

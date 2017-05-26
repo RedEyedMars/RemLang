@@ -12,7 +12,10 @@ public class ChainParser extends ConcreteListParser implements IParser{
 	}
 	@Override
 	public void real_parse(ParseContext data) {
-		if(isEmpty())return;
+		if(isEmpty()){
+			data.invalidate();
+			return;
+		}
 		int index = 0;
 		int position = data.getFrontPosition();
 		get(index++).parse(data);

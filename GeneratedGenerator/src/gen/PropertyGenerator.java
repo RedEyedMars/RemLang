@@ -15,6 +15,7 @@ public class PropertyGenerator extends Generator {
 
 	private File directory = null;
 	private Map<String,Map<String,Entry>> methodsOfProperties = (Map<String,Map<String,Entry>>)new HashMap<String,Map<String,Entry>>();
+	private Map<String,Map<String,ITypeListener>> methodTypesOfProperties = (Map<String,Map<String,ITypeListener>>)new HashMap<String,Map<String,ITypeListener>>();
 	private Map<String,Map<String,Entry>> variablesOfProperties = (Map<String,Map<String,Entry>>)new HashMap<String,Map<String,Entry>>();
 	private Map<String,Map<String,VariableEntry>> actualVariablesOfProperties = (Map<String,Map<String,VariableEntry>>)new HashMap<String,Map<String,VariableEntry>>();
 	private Map<String,List<String>> variablesOfPropertiesContexts = (Map<String,List<String>>)new HashMap<String,List<String>>();
@@ -32,7 +33,7 @@ public class PropertyGenerator extends Generator {
 			"import com.rem.parser.token.*;\n"+
 			"import gen.*;\n"+
 			"import gen.checks.*;\n"+
-			"import gen.properties.*;\n"+
+			"import gen.entries.*;\n"+
 			"import lists.*;\n\n"+
 			"public interface ",/*Class Name*/" {\n",/*Contents*/"\n}"});
 	public static final Element variableMethodElement = new Element("variableMethod",new String[]{"public ",/*Type*/" get",/*Variable Name*/"();"});
@@ -51,6 +52,7 @@ public class PropertyGenerator extends Generator {
 		Map<String,VariableEntry> actualVariables = (Map<String,VariableEntry>)new LinkedHashMap<String,VariableEntry>();
 		Map<String,Entry> propertyVariables = (Map<String,Entry>)new LinkedHashMap<String,Entry>();
 		Map<String,Entry> propertyMethods = (Map<String,Entry>)new LinkedHashMap<String,Entry>();
+		Map<String,ITypeListener> propertyMethodTypes = (Map<String,ITypeListener>)new LinkedHashMap<String,ITypeListener>();
 		ListEntry bareProperty = new ListEntry();
 		bareProperty.setDelimiter("");
 		Map<String,Map<String,Map<String,VariableEntry>>> contexts = (Map<String,Map<String,Map<String,VariableEntry>>>)Generators.generator.getContexts();
@@ -71,9 +73,9 @@ public class PropertyGenerator extends Generator {
 						IToken atom = element.get(atomKey);
 						String variableName = atom.get("variableName").getString();
 						Entry variable = Generators.entryClass.generateVariableDeclaration(atom,className,false);
-						Entry method = Generators.entryClass.generateVariableDeclarationMethod(atom,className);
+						MethodEntry method = (MethodEntry)Generators.entryClass.generateVariableDeclarationMethod(atom,className);
 						propertyVariables.put(variableName,new TabEntry(1,new ListEntry(variable)));
-						propertyMethods.put(variableName,new TabEntry(0,new ListEntry(method)));
+						propertyMethods.put(method.getMethodName(),new TabEntry(0,new ListEntry(method)));
 						VariableEntry realVar = (VariableEntry)contexts.get(className).get(localContext).get(variableName);
 						actualVariables.put(variableName,realVar);
 						TypeEntry type = new TypeEntry(realVar);
@@ -84,10 +86,11 @@ public class PropertyGenerator extends Generator {
 						IToken atom = element.get(atomKey);
 						MethodEntry header = (MethodEntry)Generators.entryClass.generateEntryMethodHeader(atom,className);
 						TypeEntry type = new TypeEntry(header);
-						Entry methodBody = (Entry)Generators.entryClass.generateEntryMethodBody(atom,header,className,header.getMethodName());
+						Entry methodBody = Generators.entryClass.generateEntryMethodBody(atom,header,className,header.getMethodName());
 						ListEntry method = new ListEntry(new StringEntry("\tpublic "),type,new StringEntry(" "),header,new StringEntry(" "),methodBody);
 						method.setDelimiter("");
 						propertyMethods.put(header.getMethodName(),new TabEntry(0,new ListEntry(method)));
+						propertyMethodTypes.put(header.getMethodName(),header);
 						bareProperty.add(new TabEntry(1,new ListEntry(new ElementEntry(PropertyGenerator.methodElement,new ListEntry(type,header)))));
 					}
 				}
@@ -97,13 +100,14 @@ public class PropertyGenerator extends Generator {
 		complete.setDelimiter("\n");
 		Generators.property.addEntry(directory,Generators.property.buildString(className,".java"),"property",complete);
 		methodsOfProperties.put(propertyName,propertyMethods);
+		methodTypesOfProperties.put(propertyName,propertyMethodTypes);
 		variablesOfProperties.put(propertyName,propertyVariables);
 		actualVariablesOfProperties.put(propertyName,actualVariables);
 		if((methodsOfPropertiesAcceptors.containsKey(propertyName))){
 			List<ListEntry> acceptors = (List<ListEntry>)methodsOfPropertiesAcceptors.get(propertyName);
 			List<Set<String>> rejects = (List<Set<String>>)methodsOfPropertiesRejectors.get(propertyName);
 			Integer size = acceptors.size();
-			for(Integer  i = 0;i<size;++i){
+			for(Integer i = 0;i<size;++i){
 				Set<String> keySet = (Set<String>)propertyMethods.keySet();
 				for(String key:keySet){
 					if((!rejects.get(i).contains(key))){
@@ -116,7 +120,7 @@ public class PropertyGenerator extends Generator {
 			List<ListEntry> acceptors = (List<ListEntry>)variablesOfPropertiesAcceptors.get(propertyName);
 			List<Set<String>> rejects = (List<Set<String>>)variablesOfPropertiesRejectors.get(propertyName);
 			Integer size = acceptors.size();
-			for(Integer  i = 0;i<size;++i){
+			for(Integer i = 0;i<size;++i){
 				Set<String> keySet = (Set<String>)propertyVariables.keySet();
 				for(String key:keySet){
 					if((!rejects.contains(key))){
@@ -171,6 +175,10 @@ public class PropertyGenerator extends Generator {
 
 	public Map<String,Map<String,Entry>> getMethodsOfProperties(){
 		return methodsOfProperties;
+	}
+
+	public Map<String,Map<String,ITypeListener>> getMethodTypesOfProperties(){
+		return methodTypesOfProperties;
 	}
 
 	public Map<String,Map<String,Entry>> getVariablesOfProperties(){

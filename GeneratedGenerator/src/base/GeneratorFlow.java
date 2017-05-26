@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.ParseProfiler;
 import com.rem.parser.generation.FlowController;
 import com.rem.parser.generation.Generator;
 import com.rem.parser.parser.IParser;
@@ -22,6 +23,7 @@ public class GeneratorFlow extends FlowController {
 
 	public static void main(String[] args){
 
+		//ParseProfiler.running = true;
 		if(args.length == 1){
 			new GeneratorFlow().parse(args[0]);
 		}
@@ -162,7 +164,7 @@ public class GeneratorFlow extends FlowController {
 	}
 
 	@Override
-	public IParser getLazyNameParser() {
+	public RegexParser getLazyNameParser() {
 		return Tokens.NAME;
 	}
 

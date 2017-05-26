@@ -69,6 +69,7 @@ public class EntryClassGenerator extends Generator{
 		String className = root.get("entryClassName").getString();
 		Map<String,Entry> variables = new LinkedHashMap<String,Entry>();
 		Map<String,Entry> methods = new LinkedHashMap<String,Entry>();
+		Map<String,String> methodTypes = new LinkedHashMap<String,String>();
 		ListEntry propertyNames = new ListEntry();
 		ListEntry constants = new ListEntry();
 		constants.setDelimiter("");
@@ -102,6 +103,7 @@ public class EntryClassGenerator extends Generator{
 						for(String key:Generators.property.getPropertyMethods().get(propertyName).keySet()){
 							methods.put(key,Generators.property.getPropertyMethods().get(propertyName).get(key));
 							methodNameSet.add(key);
+							methodTypes.put(key, Generators.property.getPropertyMethodType(key));
 						}
 					}
 					else {
@@ -228,6 +230,9 @@ public class EntryClassGenerator extends Generator{
 				else if("entry_method".equals(key.getName())){
 					GeneratorGenerator.MethodEntry header = 
 							(GeneratorGenerator.MethodEntry) Generators.entryClass.generateEntryMethodHeader(element.get(key), className);
+					if(methodNameSet.contains(element.get(key).get("methodName").getString())){
+						methods.get(element.get(key).get("methodName").getString());
+					}
 					GeneratorGenerator.TypeEntry type = Generators.generator.new TypeEntry(header);
 					methods.put(header.getMethodName(),
 							new TabEntry(1,new ElementEntry(Generators.entryClass,"methodDeclaration",new ListEntry(

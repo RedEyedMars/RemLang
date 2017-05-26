@@ -23,7 +23,9 @@ public class Listnames extends ParseList {
 	public static final RegexParser rule = new RegexParser("rule","listnames","rules\b");
 	public static final RegexParser rule_parameter = new RegexParser("rule_parameter","listnames","rule_parameters\b");
 	public static final RegexParser definition = new RegexParser("definition","listnames","definitions\b");
+	public static final RegexParser custom_declaration = new RegexParser("custom_declaration","listnames","custom_declarations\b");
+	public static final RegexParser custom_variable_name = new RegexParser("custom_variable_name","listnames","custom_variable_names\b");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				comment,token,brace,altbrace,list_rule,rule,rule_parameter,definition);
+				comment,token,brace,altbrace,list_rule,rule,rule_parameter,definition,custom_declaration,custom_variable_name);
 }

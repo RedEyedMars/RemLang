@@ -4,6 +4,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.ParseProfiler;
 import com.rem.parser.token.NodeToken;
 
 public class RegexParser extends ConcreteParser implements IParser{
@@ -14,17 +15,24 @@ public class RegexParser extends ConcreteParser implements IParser{
 	private String regex = "";
 	private boolean fail = false;
 
-	public RegexParser(String name, String listName){
+	public RegexParser(String name, String regex){
 		this.name = name;
-		this.listName = listName;
+		this.regex = regex;
+		setup(regex);		
 	}
-	public RegexParser(String listName){
-		this(IParser.DEFAULT,listName);
+	public RegexParser(String regex){
+		this(IParser.DEFAULT,regex);
 	}
 	
 	public RegexParser(String name, String listName, String regex) {
 		this(name,listName);
 		setup(regex);		
+	}
+	public RegexParser(RegexParser otherParser) {
+		listName = otherParser.listName;
+		name = otherParser.name;
+		pattern = otherParser.pattern;
+		regex = otherParser.regex;
 	}
 	protected void setup(String regex){
 
@@ -33,13 +41,13 @@ public class RegexParser extends ConcreteParser implements IParser{
 			fail = true;
 		}
 		else if(regex.contains(" ")||regex.contains("\\t")||regex.contains("\t")){
-			this.pattern = Pattern.compile("("+regex+")([ \\t]*).*",Pattern.DOTALL);
+			this.pattern = Pattern.compile("("+regex+")([ \\t]*)",Pattern.DOTALL);
 		}
 		else if(regex.contains("\\n")||regex.contains("\n")){
-			this.pattern = Pattern.compile("("+regex+").*",Pattern.DOTALL);
+			this.pattern = Pattern.compile("("+regex+")",Pattern.DOTALL);
 		}
 		else {
-			this.pattern = Pattern.compile("("+regex+")([ \\t]*).*",Pattern.DOTALL);
+			this.pattern = Pattern.compile("("+regex+")([ \\t]*)",Pattern.DOTALL);
 		}
 	}
 	@Override
@@ -50,14 +58,30 @@ public class RegexParser extends ConcreteParser implements IParser{
 			return;
 		}
 		if(this.pattern ==  null){
-			setup((data.getList(listName).get(name).getString()));
+			if(listName!=null){
+				setup((data.getList(listName).get(name).getString()));
+			}
+			else {
+				data.invalidate();
+				return;
+			}
 		}
-		Matcher matcher = this.pattern.matcher(data.get());
-		if(matcher.matches()){
+		Matcher matcher;
+		if(ParseProfiler.running){
+			ParseProfiler.open(data.getFileName(), "MATCHER:"+pattern, System.nanoTime());
+			matcher = this.pattern.matcher(data.get());
+			ParseProfiler.close(data.getFileName(), "MATCHER:"+pattern, System.nanoTime());
+		}
+		else {
+			matcher = this.pattern.matcher(data.get());
+		}
+		if(matcher.lookingAt()){
 
+			ParseProfiler.open(data.getFileName(), "REGEX:"+pattern, System.nanoTime());
 			data.getToken().put(new NodeToken(name,data.getFileName(),matcher.group(1),data.getFrontPosition()));
 			data.setFrontPosition(data.getFrontPosition()+matcher.end(matcher.groupCount()));
 			data.validate();
+			ParseProfiler.close(data.getFileName(), "REGEX:"+pattern, System.nanoTime());
 		}
 		else {
 			data.invalidate();
@@ -77,4 +101,8 @@ public class RegexParser extends ConcreteParser implements IParser{
 		return pattern==null?"pattern is null":regex;
 	}
 
+	@Override
+	public boolean isTerminalParser(){
+		return true;
+	}
 }

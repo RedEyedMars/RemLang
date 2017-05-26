@@ -38,7 +38,7 @@ public class TokenDeclaration extends ConcreteRule {
 											new ChoiceParser(
 													new ListNameElementParser("token_names"),
 													new ListNameElementParser("variable_names")),
-											new MultipleParser(
+											new ManyParser(
 													
 														new ChainParser(
 															Tokens.ACCESS,

@@ -20,6 +20,8 @@ public class ReturnStatement extends ConcreteRule {
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					Tokens.RETURN,
+					new ManyParser(
+							Rules.cast_as_statement),
 					
 					new ChoiceParser(
 							new WithParser((IRule)Rules.generate_call,new Argument.Add(this.tabs,new Argument.Number(1))),

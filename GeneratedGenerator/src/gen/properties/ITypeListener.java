@@ -7,12 +7,12 @@ import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import gen.*;
 import gen.checks.*;
-import gen.properties.*;
+import gen.entries.*;
 import lists.*;
 
 public interface ITypeListener {
 
-	public final static String TYPE_UNKNOWN = "$UNKNOWN";
+	public static final String TYPE_UNKNOWN = "$UNKNOWN";
 
 	public String getType();
 	public String getDefaultType();
@@ -23,5 +23,6 @@ public interface ITypeListener {
 	public void setDefaultType(String newDefaultType);
 	public void addListener(ITypeListener listener);
 	public void changeType(String newType);
+	public void setType(String newType);
 	public Boolean hasType();
 }

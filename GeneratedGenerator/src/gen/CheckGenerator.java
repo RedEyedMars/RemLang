@@ -193,7 +193,7 @@ public class CheckGenerator extends Generator {
 		return "Check";
 	}
 
-	public void generateRoot(IToken root){
+		public void generateRoot(IToken root){
 	}
 
 	public IParser getLazyNameParser(){

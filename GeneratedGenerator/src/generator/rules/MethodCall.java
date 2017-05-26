@@ -26,15 +26,20 @@ public class MethodCall extends ConcreteRule {
 							new AddTokenParser(
 								Rules.angle_brace_class,"angle_class")),
 					new ManyParser(
-							
-							new ChoiceParser(
+							new AddTokenParser(
+								
 								new ChainParser(
-									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-									Rules.boolean_statement),
-									new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
-								new ChainParser(
-									new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-									Rules.method_parameter)))),
+									
+									new ChoiceParser(
+										new ChainParser(
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+											Rules.boolean_statement),
+											new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
+										new ChainParser(
+											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+											Rules.method_parameter)),
+									new ManyParser(
+											Rules.cast_as_statement)),"parameter"))),
 				new ChainParser(
 					new WithParser((IRule)Rules.whitetab,this.tabs),
 					
@@ -60,15 +65,20 @@ public class MethodCall extends ConcreteRule {
 							new AddTokenParser(
 								Braces.INLINE_PARAMETERS,"inline_parameters"),
 							new ManyParser(
-									
-									new ChoiceParser(
+									new AddTokenParser(
+										
 										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-											Rules.boolean_statement),
-											new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
-										new ChainParser(
-											new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
-											Rules.method_parameter)))))));
+											
+											new ChoiceParser(
+												new ChainParser(
+													new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+													Rules.boolean_statement),
+													new WithParser((IRule)Rules.method_call,new Argument.Add(this.tabs,new Argument.Number(1))),
+												new ChainParser(
+													new WithParser((IRule)Rules.whitetab,new Argument.Add(this.tabs,new Argument.Number(1))),
+													Rules.method_parameter)),
+											new ManyParser(
+													Rules.cast_as_statement)),"parameter"))))));
 
 	}
 

@@ -1,6 +1,6 @@
 uses ClassNames Rules Listnames NameParser RegexParser
 meta generator
-	var lazyNameParser as IParser
+	var lazyNameParser as RegexParser
 		static Tokens NAME
 	var rules as List<IParser>
 		static Rules parser

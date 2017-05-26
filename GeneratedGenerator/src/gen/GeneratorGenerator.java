@@ -13,9 +13,9 @@ import lists.*;
 
 public class GeneratorGenerator extends Generator {
 
-	public final static String DEFAULT_TOKEN = "$token";
-	public final static VariableEntry NO_DEFAULT_TOKEN = new VariableEntry();
-	public final static String LOCAL_CONTEXT = "$LOCAL";
+	public static final String DEFAULT_TOKEN = "$token";
+	public static final VariableEntry NO_DEFAULT_TOKEN = new VariableEntry();
+	public static final String LOCAL_CONTEXT = "$LOCAL";
 	private Boolean truth = true;
 	private File directory = (File)null;
 	private String file = null;
@@ -64,6 +64,7 @@ public class GeneratorGenerator extends Generator {
 	public static final Element noSubjectCallElement = new Element("noSubjectCall",new String[]{"",/*Method Name*/"(",/*Parameter*/")"});
 	public static final Element errorCallElement = new Element("errorCall",new String[]{"throw new UnableToGenerateException(",/*Token Name*/",",/*Error Output*/");"});
 	public static final Element returnCallElement = new Element("returnCall",new String[]{"return ",/*Output*/";"});
+	public static final Element returnCallWithCastElement = new Element("returnCallWithCast",new String[]{"return (",/*Type*/")",/*Output*/";"});
 	public static final Element newBooleanCallElement = new Element("newBooleanCall",new String[]{"(",/*Parameters*/")"});
 	public static final Element setCallElement = new Element("setCall",new String[]{"",/*Subject*/" = ",/*Argument*/";"});
 	public static final Element equalsCallElement = new Element("equalsCall",new String[]{"",/*Subject*/".equals(",/*Argument*/")"});
@@ -105,6 +106,7 @@ public class GeneratorGenerator extends Generator {
 		addElement("noSubjectCall",noSubjectCallElement);
 		addElement("errorCall",errorCallElement);
 		addElement("returnCall",returnCallElement);
+		addElement("returnCallWithCast",returnCallWithCastElement);
 		addElement("newBooleanCall",newBooleanCallElement);
 		addElement("setCall",setCallElement);
 		addElement("equalsCall",equalsCallElement);
@@ -358,7 +360,7 @@ public class GeneratorGenerator extends Generator {
 				}
 				String castToType = Generators.generator.getCastType(element,contextName,contextSubName);
 				if((castToType != null)){
-					variable.changeType(castToType);
+					variable.setType(castToType);
 				}
 				parameters.add(variable);
 				Map<String,Map<String,VariableEntry>> myContext = (Map<String,Map<String,VariableEntry>>)contexts.get(contextName);
@@ -498,29 +500,43 @@ public class GeneratorGenerator extends Generator {
 		if((retType != null)){
 			retType.setSubject(ret);
 		}
+		String returnParameterType = Generators.generator.getCastType(returnStatement,contextName,contextSubName);
+		if((returnParameterType != null)){
+			ret.changeType(returnParameterType);
+			ret.setElementName("returnCallWithCast");
+			parameters.add(new StringEntry(returnParameterType));
+		}
 		for(IToken.Key elementKey:returnStatement.keySet()){
 			if("generate_call".equals(elementKey.getName())){
 				IToken element = returnStatement.get(elementKey);
 				MethodEntry call = (MethodEntry)generateMethodCall(element,contextName,contextSubName);
 				parameters.add(call);
-				ret.changeType(call.getType());
+				if((!ret.hasType())){
+					ret.changeType(call.getType());
+				}
 			}
 			else if("method_call".equals(elementKey.getName())){
 				IToken element = returnStatement.get(elementKey);
 				MethodEntry call = (MethodEntry)generateMethodCall(element,contextName,contextSubName);
 				parameters.add(call);
-				ret.changeType(call.getType());
+				if((!ret.hasType())){
+					ret.changeType(call.getType());
+				}
 			}
 			else if("boolean_statement".equals(elementKey.getName())){
 				IToken element = returnStatement.get(elementKey);
 				parameters.add(generateBooleanStatement(element,contextName,contextSubName));
-				ret.changeType("Boolean");
+				if((!ret.hasType())){
+					ret.changeType("Boolean");
+				}
 			}
 			else if("entry_definition".equals(elementKey.getName())){
 				IToken element = returnStatement.get(elementKey);
 				MethodEntry entry = (MethodEntry)generateEntryDefinition(element,contextName,contextSubName);
 				parameters.add(entry);
-				ret.changeType(entry.getType());
+				if((!ret.hasType())){
+					ret.changeType(entry.getType());
+				}
 			}
 			else if("method_parameter".equals(elementKey.getName())){
 				IToken element = returnStatement.get(elementKey);
@@ -530,11 +546,13 @@ public class GeneratorGenerator extends Generator {
 					ret.setIsNull(true);
 				}
 				else {
-					if((entry.hasType())){
-						ret.changeType(entry.getType());
-					}
-					else {
-						entry.addListener(ret);
+					if((!ret.hasType())){
+						if((entry.hasType())){
+							ret.changeType(entry.getType());
+						}
+						else {
+							entry.addListener(ret);
+						}
 					}
 				}
 			}
@@ -546,7 +564,11 @@ public class GeneratorGenerator extends Generator {
 		ListEntry forComplete = new ListEntry();
 		forComplete.setDelimiter("");
 		String eachName = eachCall.get("eachName").getString();
-		VariableEntry variable = new VariableEntry(eachName,type_unknown);
+		String initialType = Generators.generator.getCastType(eachCall,contextName,contextSubName);
+		if((initialType == null)){
+			initialType = type_unknown;
+		}
+		VariableEntry variable = new VariableEntry(eachName,initialType);
 		String iterableName = null;
 		VariableEntry iterable = (VariableEntry)null;
 		MethodEntry left = (MethodEntry)null;
@@ -1047,7 +1069,7 @@ public class GeneratorGenerator extends Generator {
 		else {
 			String subName = subject.getString();
 			subjectName = new StringEntry(subName);
-			if((subName.contains("generate"))){
+			if((subName.contains("generate "))){
 				isGenerate = true;
 			}
 			else {
@@ -1133,6 +1155,32 @@ public class GeneratorGenerator extends Generator {
 			else if("method_call".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
 				parameters.add(generateMethodCall(element,contextName,contextSubName));
+			}
+			else if("parameter".equals(elementKey.getName())){
+				IToken element = methodCall.get(elementKey);
+				MethodEntry newParameter = (MethodEntry)null;
+				for(IToken.Key atomKey:element.keySet()){
+					if("boolean_statement".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						newParameter = (MethodEntry)generateBooleanStatement(atom,contextName,contextSubName);
+					}
+					else if("method_parameter".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						newParameter = (MethodEntry)generateMethodParameter(atom,false,contextName,contextSubName);
+					}
+					else if("method_call".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						newParameter = (MethodEntry)generateMethodCall(atom,contextName,contextSubName);
+					}
+				}
+				String parameterType = Generators.generator.getCastType(element,contextName,contextSubName);
+				if((parameterType != null)){
+					MethodEntry oldParameter = null;
+					oldParameter = (MethodEntry)newParameter;
+					newParameter = new MethodEntry("castCall",new ListEntry(new StringEntry(parameterType),newParameter));
+					newParameter.addListener(oldParameter);
+				}
+				parameters.add(newParameter);
 			}
 		}
 		if((isStatic == true && !parameters.isEmpty())){
@@ -1817,12 +1865,27 @@ public class GeneratorGenerator extends Generator {
 		}
 	}
 	public String getCastType(IToken castToken,String contextName,String contextSubName){
-		IToken castToType = castToken.get("castToType");
-		if((castToType != null)){
-			MethodEntry ret = (MethodEntry)Generators.generator.generateAngleClasses(castToType,contextName,contextSubName);
-			return ret.getType();
+		StringBuilder ret = (StringBuilder)null;
+		IToken casty = castToken;
+		List<IToken> castToTypeCastToType = casty.getAll("castToType");
+		if(castToTypeCastToType != null){
+			for(IToken castToType:castToTypeCastToType){
+				if((ret == null)){
+					ret = new StringBuilder();
+				}
+				else {
+					ret.append(")(");
+				}
+				MethodEntry type = (MethodEntry)Generators.generator.generateAngleClasses(castToType,contextName,contextSubName);
+				ret.append(type.getType());
+			}
 		}
-		return null;
+		if((ret == null)){
+			return (String)null;
+		}
+		else {
+			return ret.toString();
+		}
 	}
 	public VariableEntry getParameter(IToken parameter,String contextName,String contextSubName,String methodName){
 		String parameterName = parameter.get("takeName").getString();
@@ -1830,7 +1893,7 @@ public class GeneratorGenerator extends Generator {
 		VariableEntry variable = new VariableEntry(parameterName,type_unknown);
 		String castType = Generators.generator.getCastType(parameter,contextName,contextSubName);
 		if((castType != null)){
-			variable.changeType(castType);
+			variable.setType(castType);
 		}
 		contexts.get(contextName).get(methodName).put(parameterName,variable);
 		return variable;

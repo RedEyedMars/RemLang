@@ -40,7 +40,7 @@ token-s
 	"singular" as SINGULAR
 	"single" as SINGLE
 	"does " as DOES
-	[[-][>]] as ACCESS
+	"->" as ACCESS
 	[[^\\s]+] as NON_SPACE
 	"flip " as FLIP
 	"error" as ERROR
@@ -82,7 +82,7 @@ brace-s are Braced
 #Import
 ingest-s are Import
 	[import<<entry>>\\n] as IMPORT with QUOTE
-	[from<<entry>>] as ELEMENT_IMPORT from (element_definition{0}|NEWLINE)+; with QUOTE
+	[from<<entry>>] as ELEMENT_IMPORT from blah:(element_definition{0}|NEWLINE)+; with QUOTE
 
 angle_brace_class is silent
 	(entry_class_name|class_name|property_name) ANGLE_CLASSES as braces?	
@@ -159,7 +159,7 @@ entry_class_element
 	entry_declaration{1}
 	( whitetab{1} CONSTRUCTOR takes_statement{1}? ( entry_declaration{2} | body_element{2} )+ ) as constructor
 	( whitetab{1} OUTPUT as methodName ( whitetab{3} (PLUS as break | ( entry_definition{-1} | entry_name ) as value ( OTHERWISE as otherwise | IF boolean_statement) as ifStatement?) )as  entry_values+ ( ( entry_declaration{2} | body_element{2} )* ) as body ) as output_method
-	( whitetab{1} NAME as methodName ( AS NAME as methodType )? takes_statement{1}? ( entry_declaration{2} | body_element{2} )+ ) as entry_method
+	( whitetab{1} NAME as methodName cast_as_statement? takes_statement{1}? ( entry_declaration{2} | body_element{2} )+ ) as entry_method
 
 class_declaration is silent
 	NAME as className in generator_names ( class_element{1})+
@@ -218,13 +218,13 @@ constant_declaration has tabs
 	whitetab{tabs} CONSTANT NAME as variableName in variable_names cast_as_statement? ( cast_statement{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
 
 variable_declaration has tabs
-	whitetab{tabs} VARIABLE NAME as variableName in variable_names cast_as_statement? ( EQUALSIGN ( boolean_statement | method_parameter ) | ( cast_statement{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter ) )
+	whitetab{tabs} VARIABLE NAME as variableName in variable_names cast_as_statement? ( EQUALSIGN ( boolean_statement | method_parameter ) | ( cast_statement{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter ) )?
 
 token_declaration has tabs
-	whitetab{tabs} TOKEN NAME as tokenName in token_names ( method_call{tabs+1} | ( ( ( EQUALSIGN | whitetab{tabs+1} ) (token_name|variable_name) ( ACCESS NAME as option )+ ) as variable_or_token_name ) as method_parameter ) 
+	whitetab{tabs} TOKEN NAME as tokenName in token_names ( method_call{tabs+1} | ( ( ( EQUALSIGN | whitetab{tabs+1} ) (token_name|variable_name) ( ACCESS NAME as option )* ) as variable_or_token_name ) as method_parameter ) 
 
 token_expansion has tabs
-	whitetab{tabs} token_name ( NAME_WORD as getName | clause_type_tokens{tabs} | all_type_tokens{tabs} )
+	whitetab{tabs} token_name ( clause_type_tokens{tabs} | all_type_tokens{tabs} )
 
 clause_type_tokens has tabs
 	TO NAME as tokenName in token_names token_clause{tabs+1}+
@@ -236,13 +236,13 @@ all_type_tokens has tabs
 	(STAR as wild|NAME) as specificTokenName TO NAME as tokenName in token_names ( entry_declaration{tabs+1} | body_element{tabs+1} )+ as body
 
 return_statement has tabs
-	whitetab{tabs} RETURN ( generate_call{tabs+1} | entry_definition{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
+	whitetab{tabs} RETURN cast_as_statement* ( generate_call{tabs+1} | entry_definition{tabs+1} | whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter )
 
 error_statement has tabs
 	whitetab{tabs} ERROR token_name? ( whitetab{tabs+1}? (QUOTE|variable_or_token_name))+
 
 each_call has tabs
-	whitetab{tabs} EACH NAME as eachName in variable_names IN (range|variable_name as iterable) (entry_declaration{tabs+1} | body_element{tabs+1})+
+	whitetab{tabs} EACH NAME as eachName in variable_names cast_as_statement* IN (range|variable_name as iterable) (entry_declaration{tabs+1} | body_element{tabs+1})+
 
 range
 	arithmatic as left DOTDOT arithmatic as right
@@ -269,8 +269,8 @@ inline_addition_call has tabs
 	whitetab{tabs} method_parameter as subject PLUS EQUALSIGN ( boolean_statement |  method_parameter | method_call{tabs+1} ) as parameter
 
 method_call has tabs
-	whitetab{tabs} NEW as subject angle_brace_class as angle_class? ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter)*
-	whitetab{tabs} (STATIC as isStatic? )( ASTRO_GENERATE | THIS | method_parameter ) as subject (generator_name NAME as methodName| NAME as methodName)  ( INLINE_PARAMETERS as inline_parameters | ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter)* )
+	whitetab{tabs} NEW as subject angle_brace_class as angle_class? ( (whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter) cast_as_statement* ) as parameter*
+	whitetab{tabs} (STATIC as isStatic? )( ASTRO_GENERATE | THIS | method_parameter ) as subject (generator_name NAME as methodName| NAME as methodName)  ( INLINE_PARAMETERS as inline_parameters | ( (whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter) cast_as_statement* ) as parameter* )
 
 set_call has tabs
 	whitetab{tabs}? SET NAME as subject cast_as_statement? ( EQUALSIGN ( boolean_statement |  method_parameter ) | ( whitetab{tabs+1} boolean_statement | method_call{tabs+1} | whitetab{tabs+1} method_parameter ) )

@@ -15,9 +15,9 @@ public class VariableEntry implements Entry,ITypeListener {
 		return this;
 	}
 
-	public final static Integer DEFAULT_ACCESS = 0;
-	public final static Integer PUBLIC_ACCESS = 1;
-	public final static Integer PRIVATE_ACCESS = 2;
+	public static final Integer DEFAULT_ACCESS = 0;
+	public static final Integer PUBLIC_ACCESS = 1;
+	public static final Integer PRIVATE_ACCESS = 2;
 
 	private String type = ITypeListener.TYPE_UNKNOWN;
 	private String defaultType = "String";
@@ -66,10 +66,10 @@ public class VariableEntry implements Entry,ITypeListener {
 	public Boolean getIsEntry(){
 		return isEntry;
 	}
-	public void setCast(Boolean newCast){
+	public void setCast(Boolean newCast) {
 		isCast = newCast;
 	}
-	public void setDefaultType(String newDefaultType){
+	public void setDefaultType(String newDefaultType) {
 		if((listeners != null)){
 			for(ITypeListener listener:listeners){
 				listener.setDefaultType(newDefaultType);
@@ -77,13 +77,13 @@ public class VariableEntry implements Entry,ITypeListener {
 		}
 		defaultType = newDefaultType;
 	}
-	public void addListener(ITypeListener listener){
+	public void addListener(ITypeListener listener) {
 		if((listeners == null)){
 			listeners = new ArrayList<ITypeListener>();
 		}
 		listeners.add(listener);
 	}
-	public void changeType(String newType){
+	public void changeType(String newType) {
 		Boolean myHasType = this.hasType();
 		Boolean leftClause = (isCast == false && myHasType == false);
 		Boolean rightClause = (isCast == false && isEntry == true && newType.contains("Entry"));
@@ -99,7 +99,16 @@ public class VariableEntry implements Entry,ITypeListener {
 			}
 		}
 	}
-	public Boolean hasType(){
+	public void setType(String newType) {
+		if((listeners != null)){
+			for(ITypeListener listener:listeners){
+				listener.setType(newType);
+			}
+		}
+		type = newType;
+		isEntry = newType.contains("Entry");
+	}
+	public Boolean hasType() {
 		return (!type.equals("$UNKNOWN"));
 	}
 	public String getName(){

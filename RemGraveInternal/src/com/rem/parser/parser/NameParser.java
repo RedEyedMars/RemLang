@@ -1,35 +1,25 @@
 package com.rem.parser.parser;
 
-import java.util.TreeSet;
 
 import com.rem.parser.ParseContext;
 import com.rem.parser.ParseList;
+import com.rem.parser.ParsePattern;
+import com.rem.parser.token.NodeToken;
 
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 
 public class NameParser extends RegexParser{
-	public static IParser lazyParser = null;
+	public static RegexParser lazyParser = null;
 
-	private TreeSet<String> parsers = new TreeSet<String>(new Comparator<String>(){
-		@Override
-		public int compare(String o1, String o2) {
-			if(o1.length()==o2.length()&&!o1.equals(o2)){
-				return 1;
-			}
-			else return o2.length()-o1.length();
-		}});
-	private boolean isLazy = true;
+
+	private ParsePattern pattern = new ParsePattern();
+	private Set<String> added = new HashSet<String>();
 	private ParseContext parent = null;
 
 
-	public NameParser(ParseContext parentContext, String listName, String... parsers) {
+	public NameParser(ParseContext parentContext, String listName) {
 		super(listName, listName);
-		if(parsers!=null){
-			for(int i=0;i<parsers.length;++i){
-				this.parsers.add(parsers[i]);
-			}			
-		}
 		this.parent = parentContext;
 	}
 
@@ -40,72 +30,59 @@ public class NameParser extends RegexParser{
 			new AddTokenParser(lazyParser,name).parse(data);
 			return;
 		}
-		else if(!containsNames()){
-			data.invalidate();
+
+		String toExamine = data.get();
+		String found = pattern.get(toExamine, 0);
+		if(found!=null){
+			int foundIndex = found.length();
+			boolean foundSpace = foundIndex>=toExamine.length()||toExamine.charAt(foundIndex)=='\n';
+			if(!foundSpace){
+				char c = toExamine.charAt(foundIndex);
+				if((c>=48&&c<58)||(c>=65&&c<91)||(c>=97&&c<123)||(c==95)){						
+				}
+				else {
+					foundSpace = true;
+					for(;foundIndex<toExamine.length()&&(toExamine.charAt(foundIndex)==' '||toExamine.charAt(foundIndex)=='\t');++foundIndex){
+					}
+				}
+			}
+			if(foundSpace){
+				data.getToken().put(new NodeToken(name,data.getFileName(),found,data.getFrontPosition()));
+				data.setFrontPosition(data.getFrontPosition()+foundIndex);
+				data.validate();
+				return;
+			}			
+		}
+		
+		if(parent!=null){
+			ParseList parentList = parent.getList(name);
+			if(parentList!=null){
+				parentList.getNamesParser().real_parse(data);
+			}
+			else {
+				data.invalidate();
+			}
 			return;
 		}
-		else if(isLazy&&lazyParser==null){
-			solidify();
-			isLazy = false;			
-		}
-		if(!parsers.isEmpty()){
-			super.real_parse(data);
-		}
-		else {
-			data.invalidate();
-		}
-		if(!data.isValid()&&parent!=null){
-			ParseList parentList = parent.getList(name);
-			if(parentList!=null&&parentList.getNamesParser().containsNames()){
-				data.validate();
-				parentList.getNamesParser().real_parse(data);				
-			}
-		}
-	}
+		data.invalidate();
+	}		
+
 
 	public void addName(String parser){
-		if(!this.parsers.contains(parser)){
-			this.parsers.add(parser);
+		if(!this.added.contains(parser)){
+			this.added.add(parser);
+			this.pattern.add(parser, 0);
 		}
-	}
-
-	public boolean containsNames(){
-		if(!parsers.isEmpty()){
-			return true;
-		}
-		else if(parent!=null){
-			ParseList parentList = parent.getList(name);
-			if(parentList!=null&&parentList.getNamesParser().containsNames()){
-				return true;			
-			}
-		}
-		return false;
-	}
-
-	public void solidify(){
-		if(parsers==null||parsers.isEmpty()){
-			setup("");
-			return;
-		}
-		StringBuilder builder = new StringBuilder();
-		String pipe = "";
-		for(String parser:parsers){
-			builder.append(pipe);
-			builder.append(parser);
-			builder.append("\\b");
-			pipe = "|";
-		}
-		setup(builder.toString());
 	}
 
 	public void clear(){
-		
-		parsers.clear();
+		added.clear();
+		pattern = new ParsePattern();
 	}
 
 
 	public Set<String> getElements() {
-		return parsers;
+		return added;
 	}
 
 	public ParseContext getParent() {

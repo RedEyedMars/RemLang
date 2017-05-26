@@ -76,11 +76,7 @@ public class EntryClassElement extends ConcreteRule {
 							new AddTokenParser(
 								Tokens.NAME,"methodName"),
 							new OptionalParser(
-									
-										new ChainParser(
-											Tokens.AS,
-											new AddTokenParser(
-												Tokens.NAME,"methodType"))),
+									Rules.cast_as_statement),
 							new OptionalParser(
 									new WithParser((IRule)Rules.takes_statement,new Argument.Number(1))),
 							new MultipleParser(

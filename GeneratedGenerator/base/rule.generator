@@ -138,51 +138,61 @@ rule
 			">"
 			ruleName
 		
-		entry parameterIndexEntries "" = {}
-		var param_count
-			0
-		
-		root to branch
-			definition
-				entry ruleEntry "" = {}
-				if isSilent is true
+		if root->isChoosy is not null
+			entry ruleEntry "" = {}
+			if isSilent is true
+				ruleEntry += setupSilence {}
+			ruleEntry += setupAdd { choice {{}}}
+			rule addEntry
+				rule getDirectory
+				fileName
+				"rule"
+				ruleEntry
+		else
+			entry parameterIndexEntries "" = {}
+			var param_count
+				0		
+			root to branch
+				definition
+					entry ruleEntry "" = {}
+					if isSilent is true
+						ruleEntry add
+							setupSilence {}
 					ruleEntry add
-						setupSilence {}
-				ruleEntry add
-					setupAdd {generate definition:ruleName 3;}
-				rule addEntry
-					rule getDirectory
-					fileName
-					"rule"
-					ruleEntry
+						setupAdd {generate definition:ruleName 3;}
+					rule addEntry
+						rule getDirectory
+						fileName
+						"rule"
+						ruleEntry
+				
+				rule_param
+					var rule_param
+						'branch
+					var rules_contains
+						ruleParameterNames containsKey
+							ruleName
+					if not rules_contains
+						ruleParameterNames put
+							ruleName
+							new ArrayList<String>
+					var ruleParameterNamesList as List<String>
+						ruleParameterNames get
+							ruleName
+					ruleParameterNamesList add
+						rule_param
+					param_declarations add
+						parameterMember ["Integer" rule_param "Integer" "0"]
+					parameterIndexEntries add 
+						parameterIndex ['param_count rule_param]
+					set param_count
+						param_count+1
 			
-			rule_param
-				var rule_param
-					'branch
-				var rules_contains
-					ruleParameterNames containsKey
-						ruleName
-				if not rules_contains
-					ruleParameterNames put
-						ruleName
-						new ArrayList<String>
-				var ruleParameterNamesList as List<String>
-					ruleParameterNames get
-						ruleName
-				ruleParameterNamesList add
-					rule_param
-				param_declarations add
-					parameterMember ["Integer" rule_param "Integer" "0"]
-				parameterIndexEntries add 
-					parameterIndex ['param_count rule_param]
-				set param_count
-					param_count+1
-		
-		rule addEntry
-			rule getDirectory
-			fileName
-			"params"
-			parameterGet {parameterIndexEntries}
+			rule addEntry
+				rule getDirectory
+				fileName
+				"params"
+				parameterGet {parameterIndexEntries}
 	
 	generate atom takes ruleName, tabs
 		entry returnEntry = null

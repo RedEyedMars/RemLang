@@ -1,6 +1,6 @@
-uses Listnames Rules Tokens Base NameParser
+uses Listnames Rules Tokens Base NameParser RegexParser
 meta base
-	var lazyNameParser as IParser
+	var lazyNameParser as RegexParser
 		static Tokens LISTNAME
 	var rules as List<IParser>
 		static Rules parser
@@ -69,6 +69,22 @@ meta base
 		var listRulessNamesParser as NameParser
 			listRuless getNamesParser
 		listRulessNamesParser clear
+		var customDeclarations as ParseList
+			context getList
+				"rules"
+		if customDeclarations is not null
+			context addList
+				"rules"
+			var customList as ParseList
+				context getList
+					"rules"
+			var customNameParser as NameParser
+				customList getNamesParser
+			token customTokens
+				customDeclarations getNewTokens
+			customTokens custom_declaration to customToken 
+				customNameParser addName
+					'customToken->custom_definition->name
 
 base
 	

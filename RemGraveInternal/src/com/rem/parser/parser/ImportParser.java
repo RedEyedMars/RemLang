@@ -28,7 +28,7 @@ public class ImportParser extends ConcreteParser{
 		this.startParser = null;
 		this.setup(parameters);
 	}
-	public ImportParser(IParser initialParser, IParser initialStartParser, String name, String listName, String parameters){
+	public ImportParser(IParser initialParser, String name, String listName, String parameters, IParser initialStartParser){
 		subParser = initialParser;
 		this.name = name;
 		this.listName = listName;

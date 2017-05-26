@@ -351,7 +351,7 @@ generator
 						contextName
 						contextSubName
 				if castToType is not null
-					variable changeType
+					variable setType
 						castToType
 				parameters += variable
 				var myContext as Map<String,Map<String,variable>>
@@ -510,30 +510,45 @@ generator
 		if retType is not null
 			retType setSubject
 				ret
+		var returnParameterType
+			generator getCastType
+				returnStatement
+				contextName
+				contextSubName
+		if returnParameterType is not null
+			ret changeType
+				returnParameterType
+			ret setElementName
+				"returnCallWithCast"
+			parameters += \returnParameterType
 		returnStatement to element
 			generate_call
 				var call as method
 					generate methodCall: contextName contextSubName;
 				parameters += call
-				ret changeType
-					call getType
+				if ret does not hasType
+					ret changeType
+						call getType
 			method_call			
 				var call as method
 					generate methodCall: contextName contextSubName;
 				parameters += call
-				ret changeType
-					call getType
+				if ret does not hasType
+					ret changeType
+						call getType
 			boolean_statement
 				parameters += 
 					generate booleanStatement: contextName contextSubName;
-				ret changeType
-					"Boolean"
+				if ret does not hasType
+					ret changeType
+						"Boolean"
 			entry_definition
 				var entry as method
 					generate entryDefinition:contextName contextSubName;
 				parameters += entry
-				ret changeType
-					entry getType
+				if ret does not hasType
+					ret changeType
+						entry getType
 			method_parameter
 				var entry as method
 					generate methodParameter:false contextName contextSubName;
@@ -542,12 +557,13 @@ generator
 					ret setIsNull
 						true
 				else
-					if entry does hasType
-						ret changeType
-							entry getType
-					else
-						entry addListener
-							ret
+					if ret does not hasType
+						if entry does hasType
+							ret changeType
+								entry getType
+						else
+							entry addListener
+								ret
 		
 		return
 			ret
@@ -558,7 +574,14 @@ generator
 		entry forComplete "" = {}
 		var eachName
 			'eachCall ->eachName
-		entry variable = variable: eachName type_unknown;
+		var initialType
+			generator getCastType
+				eachCall
+				contextName
+				contextSubName
+		if initialType is null
+			set initialType = type_unknown
+		entry variable = variable: eachName initialType;
 		var iterableName = null
 		var iterable as variable = null
 		var left as method = null
@@ -1082,7 +1105,7 @@ generator
 		else
 			var subName = 'subject
 			set subjectName = \subName
-			if subName does contains "generate"
+			if subName does contains "generate "
 				set isGenerate = true
 			else
 				if subName is "new "
@@ -1163,6 +1186,28 @@ generator
 			method_call
 				parameters +=
 					generate methodCall: contextName contextSubName;
+			parameter
+				var newParameter as method = null
+				element to atom
+					boolean_statement
+						set newParameter as method = generate booleanStatement: contextName contextSubName;
+					method_parameter
+						set newParameter as method = generate methodParameter: false contextName contextSubName;
+					method_call
+						set newParameter as method = generate methodCall: contextName contextSubName;
+				var parameterType
+					generator getCastType
+						element
+						contextName
+						contextSubName
+				if parameterType is not null
+					entry oldParameter = null
+					set oldParameter as method = newParameter
+					set newParameter = method:"castCall" { \parameterType newParameter };
+					newParameter addListener
+						oldParameter
+				parameters += newParameter
+					
 		if isStatic is true and parameters is not empty
 			ret setElementName
 				"staticMethodCall"
@@ -1858,19 +1903,30 @@ generator
 				previousDefault getName
 				previousDefault
 	
-	aux getCastType takes castToken as IToken, contextName, contextSubName 
-		token castToType
-			castToken->castToType
-		if castToType is not null		
-			var ret as method
+	aux getCastType takes castToken as IToken, contextName, contextSubName
+		var ret as StringBuilder = null
+		token casty
+			castToken
+		casty castToType to castToType
+			if ret is null
+				set ret
+					new StringBuilder
+			else
+				ret append
+					")("
+			var type as method
 				generator generateAngleClasses
 					castToType
 					contextName
 					contextSubName
+			ret append
+				type getType
+		if ret is null
+			return as String
+				null
+		else
 			return
-				ret getType
-		return
-			null
+				'ret
 	
 	aux getParameter takes parameter as IToken, contextName, contextSubName, methodName
 		var parameterName = 'parameter->takeName
@@ -1880,7 +1936,7 @@ generator
 		var castType
 			generator getCastType:parameter contextName contextSubName;
 		if castType is not null
-			variable changeType:castType;
+			variable setType:castType;
 		contexts->contextName->methodName put:parameterName variable;
 		return
 			variable

@@ -15,6 +15,15 @@ public class Braces extends ParseList {
 		return "brace";
 	}
 
+	public static final BracedParser CUSTOM_BRACE = new BracedParser(
+						new ChainParser(
+							new OptionalParser(
+									Rules.event_element),
+							new ManyParser(
+									
+										new ChainParser(
+											Tokens.COMMA,
+											Rules.event_element))),"CUSTOM_BRACE","braces","(,)");
 	public static final BracedParser BRACE = new BracedParser(
 							Rules.definition,"BRACE","braces","(,)");
 	public static final BracedParser SQUARE = new BracedParser(
@@ -37,5 +46,5 @@ public class Braces extends ParseList {
 							Rules.definition,"SEMICOLONED","braces",",;");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,SQUARE,QUOTE,PARAM_BRACE,SEMICOLONED);
+				CUSTOM_BRACE,BRACE,SQUARE,QUOTE,PARAM_BRACE,SEMICOLONED);
 }

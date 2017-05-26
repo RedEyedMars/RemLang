@@ -3,7 +3,9 @@ uses LinkedHashMap
 property
 	var directory = null
 	var methodsOfProperties as Map<String, Map<String,Entry>>
-		new HashMap<String,Map<String,Entry>>		
+		new HashMap<String,Map<String,Entry>>
+	var methodTypesOfProperties as Map<String, Map<String,type_listener>>
+		new HashMap<String,Map<String,type_listener>>				
 	var variablesOfProperties as Map<String, Map<String,Entry>>
 		new HashMap<String,Map<String,Entry>>
 	var actualVariablesOfProperties as Map<String,Map<String,variable>>
@@ -30,7 +32,7 @@ property
 			"import com.rem.parser.token.*;\n"+
 			"import gen.*;\n"+
 			"import gen.checks.*;\n"+
-			"import gen.properties.*;\n"+
+			"import gen.entries.*;\n"+
 			"import lists.*;\n\n"+
 			"public interface " Class Name " {\n" Contents "\n}"
 		variableMethod
@@ -58,6 +60,8 @@ property
 			new LinkedHashMap<String,Entry>
 		var propertyMethods as Map<String,Entry>
 			new LinkedHashMap<String,Entry>
+		var propertyMethodTypes as Map<String,type_listener>
+			new LinkedHashMap<String,type_listener>
 		entry bareProperty "" = {}
 		var contexts as Map<String,Map<String,Map<String,variable>>>
 			generator getContexts
@@ -78,13 +82,14 @@ property
 				variable_declaration					
 					var variableName = 'atom->variableName
 					entry variable = generate entryClass variableDeclaration:className false;
-					entry method = generate entryClass VariableDeclarationMethod:className;
+					var method as method
+						generate entryClass VariableDeclarationMethod:className;
 					propertyVariables put
 						variableName
 						(1 variable)
 					propertyMethods put
-						variableName
-						(0 method)
+						method getMethodName
+						(0 |method|)
 					var realVar as variable
 						contexts->className->localContext->variableName
 					actualVariables put
@@ -101,7 +106,7 @@ property
 							atom
 							className
 					entry type = type:header;
-					var methodBody as Entry
+					var methodBody
 						entryClass generateEntryMethodBody
 							atom
 							header
@@ -111,6 +116,9 @@ property
 					propertyMethods put 
 						header getMethodName
 						(0 method)
+					propertyMethodTypes put
+						header getMethodName
+						header
 					bareProperty+=(1 method {type header})						
 		
 		entry complete "\n" = {constants bareProperty}
@@ -125,6 +133,9 @@ property
 		methodsOfProperties put
 			propertyName
 			propertyMethods
+		methodTypesOfProperties put
+			propertyName
+			propertyMethodTypes
 		variablesOfProperties put
 			propertyName
 			propertyVariables
@@ -254,7 +265,9 @@ entryClass
 		getMethodDeclaration
 			"public void get(StringBuilder builder){" MethodBody "\n\t}"
 		constructorDeclaration
-			"public " Type "Entry(" Parameters ")" MethodBody ""
+			"public " Type "Entry(" Parameters ")" MethodBody ""		
+		blankOutputMethod
+			"\n\tpublic void get(StringBuilder builder){\n\t}"
 	
 	aux setup takes data as ParseContext
 		set directory
@@ -277,6 +290,8 @@ entryClass
 			new LinkedHashMap<String,Entry>
 		var methods as Map<String,Entry>
 			new LinkedHashMap<String,Entry>
+		var methodTypes as Map<String,String>
+			new LinkedHashMap<String,String>
 		entry propertyNames = {}
 		entry constants "" = {}
 		var methodNameSet as Set<String>
@@ -345,6 +360,10 @@ entryClass
 					if propertyMethods does containsKey propertyName
 						var methodMap as Map<String,Entry>
 							propertyMethods -> propertyName
+						var propertyMethodTypes as Map<String,Map<String,type_listener>>
+							property getMethodTypesOfProperties
+						var typeMap as Map<String,type_listener>
+							propertyMethodTypes -> propertyName
 						var keySet as Set<String>
 							methodMap keySet
 						each key in keySet
@@ -352,6 +371,15 @@ entryClass
 								key
 								methodMap->key
 							methodNameSet+=key
+							if typeMap does containsKey key
+								if typeMap->key does hasType
+									methodTypes put
+										key
+										typeMap->key getType
+								else
+									methodTypes put
+										key
+										typeMap->key getDefaultType
 					else
 						entry listener = {}
 						property addMethodListener
@@ -366,6 +394,7 @@ entryClass
 						check propertyDefined propertyVariables containsKey propertyName
 							EntryClass generateRoot(002)
 		
+		var hasOutput = false
 		root entry_class_element to element
 			element to atom
 				constant_declaration
@@ -385,9 +414,11 @@ entryClass
 					variables put
 						variableName
 						(1 generate variableDeclaration:className false;)
+					var variableGetMethod as method
+						generate variableDeclarationMethod:className;
 					methods put
-						variableName
-						(0 generate variableDeclarationMethod:className;)
+						variableGetMethod getMethodName
+						(0 |variableGetMethod|)
 					variableNameSet+=variableName
 				entry_declaration					
 					var variableName = 'atom->entryName
@@ -434,6 +465,7 @@ entryClass
 						parameters+=variable
 					constructors+=(1 constructorDeclaration {\realClassName parameters  generate entryMethodBody:null className constructorName;})										
 				output_method
+					set hasOutput = true
 					entry header = method: "noSubjectCall" {\"get" \"StringBuilder builder"};
 					generator addContext
 						className
@@ -498,10 +530,13 @@ entryClass
 						"$OUTPUT"
 						(1 getMethodDeclaration {body})
 				entry_method
-					var header as method = generate entryMethodHeader:className;
-					entry type = type:header;
+					var header as method = generate entryMethodHeader:className;					
 					var methodName
 						header getMethodName
+					if methodNameSet does contains methodName
+						header setDefaultType
+							methodTypes->methodName
+					entry type = type:header;
 					methods put
 						methodName
 						(1 methodDeclaration {type header generate entryMethodBody:header className methodName;})
@@ -520,7 +555,8 @@ entryClass
 		each methodName in methodsKeySet
 			methodList+=methods->methodName
 		entry complete "\n" = {constants variableList constructors methodList}
-		
+		if hasOutput is false
+			methodList+= blankOutputMethod {}
 		entryClass addFile
 			directory
 			entryClass buildString
@@ -568,8 +604,12 @@ entryClass
 				"get"
 				entryClass camelize
 					variableName
+		var ret as method
+			method:"methodDeclaration" {type \getMethodName {} (2 generator returnCall {\variableName})};
+		ret setMethodNames
+			getMethodName
 		return
-			generator methodDeclaration {type \getMethodName {} (2 generator returnCall {\variableName})}
+			ret
 	
 	generate entryMethodHeader takes contextName		
 		var localContext
@@ -599,6 +639,8 @@ entryClass
 						contextName
 						static generator LOCAL_CONTEXT
 						methodName
+			methodType
+				set returnType = 'element
 		entry ret = method:"noSubjectCall" {\methodName parameters};
 		if returnType is not null
 			ret changeType

@@ -33,11 +33,13 @@ public class ListGenerator extends Generator {
 	public static final Element importRulesElement = new Element("importRules",new String[]{"import base.rules.*;\n"});
 	public static final Element classElement = new Element("class",new String[]{"\tpublic static final ",/*Class*/"Parser ",/*Name*/" = new ",/*Class*/"Parser(",/*Parameters*/");\n"});
 	public static final Element parserElement = new Element("parser",new String[]{"\n\tpublic static final ChoiceParser parser = new ChoiceParser(\n\t\t\t\t",/*Rules*/");\n"});
+	public static final Element parserContainerElement = new Element("parserContainer",new String[]{"new NamedParserContainer(",/*Name*/",",/*Parser*/")"});
 	public ListGenerator(){
 		addElement("outline",outlineElement);
 		addElement("importRules",importRulesElement);
 		addElement("class",classElement);
 		addElement("parser",parserElement);
+		addElement("parserContainer",parserContainerElement);
 	}
 	public void setup(ParseContext data){
 		this.addPage();
@@ -101,10 +103,23 @@ public class ListGenerator extends Generator {
 				if((parameter != null)){
 					parameterEntry = Generators.rule.generateDefinition(parameter.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
 				}
-				IToken parser = element.get("parser");
-				Entry parserEntry = null;
-				if((parser != null)){
-					parserEntry = Generators.rule.generateDefinition(parser.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5);
+				ListEntry parserEntry = new ListEntry();
+				List<IToken> parserTokenParser = element.getAll("parser");
+				if(parserTokenParser != null){
+					for(IToken parserToken:parserTokenParser){
+						ListEntry newParserEntry = new ListEntry();
+						newParserEntry.add(Generators.rule.generateDefinition(parserToken.get("definition"),Generators.list.buildString(listName,"$HIDDEN"),5));
+						if((parserToken.get("parserName") != null)){
+							newParserEntry.add(new QuoteEntry(parserToken.get("parserName").getString()));
+							parserEntry.add(new ElementEntry(ListGenerator.parserContainerElement,newParserEntry));
+						}
+						else {
+							parserEntry.add(newParserEntry);
+						}
+					}
+				}
+				if((parserEntry.isEmpty())){
+					parserEntry = null;
 				}
 				Generators.list.addClassList(listName,name,regex,parameterEntry,parserEntry);
 				hasDefinition = true;
@@ -123,9 +138,6 @@ public class ListGenerator extends Generator {
 		if((parameter != null)){
 			params.add(parameter);
 		}
-		if((parser != null)){
-			params.add(parser);
-		}
 		params.add(new QuoteEntry(name));
 		params.add(new QuoteEntry(listName));
 		if(("listnames".equals(listName))){
@@ -133,6 +145,9 @@ public class ListGenerator extends Generator {
 		}
 		params.add(new QuoteEntry(regex));
 		String associatedClassName = listAssociatedClass.get(listName);
+		if((parser != null)){
+			params.add(parser);
+		}
 		Entry listEntry = new ElementEntry(ListGenerator.classElement,new ListEntry(new ListEntry(new StringEntry(associatedClassName)),new ListEntry(new StringEntry(name)),new ListEntry(new StringEntry(associatedClassName)),params));
 		Generators.list.addList(new ListEntry(),listName,name,listEntry);
 	}

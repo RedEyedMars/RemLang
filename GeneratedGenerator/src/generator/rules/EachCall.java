@@ -22,6 +22,8 @@ public class EachCall extends ConcreteRule {
 					Tokens.EACH,
 					new AddTokenToListParser(
 						Tokens.NAME,"eachName","variable_names"),
+					new ManyParser(
+							Rules.cast_as_statement),
 					Tokens.IN,
 					
 					new ChoiceParser(

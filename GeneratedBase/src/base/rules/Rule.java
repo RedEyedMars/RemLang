@@ -21,14 +21,18 @@ public class Rule extends ConcreteRule {
 					new AddTokenToListParser(
 						Tokens.NAME,"rulename","rules"),
 					new OptionalParser(
-							
-									new AddTokenParser(
-										Tokens.SILENCE,"silence")),
-					new OptionalParser(
-							Rules.member_declaration),
-					Tokens.NEWLINE,
-					Tokens.TAB,
-					Rules.definition));
+							new AddTokenParser(
+								Tokens.SILENCE,"silence")),
+					
+					new ChoiceParser(
+							new AddTokenParser(
+								Tokens.CHOOSY,"isChoosy"),
+						new ChainParser(
+							new OptionalParser(
+									Rules.member_declaration),
+							Tokens.NEWLINE,
+							Tokens.TAB,
+							Rules.definition))));
 
 	}
 

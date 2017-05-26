@@ -22,13 +22,13 @@ public class GeneratorFlow extends FlowController {
 	}
 
 
-	private IParser lazyNameParser = (IParser)Tokens.NAME;
+	private RegexParser lazyNameParser = (RegexParser)Tokens.NAME;
 	private List<IParser> rules = (List<IParser>)Rules.parser;
 	private List<IParser> listnames = (List<IParser>)Listnames.parser;
 	private IParser rootParser = (IParser)Rules.base;
 
 
-	public IParser getLazyNameParser(){
+	public RegexParser getLazyNameParser(){
 		return lazyNameParser;
 	}
 	public List<IParser> getRules(){

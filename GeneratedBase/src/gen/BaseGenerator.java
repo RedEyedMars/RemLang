@@ -27,9 +27,7 @@ public class BaseGenerator extends Generator {
 			fileName = fileName.substring(0,indexOfDot);
 		}
 		seedName = fileName;
-		directory = new File(
-				Generators.base.buildString("../Generated",
-						Generators.base.camelize(fileName),"/src/"));
+		directory = new File(Generators.base.buildString("../Generated",Generators.base.camelize(fileName),"/src/"));
 		directory.mkdirs();
 	}
 
@@ -45,10 +43,10 @@ public class BaseGenerator extends Generator {
 		return "Base";
 	}
 
-	public void generateRoot(IToken root){
+		public void generateRoot(IToken root){
 	}
 
-	public void generate(ParseContext data){
+		public void generate(ParseContext data){
 	}
 
 	public IParser getLazyNameParser(){
