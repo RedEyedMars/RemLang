@@ -110,7 +110,7 @@ public class CustomGenerator extends Generator {
 		Generators.list.addList(new ListEntry(new ElementEntry(RuleGenerator.importRulesElement,new ListEntry(new ListEntry(new StringEntry(seedName))))),"rules",name,rulenames);
 		return null;
 	}
-	public Entry generateEventDefinition(IToken event_definition,ListEntry events,Map<String,ListEntry> eventMap,HashMap<String,String> classMap){
+	public Entry generateEventDefinition(IToken event_definition,ListEntry events,Map<String,ListEntry> eventMap,Map<String,String> classMap){
 		String eventName = event_definition.get("eventName").getString();
 		String acceptorName = event_definition.get("variableName").getString();
 		Entry assignment = null;
@@ -133,7 +133,7 @@ public class CustomGenerator extends Generator {
 		}
 		return null;
 	}
-	public Entry generateEventElement(IToken eventElement,String resultName,HashMap<String,String> classMap){
+	public Entry generateEventElement(IToken eventElement,String resultName,Map<String,String> classMap){
 		for(IToken.Key atomKey:eventElement.keySet()){
 			if("quote".equals(atomKey.getName())){
 				IToken atom = eventElement.get(atomKey);
@@ -174,7 +174,7 @@ public class CustomGenerator extends Generator {
 		}
 		return new ElementEntry(CustomGenerator.tokenGetStringElement,new ListEntry(steps));
 	}
-	public Entry generateClassDef(IToken classDef,HashMap<String,String> classMap){
+	public Entry generateClassDef(IToken classDef,Map<String,String> classMap){
 		ListEntry parameters = new ListEntry();
 		StringEntry className = new StringEntry(classDef.get("className").getString());
 		List<IToken> elementEventElement = classDef.getAll("event_element");

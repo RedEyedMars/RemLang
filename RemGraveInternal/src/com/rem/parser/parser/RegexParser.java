@@ -7,7 +7,7 @@ import com.rem.parser.ParseContext;
 import com.rem.parser.ParseProfiler;
 import com.rem.parser.token.NodeToken;
 
-public class RegexParser extends ConcreteParser implements IParser{
+public class RegexParser extends ConcreteParser implements IPatterned{
 
 	private String listName;
 	protected String name;

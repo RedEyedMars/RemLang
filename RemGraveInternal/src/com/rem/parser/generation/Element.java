@@ -33,12 +33,13 @@ public class Element {
 	}
 
 	public void getString(ListEntry entries, StringBuilder builder) {
-		//System.out.println(name);
-		for (int i = 0; i < numberOfParameters-1; ++i) {				
+		//System.out.println(name+":"+numberOfParameters);
+		for (int i = 0; i < numberOfParameters-1; ++i) {
 			builder.append(outLine[i]);
 			entries.get(i).get(builder);
 		}
 		builder.append(outLine[numberOfParameters-1]);
+		//System.out.println(name);
 	}
 
 	public int numberOfParameters() {

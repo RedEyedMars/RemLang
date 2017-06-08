@@ -3,7 +3,7 @@ package com.rem.parser.parser;
 import com.rem.parser.ParseContext;
 import com.rem.parser.token.NodeToken;
 
-public class ExactParser extends ConcreteParser {
+public class ExactParser extends ConcreteParser implements IPatterned {
 
 	private String listName;
 	protected String name;

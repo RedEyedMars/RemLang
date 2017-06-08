@@ -2275,7 +2275,7 @@ all_type_tokens has tabs
 
 	public void setup(ParseContext data) {
 		NO_DEFAULT_TOKEN = new VariableEntry("$NO_DEFAULT","IToken",null);
-		file = data.getFile();
+		file = data.getInput();
 		String fileName = data.getFileName();
 		int indexOfDot = fileName.lastIndexOf('.');
 		if(indexOfDot>-1)fileName = fileName.substring(0, indexOfDot);

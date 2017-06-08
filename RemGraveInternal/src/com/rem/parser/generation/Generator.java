@@ -27,7 +27,7 @@ public abstract class Generator {
 	public abstract void setup(ParseContext data);
 	public abstract void generate(ParseContext data);
 	public abstract void generateRoot(IToken rootToken);
-	
+
 	public Element getElement(String elementName){
 		return elements.get(elementName);
 	}
@@ -62,7 +62,7 @@ public abstract class Generator {
 		}
 	}
 
-	
+
 	public void generateAll(ParseContext data) {
 		if(elements.containsKey("outline")){
 			addPage(getName(), elements.get("outline").getOutline());
@@ -107,7 +107,11 @@ public abstract class Generator {
 		return builder.toString();
 	}
 
-	public String camelize(String name) {
+	public Integer random(Integer zeroTo){
+		return (int) (Math.random()*zeroTo);
+	}
+
+	public static String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(("" + name.charAt(0)).toUpperCase());
 		boolean cap = false;
@@ -137,7 +141,7 @@ public abstract class Generator {
 	public void outputAll() {
 		for (String pageName : pages.keySet()) {
 			pages.get(pageName).output();
-			
+
 		}
 	}
 
@@ -173,7 +177,7 @@ public abstract class Generator {
 		}
 		pages.get(pageName).setOutline(pageOutline);
 	}
-	
+
 	protected void addPage(String[] pageOutline) {
 		addPage(getName(),pageOutline);
 	}
@@ -194,6 +198,12 @@ public abstract class Generator {
 			throw new RuntimeException("Page: " + getName() + " not defined");
 		}
 		pages.get(getName()).addFile(directory, fileName, parameters);
+	}
+	protected void addFile(File directory, String fileName, ElementEntry asWholeEntry) {
+
+		addPage(getName()+"$"+fileName,
+				asWholeEntry.element.getOutline());
+		pages.get(getName()+"$"+fileName).addFile(directory, fileName, asWholeEntry.parameters);
 	}
 
 	protected void addElement(String elementName, String[] elementOutline) {
@@ -328,13 +338,18 @@ public abstract class Generator {
 					try {
 						StringBuilder builder = new StringBuilder();
 						try {
-						for (int k = 0; k < outLineParts.length; ++k) {
-							builder.append(outLineParts[k]);
-							details.get(i).get(j).getParameter(k).get(builder);
-						}
+							for (int k = 0; k < outLineParts.length; ++k) {
+								builder.append(outLineParts[k]);
+								details.get(i).get(j).getParameter(k).get(builder);
+							}
 						}
 						catch (Exception e){
-							System.err.println(e.getMessage());
+							if(e.getMessage()==null){
+								System.err.println("Null Entry Reached!");
+							}
+							else {
+								System.err.println(e.getMessage());								
+							}
 							System.err.println(details.get(i).get(j).filename+":"+builder.toString());
 						}
 						writer = new BufferedWriter(
@@ -445,7 +460,7 @@ public abstract class Generator {
 	}
 
 
-	
+
 
 	private static class PageComparer {
 		private String fileName;
@@ -460,6 +475,7 @@ public abstract class Generator {
 		}
 	}
 
+
 	public static String tokenErrorMessage(IToken offender){
 		StringBuilder builder = new StringBuilder();
 		tokenErrorMessage(offender,builder);
@@ -467,13 +483,13 @@ public abstract class Generator {
 	}
 	private static void tokenErrorMessage(IToken offender, StringBuilder builder){
 		if(offender!=null)
-		for(IToken.Key key:offender.keySet()){
-			builder.append("(");
-			builder.append(key.getName());
-			builder.append(":");
-			builder.append(offender.get(key).getString());
-			builder.append("),");
-		}
+			for(IToken.Key key:offender.keySet()){
+				builder.append("(");
+				builder.append(key.getName());
+				builder.append(":");
+				builder.append(offender.get(key).getString());
+				builder.append("),");
+			}
 	}
 	public String completeTokenErrorMessage(IToken offender){
 		StringBuilder builder = new StringBuilder();

@@ -1,3 +1,4 @@
+uses Arrays
 generator
 	
 	constant DEFAULT_TOKEN
@@ -30,7 +31,7 @@ generator
 	var generatorName
 		""
 	var new_method = \""
-	elements from "generator/generator.elements"
+	elements from "generator.elements"
 	
 	
 	
@@ -243,7 +244,18 @@ generator
 						entry entry "+\n\t\t\t" = {}
 						atom to quark						
 							entry
-								entry += ``'quark``
+								var split as List<String>
+									static Arrays asList
+										'quark split
+											"\n"
+								var newline = ""
+								each line in split
+									set line
+										generator buildString
+											newline
+											line
+									entry += ``line``
+									set newline = "\\n"
 						elementParameters += exactDuoCall { entryD entry }
 					
 					entry
@@ -1165,10 +1177,11 @@ generator
 					if methodName is "getSingle"
 						ret changeType
 							"Entry"
-		
+		var isMethod = false
 		methodCall to element
 			inline_parameters
 				generate inlineParameter: parameters contextName contextSubName;
+				set isMethod = true
 			angle_class
 				var entry as method
 					generate angleClasses: contextName contextSubName;
@@ -1177,16 +1190,21 @@ generator
 				set ret = method: subjectName entryType parameters;
 				ret changeType
 					entryType
+				set isMethod = true
 			boolean_statement
 				parameters +=
 					generate booleanStatement: contextName contextSubName;
+				set isMethod = true
 			method_parameter
 				parameters +=
 					generate methodParameter: false contextName contextSubName;
+				set isMethod = true
 			method_call
 				parameters +=
 					generate methodCall: contextName contextSubName;
+				set isMethod = true
 			parameter
+				set isMethod = true
 				var newParameter as method = null
 				element to atom
 					boolean_statement
@@ -1208,7 +1226,7 @@ generator
 						oldParameter
 				parameters += newParameter
 					
-		if isStatic is true and parameters is not empty
+		if isStatic is true and isMethod is true
 			ret setElementName
 				"staticMethodCall"
 		else
@@ -1420,6 +1438,8 @@ generator
 	generate variableOrTokenName takes contextName, contextSubName
 		var isGetString
 			variableOrTokenName -> getString is not null
+		var isCamelized
+			variableOrTokenName -> camelize is not null
 		var ret as method = null
 		var isToken = false
 		variableOrTokenName to element
@@ -1460,7 +1480,7 @@ generator
 				set ret as method
 					generate arithmatic: false contextName contextSubName;
 		
-		if isGetString is true
+		if isGetString is true or isCamelized is true
 			var retType
 				ret getType
 			if retType is "IToken"
@@ -1469,6 +1489,8 @@ generator
 				set ret = method: ret "toString" {};
 			ret changeType 
 				"String"
+		if isCamelized is true
+			set ret = method: \"Generator" "camelize" {ret};
 		return
 			ret
 	
@@ -1961,7 +1983,7 @@ generator
 	
 	aux setup takes data as ParseContext
 		set file
-			data getFile
+			data getInput
 		var fileName 
 			data getFileName
 		var indexOfDot

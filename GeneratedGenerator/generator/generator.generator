@@ -1,6 +1,6 @@
 uses Listnames Tokens
-import "generator/meta.generator"
-import "generator/entries.generator"
-import "generator/gen.generator"
-import "generator/check.generator"
-import "generator/entryClass.generator"
+import "meta.generator"
+import "entries.generator"
+import "gen.generator"
+import "check.generator"
+import "entryClass.generator"

@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.TreeSet;
 
-import com.rem.parser.parser.IParser;
-
 public class ParseProfiler {
 
 	public static boolean running = false;

@@ -74,14 +74,14 @@ public class ParseUtil {
 			((IRule)rules.get(i)).setup();
 		}
 		String fileString = getString(file);
-		ParseContext data = new ParseContext(parser,file.getName(),fileString);			
-		System.out.println("File Length:"+data.getFile().length());
+		ParseContext data = new ParseContext(parser,file,fileString);			
+		System.out.println("File Length:"+data.getInput().length());
 		if(controller!=null&&controller.getLazyNameParser()!=null){
 			NameParser.lazyParser=controller.getLazyNameParser();
 			parser.parse(data);
 			JobCreator.waitUntilDoneProcessing();
 			NameParser.lazyParser=null;
-			if(!data.isDone()){
+			if(!data.isComplete()){
 				System.out.println("First-Pass Failed!");
 				data.invalidate();
 			}
@@ -120,7 +120,7 @@ public class ParseUtil {
 		for(IToken.Key key:rules.keySet()){
 			((IRule)rules.get(key).getValue()).setup();
 		}
-		ParseContext data = new ParseContext(parser,file.getName(),getString(file));
+		ParseContext data = new ParseContext(parser,file,getString(file));
 		debug = true;
 		parser.debug_parse(data);
 

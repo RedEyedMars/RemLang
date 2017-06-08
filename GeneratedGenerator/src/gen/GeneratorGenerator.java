@@ -276,7 +276,13 @@ public class GeneratorGenerator extends Generator {
 						for(IToken.Key quarkKey:atom.keySet()){
 							if("entry".equals(quarkKey.getName())){
 								IToken quark = atom.get(quarkKey);
-								entry.add(new QuoteEntry(quark.getString()));
+								List<String> split = (List<String>)Arrays.asList(quark.getString().split("\n"));
+								String newline = "";
+								for(String line:split){
+									line = Generators.generator.buildString(newline,line);
+									entry.add(new QuoteEntry(line));
+									newline = "\\n";
+								}
 							}
 						}
 						elementParameters.add(new ElementEntry(GeneratorGenerator.exactDuoCallElement,new ListEntry(entryD,entry)));
@@ -1132,10 +1138,12 @@ public class GeneratorGenerator extends Generator {
 				}
 			}
 		}
+		Boolean isMethod = false;
 		for(IToken.Key elementKey:methodCall.keySet()){
 			if("inline_parameters".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
 				generateInlineParameter(element,parameters,contextName,contextSubName);
+				isMethod = true;
 			}
 			else if("angle_class".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
@@ -1143,21 +1151,26 @@ public class GeneratorGenerator extends Generator {
 				String entryType = entry.getType();
 				ret = new MethodEntry(subjectName,entryType,parameters);
 				ret.changeType(entryType);
+				isMethod = true;
 			}
 			else if("boolean_statement".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
 				parameters.add(generateBooleanStatement(element,contextName,contextSubName));
+				isMethod = true;
 			}
 			else if("method_parameter".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
 				parameters.add(generateMethodParameter(element,false,contextName,contextSubName));
+				isMethod = true;
 			}
 			else if("method_call".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
 				parameters.add(generateMethodCall(element,contextName,contextSubName));
+				isMethod = true;
 			}
 			else if("parameter".equals(elementKey.getName())){
 				IToken element = methodCall.get(elementKey);
+				isMethod = true;
 				MethodEntry newParameter = (MethodEntry)null;
 				for(IToken.Key atomKey:element.keySet()){
 					if("boolean_statement".equals(atomKey.getName())){
@@ -1183,7 +1196,7 @@ public class GeneratorGenerator extends Generator {
 				parameters.add(newParameter);
 			}
 		}
-		if((isStatic == true && !parameters.isEmpty())){
+		if((isStatic == true && isMethod == true)){
 			ret.setElementName("staticMethodCall");
 		}
 		else {
@@ -1361,6 +1374,7 @@ public class GeneratorGenerator extends Generator {
 	}
 	public Entry generateVariableOrTokenName(IToken variableOrTokenName,String contextName,String contextSubName){
 		Boolean isGetString = (variableOrTokenName.get("getString") != null);
+		Boolean isCamelized = (variableOrTokenName.get("camelize") != null);
 		MethodEntry ret = (MethodEntry)null;
 		Boolean isToken = false;
 		for(IToken.Key elementKey:variableOrTokenName.keySet()){
@@ -1407,7 +1421,7 @@ public class GeneratorGenerator extends Generator {
 				ret = (MethodEntry)generateArithmatic(element,false,contextName,contextSubName);
 			}
 		}
-		if((isGetString == true)){
+		if((isGetString == true || isCamelized == true)){
 			String retType = ret.getType();
 			if((retType.equals("IToken"))){
 				ret = new MethodEntry(ret,"getString",new ListEntry());
@@ -1416,6 +1430,9 @@ public class GeneratorGenerator extends Generator {
 				ret = new MethodEntry(ret,"toString",new ListEntry());
 			}
 			ret.changeType("String");
+		}
+		if((isCamelized == true)){
+			ret = new MethodEntry(new StringEntry("Generator"),"camelize",new ListEntry(ret));
 		}
 		return ret;
 	}
@@ -1915,7 +1932,7 @@ public class GeneratorGenerator extends Generator {
 	}
 	public void setup(ParseContext data){
 		this.addPage();
-		file = data.getFile();
+		file = data.getInput();
 		String fileName = data.getFileName();
 		Integer indexOfDot = fileName.lastIndexOf(".");
 		if((indexOfDot > -1)){

@@ -1,8 +1,8 @@
 package com.rem.parser;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -10,21 +10,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TreeSet;
-
 import com.rem.parser.generation.FlowController;
-import com.rem.parser.parser.ConcreteListParser;
-import com.rem.parser.parser.IParser;import com.rem.parser.parser.NameParser;
+import com.rem.parser.parser.IParser;
+import com.rem.parser.parser.IPatterned;
+import com.rem.parser.parser.NameParser;
 import com.rem.parser.token.BranchToken;
 import com.rem.parser.token.IToken;
-import com.rem.parser.token.IToken.Key;
 
 public class ParseContext {
 
 	private static Set<String> listnames = new HashSet<String>();
 	private static Map<String,Map<String,ParseContext>> namedContexts = new HashMap<String,Map<String,ParseContext>>();
 	private static Map<String,Map<Integer,ParseContext>> allSubContexts = new HashMap<String,Map<Integer,ParseContext>>();
-	private static List<Object[]> parameterList = new ArrayList<Object[]>();;
+	private static List<Object[]> parameterList = Collections.synchronizedList(new ArrayList<Object[]>());
 	//private List<ParseContext> subContexts = new ArrayList<ParseContext>();
 
 	private Map<String,ParseList> lists = new HashMap<String,ParseList>();
@@ -43,16 +41,20 @@ public class ParseContext {
 	private int backPosition = -1;
 	private static Map<String,FurthestPoint> furthestPosition = new HashMap<String,FurthestPoint>();
 	private FurthestPoint furthestPoint;
-	private String file;
+	private String input;
 	private int length;
 	private boolean mustEnd;
+	private File file;
 	private String fileName;
+	private String directory;
 	private List<ParseContext> doneDependencies;
-	public ParseContext(IParser rootParser, String fileName, String file){
+	public ParseContext(IParser rootParser, File file, String input){
 		ParseContext.rootParser = rootParser;
-		this.length = file.length();
+		this.length = input.length();
+		this.input = input;
 		this.file = file;
-		this.fileName = fileName;
+		this.fileName = file.getName();
+		this.directory = file.getParentFile().getPath();
 		this.currentToken = new BranchToken();
 		this.rootToken = currentToken;
 		this.furthestPoint = new FurthestPoint();
@@ -69,9 +71,11 @@ public class ParseContext {
 	}
 
 	private ParseContext(ParseContext data) {
+		this.file = data.file;
+		this.directory = data.directory;
 		this.fileName = data.fileName;
 		this.length = data.length;
-		this.file = data.file;
+		this.input = data.input;
 		this.parentContext = data;
 		this.rootToken = data.rootToken;
 		this.currentToken = new BranchToken();
@@ -99,16 +103,13 @@ public class ParseContext {
 	private ParseContext(ParseContext positional,ParseContext listial) {
 		this.fileName = positional.fileName;
 		this.length = positional.length;
-		this.file = positional.file;
+		this.input = positional.input;
 		this.parentContext = positional;
 		this.rootToken = positional.rootToken;
 		this.currentToken = positional.currentToken;
 		this.furthestPoint = positional.furthestPoint;
 		this.parameterIndex = positional.parameterIndex;
 		this.frontPosition = positional.frontPosition;
-		//if(fileName.contains("test")){
-		//	//System.out.println("Create::"+this+":2:"+positional.getLineNumber(positional.getFrontPosition()));
-		//}
 		List<String> newListNames = new ArrayList<String>();
 		List<String> newSingleNames = new ArrayList<String>();
 		List<Set<String>> newListElements = new ArrayList<Set<String>>();
@@ -137,7 +138,7 @@ public class ParseContext {
 	}
 
 	public static ParseContext copy(ParseContext data) {
-		ParseContext copy = new ParseContext(rootParser,data.fileName, data.file);
+		ParseContext copy = new ParseContext(rootParser,data.file, data.input);
 		copy.lists = data.lists;
 		copy.resetAccessPoints();
 		return copy;
@@ -172,32 +173,39 @@ public class ParseContext {
 		}
 		else if(createNew){
 			ParseContext newContext =  new ParseContext(this);
-			if(fileName.contains("test")){
-				//System.out.println("NEW CONTEXT:"+this+"<:>"+newContext+":"+position+":"+newContext.getLineNumber(position)+":"+getLine());
-			}
 			allSubContexts.get(fileName).put(position, newContext);
 			return newContext;
 		}
 		else return this;
 	}
 
+	public ParseContext getContextFromFile(String fileName, File file) {
+		ParseContext newContext = getContextFromPosition(-frontPosition,true);
+		if(!newContext.getFileName().equals(fileName)){
+			newContext.setFile(file);
+		}
+		return newContext;
+	}
+
 	public boolean isDone() {
-		boolean dependencyDone = true;
+		if(backPosition==-1){
+			return valid&&frontPosition==length;
+		}
+		else {
+			return valid&&frontPosition==backPosition; 
+		}
+	}
+	public boolean isComplete() {
 		if(doneDependencies!=null){
 			for(ParseContext dependency:doneDependencies){
-				if(!dependency.isDone()){
-					dependencyDone = false;
-					break;
+				if(!dependency.isComplete()){
+					return false;
 				}
 			}
 		}
-		if(backPosition==-1){
-			return dependencyDone&&valid&&frontPosition==length;
-		}
-		else {
-			return dependencyDone&&valid&&frontPosition==backPosition; 
-		}
+		return isValid()&&isDone();
 	}
+
 
 	public boolean isValid() {
 		return valid;
@@ -241,17 +249,17 @@ public class ParseContext {
 	}
 
 	public String get(){
+		//System.err.println(input.length()+":"+frontPosition+","+backPosition);
 		if(backPosition==-1){
-			//System.out.println(fileName+":"+frontPosition+":"+length+":"+file.length()+":"+getLineNumber(frontPosition));
-			return file.substring(frontPosition);
+			return input.substring(frontPosition);
 		}
 		else {
-			return file.substring(frontPosition,backPosition);
+			return input.substring(frontPosition,backPosition);
 		}
 	}
 
-	public String getFile(){
-		return file;
+	public String getInput(){
+		return input;
 	}
 
 
@@ -286,7 +294,7 @@ public class ParseContext {
 		public AccessPoint(){
 		}
 		public AccessSuccess access(IParser incoming){
-			IParser[] path = getPathWith(incoming);
+			//IParser[] path = getPathWith(incoming);
 			for(int i=0;i<successes.size();++i){
 				if(successes.get(i).path==incoming){
 					return successes.get(i);
@@ -295,8 +303,6 @@ public class ParseContext {
 			return null;
 		}
 		public void succeed(IParser parser,int newPosition, IToken token) {
-			//printPath(getPath());
-			//System.out.println("<");
 			successes.add(new AccessSuccess(parser,newPosition,token));
 		}
 		public void ascend(){
@@ -326,11 +332,6 @@ public class ParseContext {
 						return false;
 					}
 				}
-
-				//printPath(mine);
-				//System.out.println("VS");
-				//printPath(other);
-				//System.out.println(":<!");
 			}
 			return true;
 		}
@@ -363,9 +364,9 @@ public class ParseContext {
 			newPath[i] = addition;
 			return newPath;
 		}
-		private IParser[] getPath(){
+		public IParser[] getPath(){
 			IParser[] newPath = new IParser[path.size()];
-			
+
 			for(int i=0;i<path.size();++i){
 				newPath[i] = path.get(i);
 			}
@@ -442,14 +443,14 @@ public class ParseContext {
 
 
 	public String getLine(){
-		int newline = file.indexOf('\n',frontPosition);
+		int newline = input.indexOf('\n',frontPosition);
 		if(newline>=0&&(backPosition>=0&&newline>backPosition)){
-			return "("+frontPosition+")"+file.substring(frontPosition,backPosition);	
+			return "("+frontPosition+")"+input.substring(frontPosition,backPosition);	
 		}
 		else if(newline>=0){
-			return "("+frontPosition+")"+file.substring(frontPosition,newline);
+			return "("+frontPosition+")"+input.substring(frontPosition,newline);
 		}
-		else return "("+frontPosition+")"+file.substring(frontPosition);
+		else return "("+frontPosition+")"+input.substring(frontPosition);
 	}
 
 	public IToken getToken(){
@@ -493,7 +494,7 @@ public class ParseContext {
 	public Object getParameter(int i) {
 		return parameterList.get(parameterIndex.peek())[i];
 	}
-	public synchronized void pushParameters(Object[] values){
+	public void pushParameters(Object[] values){
 		for(int i=0;i<parameterList.size();++i){
 			if(parameterList.get(i)!=null&&parameterList.get(i).length==values.length){
 				Object[] compare = parameterList.get(i);
@@ -510,11 +511,8 @@ public class ParseContext {
 				}
 			}
 		}
-		parameterIndex.push(addParameters(values));
-	}
-	private synchronized int addParameters(Object[] values){
+		parameterIndex.push(parameterList.size());
 		parameterList.add(values);
-		return parameterList.size()-1;
 	}
 	public void popParameters(){
 		parameterIndex.pop();
@@ -531,8 +529,10 @@ public class ParseContext {
 		}
 	}
 
-	public void setFileName(String fileName) {
-		this.fileName = fileName;
+	public void setFile(File file) {
+		this.file = file;
+		this.fileName = file.getName();
+		this.directory = file.getParentFile().getPath();
 		if(!furthestPosition.containsKey(fileName)){
 			this.furthestPoint = new FurthestPoint();
 			this.furthestPoint.position=0;
@@ -544,22 +544,20 @@ public class ParseContext {
 			allSubContexts.put(fileName, new HashMap<Integer,ParseContext>());
 			allSubContexts.get(fileName).put(-1, this);
 		}
-	}
-	public void setFile(String file){
-		this.file = file;
-		this.length = file.length();
+
+		this.input = ParseUtil.getString(file);
+		this.length = input.length();
 		this.parameterIndex = new Stack<Integer>();
 		this.parameterIndex.push(-1);	
 	}
-
 	public IParser getRootParser() {
 		return rootParser;
 	}
 
 	public int getLineNumber(int position){
 		int current = 0;
-		for(int i=0;i<position&&i<file.length();){
-			int next = file.indexOf('\n',i);
+		for(int i=0;i<position&&i<input.length();){
+			int next = input.indexOf('\n',i);
 			if(next==-1){
 				return current;
 			}
@@ -646,5 +644,27 @@ public class ParseContext {
 	}
 
 
+
+	public void retainList(ParseList list){
+		addList(list.getName());
+		ParseList contextList = (ParseList)getList(list.getName());
+		NameParser namesParser = (NameParser)contextList.getNamesParser();
+		for(IParser parser:list.getParsers()){
+			namesParser.addName(((IPatterned)parser).getPattern());
+		}
+	}
+
+	public String getDirectory() {
+		if("".equals(fileName)){
+			return "..";
+		}
+		else {
+			if("".equals(directory))
+				return ".";
+			else
+				return directory;
+
+		}
+	}
 
 }

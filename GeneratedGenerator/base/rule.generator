@@ -68,7 +68,8 @@ rule
 			"new Argument.Number(" Value ")"
 		parameterExisting
 			"this." Parameter Name ""
-	
+	var ruleNameBuilder
+		new StringBuilder
 	aux setup takes data as ParseContext
 		set packageName
 			rule buildString
@@ -88,6 +89,11 @@ rule
 		rule generateAll
 			rules getNewTokens
 			"rule"
+		rule println
+			rule buildString
+				"Ruleset:"
+				'ruleNameBuilder
+	
 	
 	generate root	
 		var ruleName
@@ -134,10 +140,10 @@ rule
 		var isSilent
 			silence is not null and silence is not empty
 		
-		rule println
-			">"
+		ruleNameBuilder append
 			ruleName
-		
+		ruleNameBuilder append
+			","
 		if root->isChoosy is not null
 			entry ruleEntry "" = {}
 			if isSilent is true

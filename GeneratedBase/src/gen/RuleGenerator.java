@@ -16,6 +16,7 @@ public class RuleGenerator extends Generator {
 	private HashMap<String,List<String>> ruleParameterNames = new HashMap<String,List<String>>();
 	private File directory = null;
 	private String packageName = null;
+	private StringBuilder ruleNameBuilder = new StringBuilder();
 
 
 	public static final Element outlineElement = new Element("outline",new String[]{"package ",/*Package Name*/";\n\n"+
@@ -87,6 +88,7 @@ public class RuleGenerator extends Generator {
 	public void generate(ParseContext data){
 		ParseList rules = (ParseList)data.getList("rules");
 		Generators.rule.generateAll(rules.getNewTokens(),"rule");
+		Generators.rule.println(Generators.rule.buildString("Ruleset:",ruleNameBuilder.toString()));
 	}
 	public void generateRoot(IToken root){
 		String ruleName = root.get("rulename").getString();
@@ -102,7 +104,8 @@ public class RuleGenerator extends Generator {
 		Generators.rule.addFile(Generators.rule.getDirectory(),fileName,parameters);
 		IToken silence = root.get("silence");
 		Boolean isSilent = (silence != null && !silence.isEmpty());
-		Generators.rule.println(">",ruleName);
+		ruleNameBuilder.append(ruleName);
+		ruleNameBuilder.append(",");
 		if((root.get("isChoosy") != null)){
 			ListEntry ruleEntry = new ListEntry();
 			ruleEntry.setDelimiter("");
@@ -415,6 +418,10 @@ public class RuleGenerator extends Generator {
 
 	public String getPackageName(){
 		return packageName;
+	}
+
+	public StringBuilder getRuleNameBuilder(){
+		return ruleNameBuilder;
 	}
 
 	public String getName(){

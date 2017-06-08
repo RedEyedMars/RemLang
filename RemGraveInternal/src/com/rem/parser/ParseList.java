@@ -2,6 +2,7 @@ package com.rem.parser;
 
 import java.lang.reflect.Field;
 
+import com.rem.parser.parser.ChoiceParser;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.NameParser;
 import com.rem.parser.token.BranchToken;
@@ -13,12 +14,38 @@ public abstract class ParseList extends BranchToken{
 
 	private ParseListToken newTokensToken;
 	private NameParser defaultNameParser;
+	private ChoiceParser _parser;
 	
 	public abstract String getName();	
 	public abstract String getSingular();
 	
 	public NameParser getNamesParser(){
 		return defaultNameParser;
+	}
+	protected ParseList(){
+
+		try {
+			for(Field field:this.getClass().getDeclaredFields()){
+				if("parser".equals(field.getName())){
+					_parser = (ChoiceParser)field.get(this);
+				}
+				else if("serialVersionUID".equals(field.getName())||
+						"_parser".equals(field.getName())||
+						"defaultNameParser".equals(field.getName())||
+						"this$0".equals(field.getName())||
+						"val$listName".equals(field.getName())||
+						"val$singleName".equals(field.getName())){
+					continue;
+				}
+				else {
+					put(new NodeToken(field.getName(),IParser.DEFAULT,field.get(this),-1));
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	
@@ -38,7 +65,10 @@ public abstract class ParseList extends BranchToken{
 	public void reset() {
 		newTokensToken = new ParseListToken();
 	}
-	
+
+	public ChoiceParser getParsers() {
+		return _parser;
+	}
 	static ParseList createNew(final String listName, final String singleName, final ParseContext parentContext){
 		//System.out.println(listName+"::"+singleName);
 		ParseList newList = new ParseList(){
@@ -52,25 +82,6 @@ public abstract class ParseList extends BranchToken{
 				return singleName;
 			}
 		};
-		try {
-			for(Field field:ParseList.class.getDeclaredFields()){
-				if("serialVersionUID".equals(field.getName())||
-						"parser".equals(field.getName())||
-						"defaultNameParser".equals(field.getName())||
-						"this$0".equals(field.getName())||
-						"val$listName".equals(field.getName())||
-						"val$singleName".equals(field.getName())){
-					continue;
-				}
-				else {
-					newList.put(new NodeToken(field.getName(),IParser.DEFAULT,field.get(newList),-1));
-				}
-			}
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
 		
 		newList.newTokensToken = new ParseListToken();
 		newList.defaultNameParser = new NameParser(parentContext,listName);
