@@ -27,8 +27,8 @@ public class ListNameElementParser extends ConcreteParser{
 			}
 
 			else {
-				System.err.println(data.getLine());
-				throw new RuntimeException("ListNameParser:"+listName+"is not recognized listName");
+				System.err.println(data.getLine()+":"+data.getLineNumber(data.getFrontPosition()));
+				throw new RuntimeException("ListNameParser:"+listName+" is not recognized listName");
 			}
 		}
 	}

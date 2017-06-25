@@ -112,24 +112,24 @@ rule
 			ruleName
 			null
 		
-		entry rulenames = ruleElement [ruleName className]
+		entry rulenames = ruleElement {\ruleName \className}
 		
 		var seedName
 			base getSeedName
 		list addList
-			{importRules {[seedName]}}
+			{importRules {\seedName}}
 			"rules"
 			ruleName
 			rulenames
 		
 		entry param_declarations "" = {}
 		entry parameters = {
-			[packageName]
-			[className]
-			[className]
+			\packageName
+			\className
+			\className
 			param_declarations
-			[className]
-			[ruleName] }
+			\className
+			\ruleName }
 		rule addFile
 			rule getDirectory
 			fileName
@@ -188,9 +188,9 @@ rule
 					ruleParameterNamesList add
 						rule_param
 					param_declarations add
-						parameterMember ["Integer" rule_param "Integer" "0"]
+						parameterMember {\"Integer" \rule_param \"Integer" \"0"}
 					parameterIndexEntries add 
-						parameterIndex ['param_count rule_param]
+						parameterIndex {\'param_count \rule_param}
 					set param_count
 						param_count+1
 			
@@ -248,7 +248,7 @@ rule
 					+ = Multiple
 				quark definition to energy
 					set returnEntry
-						multiple {[option] generate definition:ruleName tabs;}
+						multiple {\option generate definition:ruleName tabs;}
 		if enclosingFromName is not null
 			set returnEntry
 				recontextualizationParser { (tabs+1 returnEntry) enclosingFromName enclosingList }
@@ -268,10 +268,10 @@ rule
 				if enclosingList is not null
 					if enclosingTokenName is not null
 						set returnEntry
-							addToListWithToken { (tabs+1 returnEntry) ["null"] enclosingList enclosingTokenName }
+							addToListWithToken { (tabs+1 returnEntry) \"null" enclosingList enclosingTokenName }
 					else
 						set returnEntry
-							addToList { (tabs+1 returnEntry) ["null"] enclosingList }
+							addToList { (tabs+1 returnEntry) \"null" enclosingList }
 		
 		entry enclosingArgumentsStatement = {}
 		atom parameter to energy
@@ -323,23 +323,23 @@ rule
 			NUMBER
 				if left is null
 					set left
-						parameterNewNumber {['element]}
+						parameterNewNumber {\'element}
 				else
 					set right
-						parameterNewNumber {['element]}
+						parameterNewNumber {\'element}
 			rule_parameters						
 				if left is null
 					set left
-						parameterExisting {['element]}
+						parameterExisting {\'element}
 				else
 					set right
-						parameterExisting {['element]}
+						parameterExisting {\'element}
 		if right is null
 			return
 				left
 		else
 			return
-				parameterOperator { [operand] left right }
+				parameterOperator { \operand left right }
 	
 	
 	generate definition takes ruleName, tabs
@@ -385,17 +385,17 @@ rule
 					rule camelize
 						'token
 				return
-					rule_parser {[ruleName]}
+					rule_parser {\ruleName}
 			listsToken			
 				var listName
 					rule camelize
 						'token
 				if listName is "Listnames"
 					return
-						["ListNameParser.parser"]
+						\"ListNameParser.parser"
 				else
 					return
-						rule_parser {[listName]}
+						rule_parser {\listName}
 			listToken
 				var listName
 					"#NO_LISTNAME_FOUND"
@@ -408,21 +408,21 @@ rule
 							'token
 							"s"
 					return
-						rule_name_parser {[name]}
+						rule_name_parser {\name}
 				else
 					set listName
 						rule camelize
 							listName
 					return
-						listElement [listName 'token]
+						listElement \listName \'token
 			anyListNameToken					
 				return
 					rule_any_list_name {}
 			token					
 				return
-					listElement ["Tokens" 'token]
+					listElement \"Tokens" \'token
 			braceToken
 				return
-					listElement ["Braces" 'token]
+					listElement \"Braces" \'token
 		return
 			null

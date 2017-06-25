@@ -12,7 +12,9 @@ import com.rem.parser.token.IToken;
 
 public abstract class FlowController {
 
+	private static FlowController flow;
 	public void parse(String... fileNames){
+		flow = this;
 		try {
 		for(String fileName:fileNames){
 			ParseUtil.parse(getRootParser(), new File(fileName), this, getRules(), getListnames());
@@ -81,5 +83,22 @@ public abstract class FlowController {
 		}
 		return builder.toString();
 
+	}
+
+	protected String getDirectory(String fileName, String knownDirectory){
+		if("".equals(fileName)){
+			return "..";
+		}
+		else {
+			if("".equals(knownDirectory))
+				return ".";
+			else
+				return knownDirectory;
+
+		}
+	}
+
+	public static String getDirectoryFrom(String fileName, String knownDirectory) {
+		return flow.getDirectory(fileName,knownDirectory);
 	}
 }

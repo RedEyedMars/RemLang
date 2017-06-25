@@ -135,19 +135,19 @@ meta generator
 				entryClassList getNamesParser
 			token classDefs
 				entryClassDefinitions getNewTokens
-			classDefs * to entryClass
-				var entryClassName = 'entryClass->entryClassName
+			classDefs * to entryClassTok
+				var entryClassName = 'entryClassTok->entryClassName
 				entryClassNames addName
 					entryClassName
 				token implement
-					entryClass->implements
+					entryClassTok->implements
 				if implement is not null
 					var parentContext as ParseContext
-						entryClass getContext
+						entryClassTok getContext
 							context
 					var specificContext as ParseContext
 						parentContext getContextFromPosition
-							entryClass getPosition
+							entryClassTok getPosition
 							false
 					implement to element
 						property_names

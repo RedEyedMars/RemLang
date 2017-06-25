@@ -111,12 +111,12 @@ custom
 			name
 			null
 		
-		entry rulenames = rule ruleElement [name className]
+		entry rulenames = rule ruleElement {\name \className}
 		
 		var seedName
 			base getSeedName
 		list addList
-			{rule importRules {[seedName]}}
+			{rule importRules {\seedName}}
 			"rules"
 			name
 			rulenames

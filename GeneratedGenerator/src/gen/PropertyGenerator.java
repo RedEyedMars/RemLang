@@ -35,7 +35,7 @@ public class PropertyGenerator extends Generator {
 			"import gen.checks.*;\n"+
 			"import gen.entries.*;\n"+
 			"import lists.*;\n\n"+
-			"public interface ",/*Class Name*/" {\n",/*Contents*/"\n}"});
+			"public interface ",/*Class Name*/" extends Entry {\n",/*Contents*/"\n}"});
 	public static final Element variableMethodElement = new Element("variableMethod",new String[]{"public ",/*Type*/" get",/*Variable Name*/"();"});
 	public static final Element methodElement = new Element("method",new String[]{"public ",/*Type*/" ",/*Method*/";"});
 	public PropertyGenerator(){
@@ -86,11 +86,21 @@ public class PropertyGenerator extends Generator {
 						IToken atom = element.get(atomKey);
 						MethodEntry header = (MethodEntry)Generators.entryClass.generateEntryMethodHeader(atom,className);
 						TypeEntry type = new TypeEntry(header);
-						Entry methodBody = Generators.entryClass.generateEntryMethodBody(atom,header,className,header.getMethodName());
+						Entry methodBody = (Entry)Generators.entryClass.generateEntryMethodBody(atom,header,className,header.getMethodName());
 						ListEntry method = new ListEntry(new StringEntry("\tpublic "),type,new StringEntry(" "),header,new StringEntry(" "),methodBody);
 						method.setDelimiter("");
-						propertyMethods.put(header.getMethodName(),new TabEntry(0,new ListEntry(method)));
-						propertyMethodTypes.put(header.getMethodName(),header);
+						ListEntry params = (ListEntry)header.getParameters();
+						params = (ListEntry)params.get(1);
+						StringBuilder methodBuilder = new StringBuilder();
+						methodBuilder.append(header.getMethodName());
+						methodBuilder.append(":");
+						for(Entry e:params){
+							VariableEntry v = (VariableEntry)e;
+							methodBuilder.append(v.getType());
+							methodBuilder.append(",");
+						}
+						propertyMethods.put(methodBuilder.toString(),new TabEntry(0,new ListEntry(method)));
+						propertyMethodTypes.put(methodBuilder.toString(),header);
 						bareProperty.add(new TabEntry(1,new ListEntry(new ElementEntry(PropertyGenerator.methodElement,new ListEntry(type,header)))));
 					}
 				}

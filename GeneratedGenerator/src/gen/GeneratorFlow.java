@@ -131,14 +131,14 @@ public class GeneratorFlow extends FlowController {
 			ParseList entryClassList = (ParseList)context.getList("entry_class_names");
 			NameParser entryClassNames = (NameParser)entryClassList.getNamesParser();
 			IToken classDefs = entryClassDefinitions.getNewTokens();
-			for(IToken.Key entryClassKey:classDefs.keySet()){
-				IToken entryClass = classDefs.get(entryClassKey);
-				String entryClassName = entryClass.get("entryClassName").getString();
+			for(IToken.Key entryClassTokKey:classDefs.keySet()){
+				IToken entryClassTok = classDefs.get(entryClassTokKey);
+				String entryClassName = entryClassTok.get("entryClassName").getString();
 				entryClassNames.addName(entryClassName);
-				IToken implement = entryClass.get("implements");
+				IToken implement = entryClassTok.get("implements");
 				if((implement != null)){
-					ParseContext parentContext = (ParseContext)entryClass.getContext(context);
-					ParseContext specificContext = (ParseContext)parentContext.getContextFromPosition(entryClass.getPosition(),false);
+					ParseContext parentContext = (ParseContext)entryClassTok.getContext(context);
+					ParseContext specificContext = (ParseContext)parentContext.getContextFromPosition(entryClassTok.getPosition(),false);
 					for(IToken.Key elementKey:implement.keySet()){
 						if("property_names".equals(elementKey.getName())){
 							IToken element = implement.get(elementKey);

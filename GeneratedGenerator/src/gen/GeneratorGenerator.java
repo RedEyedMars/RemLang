@@ -829,11 +829,11 @@ public class GeneratorGenerator extends Generator {
 				String camelizedSpecificName = Generators.generator.camelize(specificNameString);
 				StringEntry specificName = new StringEntry(camelizedSpecificName);
 				StringEntry childName = new StringEntry(allTypeTokens.get("tokenName").getString());
-				String contextTokenSubName = Generators.generator.buildString(contextSubName,".",childName.getString());
-				VariableEntry childToken = new VariableEntry(childName.getString(),"IToken");
+				String contextTokenSubName = Generators.generator.buildString(contextSubName,".",childName.toString());
+				VariableEntry childToken = new VariableEntry(childName.toString(),"IToken");
 				Generators.generator.addContext(contextName,contextSubName,contextTokenSubName,childToken);
 				if((!specificNameString.equals("*"))){
-					String allNameString = Generators.generator.buildString(childName.getString(),specificName.getString());
+					String allNameString = Generators.generator.buildString(childName.toString(),specificName.toString());
 					StringEntry allName = new StringEntry(allNameString);
 					VariableEntry alls = new VariableEntry(allNameString,"List<IToken>",new MethodEntry(new StringEntry(tokenName),"getAll",new ListEntry(new QuoteEntry(specificNameString))));
 					ListEntry ret = new ListEntry(new TabEntry(tabs,new ListEntry(alls)));
@@ -864,9 +864,9 @@ public class GeneratorGenerator extends Generator {
 					ret.setDelimiter("");
 					ListEntry forBody = new ListEntry();
 					forBody.setDelimiter("");
-					String childKeyNameString = Generators.generator.buildString(childName.getString(),"Key");
+					String childKeyNameString = Generators.generator.buildString(childName.toString(),"Key");
 					StringEntry childKeyName = new StringEntry(childKeyNameString);
-					forBody.add(new TabEntry(tabs + 1,new ListEntry(new VariableEntry(childName.getString(),"IToken",new MethodEntry(new StringEntry(tokenName),"get",new ListEntry(childKeyName))))));
+					forBody.add(new TabEntry(tabs + 1,new ListEntry(new VariableEntry(childName.toString(),"IToken",new MethodEntry(new StringEntry(tokenName),"get",new ListEntry(childKeyName))))));
 					IToken bodyToken = element.get("body");
 					for(IToken.Key bonesKey:bodyToken.keySet()){
 						if("entry_declaration".equals(bonesKey.getName())){
@@ -898,11 +898,11 @@ public class GeneratorGenerator extends Generator {
 					if("tokenName".equals(clauseKey.getName())){
 						IToken clause = element.get(clauseKey);
 						childName = new StringEntry(clause.getString());
-						String childKeyNameString = Generators.generator.buildString(childName.getString(),"Key");
+						String childKeyNameString = Generators.generator.buildString(childName.toString(),"Key");
 						childKeyName = new StringEntry(childKeyNameString);
 						childKeyNameGetName = new MethodEntry(childKeyName,"getName",new ListEntry());
-						contextTokenSubName = Generators.generator.buildString(contextSubName,".",childName.getString());
-						childToken = new VariableEntry(childName.getString(),"IToken",new MethodEntry(new StringEntry(tokenName),"get",new ListEntry(childKeyName)));
+						contextTokenSubName = Generators.generator.buildString(contextSubName,".",childName.toString());
+						childToken = new VariableEntry(childName.toString(),"IToken",new MethodEntry(new StringEntry(tokenName),"get",new ListEntry(childKeyName)));
 						Generators.generator.addContext(contextName,contextSubName,contextTokenSubName,childToken);
 					}
 					else if("token_clause".equals(clauseKey.getName())){
@@ -1096,10 +1096,17 @@ public class GeneratorGenerator extends Generator {
 		}
 		String theTrueMethod = null;
 		Boolean undefined = false;
+		String theTrueContext = contextName;
+		if((methodCall.get("generator_names") != null)){
+			theTrueContext = Generator.camelize(methodCall.get("generator_names").getString());
+		}
+		if((!methodParameters.containsKey(theTrueContext))){
+			methodParameters.put(theTrueContext,new HashMap<String,List<ITypeListener>>());
+		}
 		if((isGenerate == true)){
 			theTrueMethod = Generators.generator.buildString("generate",Generators.generator.camelize(methodName));
-			if((!methodParameters.get(contextName).containsKey(theTrueMethod))){
-				methodParameters.get(contextName).put(theTrueMethod,new ArrayList<ITypeListener>());
+			if((!methodParameters.get(theTrueContext).containsKey(theTrueMethod))){
+				methodParameters.get(theTrueContext).put(theTrueMethod,new ArrayList<ITypeListener>());
 				undefined = true;
 			}
 			else {
@@ -1111,7 +1118,7 @@ public class GeneratorGenerator extends Generator {
 			methodParameters.get(contextName).put(theTrueMethod,new ArrayList<ITypeListener>());
 			undefined = true;
 		}
-		ParametersEntry parameters = new ParametersEntry(undefined,contextName,theTrueMethod);
+		ParametersEntry parameters = new ParametersEntry(undefined,theTrueContext,theTrueMethod);
 		MethodEntry ret = (MethodEntry)null;
 		if((isGenerate == true)){
 			VariableEntry defaultToken = (VariableEntry)contexts.get(contextName).get(contextSubName).get(DEFAULT_TOKEN);
@@ -1378,7 +1385,24 @@ public class GeneratorGenerator extends Generator {
 		MethodEntry ret = (MethodEntry)null;
 		Boolean isToken = false;
 		for(IToken.Key elementKey:variableOrTokenName.keySet()){
-			if("token_names".equals(elementKey.getName())){
+			if("generator_names".equals(elementKey.getName())){
+				IToken element = variableOrTokenName.get(elementKey);
+				String name = element.getString();
+				ret = new MethodEntry("generatorCall",new ListEntry(new StringEntry(name)));
+				ret.changeType(Generators.generator.camelize(Generators.generator.buildString(name,"Generator")));
+			}
+			else if("entry_names".equals(elementKey.getName())){
+				IToken element = variableOrTokenName.get(elementKey);
+				String entryName = element.getString();
+				VariableEntry variable = (VariableEntry)Generators.generator.getVariable(entryName,contextName,contextSubName,"Entry","List Entry Definition(707)");
+				String varType = variable.getType();
+				if((!varType.contains("Entry"))){
+					variable.changeType("Entry");
+				}
+				ret = new MethodEntry(entryName);
+				ret.changeType(variable.getType());
+			}
+			else if("token_names".equals(elementKey.getName())){
 				IToken element = variableOrTokenName.get(elementKey);
 				ret = new MethodEntry(element.getString());
 				ret.changeType("IToken");
@@ -1792,6 +1816,10 @@ public class GeneratorGenerator extends Generator {
 						IToken atom = element.get(atomKey);
 						ret.add(generateMethodCall(atom,contextName,contextSubName));
 					}
+					else if("variable_or_token_name".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						ret.add(generateVariableOrTokenName(atom,contextName,contextSubName));
+					}
 					else if("variable_names".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
 						String varName = atom.getString();
@@ -1817,33 +1845,44 @@ public class GeneratorGenerator extends Generator {
 				retEntry.changeType("ListEntry");
 				return retEntry;
 			}
-			else if("string".equals(elementKey.getName())){
+			else if("set".equals(elementKey.getName())){
 				IToken element = listEntryDefinition.get(elementKey);
 				ListEntry ret = new ListEntry();
 				for(IToken.Key atomKey:element.keySet()){
-					if("entry".equals(atomKey.getName())){
+					if("entry_definition".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
-						ret.add(new MethodEntry(new_method,"StringEntry",new ListEntry(new QuoteEntry(atom.getString()))));
+						ret.add(generateEntryDefinition(atom,contextName,contextSubName));
 					}
-					else if("quoted".equals(atomKey.getName())){
+					else if("generate_call".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
-						for(IToken.Key quarkKey:atom.keySet()){
-							if("entry".equals(quarkKey.getName())){
-								IToken quark = atom.get(quarkKey);
-								ret.add(new MethodEntry(new_method,"QuoteEntry",new ListEntry(new QuoteEntry(quark.getString()))));
-							}
-							else if("variable_or_token_name".equals(quarkKey.getName())){
-								IToken quark = atom.get(quarkKey);
-								ret.add(new MethodEntry(new_method,"QuoteEntry",new ListEntry(generateVariableOrTokenName(quark,contextName,contextSubName))));
-							}
+						ret.add(generateMethodCall(atom,contextName,contextSubName));
+					}
+					else if("variable_or_token_name".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						ret.add(generateVariableOrTokenName(atom,contextName,contextSubName));
+					}
+					else if("variable_names".equals(atomKey.getName())){
+						IToken atom = element.get(atomKey);
+						String varName = atom.getString();
+						VariableEntry variable = (VariableEntry)Generators.generator.getVariable(varName,contextName,contextSubName,"Entry","List Entry Definition(006)");
+						String varType = variable.getType();
+						if((!varType.contains("Entry"))){
+							variable.changeType("Entry");
 						}
+						ret.add(new MethodEntry(varName));
 					}
-					else {
+					else if("entry_names".equals(atomKey.getName())){
 						IToken atom = element.get(atomKey);
-						ret.add(new MethodEntry(new_method,"StringEntry",new ListEntry(generateVariableOrTokenName(atom,contextName,contextSubName))));
+						String entryName = atom.getString();
+						VariableEntry variable = (VariableEntry)Generators.generator.getVariable(entryName,contextName,contextSubName,"Entry","List Entry Definition(007)");
+						String varType = variable.getType();
+						if((!varType.contains("Entry"))){
+							variable.changeType("Entry");
+						}
+						ret.add(new MethodEntry(entryName));
 					}
 				}
-				MethodEntry retEntry = new MethodEntry(new_method,"ListEntry",ret);
+				MethodEntry retEntry = new MethodEntry(new_method,"SetEntry",ret);
 				retEntry.changeType("ListEntry");
 				return retEntry;
 			}
@@ -1996,6 +2035,7 @@ public class GeneratorGenerator extends Generator {
 			else if("meta_method_declaration".equals(elementKey.getName())){
 				IToken element = meta.get(elementKey);
 				String methodName = element.get("methodName").getString();
+				String castToType = Generators.generator.getCastType(element,metaName,null);
 				Generators.generator.addContext(metaName,LOCAL_CONTEXT,methodName,NO_DEFAULT_TOKEN);
 				ListEntry parameters = new ListEntry();
 				ListEntry body = new ListEntry();
@@ -2018,7 +2058,10 @@ public class GeneratorGenerator extends Generator {
 						body.add(generateBodyElement(atom,2,metaName,methodName,null));
 					}
 				}
-				methodDeclarations.add(new TabEntry(0,new ListEntry(new ElementEntry(GeneratorGenerator.methodDeclarationElement,new ListEntry(new StringEntry("void"),new StringEntry(methodName),new ListEntry(parameters),body)))));
+				if((castToType == null)){
+					castToType = "void";
+				}
+				methodDeclarations.add(new TabEntry(0,new ListEntry(new ElementEntry(GeneratorGenerator.methodDeclarationElement,new ListEntry(new StringEntry(castToType),new StringEntry(methodName),new ListEntry(parameters),body)))));
 			}
 		}
 		if((!contexts.get(metaName).containsKey("assignListElementNames"))){

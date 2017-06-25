@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.entries.*;
 import lists.*;
 
-public interface ITypeListener {
+public interface ITypeListener extends Entry {
 
 	public static final String TYPE_UNKNOWN = "$UNKNOWN";
 

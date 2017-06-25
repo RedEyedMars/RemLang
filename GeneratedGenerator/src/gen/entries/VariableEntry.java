@@ -157,25 +157,25 @@ public class VariableEntry implements Entry,ITypeListener {
 			this.changeType(defaultType);
 		}
 		if((assignment == null && showType == false)){
-			new ListEntry(new StringEntry(name)).get(builder);
+			new StringEntry(name).get(builder);
 		}
 		if((access == PRIVATE_ACCESS && showType == true)){
-			new ListEntry(new StringEntry("private ")).get(builder);
+			new StringEntry("private ").get(builder);
 		}
 		else if((access == PUBLIC_ACCESS && showType == true)){
-			new ListEntry(new StringEntry("public ")).get(builder);
+			new StringEntry("public ").get(builder);
 		}
 		if((isStatic == true && showType == true)){
-			new ListEntry(new StringEntry("static ")).get(builder);
+			new StringEntry("static ").get(builder);
 		}
 		if((isFinal == true && showType == true)){
-			new ListEntry(new StringEntry("final ")).get(builder);
+			new StringEntry("final ").get(builder);
 		}
 		if((assignment == null && showType == true)){
 			new ElementEntry(GeneratorGenerator.typeAndNameElement,new ListEntry(new StringEntry(type),new StringEntry(name))).get(builder);
 		}
 		else if((showType == true)){
-			new ElementEntry(GeneratorGenerator.variableDeclarationElement,new ListEntry(new ListEntry(new StringEntry(type)),new ListEntry(new StringEntry(name)),assignment)).get(builder);
+			new ElementEntry(GeneratorGenerator.variableDeclarationElement,new ListEntry(new StringEntry(type),new StringEntry(name),assignment)).get(builder);
 		}
 	}
 }

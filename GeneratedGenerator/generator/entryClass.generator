@@ -34,7 +34,7 @@ property
 			"import gen.checks.*;\n"+
 			"import gen.entries.*;\n"+
 			"import lists.*;\n\n"+
-			"public interface " Class Name " {\n" Contents "\n}"
+			"public interface " Class Name " extends Entry {\n" Contents "\n}"
 		variableMethod
 			"public " Type " get" Variable Name "();"
 		method
@@ -106,18 +106,35 @@ property
 							atom
 							className
 					entry type = type:header;
-					var methodBody
+					var methodBody as Entry
 						entryClass generateEntryMethodBody
 							atom
 							header
 							className
 							header getMethodName
 					entry method "" = {\"\tpublic " type \" " header \" " methodBody}
-					propertyMethods put 
+					var params as ListEntry
+						header getParameters
+					set params as ListEntry
+						params get
+							1
+					var methodBuilder
+						new StringBuilder
+					methodBuilder append
 						header getMethodName
+					methodBuilder append
+						":"
+					each e as Entry in params
+						var v as variable = e
+						methodBuilder append
+							v getType
+						methodBuilder append
+							","
+					propertyMethods put 
+						'methodBuilder
 						(0 method)
 					propertyMethodTypes put
-						header getMethodName
+						'methodBuilder
 						header
 					bareProperty+=(1 method {type header})						
 		
@@ -492,7 +509,7 @@ entryClass
 								entry ifBody "" = {}
 								value to quark
 									entry_definition
-										var ifLine
+										var ifLine as Entry
 											generator generateEntryDefinition
 												quark
 												className
@@ -501,7 +518,7 @@ entryClass
 									entry_names
 										ifBody+=(3 appendToBuilder {\'quark})
 								if ifStatement->otherwise is null
-									var booleanStatement
+									var booleanStatement as Entry
 										generator generateBooleanStatement
 											ifStatement->boolean_statement
 											className
@@ -518,7 +535,7 @@ entryClass
 								set first = true								
 								value to quark
 									entry_definition
-										var ifLine
+										var ifLine as Entry
 											generator generateEntryDefinition
 												quark
 												className
@@ -537,8 +554,25 @@ entryClass
 						header setDefaultType
 							methodTypes->methodName
 					entry type = type:header;
-					methods put
+					var params as ListEntry
+						header getParameters
+					set params as ListEntry
+						params get
+							1
+					var methodBuilder
+						new StringBuilder
+					methodBuilder append
 						methodName
+					methodBuilder append
+						":"
+					each e as Entry in params
+						var v as variable = e
+						methodBuilder append
+							v getType
+						methodBuilder append
+							","
+					methods put
+						'methodBuilder
 						(1 methodDeclaration {type header generate entryMethodBody:header className methodName;})
 		
 		entry implementsProperties = {}

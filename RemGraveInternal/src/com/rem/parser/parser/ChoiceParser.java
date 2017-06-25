@@ -26,9 +26,16 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 		}
 		ParseContext.AccessPoint accessPoint = data.getAccessPoint();
 		ParseContext.AccessSuccess alreadySucceeded = accessPoint.access(this);
+		
 		if(alreadySucceeded!=null){
 			for(IToken.Key key:alreadySucceeded.getToken().keySet()){
+				try {
 				data.getToken().put(key,alreadySucceeded.getToken().get(key));
+				}
+				catch(Exception e){
+					System.err.println(">>>"+key.getName());
+					throw new RuntimeException(e);
+				}
 			}
 			data.validate();
 			data.setFrontPosition(alreadySucceeded.getPosition());
@@ -53,7 +60,7 @@ public class ChoiceParser extends ConcreteListParser implements IParser{
 				data.setFrontPosition(alreadySucceeded.getPosition());
 				return;
 			}
-			if(accessPoint.canUse(parser)){
+			if(alreadySucceeded!=null||accessPoint.canUse(parser)){
 				IToken token = data.addTokenLayer();
 				data.validate();
 				//System.out.println(rule.getName()+" USE:"+index+":"+parser);

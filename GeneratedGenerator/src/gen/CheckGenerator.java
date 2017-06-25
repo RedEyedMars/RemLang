@@ -74,8 +74,8 @@ public class CheckGenerator extends Generator {
 			assignment.add(param.asAssignment());
 			ifStatement.add(param.asIfPart());
 		}
-		Generators.check.addFile(directory,Generators.check.buildString(checkName.getString(),".java"),new ListEntry(checkName,members,checkName,parameters,assignment));
-		Generators.check.addEntry(directory,Generators.check.buildString(checkName.getString(),".java"),"ret",new ListEntry(ifStatement));
+		Generators.check.addFile(directory,Generators.check.buildString(checkName.toString(),".java"),new ListEntry(checkName,members,checkName,parameters,assignment));
+		Generators.check.addEntry(directory,Generators.check.buildString(checkName.toString(),".java"),"ret",new ListEntry(ifStatement));
 		return null;
 	}
 	public Entry generateCheckCheck(IToken checkCheck,Integer tabs,String contextName,String contextSubName){

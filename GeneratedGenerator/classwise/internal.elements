@@ -1,0 +1,43 @@
+
+manipulateObject
+	"MainFlow.classes." Class Name "Class." Method Name "(" Parameters ")"
+
+manipulateToken
+	"for(IToken " Element Name ":" Subject ".getAll(\"" Token Name "\")) {"
+
+bodyEntry
+	"" Entry ""
+bodyOperator
+	"" Left " " Operator " " Right ""
+bodyCallWithSubject
+	"" Subject "." Method "(" Parameters ")"
+bodyCallWithoutSubject
+	"" Method "(" Parameters ")"
+bodyNewObj
+	"new " Method Name "(" Parameters ")"
+bodyConditional
+	"" Name "(" Header ") {" Body ""
+bodyElement
+	"" Prefix "" Entry "" Suffix ""
+declareVariableWithAssignment
+	"" Type " " Name " = " Assignment ""
+declareVariableWithoutAssignment
+	"" Type " " Name ""
+declareMember
+	"protected Entry " Name " = " Member ";"
+declareMemberClass
+	"protected ExternalClassEntry " Name " = " Member ""
+declareMethod
+	"public " Type " " Name "(" Parameters ") {" Method Body ""
+declareClass
+	"package " Package name ";
+" Import List "
+public " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {
+	//Externals" Variables "\n" Methods "\n" Classes "
+	//Internals" Variables "\n" Methods "\n" Classes ""
+
+
+declareSubClass
+	"public " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {
+	//Externals" Variables "\n" Methods "\n" Classes "
+	//Internals" Variables "\n" Methods "\n" Classes ""

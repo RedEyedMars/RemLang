@@ -22,6 +22,8 @@ public class MetaMethodDeclaration extends ConcreteRule {
 					new AddTokenParser(
 						Tokens.NAME,"methodName"),
 					new OptionalParser(
+							Rules.cast_as_statement),
+					new OptionalParser(
 							new WithParser((IRule)Rules.takes_statement,new Argument.Number(1))),
 					new MultipleParser(
 							

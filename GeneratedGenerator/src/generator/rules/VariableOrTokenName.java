@@ -31,7 +31,9 @@ public class VariableOrTokenName extends ConcreteRule {
 							
 							new ChoiceParser(
 									new ListNameElementParser("token_names"),
-									new ListNameElementParser("variable_names")),
+									new ListNameElementParser("variable_names"),
+									new ListNameElementParser("entry_names"),
+									new ListNameElementParser("generator_names")),
 							new MultipleParser(
 									
 										new ChainParser(
@@ -50,7 +52,11 @@ public class VariableOrTokenName extends ConcreteRule {
 										Tokens.PRIME,"getString"),
 									new AddTokenParser(
 										Tokens.CARROT,"camelize"))),
-					new ListNameElementParser("token_names"))));
+					
+					new ChoiceParser(
+							new ListNameElementParser("token_names"),
+							new ListNameElementParser("variable_names"),
+							new ListNameElementParser("entry_names")))));
 
 	}
 

@@ -1,0 +1,19 @@
+
+exact
+	"" In ""
+returnCall
+	"return " Statement ";"
+semicoloned
+	"" Statement ";"
+asImport
+	"import " Package name ";"
+concat
+	"" Left "+" Right ""
+access
+	"" Left ".get(" Right ")"
+retrieveClass
+	"clgen.MainFlow.classes." Class Name "Class"
+extends
+	"extends " Parent Class ""
+implements
+	"implements " Parent Class ""

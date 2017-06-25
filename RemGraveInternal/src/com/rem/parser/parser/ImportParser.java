@@ -1,6 +1,9 @@
 package com.rem.parser.parser;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -8,6 +11,7 @@ import java.util.regex.Pattern;
 
 import com.rem.parser.ParseContext;
 import com.rem.parser.ParseUtil;
+import com.rem.parser.generation.Generator;
 import com.rem.parser.parallelism.JobCreator;
 import com.rem.parser.parallelism.ParallelJob;
 import com.rem.parser.token.IToken;
@@ -104,6 +108,7 @@ public class ImportParser extends ConcreteParser{
 							JobCreator.add(new ParallelJob(){
 								@Override
 								public void act(){
+									try {
 									newContext.setBackPosition(-1);
 									newContext.setFrontPosition(0);
 									if(startParser==null){
@@ -123,6 +128,20 @@ public class ImportParser extends ConcreteParser{
 
 										newContext.setFrontPosition(0);	
 									}
+									}
+									catch(Exception e){
+										System.err.println(newContext.getFileName()+":"+newContext.getLineNumber(newContext.getFrontPosition()));
+										BufferedWriter writer;
+										try {
+											writer = new BufferedWriter(new FileWriter("log.log"));
+
+											writer.append(newContext.getFileName()+">>"+Generator.completeTokenErrorMessage(newContext.getRoot())+"<<");
+											writer.close();
+										} catch (IOException e1) {
+											e1.printStackTrace();
+										}
+										throw new RuntimeException(e);
+									}
 								}
 							});
 							return;
@@ -133,7 +152,7 @@ public class ImportParser extends ConcreteParser{
 						}
 					}
 					else {
-						System.err.println("File name:"+fileName+" not found!");
+						System.err.println("File name:"+data.getDirectory()+":"+fileName+" not found!");
 						data.invalidate();
 						data.setFrontPosition(position);
 					}

@@ -40,7 +40,7 @@ public class TypeEntry implements Entry {
 	}
 	public void get(StringBuilder builder){
 		if((subject == null)){
-			new ListEntry(new StringEntry(defaultType)).get(builder);
+			new StringEntry(defaultType).get(builder);
 		}
 		else {
 			new GetTypeEntry(subject).get(builder);

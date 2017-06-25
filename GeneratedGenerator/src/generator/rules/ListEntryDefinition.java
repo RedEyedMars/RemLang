@@ -20,7 +20,7 @@ public class ListEntryDefinition extends ConcreteRule {
 					new AddTokenParser(
 						Braces.ENTRY_LIST,"list"),
 					new AddTokenParser(
-						Braces.ENTRY_STRING,"string"),
+						Braces.ENTRY_SET,"set"),
 					new AddTokenParser(
 						Braces.PIPE_ENTRY,"exact_variable")));
 

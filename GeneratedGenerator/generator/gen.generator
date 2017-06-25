@@ -242,7 +242,7 @@ generator
 							entryD += \"*/"
 							set entryDef = null
 						entry entry "+\n\t\t\t" = {}
-						atom to quark						
+						atom to quark
 							entry
 								var split as List<String>
 									static Arrays asList
@@ -279,10 +279,10 @@ generator
 				var elementBody as ListEntry
 					elementBodies get
 						contextName
-				constructorBody += (2 semicoloned  { noSubjectCall { \"addElement" {``elementName`` exactDuoCall [elementName "Element"] }}})
+				constructorBody += (2 semicoloned  { noSubjectCall { \"addElement" {``elementName`` exactDuoCall {\elementName \"Element"} }}})
 				elementBody += (1 publicStaticFinalVariableDeclaration {
 					\"Element"
-					exactDuoCall [elementName "Element"]
+					exactDuoCall {\elementName \"Element"}
 					{ newObjectCall {\"Element" { ``elementName`` newStringListCall { elementParameters }}}}})
 		return
 			null
@@ -1133,14 +1133,21 @@ generator
 		
 		var theTrueMethod = null
 		var undefined = false
+		var theTrueContext = contextName
+		if methodCall->generator_names is not null
+			set theTrueContext = ^methodCall->generator_names
+		if methodParameters does not containsKey theTrueContext
+			methodParameters put
+				theTrueContext
+				new HashMap<String,List<type_listener>>
 		if isGenerate is true
 			set theTrueMethod
 				generator buildString
 					"generate"
 					generator camelize
 						methodName
-			if methodParameters->contextName does not containsKey theTrueMethod
-				methodParameters->contextName put
+			if methodParameters->theTrueContext does not containsKey theTrueMethod
+				methodParameters->theTrueContext put
 					theTrueMethod
 					new ArrayList<type_listener>
 				set undefined = true
@@ -1152,7 +1159,7 @@ generator
 				theTrueMethod
 				new ArrayList<type_listener>
 			set undefined = true
-		entry parameters = parameters: undefined contextName theTrueMethod;
+		entry parameters = parameters: undefined theTrueContext theTrueMethod;
 		var ret as method = null
 		if isGenerate is true
 			var defaultToken as variable = contexts->contextName->contextSubName->DEFAULT_TOKEN
@@ -1443,6 +1450,26 @@ generator
 		var ret as method = null
 		var isToken = false
 		variableOrTokenName to element
+			generator_names
+				var name = 'element
+				set ret = method: "generatorCall" {\name};
+				ret changeType
+					generator camelize
+						generator buildString
+							name
+							"Generator"
+			entry_names
+				var entryName = 'element
+				
+				var variable as variable
+					generator getVariable:entryName contextName contextSubName "Entry" "List Entry Definition(707)";
+				var varType
+					variable getType
+				if varType does not contains "Entry"
+					variable changeType:"Entry";
+				set ret = method:entryName;
+				ret changeType
+					variable getType
 			token_names
 				set ret = method: 'element;
 				ret changeType
@@ -1833,6 +1860,8 @@ generator
 						ret += generate entryDefinition: contextName contextSubName;
 					generate_call
 						ret+=generate MethodCall: contextName contextSubName;
+					variable_or_token_name
+						ret+= generate variableOrTokenName: contextName contextSubName;
 					variable_names
 						var varName = 'atom
 						var variable as variable
@@ -1856,20 +1885,35 @@ generator
 				retEntry changeType:"ListEntry";
 				return
 					retEntry
-			string				
+			set				
 				entry ret = {}
 				element to atom
-					entry
-						ret += method:new_method "StringEntry" {``'atom``};
-					quoted
-						atom to quark
-							entry
-								ret += method:new_method "QuoteEntry" {``'quark``};
-							variable_or_token_name
-								ret += method:new_method "QuoteEntry" {generate variableOrTokenName: contextName contextSubName;};
-					else
-						ret += method:new_method "StringEntry" { generate variableOrTokenName: contextName contextSubName;};
-				entry retEntry = method:new_method "ListEntry" ret;
+					entry_definition
+						ret += generate entryDefinition: contextName contextSubName;
+					generate_call
+						ret+=generate MethodCall: contextName contextSubName;
+					variable_or_token_name
+						ret+= generate variableOrTokenName: contextName contextSubName;
+					variable_names
+						var varName = 'atom
+						var variable as variable
+							generator getVariable:varName contextName contextSubName "Entry" "List Entry Definition(006)";
+						var varType
+							variable getType
+						if varType does not contains "Entry"
+							variable changeType:"Entry";
+						ret+= method:varName;
+					entry_names
+						var entryName = 'atom
+						
+						var variable as variable
+							generator getVariable:entryName contextName contextSubName "Entry" "List Entry Definition(007)";
+						var varType
+							variable getType
+						if varType does not contains "Entry"
+							variable changeType:"Entry";
+						ret+=method:entryName;
+				entry retEntry = method:new_method "SetEntry" ret;
 				retEntry changeType:"ListEntry";
 				return
 					retEntry
@@ -2095,6 +2139,11 @@ generator
 				methodDeclarations+=(0 methodDeclaration {type \getMethodName {} (2 returnCall {\variableName})})
 			meta_method_declaration
 				var methodName = 'element->methodName
+				var castToType
+					generator getCastType
+						element
+						metaName
+						null
 				generator addContext
 					metaName
 					LOCAL_CONTEXT
@@ -2118,7 +2167,9 @@ generator
 						body+=generate entryDeclaration:2 metaName methodName;
 					body_element
 						body+=generate bodyElement:2 metaName methodName null;
-				methodDeclarations+=(0 methodDeclaration {\"void" \methodName {parameters} body})
+				if castToType is null
+					set castToType = "void" 
+				methodDeclarations+=(0 methodDeclaration {\castToType \methodName {parameters} body})
 		
 		if contexts->metaName does not containsKey "assignListElementNames"
 			methodDeclarations+=(0 methodDeclaration {\"void" \"assignListElementNames" \"ParseContext data, IToken rootToken" {}})

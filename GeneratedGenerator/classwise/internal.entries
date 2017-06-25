@@ -1,0 +1,419 @@
+
+entry man_obj uses innerable importable
+	entry name = null
+	entry access = null
+	entry methodName = null
+	entry parameters = null
+	constructor takes iName as Entry, iAccess as Entry, iMethodName, iParameters as ListEntry
+		set isInner = true
+		set name = iName
+		set access = iAccess
+		set methodName = \iMethodName
+		set parameters = iParameters
+		parameters setDelimiter :",";
+	output
+			internal manipulateObject{name methodName parameters} if access is null
+entry man_tok uses innerable importable
+	entry subject = null
+	entry body = null
+	var tokenName
+	var elementName
+	var tabs = 0
+	entry context = null
+	constructor takes iSubject as Entry, iTokenName, iElementName, iBody as ListEntry, iContext as context
+		set isInner = true
+		set subject = iSubject
+		var subjectAsImportable as importable = iSubject
+		this setImport
+			subjectAsImportable getImportPackage
+		set tokenName = iTokenName
+		set elementName = iElementName
+		set context = iContext
+		set body = iBody
+		body setDelimiter :"";
+	output
+			(tabs internal manipulateToken{\elementName subject \tokenName body}) if context is not null
+			+
+			(tabs \"}") if context is not null 
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab
+entry i_exact uses innerable
+	entry value = null
+	constructor takes iValue as Entry
+		set value = iValue
+		set isInner = true
+	setValue takes newValue
+		set value = newValue
+	output
+			value if value is not null
+entry i_name_var uses innerable importable
+	entry first = null
+	entry second = null
+	var isConcat = false
+	constructor takes iValue as Entry
+		set first = iValue
+		set isInner = true
+	constructor takes iFirst as Entry, iSecond as Entry
+		set first = iFirst
+		set second = iSecond
+		set isInner = true
+	constructor takes iFirst as Entry, concat, iSecond as Entry
+		set first = iFirst
+		set second = iSecond
+		set isConcat = true
+		set isInner = true
+	output
+			first if second is null
+			classwise concat{first second} if second is not null and isConcat is true
+			classwise access{first second} if second is not null and isConcat is false
+entry i_operator uses innerable importable
+	entry left = null
+	entry right = null
+	entry operator = null
+	constructor takes iLeft as Entry
+		set isInner = true
+		set left = iLeft
+		var leftAsImportable as importable = iLeft
+		this setImport
+			leftAsImportable getImportPackage
+	constructor takes iLeft as Entry, iOperator, iRight as Entry
+		set isInner = true
+		set left = iLeft
+		set right = iRight
+		set operator = \iOperator
+		var leftAsImportable as importable = iLeft
+		var rightAsImportable as importable = iRight
+		var importList = []
+		importList+=
+			leftAsImportable getImportPackage
+		importList+=
+			rightAsImportable getImportPackage
+		this setImport
+			importList
+	output
+			internal bodyEntry{left} if right is null
+			internal bodyOperator{left operator right} if right is not null
+entry i_call uses innerable importable
+	entry subject = null
+	entry methodName = null
+	entry parameters = null
+	constructor takes iMethodName as Entry, iParameters as ListEntry
+		set isInner = true
+		set methodName = iMethodName
+		set parameters = iParameters
+		var importList = []
+		each e as Entry in iParameters
+			var i as importable = e
+			importList+=
+				i getImportPackage
+		this setImport
+			importList
+		parameters setDelimiter :",";
+	constructor takes iSubject as Entry, iMethodName as Entry, iParameters as ListEntry
+		set subject = iSubject
+		var subjectAsImportable as importable = iSubject
+		set methodName = iMethodName
+		set parameters = iParameters
+		var importList = []
+		importList+=
+			subjectAsImportable getImportPackage
+		each e as Entry in iParameters
+			var i as importable = e
+			importList+=
+				i getImportPackage
+		this setImport
+			importList
+		parameters setDelimiter :",";
+	output
+			internal bodyCallWithoutSubject{methodName parameters} if subject is null
+			internal bodyCallWithSubject{subject methodName parameters} if subject is not null
+entry i_new_obj uses innerable importable
+	entry className = null
+	entry parameters = null
+	constructor takes iClassName as Entry, iParameters as ListEntry
+		set isInner = true
+		set className = iClassName
+		set parameters = iParameters
+		var importList = []
+		each e as Entry in iParameters
+			var i as importable = e
+			importList+=
+				i getImportPackage
+		this setImport
+			importList
+		parameters setDelimiter :",";
+	output
+			internal bodyNewObj{className parameters} if className is not null
+entry i_conditional uses innerable importable
+	entry name = null
+	entry header = null
+	entry body = null
+	entry context = null
+	var tabs = 0
+	entry e_tabs = \"0"
+	constructor takes iName, iHeader as Entry, iBody as ListEntry, iContext as context
+		set isInner = true
+		set name = \iName
+		set header = iHeader
+		var headerAsImportable as importable = iHeader
+		set body = {}
+		set context = iContext
+		entry importList = []
+		importList+=
+			headerAsImportable getImportPackage
+		var bodyContext = context:iContext;
+		var semicolon = ";"
+		each e as Entry in iBody
+			var i as importable = e
+			importList+=
+				i getImportPackage
+			body +=	i_element:"" e semicolon bodyContext;
+		this setImport
+			importList
+		
+		body setDelimiter :"";
+	output
+			(tabs internal bodyConditional{name header body }) if context is not null
+			+
+			(tabs \"}") if context is not null 
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab
+		e_tabs set :'tabs;
+entry i_element uses innerable importable
+	entry prefix = null
+	entry suffix = null
+	entry value = null
+	entry context = null
+	var tabs = 0
+	entry e_tabs = \"0"
+	constructor takes iPrefix, iValue as Entry, iSuffix, iContext as context
+		set isInner = true
+		set prefix = \iPrefix
+		set suffix = \iSuffix
+		set value = iValue
+		set context = iContext
+		var valueAsImportable as importable = iValue
+		this setImport
+			valueAsImportable getImportPackage
+	output
+			(tabs internal bodyElement{prefix value suffix}) if context is not null 
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab
+		e_tabs set :'tabs;
+entry i_variable uses innerable nameable importable
+	entry type = null
+	entry assignment  = null
+	var tabs = 0
+	entry e_tabs = \"0"
+	constructor takes iType as Entry, iName, iAssignment as Entry
+		set isInner = true
+		set name = iName
+		set type  = iType
+		var typeAsImportable as importable  = iType
+		set assignment = iAssignment
+		set importPackage
+			typeAsImportable getImportPackage
+	output
+			(tabs internal declareVariableWithAssignment{ type \name assignment}) if assignment is not null
+			(tabs internal declareVariableWithoutAssignment{ type \name}) if assignment is null 
+entry i_method uses innerable nameable importable
+	entry type = null
+	entry parameters  = null
+	entry methodBody = null
+	entry context = null
+	var tabs = 0
+	entry e_tabs = \"0"
+	constructor takes iType as Entry, iName, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+		set isInner = true
+		set name = iName
+		set type = iType
+		var typeAsImportable as importable = iType
+		set parameters = iParameters
+		set methodBody = {}
+		set context = iContext
+		entry importList = []
+		importList+=
+			typeAsImportable getImportPackage
+		each e as Entry in iParameters
+			var i as importable = e
+			importList+=
+				i getImportPackage
+		var methodBodyContext = context:iContext;
+		var semicolon = ";"
+		each e as Entry in iMethodBody
+			var i as importable = e
+			importList+=
+				i getImportPackage
+			methodBody += i_element:"" e semicolon methodBodyContext;
+		parameters setDelimiter :",";
+		methodBody setDelimiter :"";
+		this setImport
+			importList
+	output
+			(tabs internal declareMethod{type \name parameters methodBody }) if context is not null
+			+
+			(tabs \"}") if context is not null 
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab
+		e_tabs set :'tabs;
+
+entry i_class uses innerable nameable importable
+	entry packageName = null
+	entry asStatic = \""
+	entry importList = [(0 \"import com.rem.generation.*")]
+	entry externalImportList = []
+	entry classType = null
+	entry completeName = {}
+	var parent as Entry = null
+	var interfaces as Entry = null
+	entry internalVariables = {}
+	entry externalVariables = {}
+	entry internalMethods = {}
+	entry externalMethods = {}
+	entry internalSubClasses = {}
+	entry externalSubClasses = {}
+	entry context = null
+	var isSubClass = false
+	var tabs = 0
+	entry e_tabs = \"0"
+	var hasOutput = false
+	constructor takes iPackageName as Entry, iType, iName, iParent, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
+		set isInner = false
+		set packageName = iPackageName
+		this setImport
+			iPackageName
+		var establishedImportable as importable
+			classwise getType
+				iName
+		establishedImportable setImport
+			importPackage
+		set classType = \iType
+		set name = iName
+		completeName += \name
+		completeName setDelimiter :".";
+		if iParent is not null
+			set parent = classwise extends{\iParent}
+			var iParentType as importable
+				classwise getType
+					iParent
+			externalImportList +=
+				iParentType getImportPackage
+		else
+			set parent = {}
+		if iInterfaces is not empty
+			set interfaces = classwise implements{iInterfaces}
+			each itrf as Entry in iInterfaces
+				var iIntefaceType as importable
+					classwise getType
+						'itrf
+				externalImportList +=
+					iIntefaceType getImportPackage
+		else
+			set interfaces = {}
+		
+		each e as Entry in iVariables
+			var i as innerable = e
+			if i does getIsInner
+				var niv as i_variable = e
+				this addVariable
+					niv
+			else
+				var nev as e_variable = e
+				this addVariable
+					nev
+		each e as Entry in iMethods
+			var i as innerable = e
+			if i does getIsInner
+				var niv as i_method = e
+				this addMethod
+					niv
+			else
+				var nev as i_method = e
+				this addMethod
+					nev
+		set context = iContext
+		importList setDelimiter :"";
+		internalVariables setDelimiter :"";
+		externalVariables setDelimiter :"";
+		internalMethods setDelimiter :"";
+		externalMethods setDelimiter :"";
+	getFullName
+		var builder
+			new StringBuilder
+		completeName get
+			builder
+		return
+			'builder
+	addVariable takes i as i_variable
+		internalVariables+=(1 |i|)
+	addVariable takes e as e_variable
+		var eName
+			classwise buildString
+				e getName
+				"Variable"
+		externalVariables+=(2 internal declareMember{\eName external declareMember{e_tabs e}})
+		externalImportList+=
+			e getImportPackage
+	addMethod takes i as i_method
+		internalMethods+=(1 |i|)
+	addMethod takes e as e_method
+		var eName
+			classwise buildString
+				e getName
+				"Method"
+		externalMethods += (1 internal declareMember{\eName e})
+		externalImportList+=
+			e getImportPackage
+	addSubClass takes i as i_class
+		internalSubClasses+=(1 |i|)
+		i setIsSubClass :completeName true;
+		var theirContext as context
+			i getContext
+		theirContext setParentContext:context;
+	addSubClass takes e as e_class
+		var ePlainName
+			e getName
+		var eName
+			classwise buildString
+				e getName
+				"Class"
+		var eAsFile as Entry
+			e getAsFile
+		externalSubClasses+=(1 internal declareMemberClass{\eName eAsFile})
+		externalImportList+=
+			e getImportPackage
+		e setIsSubClass : completeName true;
+		var theirContext as context
+			e getContext
+		theirContext setParentContext:context;
+	setIsSubClass takes superCompleteName as Entry, newStatus
+		set isSubClass = newStatus
+		if isSubClass is true
+			asStatic set :"static";
+		else
+			asStatic set :"";
+		completeName clear
+		completeName += superCompleteName
+		completeName += \name
+	output
+			internal declareClass{packageName importList asStatic classType \name parent interfaces externalVariables externalMethods externalSubClasses internalVariables internalMethods internalSubClasses } if isSubClass is false
+			(tabs internal declareSubClass{asStatic classType \name parent interfaces externalVariables externalMethods externalSubClasses internalVariables internalMethods internalSubClasses }) if isSubClass is true
+			+
+			(tabs \"}") if isSubClass is true
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab

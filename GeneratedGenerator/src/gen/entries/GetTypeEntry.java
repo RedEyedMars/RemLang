@@ -33,7 +33,7 @@ public class GetTypeEntry implements Entry {
 	}
 	public void get(StringBuilder builder){
 		if((type != null)){
-			new ListEntry(new StringEntry(type)).get(builder);
+			new StringEntry(type).get(builder);
 		}
 	}
 }

@@ -54,7 +54,12 @@ public class ParseContext {
 		this.input = input;
 		this.file = file;
 		this.fileName = file.getName();
-		this.directory = file.getParentFile().getPath();
+		if(file.getParentFile()==null){
+			this.directory = "";
+		}
+		else {
+			this.directory = file.getParentFile().getPath();
+		}
 		this.currentToken = new BranchToken();
 		this.rootToken = currentToken;
 		this.furthestPoint = new FurthestPoint();
@@ -393,11 +398,32 @@ public class ParseContext {
 			return lists.get(listName);
 		}
 		else if(parentContext!=null){
-			return parentContext.getList(listName);
+			return parentContext.getList(listName, new HashSet<ParseContext>());
 		}
 		else return null;
 	}
-
+	private ParseList getList(String listName, Set<ParseContext> previous){
+		if(previous.add(this)){
+			if(lists.containsKey(listName)){
+				return lists.get(listName);
+			}
+			else if(parentContext != null) {
+				return parentContext.getList(listName,previous);
+			}
+			else {
+				return null;
+			}
+		}
+		else {
+			StringBuilder error = new StringBuilder();
+			for(ParseContext prev:previous){
+				error.append(prev.fileName);
+				error.append(",");
+			}
+			return null;
+			//throw new RuntimeException("Looped at:"+fileName+"("+error+")");
+		}
+	}
 
 	public Set<String> getListNames() {
 		return listnames;
@@ -532,7 +558,12 @@ public class ParseContext {
 	public void setFile(File file) {
 		this.file = file;
 		this.fileName = file.getName();
-		this.directory = file.getParentFile().getPath();
+		if(file.getParentFile()==null){
+			this.directory = "";
+		}
+		else {
+			this.directory = file.getParentFile().getPath();
+		}
 		if(!furthestPosition.containsKey(fileName)){
 			this.furthestPoint = new FurthestPoint();
 			this.furthestPoint.position=0;
@@ -655,16 +686,11 @@ public class ParseContext {
 	}
 
 	public String getDirectory() {
-		if("".equals(fileName)){
-			return "..";
-		}
-		else {
-			if("".equals(directory))
-				return ".";
-			else
-				return directory;
-
-		}
+		return FlowController.getDirectoryFrom(fileName,directory);
+	}
+	
+	public Set<String> getListElements(String listName){
+		return getList(listName).getNamesParser().getElements();
 	}
 
 }

@@ -64,9 +64,9 @@ list
 						listName length
 		entry fileParameters = {
 					{}
-					["Listnames"]
-					["listnames"]
-					["listname"] }
+					\"Listnames"
+					\"listnames"
+					\"listname" }
 		list addFile
 			directory
 			"Listnames.java"

@@ -204,7 +204,7 @@ public class EntryClassGenerator extends Generator {
 										for(IToken.Key quarkKey:value.keySet()){
 											if("entry_definition".equals(quarkKey.getName())){
 												IToken quark = value.get(quarkKey);
-												Entry ifLine = Generators.generator.generateEntryDefinition(quark,className,"$OUTPUT");
+												Entry ifLine = (Entry)Generators.generator.generateEntryDefinition(quark,className,"$OUTPUT");
 												ifBody.add(new TabEntry(3,new ListEntry(new ElementEntry(EntryClassGenerator.appendToBuilderElement,new ListEntry(ifLine)))));
 											}
 											else if("entry_names".equals(quarkKey.getName())){
@@ -213,7 +213,7 @@ public class EntryClassGenerator extends Generator {
 											}
 										}
 										if((ifStatement.get("otherwise") == null)){
-											Entry booleanStatement = Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"),className,"$OUTPUT");
+											Entry booleanStatement = (Entry)Generators.generator.generateBooleanStatement(ifStatement.get("boolean_statement"),className,"$OUTPUT");
 											if((first == true)){
 												body.add(new TabEntry(2,new ListEntry(new ElementEntry(GeneratorGenerator.ifStatementCallElement,new ListEntry(booleanStatement,ifBody)))));
 											}
@@ -232,7 +232,7 @@ public class EntryClassGenerator extends Generator {
 										for(IToken.Key quarkKey:value.keySet()){
 											if("entry_definition".equals(quarkKey.getName())){
 												IToken quark = value.get(quarkKey);
-												Entry ifLine = Generators.generator.generateEntryDefinition(quark,className,"$OUTPUT");
+												Entry ifLine = (Entry)Generators.generator.generateEntryDefinition(quark,className,"$OUTPUT");
 												body.add(new TabEntry(2,new ListEntry(new ElementEntry(EntryClassGenerator.appendToBuilderElement,new ListEntry(ifLine)))));
 											}
 											else if("entry_names".equals(quarkKey.getName())){
@@ -254,7 +254,17 @@ public class EntryClassGenerator extends Generator {
 							header.setDefaultType(methodTypes.get(methodName));
 						}
 						TypeEntry type = new TypeEntry(header);
-						methods.put(methodName,new TabEntry(1,new ListEntry(new ElementEntry(EntryClassGenerator.methodDeclarationElement,new ListEntry(type,header,generateEntryMethodBody(atom,header,className,methodName))))));
+						ListEntry params = (ListEntry)header.getParameters();
+						params = (ListEntry)params.get(1);
+						StringBuilder methodBuilder = new StringBuilder();
+						methodBuilder.append(methodName);
+						methodBuilder.append(":");
+						for(Entry e:params){
+							VariableEntry v = (VariableEntry)e;
+							methodBuilder.append(v.getType());
+							methodBuilder.append(",");
+						}
+						methods.put(methodBuilder.toString(),new TabEntry(1,new ListEntry(new ElementEntry(EntryClassGenerator.methodDeclarationElement,new ListEntry(type,header,generateEntryMethodBody(atom,header,className,methodName))))));
 					}
 				}
 			}

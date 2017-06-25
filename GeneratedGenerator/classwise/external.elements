@@ -1,0 +1,166 @@
+
+bodyName
+	"new Entry(){
+					public void get(StringBuilder builder){
+						builder.append(" Name ");
+					}
+				}"
+bodyExact
+	"new Entry(){
+					public void get(StringBuilder builder){
+						builder.append(\"" Name "\");
+					}
+				}"
+bodyEntry
+	"new Entry(){
+					public void get(StringBuilder builder){
+						" Value ".get(builder);
+					}
+				}"
+bodyOperator
+	"new Entry(){
+					public void get(StringBuilder builder){
+						" Left ".get(builder);
+						builder.append(" Operator ");
+						" Right ".get(builder);
+					}
+				}"
+bodyCallWithSubject
+	"new Entry(){
+					public void get(StringBuilder builder){
+						" Subject ".get(builder);
+						builder.append(\".\");
+						" Method Name ".get(builder);
+						builder.append(\"(\");
+						" Parameters ".get(builder);
+						builder.append(\")\");
+					}
+				}"
+bodyCallWithoutSubject
+	"new Entry(){
+					public void get(StringBuilder builder){
+						" Method Name ".get(builder);
+						builder.append(\"(\");
+						" Parameters ".get(builder);
+						builder.append(\")\");
+					}
+				}"
+bodyNewObj
+	"new Entry(){
+				public void get(StringBuilder builder){
+					builder.append(\"new \");
+					" Class Name ".get(builder);
+					" Parameters ".get(builder);
+				}
+			}"
+bodyElement
+	"new Entry(){
+				public void get(StringBuilder builder){
+					new TabEntry(" Tabs ", new StringEntry(" Preffix ")).get(builder);
+					" Entry ".get(builder);
+					new StringEntry(" Suffix ").get(builder);
+				}
+			}"
+
+bodyConditional
+	"new Entry(){
+				public void get(StringBuilder builder){
+					new TabEntry(" Tabs ", new StringEntry(\"" Name "(\")).get(builder);
+					" Header ".get(builder);
+					new String(\") {\").get(builder);
+					" Body "
+					new TabEntry(" Tabs ",new String(\"}\")).get(builder);
+				}
+			}"
+
+declareMember
+	"new Entry(){
+				public void get(StringBuilder builder){
+					new TabEntry(" Tabs ", new StringEntry("protected ")).get(builder);
+					" Variable Declaration ".get(builder);
+					builder.append(\";\");
+				}
+			}"
+
+declareVariableWithAssignment
+	"new Entry(){
+		public void get(StringBuilder builder){
+			" Type ".get(builder);
+			new String(\"" Name " = \").get(builder);
+			" Assignment ".get(builder);
+			new String(\";\").get(builder);
+		}
+	}"
+declareVariableWithoutAssignment
+	"new Entry(){
+		public void get(StringBuilder builder){
+			" Type ".get(builder);
+			new String(\"" Name "\").get(builder);
+			new String(\";\").get(builder);
+		}
+	}"
+declareMethod
+	"new Entry(){
+		public void get(StringBuilder builder){
+			new TabEntry(" Tabs ", new StringEntry(\"public \")).get(builder);
+			" Type ".get(builder);
+			new String(\" " Name "(\").get(builder);
+			" Parameters ".get(builder);
+			new String(\") {\").get(builder);
+			" Method Body "
+			new TabEntry(" Tabs ",new String(\"}\")).get(builder);
+		}
+	}"
+
+getCompleteHeader
+	"builder.append(\"package " Package name ";\\n" Import List "\\npublic " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {\");"
+getSubHeader
+	"new TabEntry(" Tabs ", new StringEntry(\"public " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {\")).get(builder);"
+addTailBrace
+	"new TabEntry(" Tabs ", new StringEntry(\"}\")).get(builder);"
+declareClass
+	"new " Name "();
+	public static class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n
+	public " Name "(){ " Variables "\n" Methods "\n" Classes "
+	public void get(StringBuilder builder){" Header "
+		super.get(builder);	" Suffix "
+	}
+}"
+
+declareExternalClassClass
+	"package clent;
+import com.rem.parser.generation.*;
+import clgen.*;
+public class ExternalClassEntry implements Entry {
+	private Map<Entry> variables = new HashMap<String,Entry>();
+	private Map<Entry> methods = new HashMap<String,Entry>();
+	private Map<String,Entry> classes = new HashMap<String,Entry>();
+	
+	public void addVariable(String variableName, Entry variable){
+		variables.put(variableName, variable);
+	}
+	public void addMethod(String methodName, Entry method){
+		methods.put(methodName, method);
+	}
+	public void addSubClass(String subClassName, ExternalClassEntry subClass){
+		classes.put(subClassName, subClass);
+	}
+	public void get(StringBuilder builder){
+		for(String variableKey:variables.keySet){
+			variables.get(variableKey).get(builder);
+		}
+		for(String methodKey: methods.keySet){
+			methods.get(methodKey).get(builder);
+		}
+		for(String classKey: classes.keySet){
+			classes.get(classKey).get(builder);
+		}
+	}
+}"
+
+addMemberVariable
+	"addVariable(\"" Name "\", " Entry ");"
+addMemberMethod
+	"addMethod(\"" Name "\", " Entry ");"
+addMemberSubClass
+	"addSubClass(\"" Name "\", " Entry ");"

@@ -64,6 +64,7 @@ token-s
 	"check " as CHECK
 	[[^\\n]+] as NON_NEWLINE
 	".." as DOTDOT
+	"\n" as NL
 
 #Tab collectors
 tab-s are Tabbed
@@ -73,12 +74,12 @@ tab-s are Tabbed
 brace-s are Braced
 	[\",\"] as QUOTE with WILD as entry
 	[``,``] as QUOTE_ENTRY with (QUOTE | variable_or_token_name)
-	[{,}] as ENTRY_LIST with (entry_definition{-1}| generate_call{-1} | whitetab{-1}? (entry_name|variable_name))? ( (entry_definition{-1} | generate_call{-1} | whitetab{-1}? (entry_name|variable_name)) )*
-	[[,]] as ENTRY_STRING with ( QUOTE_ENTRY| QUOTE| variable_or_token_name ) ( ( QUOTE_ENTRY | QUOTE | variable_or_token_name))*
+	[{,}] as ENTRY_LIST with (entry_definition{-1}| generate_call{-1} | whitetab{-1}? variable_or_token_name)? ( (entry_definition{-1} | generate_call{-1} | whitetab{-1}? variable_or_token_name) )* NL*
+	[[,]] as ENTRY_SET with (entry_definition{-1}| generate_call{-1} | whitetab{-1}? variable_or_token_name)? ( (entry_definition{-1} | generate_call{-1} | whitetab{-1}? variable_or_token_name) )* NL*
 	[<,>] as ANGLE_CLASSES with angle_brace_class ( COMMA angle_brace_class )*	
 	[:,;] as INLINE_PARAMETERS with method_parameter*
 	[(,)] as TAB_BRACES with tab_brace_parameters as tab_braces
-	[:,;] as CUSTOM_ENTRY_DEFINITION with method_parameter*
+	[:,;] as CUSTOM_ENTRY_DEFINITION with ( NL* method_parameter )* NL*
 	[|,|] as PIPE_ENTRY with variable_name
 #Import
 ingest-s are Import
@@ -146,7 +147,7 @@ meta_declaration is silent
 	META NAME as metaName ( variable_declaration{1}  | meta_method_declaration in method_declarations )+
 
 meta_method_declaration is silent
-	whitetab{1} NAME as methodName takes_statement{1}?  ( entry_declaration{2} | body_element{2} )+
+	whitetab{1} NAME as methodName cast_as_statement? takes_statement{1}?  ( entry_declaration{2} | body_element{2} )+
 
 property_declaration is silent
 	PROPERTY NAME as propertyName in property_names  entry_class_element*
@@ -198,7 +199,7 @@ entry_definition has tabs
 
 list_entry_definition
 	ENTRY_LIST as list
-	ENTRY_STRING as string
+	ENTRY_SET as set
 	PIPE_ENTRY as exact_variable
 
 body_element has tabs
@@ -294,8 +295,8 @@ method_parameter
 	NUMBER
 
 variable_or_token_name
-	( PRIME as getString | CARROT as camelize )? ( (token_name|variable_name) ( ACCESS (variable_name|NAME) as option )+ | arithmatic )
-	( PRIME as getString | CARROT as camelize )? token_name
+	( PRIME as getString | CARROT as camelize )? ( (token_name|variable_name|entry_name|generator_name) ( ACCESS (variable_name|NAME) as option )+ | arithmatic )
+	( PRIME as getString | CARROT as camelize )? (token_name|variable_name|entry_name)
 
 flip_switch has tabs
 	whitetab{tabs} FLIP variable_name ( whitetab{tabs+1} (QUOTE|NON_SPACE) as left EQUALSIGN (QUOTE|NON_SPACE) as right )* ( else_statement{tabs+1} )?

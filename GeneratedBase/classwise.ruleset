@@ -1,0 +1,92 @@
+comment-s are Braced
+	[#,\n] as COMMENT with WILD
+token-s
+	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
+	[[^a-zA-Z0-9_\\s\\n=\\(\\)\\{\\}\\[\\]]+] as OPERATOR
+	[.*] as WILD
+	"\n" as NEWLINE
+	"class" as CLASS
+	"interface" as INTERFACE
+	"method" as METHOD
+	"variable" as VARIABLE
+	"hidden" as HIDDEN
+	"(IN|NER) as inner" as IN
+	">" as NER
+	"->" as ACCESS
+	"=" as EQUALS
+	"," as COMMA
+	"." as DOT
+	";" as SEMICOLON
+	":" as COLON
+	"+=" as ADD
+	"+" as PLUS
+	"\\" as BACKSLASH
+	"^" as CAMEL
+	"cds" as CDS
+	"clws" as CLWS
+	"return" as RETURN
+
+conditional_name-s
+	"if" as IF
+	"for" as FOR
+	"while" as WHILE
+
+base is silent
+	base_element*
+base_element is silent
+	NEWLINE
+	COMMENT
+	imports
+	class_declaration
+	method_declaration
+	variable_declaration
+imports
+	IMPORT_CLASS
+#Classes
+brace-s are Braced
+	[{,}] as CLASS_BODY with class_element*
+	[{,}] as METHOD_BODY with body_element*
+	[(,)] as METHOD_PARAMETERS with ( variable_declaration ( COMMA variable_declaration )*)?
+	[(,)] as PARAMETERS with ( body_statement ( COMMA body_statement )*)?
+	[\",\"] as QUOTE with WILD
+	[,.] as CLASS_FILE with WILD as class_file_name 
+simport-s are Import
+	[><<class_file_name,\".clws\">>\n] as IMPORT_CLASS from base_element*; with CLASS_FILE CLWS
+class_name-s are empty
+variable_name-s are empty
+class_declaration
+	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? NAME as className in class_names NEWLINE* ( class_name as parentName ) NEWLINE? ( class_name as interfaceName )* CLASS_BODY
+class_element is silent
+	NEWLINE
+	COMMENT
+	variable_declaration
+	method_declaration
+body_element
+	NEWLINE
+	COMMENT
+	((IN|NER) as inner? RETURN body_statement SEMICOLON ) as body_return
+	((IN|NER) as inner? (conditional_name) body_statement? METHOD_BODY)  as body_conditional
+	((variable_declaration|body_manipulate|body_statement) SEMICOLON) as body_line
+body_statement
+	(IN|NER) as inner? body_call ( NEWLINE* OPERATOR  NEWLINE* body_call )*
+body_call
+	(name_var PARAMETERS?) as group ( NEWLINE* DOT NEWLINE* (name_var PARAMETERS?) as group )*
+body_manipulate
+	(IN|NER) type_var ( ACCESS name_var )? NAME as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | PARAMETERS )?
+	(IN|NER) type_var ( ACCESS name_var )? ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | PARAMETERS )
+	(IN|NER) name_var ( ACCESS NAME as tokenName ( COLON NAME as variableName in variable_names )? NEWLINE* METHOD_BODY) as tokenInstance+
+
+method_declaration
+	(IN|NER) as inner? type_var NAME as methodName METHOD_PARAMETERS METHOD_BODY
+variable_declaration
+	(IN|NER) as inner? type_var (DOT type_var)* NAME as variableName in variable_names ( EQUALS body_statement)?
+name_var
+	( name_var? ACCESS name_var) as access
+	( name_var PLUS name_var) as concat
+	( BACKSLASH CAMEL? (QUOTE|NAME) ) as exact
+	CAMEL? variable_name as variable
+type_var
+	( type_var? ACCESS type_var) as access
+	( type_var PLUS type_var) as concat
+	( BACKSLASH CAMEL?  NAME ) as exact
+	(CAMEL? class_name ) as class

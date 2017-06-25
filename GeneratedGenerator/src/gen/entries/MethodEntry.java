@@ -138,13 +138,13 @@ public class MethodEntry implements Entry,ITypeListener {
 			new ElementEntry(Generators.generator,elementName,parameters).get(builder);
 		}
 		else if((subject == null)){
-			new ElementEntry(GeneratorGenerator.exactCallElement,new ListEntry(new ListEntry(new StringEntry(methodName)))).get(builder);
+			new ElementEntry(GeneratorGenerator.exactCallElement,new ListEntry(new StringEntry(methodName))).get(builder);
 		}
 		else if((NEW_METHOD.equals(subject))){
-			new ElementEntry(GeneratorGenerator.newObjectCallElement,new ListEntry(new ListEntry(new StringEntry(methodName)),new ListEntry(parameters))).get(builder);
+			new ElementEntry(GeneratorGenerator.newObjectCallElement,new ListEntry(new StringEntry(methodName),new ListEntry(parameters))).get(builder);
 		}
 		else {
-			new ElementEntry(GeneratorGenerator.methodCallElement,new ListEntry(subject,new ListEntry(new StringEntry(methodName)),new ListEntry(parameters))).get(builder);
+			new ElementEntry(GeneratorGenerator.methodCallElement,new ListEntry(subject,new StringEntry(methodName),new ListEntry(parameters))).get(builder);
 		}
 	}
 }

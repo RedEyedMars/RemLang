@@ -1,0 +1,39 @@
+import "external.entries"
+import "internal.entries"
+property innerable
+	var isInner = false
+property nameable
+	var name = ""
+property importable
+	var importPackage as import = import:;
+	setImport takes newImport as Entry
+		importPackage setValue
+			newImport
+entry import uses importable
+	entry actualImport = null
+	constructor
+		set actualImport = null
+		set importPackage
+			this getSelf
+	setValue takes newImport as Entry
+		set actualImport = newImport
+	output
+			classwise asImport{importPackage} if importPackage is not null
+			{} if importPackage is null
+entry context
+	var parentContext as context
+	constructor takes iParent as context
+		set parentContext = iParent
+	constructor
+		set parentContext = null
+	getTab as Integer
+		if parentContext is not null
+			var tab
+				parentContext getTab
+			return
+				tab+1
+		else
+			return
+				0
+	setParentContext takes newParent
+		set parentContext = newParent

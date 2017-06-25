@@ -6,8 +6,8 @@ import java.util.List;
 
 
 public class ListEntry implements Entry, Iterable<Entry> {
-	private String delimiter = ",";
-	private List<Entry> list = new ArrayList<Entry>(){
+	protected String delimiter = ",";
+	protected List<Entry> list = new ArrayList<Entry>(){
 		private static final long serialVersionUID = 467918086000409417L;
 		@Override
 		public boolean add(Entry arg){
@@ -17,8 +17,8 @@ public class ListEntry implements Entry, Iterable<Entry> {
 			return super.add(arg);
 		}
 	};
-	private Entry emptyEntry;
-	private boolean startWithDelimiter = false;
+	protected Entry emptyEntry;
+	protected boolean startWithDelimiter = false;
 
 	public ListEntry(Entry... entries) {
 		if (entries != null && entries.length > 0) {
@@ -26,6 +26,10 @@ public class ListEntry implements Entry, Iterable<Entry> {
 				list.add(entry);
 			}
 		}
+	}
+	
+	public void clear(){
+		this.list.clear();
 	}
 
 	public Entry get(int index) {

@@ -65,17 +65,17 @@ entry variable uses type_listener
 		set assignment
 			newAssignment
 	output
-			[name] if assignment is null and showType is false
+			\name if assignment is null and showType is false
 			+
-			["private "] if access is PRIVATE_ACCESS and showType is true
-			["public "] if access is PUBLIC_ACCESS and showType is true
+			\"private " if access is PRIVATE_ACCESS and showType is true
+			\"public " if access is PUBLIC_ACCESS and showType is true
 			+
-			["static "] if isStatic is true and showType is true
+			\"static " if isStatic is true and showType is true
 			+
-			["final "] if isFinal is true and showType is true
+			\"final " if isFinal is true and showType is true
 			+
-			generator typeAndName [type name] if assignment is null and showType is true
-			generator variableDeclaration {[type] [name] assignment} if showType is true
+			generator typeAndName {\type \name} if assignment is null and showType is true
+			generator variableDeclaration {\type \name assignment} if showType is true
 		if type is "$UNKNOWN"
 			this changeType
 				defaultType
@@ -140,7 +140,7 @@ entry type
 			null
 	
 	output
-			[defaultType] if subject is null
+			\defaultType if subject is null
 			get_type: subject; otherwise
 
 entry get_type
@@ -157,7 +157,7 @@ entry get_type
 				subject getDefaultType
 	
 	output
-			[type] if type is not null
+			\type if type is not null
 
 
 entry method uses type_listener
@@ -217,9 +217,9 @@ entry method uses type_listener
 	
 	output
 			generator elementName |parameters| if elementName is not null
-			generator exactCall { [methodName] } if subject is null
-			generator newObjectCall { [methodName] { parameters } } if NEW_METHOD is subject
-			generator methodCall {subject [methodName] { parameters } } otherwise
+			generator exactCall { \methodName } if subject is null
+			generator newObjectCall { \methodName { parameters } } if NEW_METHOD is subject
+			generator methodCall {subject \methodName { parameters } } otherwise
 		if type is "$UNKNOWN"
 			this changeType
 				defaultType

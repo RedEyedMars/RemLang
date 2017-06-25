@@ -33,10 +33,7 @@ public class Braces extends ParseList {
 										new ChainParser(
 											new OptionalParser(
 													new WithParser((IRule)Rules.whitetab,new Argument.Number(-1))),
-											
-											new ChoiceParser(
-													new ListNameElementParser("entry_names"),
-													new ListNameElementParser("variable_names"))))),
+											Rules.variable_or_token_name))),
 							new ManyParser(
 									
 											
@@ -46,24 +43,32 @@ public class Braces extends ParseList {
 												new ChainParser(
 													new OptionalParser(
 															new WithParser((IRule)Rules.whitetab,new Argument.Number(-1))),
-													
-													new ChoiceParser(
-															new ListNameElementParser("entry_names"),
-															new ListNameElementParser("variable_names")))))),"ENTRY_LIST","braces","{,}");
-	public static final BracedParser ENTRY_STRING = new BracedParser(
+													Rules.variable_or_token_name))),
+							new ManyParser(
+									Tokens.NL)),"ENTRY_LIST","braces","{,}");
+	public static final BracedParser ENTRY_SET = new BracedParser(
 						new ChainParser(
-							
-							new ChoiceParser(
-									Braces.QUOTE_ENTRY,
-									Braces.QUOTE,
-									Rules.variable_or_token_name),
+							new OptionalParser(
+									
+									new ChoiceParser(
+											new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
+											new WithParser((IRule)Rules.generate_call,new Argument.Number(-1)),
+										new ChainParser(
+											new OptionalParser(
+													new WithParser((IRule)Rules.whitetab,new Argument.Number(-1))),
+											Rules.variable_or_token_name))),
 							new ManyParser(
 									
 											
 											new ChoiceParser(
-													Braces.QUOTE_ENTRY,
-													Braces.QUOTE,
-													Rules.variable_or_token_name))),"ENTRY_STRING","braces","[,]");
+													new WithParser((IRule)Rules.entry_definition,new Argument.Number(-1)),
+													new WithParser((IRule)Rules.generate_call,new Argument.Number(-1)),
+												new ChainParser(
+													new OptionalParser(
+															new WithParser((IRule)Rules.whitetab,new Argument.Number(-1))),
+													Rules.variable_or_token_name))),
+							new ManyParser(
+									Tokens.NL)),"ENTRY_SET","braces","[,]");
 	public static final BracedParser ANGLE_CLASSES = new BracedParser(
 						new ChainParser(
 							Rules.angle_brace_class,
@@ -79,11 +84,18 @@ public class Braces extends ParseList {
 							new AddTokenParser(
 								Rules.tab_brace_parameters,"tab_braces"),"TAB_BRACES","braces","(,)");
 	public static final BracedParser CUSTOM_ENTRY_DEFINITION = new BracedParser(
+						new ChainParser(
 							new ManyParser(
-									Rules.method_parameter),"CUSTOM_ENTRY_DEFINITION","braces",":,;");
+									
+										new ChainParser(
+											new ManyParser(
+													Tokens.NL),
+											Rules.method_parameter)),
+							new ManyParser(
+									Tokens.NL)),"CUSTOM_ENTRY_DEFINITION","braces",":,;");
 	public static final BracedParser PIPE_ENTRY = new BracedParser(
 							new ListNameElementParser("variable_names"),"PIPE_ENTRY","braces","|,|");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_STRING,ANGLE_CLASSES,INLINE_PARAMETERS,TAB_BRACES,CUSTOM_ENTRY_DEFINITION,PIPE_ENTRY);
+				QUOTE,QUOTE_ENTRY,ENTRY_LIST,ENTRY_SET,ANGLE_CLASSES,INLINE_PARAMETERS,TAB_BRACES,CUSTOM_ENTRY_DEFINITION,PIPE_ENTRY);
 }

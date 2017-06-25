@@ -205,6 +205,11 @@ public abstract class Generator {
 				asWholeEntry.element.getOutline());
 		pages.get(getName()+"$"+fileName).addFile(directory, fileName, asWholeEntry.parameters);
 	}
+	protected void addFile(File directory, String fileName, Entry asWholeEntry) {
+
+		addPage(getName()+"$"+fileName,new String[]{"",""});
+		pages.get(getName()+"$"+fileName).addFile(directory, fileName, new ListEntry(asWholeEntry));
+	}
 
 	protected void addElement(String elementName, String[] elementOutline) {
 		if (!elements.containsKey(elementName)) {
@@ -350,6 +355,7 @@ public abstract class Generator {
 							else {
 								System.err.println(e.getMessage());								
 							}
+							e.printStackTrace();
 							System.err.println(details.get(i).get(j).filename+":"+builder.toString());
 						}
 						writer = new BufferedWriter(
@@ -491,12 +497,12 @@ public abstract class Generator {
 				builder.append("),");
 			}
 	}
-	public String completeTokenErrorMessage(IToken offender){
+	public static String completeTokenErrorMessage(IToken offender){
 		StringBuilder builder = new StringBuilder();
 		completeTokenErrorMessage(offender,0,builder);
 		return builder.toString();
 	}
-	private void completeTokenErrorMessage(IToken offender, int tab, StringBuilder builder){		
+	private static void completeTokenErrorMessage(IToken offender, int tab, StringBuilder builder){		
 		for(IToken.Key key:offender.keySet()){
 			builder.append('\n');
 			for(int i=0;i<tab;++i){
