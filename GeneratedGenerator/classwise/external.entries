@@ -1,16 +1,37 @@
 uses ElementEntry
-
-
+entry e_entry uses innerable importable
+	entry value = null
+	constructor takes iValue as Entry
+		set importPackage = import:;
+		set value = iValue
+		set isInner = true
+	setValue takes newValue
+		set value = newValue
+	output
+			external bodyEntry{value} if value is not null
+entry e_exact uses innerable importable
+	entry value = null
+	constructor takes iValue as Entry
+		set importPackage = import:;
+		set value = iValue
+		set isInner = true
+	setValue takes newValue
+		set value = newValue
+	output
+			external bodyExact{value} if value is not null
 entry e_name_var uses innerable importable
 	entry first = null
 	entry second = null
 	var isConcat = false
 	constructor takes iValue as Entry
+		set importPackage = import:;
 		set first = iValue
 	constructor takes iFirst as Entry, iSecond as Entry
+		set importPackage = import:;
 		set first = iFirst
 		set second = iSecond
 	constructor takes iFirst as Entry, concat, iSecond as Entry
+		set importPackage = import:;
 		set first = iFirst
 		set second = iSecond
 		set isConcat = true
@@ -19,16 +40,70 @@ entry e_name_var uses innerable importable
 			external bodyName{classwise concat{first second}} if second is not null and isConcat is true
 			external bodyName{classwise access{first second}} if second is not null and isConcat is false
 
+entry e_type_var uses innerable importable canAddSubClass variablizable
+	entry first = null
+	entry second = null
+	var isConcat = false
+	entry templateParameters = {}
+	constructor
+		set importPackage = import:;
+		set first = {}
+		first setDelimiter :".";
+	constructor takes iValue as Entry
+		set importPackage = import:;
+		set first = {iValue}
+		first setDelimiter :".";
+	constructor takes iValue as Entry, iTemplateParameters as ListEntry, importType as importable
+		set importPackage = import:;
+		set first = {iValue}
+		set templateParameters = iTemplateParameters
+		first setDelimiter :".";
+		this setImport
+			importType getImportPackage
+		templateParameters setDelimiter
+			".get(builder);\n\t\t\t\t\t"
+	constructor takes iFirst as Entry, operator, iSecond as Entry
+		set importPackage = import:;
+		set first = {iFirst}
+		set second = iSecond
+		if operator is "+"
+			set isConcat = true
+		else
+			set isConcat = false
+		first setDelimiter :".";
+	addSubClass takes newSubType as Entry
+		first += newSubType
+		var builder
+			new StringBuilder
+		first get
+			builder
+		var importType as importable
+			classwise getType
+				'builder
+		this setImport
+			importType getImportPackage
+	output
+			external bodyName{first} if second is null and templateParameters is empty and isVariable is false
+			external bodyName{ classwise classAsVariable {first} } if second is null and templateParameters is empty and isVariable is true
+			external bodyName{first} if second is null and templateParameters is empty
+			external bodyName{classwise concat{first second}} if second is not null and isConcat is true and templateParameters is empty
+			external bodyName{external access{first second}} if second is not null and isConcat is false and templateParameters is empty
+			external bodyNameWithParameters{first templateParameters} if second is null and templateParameters is not empty
+			external bodyNameWithParameters{classwise concat{first second} templateParameters} if second is not null and isConcat is true and templateParameters is not empty
+			external bodyNameWithParameters{classwise accessClass{first second} templateParameters} if second is not null and isConcat is false and templateParameters is not empty
+
 entry e_operator uses innerable importable
 	entry left = null
 	entry right = null
 	entry operator = null
 	constructor takes iLeft as Entry
+		set importPackage = import:;
 		set left = iLeft
 		var leftAsImportable as importable = iLeft
 		this setImport
 			leftAsImportable getImportPackage
 	constructor takes iLeft as Entry, iOperator, iRight as Entry
+		set importPackage = import:;
 		set left as Entry = iLeft
 		set right as Entry = iRight
 		set operator = \iOperator
@@ -42,13 +117,14 @@ entry e_operator uses innerable importable
 		this setImport
 			importList
 	output
-			external bodyEntry{left} if right is null
+			external bodyName{left} if right is null
 			external bodyOperator{left operator right} if right is not null
 entry e_call uses innerable importable
 	entry subject = null
 	entry methodName = null
 	entry parameters = null
 	constructor takes iMethodName as Entry, iParameters as ListEntry
+		set importPackage = import:;
 		set methodName = iMethodName
 		set parameters = iParameters
 		var importList = []
@@ -61,6 +137,7 @@ entry e_call uses innerable importable
 		parameters setDelimiter
 			".get(builder);\n\t\t\t\t\tnew StringEntry(\",\").get(builder);\n\t\t\t\t\t"
 	constructor takes iSubject as Entry, iMethodName as Entry, iParameters as ListEntry
+		set importPackage = import:;
 		set subject = iSubject
 		var subjectAsImporable as importable = iSubject
 		set methodName = iMethodName
@@ -76,13 +153,32 @@ entry e_call uses innerable importable
 			importList
 		parameters setDelimiter 
 			".get(builder);\n\t\t\t\t\tnew StringEntry(\",\").get(builder);\n\t\t\t\t\t"
+	constructor takes iMethodName as Entry
+		set importPackage = import:;
+		set methodName = iMethodName
+		var importList = []
+		this setImport
+			importList
+	constructor takes iSubject as Entry, iMethodName as Entry
+		set importPackage = import:;
+		set subject = iSubject
+		var subjectAsImporable as importable = iSubject
+		set methodName = iMethodName
+		var importList = []
+		importList+=
+			subjectAsImporable getImportPackage
+		this setImport
+			importList
 	output
-			external bodyCallWithoutSubject{methodName parameters} if subject is null
-			external bodyCallWithSubject{subject methodName parameters} if subject is not null
+			external bodyCallWithoutSubject{methodName parameters} if subject is null and parameters is not null
+			external bodyCallWithSubject{subject methodName parameters} if subject is not null and parameters is not null
+			external bodyAccessWithoutSubject{methodName} if subject is null and parameters is null
+			external bodyAccessWithSubject{subject methodName} if subject is not null and parameters is null
 entry e_new_obj uses innerable importable
 	entry className = null
 	entry parameters = null
 	constructor takes iClassName as Entry, iParameters as ListEntry
+		set importPackage = import:;
 		set className = iClassName
 		set parameters = iParameters
 		var importList = []
@@ -96,22 +192,21 @@ entry e_new_obj uses innerable importable
 			".get(builder);\n\t\t\t\t\tnew StringEntry(\",\").get(builder);\n\t\t\t\t\t"
 	output
 			external bodyNewObj{className parameters} if className is not null
-entry e_conditional uses innerable importable
+entry e_conditional uses innerable importable contextualizable
 	entry name = null
 	entry header = null
 	entry conditionalBody = null
-	entry context = null
-	var tabs = 0
-	entry e_tabs = \"0"
 	constructor takes iName, iHeader as Entry, iBody as ListEntry, iContext as context
+		set importPackage = import:;
 		set name = \iName
 		set header = iHeader
 		set conditionalBody = {}
 		set context = iContext
 		entry importList = []
-		var headerAsImportable as importable = iHeader
-		importList+=
-			headerAsImportable getImportPackage
+		if header is not null
+			var headerAsImportable as importable = iHeader
+			importList+=
+				headerAsImportable getImportPackage
 		var bodyContext = context:iContext;
 		var semicolon = ";"
 		each e as Entry in iBody
@@ -125,21 +220,20 @@ entry e_conditional uses innerable importable
 		conditionalBody setDelimiter
 			".get(builder);"
 	output
-			(tabs external bodyConditional{e_tabs name header conditionalBody e_tabs}) if context is not null 
+			(tabs external bodyConditional{name header external bodyBody{conditionalBody} }) if header is not null
+			(tabs external bodyConditionalWithoutHeader{name external bodyBody{ conditionalBody} }) if header is null 
 		if context is null
 			set tabs = 0
 		else
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-entry e_element uses innerable importable
+entry e_element uses innerable importable contextualizable
 	entry preffix = null
 	entry suffix = null
 	entry value = null
-	entry context = null
-	var tabs = 0
-	entry e_tabs = \"0"
 	constructor takes iPreffix, iValue as Entry, iSuffix, iContext as context
+		set importPackage = import:;
 		set preffix = \iPreffix
 		set suffix = \iSuffix
 		set value = iValue
@@ -148,37 +242,37 @@ entry e_element uses innerable importable
 		this setImport
 			valueAsImportable getImportPackage
 	output
-			(tabs external bodyElement{e_tabs preffix value suffix}) if context is not null 
+			(tabs external bodyElement{preffix value suffix}) if context is not null 
 		if context is null
 			set tabs = 0
 		else
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-entry e_variable uses innerable nameable importable
+entry e_variable uses innerable importable nameable finalizable
 	entry type = null
 	entry assignment  = null
-	var tabs = 0
-	entry e_tabs = \"0"
-	constructor takes iType as Entry, iName, iAssignment as Entry
+	constructor takes iType as Entry, iName as Entry, iAssignment as Entry
+		set importPackage = import:;
 		set name = iName
 		set type = iType
 		var typeAsImportable as importable = iType
 		set assignment = iAssignment
 		set importPackage
 			typeAsImportable getImportPackage
+	setAssignment takes newAssignment as Entry
+		set assignment = newAssignment
 	output
-			external declareVariableWithAssignment { type \name assignment} if assignment is not null
-			external declareVariableWithoutAssignment { type \name } if assignment is null 
+			external declareVariableWithAssignment { type name assignment} if assignment is not null
+			external declareVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false
+			external declareVariableWithoutAssignmentFinal { type name } if assignment is null and isFinal is true 
 
-entry e_method uses innerable nameable importable
+entry e_method uses innerable importable contextualizable nameable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
-	entry context = null
-	var tabs = 0
-	entry e_tabs = \"0"
-	constructor takes iType as Entry, iName, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+	constructor takes iType as Entry, iName as Entry, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+		set importPackage = import:;
 		set name = iName
 		set type = iType
 		var typeAsImportable as importable = iType
@@ -200,27 +294,29 @@ entry e_method uses innerable nameable importable
 				i getImportPackage
 			methodBody += e_element:"" e semicolon methodBodyContext;
 		parameters setDelimiter
-			".get(builder);\n\t\t\t\t\tnew StringEntry(\",\").get(builder);\n\t\t\t\t\t"
+			".get(builder);\n/*PARAMETERS*/\t\t\tnew StringEntry(\",\").get(builder);\n//Parameters\t\t\t"
 		methodBody setDelimiter
-			".get(builder);\n\t\t\t\t\t"
+			",\n/*BODY*/\t\t\t\t"
 		this setImport
 			importList
 	output
-			external declareMethod{e_tabs type \name parameters methodBody e_tabs} if context is not null 
+			external declareMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if context is not null 
 		if context is null
 			set tabs = 0
 		else
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-entry e_class uses innerable nameable importable
+entry e_class uses innerable nameable importable contextualizable fileable
 	entry packageName = null
 	entry asStatic = \""
-	entry completeName = null
 	entry asFile = null
-	entry importList = [(0 \"import com.rem.parser.generation.*")]
-	entry externalImportList = []
+	entry asArgument = null
+	entry importList = [(0 \"import com.rem.parser.generation.*;") (0 \"import clent.*;") (0 \"import java.util.*;")]
 	entry classType = null
+	var externalName as Entry = null
+	var externalParent as Entry = null
+	var externalInterfaces as Entry = null
 	var parent as Entry = null
 	var interfaces as Entry = null
 	entry internalVariables = {}
@@ -233,47 +329,49 @@ entry e_class uses innerable nameable importable
 	entry externalConstructorMethods = {}
 	entry externalConstructorSubClass = {}
 	entry getHeader = null
-	entry context = null
 	var isSubClass = false
-	var tabs = 0
-	entry e_tabs = \"0"
 	var hasOutput = false
-	constructor takes iPackageName as Entry, iType, iName, iParent, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
-		
-		
+	constructor takes iPackageName as Entry, iType, sName, iName as Entry, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
 		set isInner = false
 		set packageName = iPackageName
-		this setImport
-			iPackageName
+		set name = \sName
+		set completeName = {\sName}
 		var establishedImportable as importable
 			classwise getType
-				iName
-		establishedImportable setImport
-			importPackage
+				this getFullName
+		set importPackage
+			establishedImportable getImportPackage
+		set externalImportList
+			establishedImportable getExternalImportList
+		importPackage setPackage
+			packageName
+		importPackage setName
+			\sName
 		set classType = \iType
-		set name = iName
-		set completeName = {\iName}
 		completeName setDelimiter :".";
+		set externalName = external exact{iName}
 		if iParent is not null
-			set parent = classwise extends{\iParent}
-			var iParentType as importable
-				classwise getType
-					iParent
+			set parent = classwise extends{iParent}
+			set externalParent = external extends { iParent }
+			var iParentType as importable = iParent
 			externalImportList +=
-				iParentType getImportPackage
+				iParentType getExternalImportPackage
 		else
 			set parent = {}
+			set externalParent = external exact{``""``}
 		if iInterfaces is not empty
 			set interfaces = classwise implements{iInterfaces}
+			entry extItrf = {} 
 			each itrf as Entry in iInterfaces
-				var iIntefaceType as importable
-					classwise getType
-						'itrf
+				var iIntefaceType as importable = itrf
 				externalImportList +=
-					iIntefaceType getImportPackage
+					iIntefaceType getExternalImportPackage
+				extItrf += external exact{itrf}
+			set externalInterfaces = external implements {extItrf}
+			
 		else
 			set interfaces = {}
-				
+			set externalInterfaces = external exact{``""``}
 		each ev as Entry in iVariables
 			var i as innerable = ev
 			if i does getIsInner
@@ -302,43 +400,60 @@ entry e_class uses innerable nameable importable
 		externalMethods setDelimiter :"";
 		internalSubClasses setDelimiter :"";
 		externalSubClasses setDelimiter :"";
-		externalConstructorVariables setDelimiter :"";
-		externalConstructorMethods setDelimiter :"";
-		externalConstructorSubClass setDelimiter :"";
+		externalConstructorVariables setDelimiter :",";
+		externalConstructorMethods setDelimiter :",";
+		externalConstructorSubClass setDelimiter :",";
 		
-		set getHeader = i_exact:external getCompleteHeader{packageName importList asStatic classType \name parent interfaces};
+		set getHeader = i_exact:(2 external getCompleteHeader{  asStatic classType externalName externalParent externalInterfaces});
 		
-		set asFile = i_exact:external declareClass{\name \name externalVariables externalMethods externalSubClasses \name externalConstructorVariables externalConstructorMethods externalConstructorSubClass getHeader external addTailBrace{e_tabs}};
+		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses name packageName externalImportList externalName getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		set asArgument = i_exact:external declareClassAsArgument{packageName externalImportList externalName getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
 	addVariable takes i as i_variable
-		internalVariables+=(1 |i|)
+		internalVariables+=(2 internal declareMemberComplete{i})
+		importList+=
+			i getImportPackage
+		var iAssignment as Entry
+			i getAssignment
+		if iAssignment is null
+			var iType as Entry
+				i getType
+			i setAssignment
+				i_new_obj:iType {};
 	addVariable takes e as e_variable
-		var eName
-			classwise buildString
-				e getName
-				"Variable"
-		externalVariables+=(2 internal declareMember{\eName external declareMember{e_tabs e}})
-		externalConstructorVariables+=(3 external addMemberVariable{\eName \eName})
+		var eName as Entry
+			e getName
+		var eAssignment as Entry
+			e getAssignment
+		if eAssignment is null
+			var eType as Entry
+				e getType
+			e setAssignment
+				e_new_obj:eType {};
+		externalVariables+=(2 internal declareMemberClass{eName eName external declareMember{e_tabs e}})
+		externalConstructorVariables+= e
 		externalImportList+=
-			e getImportPackage
+			e getExternalImportPackage
 	addMethod takes i as i_method
 		internalMethods+=(1 |i|)
+		importList+=
+			i getImportPackage
 	addMethod takes e as e_method
-		var eName
-			classwise buildString
-				e getName
-				"Method"
-		externalMethods += (1 internal declareMember{\eName e})
-		externalConstructorMethods+=(3 external addMemberMethod{\eName \eName})
+		var eName as Entry
+			e getName
+		externalMethods += (1 internal declareMemberMethod{eName e})
+		externalConstructorMethods+= e
 		externalImportList+=
-			e getImportPackage
+			e getExternalImportPackage
 	addSubClass takes i as i_class
 		internalSubClasses+=(1 |i|)
 		i setIsSubClass :completeName true;
 		var theirContext as context
 			i getContext
 		theirContext setParentContext:context;
+		importList+=
+			i getImportPackage
 	addSubClass takes e as e_class
-		var ePlainName
+		var ePlainName as Entry
 			e getName
 		var eName
 			classwise buildString
@@ -346,10 +461,10 @@ entry e_class uses innerable nameable importable
 				"Class"
 		var eAsFile as Entry
 			e getAsFile
-		externalSubClasses+=(1 internal declareMemberClass{\eName eAsFile})
-		externalConstructorSubClass+=(3 external addMemberSubClass{\ePlainName \eName})
+		externalSubClasses+=(1 internal declareMemberClass{\eName \eName eAsFile})
+		externalConstructorSubClass+= e
 		externalImportList+=
-			e getImportPackage
+			e getExternalImportPackage
 		e setIsSubClass : completeName true;
 		var theirContext as context
 			e getContext
@@ -362,17 +477,10 @@ entry e_class uses innerable nameable importable
 			asStatic set :"";
 		completeName clear
 		completeName +=	superCompleteName
-		completeName += \name
+		completeName += name
 		
 		getHeader setValue
-			external getSubHeader{e_tabs asStatic classType \name parent interfaces}
-	getFullName
-		var builder
-			new StringBuilder
-		completeName get
-			builder
-		return
-			'builder
+			(2 external getSubHeader{asStatic classType externalName externalParent externalInterfaces})
 	output
 			classwise retrieveClass{completeName} if name is not null
 		if context is null

@@ -1,0 +1,369 @@
+
+declareExternalBodyClass
+	"package clent;
+import com.rem.parser.generation.*;
+import clgen.*;
+public abstract class ExternalBodyEntry extends ExternalImportEntry {
+	protected int tabs = 0;
+	public void setTabs(int newTabs){
+		tabs = newTabs;
+	}
+	public ExternalBodyEntry with(Entry... classNames){
+		if(classNames != null){
+			for(Entry className:classNames){
+				this.addImport(new ImportEntry(className));
+			}
+		}
+		return this;
+	}
+}"
+
+declareExternalVariableClass
+	"package clent;
+import com.rem.parser.generation.*;
+import clgen.*;
+public class ExternalVariableEntry extends ExternalImportEntry implements Entry {
+	private int tabs = 0;
+	private Entry type;
+	private Entry name;
+	private Entry assignment = null;
+	
+	public ExternalVariableEntry(Entry type, Entry name, ExternalImportEntry assignment){
+		this.type = type;
+		this.name = name;
+		this.assignment = assignment;
+		addImport(new ImportEntry(type));
+		addSubImport(assignment);
+	}
+	public ExternalVariableEntry(Entry type, Entry name){
+		this.type = type;
+		this.name = name;
+		addImport(new ImportEntry(type));
+	}
+	public String getName(){
+		StringBuilder builder = new StringBuilder();
+		name.get(builder);
+		return builder.toString();
+	}
+	public Entry getType(){
+		return type;
+	}
+	public void setTabs(int newTabs){
+		tabs = newTabs;
+	}
+	public Entry getAsMember() {
+		final ExternalVariableEntry self = this;
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				new TabEntry(tabs, new StringEntry(\"protected \")).get(builder);
+				self.get(builder);
+				builder.append(\";\");
+			}
+			
+		};
+	}
+	public Entry getAsParameter(){
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				builder.append(\"final \");
+				type.get(builder);
+				builder.append(\" \");
+				name.get(builder);
+			}
+			
+		};
+	}
+	public Entry getAsConstructorElement(){
+		final ExternalVariableEntry self = this;
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				new TabEntry(tabs, new StringEntry(\"if(\")).get(builder);
+				name.get(builder);
+				builder.append(\" != null){\");
+				new TabEntry(tabs+1, new StringEntry(\"this.\")).get(builder);
+				name.get(builder);
+				builder.append(\" = \");
+				name.get(builder);
+				builder.append(\";\");
+				new TabEntry(tabs, new StringEntry(\"}\")).get(builder);
+			}
+			
+		};
+	}
+	public void get(StringBuilder builder){
+		if(type != null){
+			type.get(builder);
+			builder.append(\" \");
+		}
+		name.get(builder);
+		if(assignment != null){
+			builder.append(\" = \");
+			assignment.get(builder);
+		}
+	}
+}"
+
+
+declareExternalMethodClass
+	"package clent;
+import com.rem.parser.generation.*;
+import clgen.*;
+import java.util.List;
+public class ExternalMethodEntry extends ExternalImportEntry {
+	private Integer tabs = 0;
+	private Entry type;
+	private Entry name;
+	private List<ExternalVariableEntry> parameters;
+	private List<ExternalBodyEntry> body;
+	
+	public ExternalMethodEntry(Integer tabs, Entry type, Entry name, List<ExternalVariableEntry> parameters, List<ExternalBodyEntry> body){
+		this.tabs = tabs;
+		this.type = type;
+		this.name = name;
+		this.parameters = parameters;
+		this.body = body;
+		addImport(new ImportEntry(type));
+		for(ExternalVariableEntry variable:parameters){
+			addSubImport(variable);
+		}
+		for(ExternalBodyEntry element:body){
+			addSubImport(element);
+		}
+	}
+	public void setTabs(int newTabs){
+		tabs = newTabs;
+	}
+	public String getName(){
+		StringBuilder builder = new StringBuilder();
+		name.get(builder);
+		return builder.toString();
+	}
+	public void addParameter(ExternalVariableEntry newParameter){
+		parameters.add(newParameter);
+	}
+	public void addBody(List<ExternalBodyEntry> newBodyParts){
+		body.addAll(newBodyParts);
+	}
+	public void get(StringBuilder builder){
+		new TabEntry(tabs, new StringEntry(\"public \")).get(builder);
+		type.get(builder);
+		builder.append(\" \");
+		name.get(builder);
+		builder.append(\"(\");
+		if(!parameters.isEmpty()){
+			parameters.get(0).get(builder);
+		}
+		for(int i=1;i<parameters.size();++i){
+			builder.append(\",\");
+			parameters.get(i).get(builder);
+		}
+		builder.append(\") {\");
+		for(int i=0;i<body.size();++i){
+			body.get(i).setTabs(tabs+1);
+			body.get(i).get(builder);
+		}
+		new TabEntry(tabs, new StringEntry(\"}\")).get(builder);
+	}
+}"
+
+
+declareExternalClassClass
+	"package clent;
+import com.rem.parser.generation.*;
+import clgen.*;
+import java.util.*;
+public class ExternalClassEntry extends ExternalImportEntry {
+	private Map<String,ExternalVariableEntry> variables = new HashMap<String,ExternalVariableEntry>();
+	private Map<String,ExternalMethodEntry> methods = new HashMap<String,ExternalMethodEntry>();
+	private Map<String,ExternalClassEntry> classes = new HashMap<String,ExternalClassEntry>();
+	
+	private String name;
+	private int tabs;
+	private Entry header;
+	private Entry packageName;
+	private boolean isSubClass = false;
+	
+	public ExternalClassEntry(Entry initialPackageName, Entry preImports, Entry initialName, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
+		super(preImports);
+		StringBuilder builder = new StringBuilder();
+		initialName.get(builder);
+		name = builder.toString();
+		packageName = initialPackageName;
+		ExternalImportEntry.packages.put(name, packageName);
+		header = initialHeader;
+		
+		
+		for(ExternalVariableEntry variable:initialVariables){
+			addVariable(variable);
+		}
+		for(ExternalMethodEntry method:initialMethods){
+			addMethod(method);
+		}
+		for(ExternalClassEntry subClass:initialSubClasses){
+			addSubClass(subClass);
+		}
+	}
+	
+	public void addVariable(final ExternalVariableEntry variable){
+		variables.put(variable.getName(), variable);
+		addSubImport(variable);
+		addMethod(new ExternalMethodEntry(0,variable.getType(),new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				builder.append(\"get\");
+				builder.append(Generator.camelize(variable.getName()));
+			}
+		},new ArrayList<ExternalVariableEntry>(),new ArrayList<ExternalBodyEntry>(Arrays.asList(new ExternalBodyEntry[]{
+			new ExternalBodyEntry(){
+				@Override
+				public void get(StringBuilder builder) {
+					new TabEntry(tabs, new StringEntry(\"return \")).get(builder);;
+					builder.append(variable.getName());
+					builder.append(\";\");
+				}
+			}
+		}))));
+	}
+	public void addMethod(ExternalMethodEntry method){
+		methods.put(method.getName(), method);
+		addSubImport(method);
+	}
+	public void addSubClass(ExternalClassEntry subClass){
+		classes.put(subClass.getName(), subClass);
+		addSubImport(subClass);
+		subClass.isSubClass  = true;
+	}
+	public ExternalVariableEntry getVariable(String variableName){
+		return variables.get(variableName);
+	}
+	public ExternalMethodEntry getMethod(String methodName){
+		return methods.get(methodName);
+	}
+	public ExternalClassEntry getSubClass(String subClassName){
+		return classes.get(subClassName);
+	}
+	public String getName(){
+		return name;
+	}
+	public void setTabs(int newTabs){
+		tabs = newTabs;
+	}
+	public void get(StringBuilder builder){
+		if(isSubClass == false){
+			builder.append(\"package \");
+			packageName.get(builder);
+			builder.append(\";\");
+			outputImport(builder);
+		}
+		new TabEntry(tabs, header).get(builder);
+		for(String variableKey:variables.keySet()){
+			variables.get(variableKey).setTabs(tabs+1);
+			variables.get(variableKey).getAsMember().get(builder);
+		}
+		new TabEntry(tabs+1,new StringEntry(\"public \")).get(builder);
+		builder.append(name);
+		builder.append(\"(\");
+		String comma = \"\";
+		for(String variableKey:variables.keySet()){
+			builder.append(comma);
+			variables.get(variableKey).getAsParameter().get(builder);
+			comma = \", \";
+		}
+		builder.append(\") {\");
+		for(String variableKey:variables.keySet()){
+			variables.get(variableKey).setTabs(tabs+2);
+			variables.get(variableKey).getAsConstructorElement().get(builder);
+		}
+		new TabEntry(tabs+1,new StringEntry(\"}\")).get(builder);
+		for(String methodKey: methods.keySet()){
+			methods.get(methodKey).setTabs(tabs+1);
+			methods.get(methodKey).get(builder);
+		}
+		for(String classKey: classes.keySet()){
+			classes.get(classKey).setTabs(tabs+1);
+			classes.get(classKey).get(builder);
+		}
+		new TabEntry(tabs, new StringEntry(\"}\")).get(builder);
+	}
+}"
+
+declareExternalImportClass
+	"package clent;
+import java.util.*;
+import com.rem.parser.generation.*;
+
+public abstract class ExternalImportEntry implements Entry{
+	public static final Map<String,Entry> packages = new HashMap<String,Entry>();
+	static {
+		packages.put(\"List\", new StringEntry(\"java.util\"));
+		packages.put(\"ArrayList\", new StringEntry(\"java.util\"));
+		packages.put(\"LinkedList\", new StringEntry(\"java.util\"));
+		packages.put(\"Arrays\", new StringEntry(\"java.util\"));
+		packages.put(\"Map\", new StringEntry(\"java.util\"));
+		packages.put(\"HashMap\", new StringEntry(\"java.util\"));
+		packages.put(\"Set\", new StringEntry(\"java.util\"));
+		packages.put(\"HashSet\", new StringEntry(\"java.util\"));
+
+		packages.put(\"File\", new StringEntry(\"java.io\"));
+	}
+	private List<ExternalImportEntry> subImports = new ArrayList<ExternalImportEntry>();
+	private List<ImportEntry> imports = new ArrayList<ImportEntry>();
+	private Entry header = new Entry(){
+		@Override
+		public void get(StringBuilder arg0) {
+		}
+	};
+	public ExternalImportEntry(){
+	}
+	public ExternalImportEntry(Entry initialImports){
+		this.header = initialImports;
+	}
+	public void addSubImport(ExternalImportEntry importEntry){
+		subImports.add(importEntry);
+	}
+	public void addImport(ImportEntry importEntry){
+		imports.add(importEntry);
+	}
+	public void outputImport(StringBuilder builder){
+		SetEntry list = new SetEntry();
+		list.add(header);
+		for(ExternalImportEntry imp: subImports){
+			imp.spread(list);
+		}
+		for(ImportEntry entry:imports){
+			list.add(entry);
+		}
+		list.get(builder);
+	}
+	private void spread(SetEntry list){
+		list.add(header);
+		for(ExternalImportEntry imp: subImports){
+			imp.spread(list);
+		}
+		for(ImportEntry entry:imports){
+			list.add(entry);
+		}
+	}
+	public static class ImportEntry implements Entry {
+
+		private Entry className;
+		public ImportEntry(Entry className){
+			this.className = className;
+		}
+		@Override
+		public void get(StringBuilder builder) {
+			StringBuilder classFinder = new StringBuilder();
+			className.get(classFinder);
+			if(packages.containsKey(classFinder.toString())){
+				builder.append(\"\\nimport \");
+				packages.get(className).get(builder);
+				builder.append(\".\");
+				className.get(builder);
+				builder.append(\";\");
+			}
+		}
+	}
+}"

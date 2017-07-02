@@ -33,5 +33,7 @@ public class StringEntry implements Entry{
 	public void set(String value){
 		this.value = value;
 	}
-
+	public void set(StringEntry value){
+		this.value = value.value;
+	}
 }

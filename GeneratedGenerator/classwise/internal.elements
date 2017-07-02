@@ -1,9 +1,16 @@
 
+
+camelize
+	"Generator.camelize(" In ")"
+getMethodName
+	"get" Name ""
+getVariableFromName
+	"MainClass." VariableName ""
 manipulateObject
-	"MainFlow.classes." Class Name "Class." Method Name "(" Parameters ")"
+	"" Class Name "." Method "(" Parameter ");"
 
 manipulateToken
-	"for(IToken " Element Name ":" Subject ".getAll(\"" Token Name "\")) {"
+	"for(final IToken " Element Name ":" Subject ".getAllSafely(\"" Token Name "\")) {" Body ""
 
 bodyEntry
 	"" Entry ""
@@ -13,31 +20,50 @@ bodyCallWithSubject
 	"" Subject "." Method "(" Parameters ")"
 bodyCallWithoutSubject
 	"" Method "(" Parameters ")"
+bodyAccessWithSubject
+	"" Subject "." Method ""
+bodyAccessWithoutSubject
+	"" Method ""
+bodyName
+	"" Name ""
+bodyNameWithParameters
+	"" Name "<" Parameters ">"
 bodyNewObj
 	"new " Method Name "(" Parameters ")"
 bodyConditional
 	"" Name "(" Header ") {" Body ""
+bodyConditionalWithoutHeader
+	"" Name " {" Body ""
 bodyElement
 	"" Prefix "" Entry "" Suffix ""
 declareVariableWithAssignment
-	"" Type " " Name " = " Assignment ""
-declareVariableWithoutAssignment
+	"final " Type " " Name " = " Assignment ""
+declareVariableWithoutAssignmentNonFinal
 	"" Type " " Name ""
+declareVariableWithoutAssignmentFinal
+	"final " Type " " Name ""
 declareMember
-	"protected Entry " Name " = " Member ";"
+	"protected " Name And Type " = " Assignment ";"
+declareMemberComplete
+	"protected " Name And Type and Assignment ";"
+declareMemberVariable
+	"protected ExternalVariableEntry " Name "Variable = " Member ";"
+declareMemberMethod
+	"protected ExternalMethodEntry " Name "Method = " Member ";"
 declareMemberClass
-	"protected ExternalClassEntry " Name " = " Member ""
+	"protected " Name " " Name "Class = " Member ""
 declareMethod
-	"public " Type " " Name "(" Parameters ") {" Method Body ""
+	"public " IsStatic "" Type " " Name "(" Parameters ") {" Method Body ""
 declareClass
 	"package " Package name ";
 " Import List "
-public " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {
+public " IsStatic "" Class Type " " Class Name " " Extends " " Implements " {
 	//Externals" Variables "\n" Methods "\n" Classes "
-	//Internals" Variables "\n" Methods "\n" Classes ""
+	//Internals" Variables "\n" Methods "\n" Classes "
+}"
 
 
 declareSubClass
-	"public " IsStatic " " Class Type " " Class Name " " Extends " " Implements " {
+	"public " IsStatic "" Class Type " " Class Name " " Extends " " Implements " {
 	//Externals" Variables "\n" Methods "\n" Classes "
 	//Internals" Variables "\n" Methods "\n" Classes ""

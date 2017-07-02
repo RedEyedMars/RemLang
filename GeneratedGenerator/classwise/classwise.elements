@@ -6,14 +6,48 @@ returnCall
 semicoloned
 	"" Statement ";"
 asImport
-	"import " Package name ";"
+	"import " Package "." Name ";"
+asExternalImport
+	"builder.append(\"\\nimport \");" Package ".get(builder);builder.append(\".\");new StringEntry(\"" Name "\").get(builder);builder.append(\";\");"
 concat
 	"" Left "+" Right ""
 access
 	"" Left ".get(" Right ")"
+accessClass
+	"" Left ".getSubClass(" Right ")"
+classAsVariable
+	"" Left "Class"
 retrieveClass
 	"clgen.MainFlow.classes." Class Name "Class"
 extends
 	"extends " Parent Class ""
 implements
 	"implements " Parent Class ""
+generators
+	"new Generator[]{
+		new Generator(){
+			public String getName(){
+				return \"Main\";
+			}
+			public void setup(ParseContext data){
+			}
+			public void generate(ParseContext data){
+				StringBuilder builder;
+				File directory;
+				" Class Wise Add File "
+				outputAll();
+			}
+			public void generateRoot(IToken rootToken){
+			}
+		}};
+	}
+	private String __ROOT_DIRECTORY__ = \".\";
+	public void output(String rootDirectory, ParseContext data){
+		__ROOT_DIRECTORY__ = rootDirectory;
+		getGenerators()[0].generate(data);"
+addFile
+	"builder = new StringBuilder();
+	" Package Name ".get(builder);
+	directory = new File(__ROOT_DIRECTORY__, builder.toString().replace(\".\",\"/\"));
+	directory.mkdirs();
+	this.addFile(directory,Generator.camelize(\"" Class Name "\")+\".java\", " Class Name "Class);"

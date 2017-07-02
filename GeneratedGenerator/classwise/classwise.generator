@@ -1,4 +1,4 @@
-uses ConditionalNames Tokens Rules RegexParser
+uses ClassNames Tokens Rules RegexParser
 import "classwise.entries"
 meta std
 	var rootParser as IParser
@@ -13,7 +13,7 @@ meta std
 			context as ParseContext
 			root as IToken
 		context retainList
-			new ConditionalNames
+			new ClassNames
 
 classwise
 	elements from "classwise.elements"
@@ -29,6 +29,7 @@ classwise
 		new ArrayList<e_class>
 	var importables
 		new HashMap<String,importable>
+	var addClassFileList = {}
 	var main_class as i_class
 	aux setup takes data as ParseContext
 		set inrPackageName
@@ -66,19 +67,37 @@ classwise
 			generate all:;
 		all IMPORT_CLASS to element
 			generate all:;
+		all anonymous_class to element
+			entry packageName "." = {}
+			var className =  'element->className
+			var context = context :null;
+			element packageName to atom
+				atom name_var to quark
+					packageName += generate name_var :true;
+			importables put
+				className
+				i_class: packageName "class" \className null {}{}{} context;
+		
 		all class_declaration to element
-			var newCl as Entry = generate clazz declaration:true null;
+			var newCl as Entry = generate clazz declaration:false null;
 			var newIn as innerable = newCl
 			var newNa as nameable = newCl
 			if newIn does getIsInner				
 				innerEntries put
-					newNa getName
+					newNa getFullName
 					newCl
 			else
 				var newClass as e_class = newCl
-				nextEntries put
+				var className as Entry
 					newClass getName
-					newClass getAsFile
+				main_class addClass
+					newClass
+				var classImport as import
+					newClass getImportPackage
+				var getPackageName as Entry
+					classImport getPackageName
+				addClassFileList +=
+					classwise addFile{getPackageName className className}
 		var methodContext = context:context:;;
 		all method_declaration to element
 			var newMt as i_method = generate method declaration:true methodContext;
@@ -91,11 +110,16 @@ classwise
 		return
 			null
 	aux generate takes data as ParseContext
-		set main_class = i_class: \inrPackageName "class" "MainFlow" "FlowController" {} {} {} context:;;
-		token rooT
+		var semicolon = ";"
+		var mainMethod = i_method :i_type_var:\"void"; i_name_var:\"main"; {i_variable:i_type_var:\"String[]"; i_name_var:\"args"; null;} {
+			i_conditional:"if" i_exact:\"args.length==1"; {i_element:"" i_exact:\"new MainFlow().parse(args[0])"; semicolon context:;;} context:;;
+			i_conditional:"else" null {i_element:"" i_exact:\"System.err.println(\"No filename provided!\")"; semicolon context:;;} context:;;} context:context:;;;
+		mainMethod setIsStatic
+			true
+		set main_class = i_class: \inrPackageName "class" \"MainFlow" i_type_var:\"FlowController"; {} {} {
+			mainMethod} context:;;
+		classwise generateAll
 			data getRoot
-		rooT * to element
-			entry in = generate all:;
 		var inKeySet as Set<String>
 			innerEntries keySet
 		each key in inKeySet
@@ -110,6 +134,31 @@ classwise
 			classwise buildString
 				"MainFlow.java"
 			main_class
+		classwise addFile
+			nrDir
+			classwise buildString
+				"ExternalImportEntry.java"
+			external declareExternalImportClass{}
+		classwise addFile
+			nrDir
+			classwise buildString
+				"ExternalBodyEntry.java"
+			external declareExternalBodyClass{}
+		classwise addFile
+			nrDir
+			classwise buildString
+				"ExternalVariableEntry.java"
+			external declareExternalVariableClass{}
+		classwise addFile
+			nrDir
+			classwise buildString
+				"ExternalMethodEntry.java"
+			external declareExternalMethodClass{}
+		classwise addFile
+			nrDir
+			classwise buildString
+				"ExternalClassEntry.java"
+			external declareExternalClassClass{}
 		each nextClass as e_class in nextClasses
 			classwise addFile
 				nrDir
@@ -117,7 +166,11 @@ classwise
 					nextClass getFullName
 					".java"
 				nextClass
-	
+		addClassFileList setDelimiter :"\n\t\t\t\t";
+		main_class addMethod
+			i_method:i_type_var:\"Generator[]"; i_name_var:\"getGenerators"; {} {
+				i_element:"" i_variable:i_type_var:\"MainFlow"; i_name_var:\"self"; i_exact:\"this";; semicolon context:;;
+				i_element:"return " i_exact:classwise generators{addClassFileList}; semicolon context:;;} context:context:;;;
 	generate name_var takes isInner as Boolean
 		name_var to element
 			access
@@ -150,34 +203,72 @@ classwise
 				else
 					return
 						e_name_var:left "+" right;
+			as_string
+				var subject as Entry
+					body generateStatement
+						element->body_statement
+						true
+				if isInner is true
+					return
+						i_call: subject \"toString" {};
+				else
+					return
+						e_entry: i_call: subject \"toString" {};;
 			exact
 				entry value = null
-				if element->WILD is not null
-					if element->CAMEL is not null
-						set value = ``^element->WILD``
-					else
-						set value = ``'element->WILD``
-				else
-					if element->CAMEL is not null
-						set value = \^element->NAME
-					else
-						set value = \'element->NAME
 				if isInner is true
+					if element->WILD is not null
+						if element->CAMEL is not null
+							set value = ``^element->WILD``
+						else
+							set value = ``'element->WILD``
+					else
+						if element->variable_names is not null
+							if element->CAMEL is not null
+								return
+									i_exact: internal camelize {\'element->variable_names};
+							else
+								set value = ``'element->variable_names``
+						else
+							if element->CAMEL is not null
+								set value = \^element->NAME
+							else
+								set value = \'element->NAME
 					return
 						i_name_var:value;
 				else
+					if element->WILD is not null
+						if element->CAMEL is not null
+							set value = external exact{``^element->WILD``}
+						else
+							set value = external exact{``'element->WILD``}
+					else
+						if element->variable_names is not null
+							if element->CAMEL is not null
+								set value = external camelize{ \'element->variable_names}
+							else
+								set value = external exact{\'element->variable_names}
+						else
+							if element->CAMEL is not null
+								set value = external exact{``^element->NAME``}
+							else
+								set value = external exact{``'element->NAME``}
 					return
 						e_name_var:value ;
 			variable
 				entry value = null
-				if element->CAMEL is not null
-					set value = \^element->variable_names
-				else
-					set value = \'element->variable_names
 				if isInner is true
+					if element->CAMEL is not null
+						set value = \^element->variable_names
+					else
+						set value = \'element->variable_names
 					return
 						i_name_var:value;
 				else
+					if element->CAMEL is not null
+						set value = external camelize{ \'element->variable_names}
+					else
+						set value = external exact{\'element->variable_names}
 					return
 						e_name_var:value ;
 		return
@@ -195,10 +286,10 @@ classwise
 							set right = generate type_var :isInner;
 				if isInner is true
 					return
-						i_name_var:left right;
+						i_type_var:left "." right;
 				else
 					return
-						e_name_var:left right;
+						e_type_var:left "." right;
 			concat
 				entry left = null
 				entry right = null
@@ -210,45 +301,104 @@ classwise
 							set right = generate type_var :isInner;
 				if isInner is true
 					return
-						i_name_var:left "+" right;
+						i_type_var:left "+" right;
 				else
 					return
-						e_name_var:left "+" right;
+						e_type_var:left "+" right;
+			as_string
+				var subject as Entry
+					body generateStatement
+						element->body_statement
+						true
+				if isInner is true
+					return
+						i_call: subject \"toString" {};
+				else
+					return
+						e_entry: i_call: subject \"toString" {};;
 			exact
+				entry templateParameters "," = {} 
+				element template_parameters to atom
+					atom type_var to quark
+						templateParameters+=generate type_var:isInner;
 				entry value = null
-				if element->CAMEL is not null
-					set value = \^element->NAME
-				else
-					set value = \'element->NAME
+				
+				var importType as importable
+					classwise getType
+						"void"
 				if isInner is true
+					if element->CAMEL is not null
+						if element->NAME is not null
+							set value = ``^element->NAME``
+						else
+							set value = \^element->variable_names
+					else
+						if element->NAME is not null
+							set value = ``'element->NAME``
+						else
+							set value = \'element->variable_names
 					return
-						i_name_var:value;
+						i_type_var :value templateParameters importType;
 				else
+					if element->CAMEL is not null
+						if element->NAME is not null
+							set value = external exact{``^element->NAME``}
+						else
+							set value = external camelize{\'element->variable_names}
+					else
+						if element->NAME is not null
+							set value = external exact{``'element->NAME``}
+						else
+							set value = external exact{\'element->variable_names}
 					return
-						e_name_var:value ;
+						e_type_var:value templateParameters importType;
 			class
+				entry templateParameters "," = {} 
+				element template_parameters to atom
+					atom type_var to quark
+						templateParameters+=generate type_var:isInner;
 				entry value = null
-				if element->CAMEL is not null
-					set value = \^element->class_names
-				else
-					set value = \'element->class_names
+				var importType as importable
+				
 				if isInner is true
+					if element->CAMEL is not null
+						set value = \^element->class_names
+						set importType
+							classwise getType
+								^element->class_names
+					else
+						set value = \'element->class_names
+						set importType
+							classwise getType
+								'element->class_names
 					return
-						i_name_var:value;
+						i_type_var:value templateParameters importType;
 				else
+					if element->CAMEL is not null
+						set value = external exact {``^element->class_names``}
+						set importType
+							classwise getType
+								^element->class_names
+					else
+						set value = external exact {``'element->class_names``}
+						set importType
+							classwise getType
+								'element->class_names
 					return
-						e_name_var:value ;
+						e_type_var:value templateParameters importType;
 		return
 			null
 	aux getType takes className
 		if importables->className is null
 			importables put
 				className
-				import:;
+				importHolder:;
 		return as importable
 			importables->className
 external
 	elements from "external.elements"
+	
+	elements from "predefined.elements"
 internal
 	elements from "internal.elements"
 clazz
@@ -263,7 +413,7 @@ clazz
 		entry packageName "." = {}
 		entry methodBody "" = {}
 		entry variableBody "" = {}
-		var parent = null
+		entry parent = null
 		entry interfaces = {}
 		
 		var context = context:parentContext;
@@ -276,64 +426,91 @@ clazz
 				generate method declaration:isInner context;
 		
 		declaration parentName to element
-			set parent = ^element
+			element type_var to atom
+				set parent = generate classwise type_var:isInner;
 		declaration interfaceName to element  
-			interfaces += \^element
+			element type_var to atom
+				interfaces += generate classwise type_var:isInner;
 		declaration packageName to element
-			packageName += generate classwise name_var:isInner;
+			element name_var to atom
+				packageName += generate classwise name_var:isInner;
 		if isInner is true
 			return
-				i_class: packageName 'declaration->objectType 'declaration->className parent interfaces variableBody methodBody context;
+				i_class: packageName 'declaration->objectType \'declaration->className parent interfaces variableBody methodBody context;
 		else
+			packageName setDelimiter
+				".get(builder);\n\t\t\t\tbuilder.append(\".\");\n\t\t\t\t"
+			var className as Entry
+			var actualName
+			if declaration->className->NAME is not null
+				set className = ``'declaration->className->NAME``
+				set actualName = 'declaration->className->NAME
+			else
+				set className = \'declaration->className->variable_names
+				set actualName = 'declaration->className->variable_names
 			return
-				e_class: packageName 'declaration->objectType 'declaration->className parent interfaces variableBody methodBody context;
+				e_class: packageName 'declaration->objectType actualName className parent interfaces variableBody methodBody context;
 
 body
 	generate element takes isInner as Boolean, parentContext as context
 		var semicolon = ";"
 		element to atom
+			body_manipulate
+				return
+					generate manipulate :parentContext;
 			body_line
 				entry in = null
-				if isInner is true or atom->inner is not null
-					atom to quark
-						variable_declaration
-							set in = generate variable declaration :true;
-						body_manipulate
-							set in = generate manipulate :parentContext;
-						body_statement
-							set in = generate statement :true;
+				atom to quark
+					variable_declaration
+						set in = generate variable declaration :isInner;
+					body_statement
+						set in = generate statement :isInner;
+				var inb as innerable = in
+				if inb does getIsInner
 					return
 						i_element:"" in semicolon parentContext;
 				else
-					entry maniContext = context:parentContext; 
-					atom to quark
-						variable_declaration
-							set in = generate variable declaration :false;
-						body_manipulate
-							set in = generate manipulate :maniContext;
-						body_statement
-							set in = generate statement :false;
 					return
 						e_element:"" in semicolon parentContext;
 			body_return
-				if isInner is true or atom->inner is not null
-					return
-						i_element:"return" generate statement:true; semicolon parentContext;
-				else
-					return
-						e_element:"return" generate statement:false; semicolon parentContext;
+				atom method_argument to quark
+					if isInner is true or atom->inner is not null
+						return
+							i_element:"return " generate argument :true; semicolon parentContext;
+					else
+						return
+							e_element:"return " generate argument :false; semicolon parentContext;
 			body_conditional
+				if isInner is true or atom->inner is not null
+					set isInner = true
 				var conditionalContext
 					context:parentContext;
 				entry conditionalBody "" = {}
+				var statement as Entry = null
+				atom body_statement to quark
+					set statement = generate statement :isInner;
+				atom variable_declaration to quark
+					var operator = 'atom->OPERATOR
+					if operator is ":"
+						if isInner is true
+							set statement = i_operator :generate variable declaration :isInner; operator statement;
+						else
+							set statement = e_operator :generate variable declaration :isInner; operator statement;
+					else
+						if isInner is true
+							set statement = i_operator :\"CANNOT YET DO INTEGER FORS";
+						else
+							set statement = e_operator :\"CANNOT YET DO INTEGER FORS";
 				atom body_element to quark
-					conditionalBody += generate element :false conditionalContext;
-				if isInner is true or atom->inner is not null
+					entry bodyElem = generate element :false conditionalContext;
+					if bodyElem is not null
+						conditionalBody += bodyElem 
+				if isInner is true
 					return
-						i_conditional:'atom->conditional_names generate statement:true; conditionalBody parentContext;
+						i_conditional:'atom->conditional statement conditionalBody parentContext;
 				else
 					return
-						e_conditional:'atom->conditional_names generate statement:false; conditionalBody parentContext;
+						e_conditional:'atom->conditional statement conditionalBody parentContext;
 		return
 			null
 	generate statement takes isInner as Boolean
@@ -343,6 +520,20 @@ body
 		var operand as Entry = null
 		var operator = null
 		statement to element
+			as_string
+				var subject as Entry
+					body generateStatement
+						element->body_statement
+						isInner
+				var subjectAsInnerable as innerable = subject
+				var subjectIsInner
+					subjectAsInnerable getIsInner
+				if isInner is true or subjectIsInner is true
+					return
+						i_call: subject \"toString" {};
+				else
+					return
+						e_call: subject \"toString" {};
 			body_call
 				if operand is null
 					if isInner is true
@@ -367,25 +558,68 @@ body
 		var ret as Entry = null
 		call group to element
 			entry parameters = {}
-			entry name_var = null
+			var name_var as Entry = null
 			if isInner is true
-				element name_var to atom
-					set name_var = generate classwise name_var :true;
-				element body_statement to atom
-					parameters+=generate statement:true;
-				if ret is null
-					set ret = i_call :name_var parameters;
+				
+				if element->type_var is not null
+					var tVar = i_type_var:;
+					element type_var to atom
+						tVar addSubClass
+							generate classwise type_var :true;
+					set name_var = tVar
 				else
-					set ret = i_call:ret name_var parameters;
+					element name_var to atom
+						set name_var = generate classwise name_var :true;
+					element NAME to atom
+						set name_var = i_exact:\'atom;
+				var containsParameters = false
+				element parameters to quark
+					set containsParameters = true
+					quark method_argument to atom
+						parameters+=generate argument :true;
+				if element->NEW is not null
+					set ret = i_new_obj :name_var parameters;
+				else
+					if ret is null
+						if containsParameters is true
+							set ret = i_call:name_var parameters;
+						else
+							set ret = i_call:name_var;
+					else
+						if containsParameters is true
+							set ret = i_call:ret name_var parameters;
+						else
+							set ret = i_call:ret name_var;
 			else
-				element name_var to atom
-					set name_var = generate classwise name_var :false;
-				element body_statement to atom
-					parameters+=generate statement :false;
-				if ret is null
-					set ret = e_call:name_var parameters;
+				if element->type_var is not null
+					var tVar = e_type_var:;
+					element type_var to atom
+						tVar addSubClass
+							generate classwise type_var :false;
+					set name_var = tVar
 				else
-					set ret = e_call:ret name_var parameters;
+					element name_var to atom
+						set name_var = generate classwise name_var :false;
+					element NAME to atom
+						set name_var = i_exact:\"new StringEntry(\"'atom\")";
+				var containsParameters = false
+				element parameters to quark
+					set containsParameters = true
+					quark method_argument to atom
+						parameters+=generate argument :false;
+				if element->NEW is not null
+					set ret = e_new_obj :name_var parameters;
+				else
+					if ret is null
+						if containsParameters is true
+							set ret = e_call:name_var parameters;
+						else
+							set ret = e_call:name_var;
+					else
+						if containsParameters is true
+							set ret = e_call:ret name_var parameters;
+						else
+							set ret = e_call:ret name_var;
 		return
 			ret
 	generate manipulate takes parentContext as context
@@ -393,54 +627,94 @@ body
 			entry type = null
 			var access as Entry = {}
 			entry arguments = {}
+			var importList = []
 			manipulate type_var to element
 				set type = generate classwise type_var:true;
+				var typeBuilder
+					new StringBuilder
+				type get
+					typeBuilder
+				var getType as importable
+					classwise getType
+						'typeBuilder
+				set importList
+					getType getExternalImportList
+				var typeAsVariablizable as variablizable = type
+				typeAsVariablizable setIsVariable
+					true
 			manipulate name_var to element
 				set access = generate classwise name_var:true;
 			var arg_type = -1
 			manipulate to atom
 				class_declaration
-					arguments += generate clazz declaration :true context:; ;
+					var aClass as e_class = generate clazz declaration :false context:; ;
+					arguments +=
+						aClass getAsArgument
+					aClass setIsSubClass: type true;
+					importList +=
+						aClass getExternalImportList
 					set arg_type = 0
 				method_declaration
-					arguments += generate method declaration :true context :; ;
+					var aMethod as Entry = generate method declaration :false context :context:;; ;
+					arguments += aMethod
 					set arg_type = 1
 				variable_declaration
-					arguments += generate variable declaration :true;
+					var aVariable as Entry = generate variable declaration :false;
+					arguments += aVariable
 					set arg_type = 2
-				body_statement
-					arguments += generate statement :true;
+				body
+					atom body_element to quark
+						arguments += generate element :false context:context:context:;;;;
+					set arg_type = 3
 			if 'manipulate->methodName is "+="
 				if arg_type is 0
 					return
-						man_obj:type access "addSubClass" arguments;
+						man_obj:type "addSubClass" arguments;
 				if arg_type is 1
 					return
-						man_obj:type access "addMethod" arguments;
+						man_obj:type "addMethod" arguments;
 				if arg_type is 2
 					return
-						man_obj:type access "addVariable" arguments;
+						man_obj:type "addVariable" arguments;
 				return
-					man_obj:type access "add" arguments;
+					man_obj:type "add" arguments;
 			else
 				return
-					man_obj:type access 'manipulate->methodName arguments;
+					man_obj:type 'manipulate->methodName arguments;
 		else
 			entry subject = null
 			manipulate name_var to element
 				set subject = generate classwise name_var:true;
 			manipulate tokenInstance to element
-				var tokenName = 'manipulate->tokenName
+				var tokenName = 'element->tokenName
 				entry man_body "" = {}
 				entry bodyContext = context:parentContext;
-				manipulate body_element to atom
-					man_body += generate element:false bodyContext;
-				if manipulate->variableName is not null
+				element body_element to atom
+					var bodyElem as Entry = generate element:false bodyContext;
+					if bodyElem is not null
+						man_body += bodyElem 
+				if element->variableName is not null
 					return
-						man_tok: subject tokenName 'manipulate->variableName man_body parentContext;
+						man_tok: subject tokenName 'element->variableName man_body parentContext;
 				else
 					return
 						man_tok: subject tokenName tokenName man_body parentContext;
+		return
+			null
+	generate argument takes isInner as Boolean
+		argument to element
+			class_declaration
+				return
+					generate clazz declaration :false context:;;
+			method_declaration
+				return
+					generate method declaration :false context:context:;;;
+			variable_declaration
+				return
+					generate variable declaration :false;
+			body_statement
+				return
+					generate statement :isInner;
 		return
 			null
 method
@@ -455,30 +729,60 @@ method
 		entry parameters = {}
 		entry bodyContext = context:parentContext;
 		declaration variable_declaration to element
-			parameters += generate variable declaration :true;
+			parameters += generate variable declaration :isInner;
 		declaration body_element to element
-			methodBody += generate body element:isInner bodyContext;
-		if isInner is true
-			return
-				i_method: typeName 'declaration->methodName parameters methodBody parentContext;
+			entry bodyElem = generate body element:isInner bodyContext;
+			if bodyElem is not null
+				methodBody += bodyElem
+		if declaration->methodName->NAME is not null
+			if isInner is true
+				return
+					i_method: typeName i_exact:\'declaration->methodName; parameters methodBody parentContext;
+			else
+				return
+					e_method: typeName e_exact:\'declaration->methodName; parameters methodBody parentContext;
 		else
-			return
-				e_method: typeName 'declaration->methodName parameters methodBody parentContext;
+			var vName as Entry
+				classwise generateNameVar
+					declaration->methodName->name_var
+					isInner
+			if isInner is true
+				return
+					i_method: typeName vName parameters methodBody parentContext;
+			else
+				return
+					e_method: typeName vName parameters methodBody parentContext;
 variable
 	generate declaration takes isInner as Boolean
 		if isInner is false
 			set isInner
 				declaration->inner is not null
-		entry typeName "." = {}
-		declaration type_var to atom
-			typeName += generate classwise type_var: isInner;
-		entry assignment = null
-		declaration body_statement to atom
-			entry in = generate body statement:isInner;
-		
+		var typeName as canAddSubClass = null
 		if isInner is true
-			return
-				i_variable: typeName 'declaration->variableName assignment;
+			set typeName = i_type_var :;
 		else
-			return
-				e_variable: typeName 'declaration->variableName assignment;
+			set typeName = e_type_var :;
+		declaration type_var to atom
+			typeName addSubClass
+				generate classwise type_var: isInner;
+		entry assignment = null
+		declaration method_argument to atom
+			set assignment = generate body argument:isInner;
+		if declaration->variableName->NAME is not null
+			if isInner is true
+				return
+					i_variable: typeName i_exact:\'declaration->variableName; assignment;
+			else
+				return
+					e_variable: typeName e_exact:\'declaration->variableName; assignment;
+		else
+			var vName as Entry
+				classwise generateNameVar
+					declaration->variableName->name_var
+					isInner
+			if isInner is true
+				return
+					i_variable: typeName vName assignment;
+			else
+				return
+					e_variable: typeName vName assignment;

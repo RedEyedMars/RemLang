@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.generation.Generator;
 
 public class BranchToken implements IToken {
 	protected Map<String,List<IToken>> tokens = new HashMap<String,List<IToken>>();
@@ -34,6 +35,10 @@ public class BranchToken implements IToken {
 
 	@Override
 	public String getString(){
+		return (String)getValue();
+	}
+	@Override
+	public String toString(){
 		return (String)getValue();
 	}
 
@@ -72,6 +77,16 @@ public class BranchToken implements IToken {
 	@Override
 	public List<IToken> getAll(String key){
 		return tokens.get(key);
+	}
+	@Override
+	public List<IToken> getAllSafely(String key){
+		List<IToken> ret = tokens.get(key);
+		if(ret==null){
+			return new ArrayList<IToken>();
+		}
+		else {
+			return ret;
+		}
 	}
 
 	public int getLineNumber(String file){
@@ -119,7 +134,14 @@ public class BranchToken implements IToken {
 	public void setList(String name){
 		this.listName  = name;
 	}
-
+	@Override
+	public void print(){
+		System.out.println(">:"+Generator.completeTokenErrorMessage(this));
+	}
+	@Override
+	public void printShort(){
+		System.out.println(">:"+Generator.tokenErrorMessage(this));
+	}
 	@Override
 	public void clear() {
 		tokens.clear();
@@ -216,6 +238,8 @@ public class BranchToken implements IToken {
 	public int size() {
 		return tokens.size();
 	}
+	
+	
 
 	@Override
 	public Collection<IToken> values() {

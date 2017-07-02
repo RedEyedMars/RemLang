@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.rem.parser.ParseContext;
+import com.rem.parser.generation.Generator;
 
 public class NodeToken implements IToken{
 
@@ -109,7 +110,18 @@ public class NodeToken implements IToken{
 	public List<IToken> getAll(String key){
 		return new ArrayList<IToken>();
 	}
-	
+	@Override
+	public List<IToken> getAllSafely(String key){
+		return new ArrayList<IToken>();
+	}
+	@Override
+	public void print(){
+		System.out.println(">:"+Generator.completeTokenErrorMessage(this));
+	}
+	@Override
+	public void printShort(){
+		System.out.println(">:"+Generator.tokenErrorMessage(this));
+	}
 	@Override
 	public void clear() {
 		value = null;

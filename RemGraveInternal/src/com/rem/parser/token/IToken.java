@@ -16,10 +16,13 @@ public interface IToken extends Map<IToken.Key,IToken>{
 	public IToken getLast();
 	public IToken getLast(String tokenName);
 	public List<IToken> getAll(String key);
+	public List<IToken> getAllSafely(String key);
 	public void accumulateLists(ParseContext data);
 	public void setName(String name);
 	public void setList(String name);
 	public ParseContext getContext(ParseContext rootContext);
+	public void print();
+	public void printShort();
 
 	public int getPosition();
 	public int getLineNumber(String file);
