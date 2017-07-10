@@ -1,8 +1,14 @@
 
-access
-	"" Left ".get(builder);\n\t\t\t\tbuilder.append(\".\");\n\t\t\t\t" Right ""
+getName
+	"new StringEntry(" Name Getter ".getFullName())"
+accessClass
+	"new ExternalStatement(\".\", " Left ", " Right ")"
+accessMethod
+	"new ExternalStatement(\".\", " Left ", " Right ")"
 exact
 	"new StringEntry(" In ")"
+asTemplate
+	"new StringEntry(\"<" In ">\")"
 camelize
 	"new StringEntry(Generator.camelize(" In "))"
 extends
@@ -12,131 +18,80 @@ implements
 	"builder.append(\" implements \");
 	" Implements Name ""
 
+bodyConcat
+	"/*Concat*/new ExternalStatement(\"\", " Left ", " Right ")"
 bodyName
-	"/*Name*/new Entry(){
-					public void get(StringBuilder builder){
-						" Name ".get(builder);
-					}
-				}"
+	"/*Name*/new ExternalStatement(" Name ")"
 bodyNameWithParameters
-	"/*Name*/new Entry(){
-					public void get(StringBuilder builder){
-						builder.append(" Name ");
-						builder.append(\"<\");
-						" Parameters ".get(builder);
-						builder.append(\">\");
-					}
-				}"
+	"/*Name*/new ExternalStatement(new StringEntry(" Name "+\"<\"), new StringEntry(\">\"), \",\", " Parameters ")"
+bodyInnerCall
+	"/*InCl*/new ExternalStatement(" Name ")"
 bodyExact
-	"/*Exac*/new Entry(){
-					public void get(StringBuilder builder){
-						builder.append(\"" Name "\");
-					}
-				}"
+	"/*Exac*/new ExternalStatement(new StringEntry(\"" Name "\"))"
 bodyExactWithParameters
-	"/*Exat*/new Entry(){
-					public void get(StringBuilder builder){
-						builder.append(\"" Name "\");
-						builder.append(\"<\");
-						" Parameters ".get(builder);
-						builder.append(\">\");
-					}
-				}"
+	"/*Exac*/new ExternalStatement(new StringEntry(" Name "+\"<\"), new StringEntry(\">\"), \",\", " Parameters ")"
+bodyQuote
+	"/*Quot*/new ExternalStatement(new QuoteEntry(" Value "))"
 bodyEntry
-	"/*Enty*/new Entry(){
-					public void get(StringBuilder builder){
-						new StringEntry(" Value ").get(builder);
-					}
-				}"
+	"/*Enty*/new ExternalStatement(new StringEntry(" Value "))"
 bodyOperator
-	"/*Optr*/new Entry(){
-					public void get(StringBuilder builder){
-						" Left ".get(builder);
-						builder.append(" Operator ");
-						" Right ".get(builder);
-					}
-				}"
+	"/*Optr*/new ExternalStatement(" Operator ", " Left ", " Right ")"
 bodyCallWithSubject
-	"/*Call*/new Entry(){
-					public void get(StringBuilder builder){
-						" Subject ".get(builder);
-						builder.append(\".\");
-						" Method Name ".get(builder);
-						builder.append(\"(\");
-						" Parameters ".get(builder);
-						builder.append(\")\");
+	"/*Call*/new ExternalStatement(){
+					{
+						add(" Subject ");
+						set(\".\");
+						add(" Method Name ");
+						set(\"(\");
+						add(new ExternalStatement.Parameters(" Parameters "));
+						set(\").\");
+						suffix = new StringEntry(\")\");
 					}
 				}"
 bodyCallWithoutSubject
-	"/*Call*/new Entry(){
-					public void get(StringBuilder builder){
-						" Method Name ".get(builder);
-						builder.append(\"(\");
-						" Parameters ".get(builder);
-						builder.append(\")\");
-					}
-				}"
+	"/*Call*/new ExternalStatement(null,new StringEntry(\")\"),\"(\"," Method Name ",new ExternalStatement.Parameters(" Parameters "))"
 bodyAccessWithSubject
-	"/*Acss*/new Entry(){
-					public void get(StringBuilder builder){
-						" Subject ".get(builder);
-						builder.append(\".\");
-						" Method Name ".get(builder);
-					}
-				}"
+	"/*Acss*/new ExternalStatement(\".\", " Subject ", " Method Name ")"
 bodyAccessWithoutSubject
-	"/*Acss*/new Entry(){
-					public void get(StringBuilder builder){
-						" Method Name ".get(builder);
-					}
-				}"
+	"/*Acss*/new ExternalStatement(" Method Name ")"
 bodyNewObj
-	"/*NObj*/new Entry(){
-				public void get(StringBuilder builder){
-					builder.append(\"new \");
-					" Class Name ".get(builder);
-					" Parameters ".get(builder);
-				}
-			}"
+	"/*NObj*/new ExternalStatement(new StringEntry(\"new \"),new StringEntry(\")\"),\"(\"," Type Name ",new ExternalStatement.Parameters(" Parameters "))"
 bodyElement
-	"/*Elem*/new ExternalBodyEntry(){
-				public void get(StringBuilder builder){
-					new TabEntry(tabs, new StringEntry(" Preffix ")).get(builder);
-					" Entry ".get(builder);
-					new StringEntry(" Suffix ").get(builder);
-				}
-			}"
+	"/*Elem*/new ExternalStatement(new TabEntry(new StringEntry(" Preffix ")), new StringEntry(" Suffix "), " Entry ")"
 
 bodyConditional
-	"/*Cond*/new ExternalBodyEntry(){
-				public void get(StringBuilder builder){
-					new TabEntry(tabs, new StringEntry(\"" Name "(\")).get(builder);
-					" Header ".get(builder);
-					new String(\") {\").get(builder);
-					List<ExternalBodyEntry> body = " Body ";
-					for(int i=0;i<body.size();++i){
-						body.get(i).setTabs(tabs+1);
-						body.get(i).get(builder);
-					}
-					new TabEntry(tabs,new String(\"}\")).get(builder);
-				}
-			}"
+	"/*Cond*/new ExternalStatement(
+			new TabEntry(new StringEntry(\"" Name "(\")),
+			new TabEntry(new StringEntry(\"}\")), 
+			new ExternalStatement(null, new StringEntry(\")\"), " Header ")){
+			ExternalStatement __BODY__;
+			{
+				__BODY__ = " Body ";
+				super.add(__BODY__);
+			}
+			@Override
+			public boolean add(ExternalStatement statement){
+				return __BODY__.add(statement);
+			}
+		}"
 bodyConditionalWithoutHeader
-	"/*Cond*/new ExternalBodyEntry(){
-				public void get(StringBuilder builder){
-					new TabEntry(tabs, new StringEntry(\"" Name " {\")).get(builder);
-					List<ExternalBodyEntry> body = " Body ";
-					for(int i=0;i<body.size();++i){
-						body.get(i).setTabs(tabs+1);
-						body.get(i).get(builder);
-					}
-					new TabEntry(tabs,new String(\"}\")).get(builder);
-				}
-			}"
+	"/*Cond*/new ExternalStatement(
+			new TabEntry(new StringEntry(\"" Name "\")),
+			new TabEntry(new StringEntry(\"}\"))){
+			ExternalStatement __BODY__;
+			{
+				__BODY__ = " Body ";
+				super.add(__BODY__);
+			}
+			@Override
+			public boolean add(ExternalStatement statement){
+				return __BODY__.add(statement);
+			}
+		}"
 bodyParameters
 	"/*Parameters*/Arrays.asList(new ExternalVariableEntry[]{" Body "})"
 bodyBody
-	"/*Body*/Arrays.asList(new ExternalBodyEntry[]{" Body "})"
+	"/*Body*/new ExternalStatement.Body(" Body ")"
 
 declareMember
 	"new Entry(){
@@ -147,12 +102,21 @@ declareMember
 				}
 			}"
 
+
+declareVariableAsInlineList
+	"new ExternalVariableEntry(false, " Type ", new ExternalStatement(new StringEntry(\"...\"), " Name "))"
 declareVariableWithAssignment
-	"new ExternalVariableEntry(" Type ", " Name ", " Assignment ")"
+	"new ExternalVariableEntry(false, " Type ", " Name ", " Assignment ")"
 declareVariableWithoutAssignmentNonFinal
-	"new ExternalVariableEntry(" Type ", " Name ")"
+	"new ExternalVariableEntry(false, " Type ", " Name ")"
 declareVariableWithoutAssignmentFinal
-	"new ExternalVariableEntry(" Type ", " Name ")"
+	"new ExternalVariableEntry(false, " Type ", " Name ")"
+declareStaticVariableWithAssignment
+	"new ExternalVariableEntry(true, " Type ", " Name ", " Assignment ")"
+declareStaticVariableWithoutAssignmentNonFinal
+	"new ExternalVariableEntry(true, " Type ", " Name ")"
+declareStaticVariableWithoutAssignmentFinal
+	"new ExternalVariableEntry(true, " Type ", " Name ")"
 declareMethod
 	"new ExternalMethodEntry(" Tabs ", " Type ", " Name ", " Parameters ", " Body ")"
 
@@ -161,6 +125,7 @@ getCompleteHeader
 		public void get(StringBuilder builder){
 			builder.append(\"public " IsStatic " " Class Type "\");
 			" Class Name ".get(builder);
+			" Template Name ".get(builder);
 			builder.append(\" \");
 			" Extends ".get(builder);
 			builder.append(\" \");
@@ -185,9 +150,9 @@ addTailBrace
 
 declareClass
 	"new " Name "();
-	public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n
-	public " Name "(){
-		super(
+	public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n" Classes "\n
+	public void __INIT__(){
+		super.__SETUP__(
 		new Entry(){
 			public void get(StringBuilder builder){"Package Name".get(builder);
 			}
@@ -198,15 +163,16 @@ declareClass
 		}, " Name ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
 	}
 }"
+
 declareClassAsArgument
-	"new ExternalClassEntry(new Entry(){
+	"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
 			public void get(StringBuilder builder){" Package Name".get(builder);
 			}
 		}, 
 		new Entry(){
 			public void get(StringBuilder builder){" ImportList"
 			}
-		}," Name ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}))"
+		}," Name ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
 
 
 

@@ -3,6 +3,8 @@ exact
 	"" In ""
 returnCall
 	"return " Statement ";"
+throw
+	"new RuntimeException(" Name Var ")"
 semicoloned
 	"" Statement ";"
 asImport
@@ -15,10 +17,14 @@ access
 	"" Left ".get(" Right ")"
 accessClass
 	"" Left ".getSubClass(" Right ")"
+accessMethod
+	"" Left ".getMethod(" Right ")"
+accessVariable
+	"" Left ".getVariable(" Right ")"
 classAsVariable
 	"" Left "Class"
 retrieveClass
-	"clgen.MainFlow.classes." Class Name "Class"
+	"" Class Name "Class"
 extends
 	"extends " Parent Class ""
 implements

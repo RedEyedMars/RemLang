@@ -6,6 +6,7 @@ import java.util.Set;
 public class SetEntry extends ListEntry{
 
 	private static Set<String> set;
+	private static Set<Entry> processing;
 	private static StringBuilder setBuilder;
 	public SetEntry(Entry... in){
 		super(in);
@@ -21,22 +22,25 @@ public class SetEntry extends ListEntry{
 			boolean wasSet = false;
 			if(set==null){
 				set = new HashSet<String>();
+				processing = new HashSet<Entry>();
 				setBuilder = new StringBuilder();
 				wasSet = true;
 			}
-			String delim = startWithDelimiter?delimiter:"";
-			for (Entry e : list) {
-				StringBuilder tempBuilder = new StringBuilder();
-				e.get(tempBuilder);
-				if(set.add(tempBuilder.toString())){
-					setBuilder.append(delim);
-					setBuilder.append(tempBuilder.toString());
-					delim = delimiter;
+			if(processing.add(this)){
+				String delim = startWithDelimiter?delimiter:"";
+				for (Entry e : list) {
+					StringBuilder tempBuilder = new StringBuilder();
+					e.get(tempBuilder);
+					if(set.add(tempBuilder.toString())){
+						setBuilder.append(delim);
+						setBuilder.append(tempBuilder.toString());
+						delim = delimiter;
+					}
 				}
-			}
-			if(wasSet){
-				set = null;
-				builder.append(setBuilder.toString());
+				if(wasSet){
+					set = null;
+					builder.append(setBuilder.toString());
+				}
 			}
 		}
 	}

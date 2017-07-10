@@ -77,6 +77,11 @@ public class ListEntry implements Entry, Iterable<Entry> {
 		this.emptyEntry = entry;
 	}
 
+	public ListEntry withDelimiter(String delim) {
+		this.delimiter = delim;
+		return this;
+	}
+	
 	public void setDelimiter(String delim) {
 		this.delimiter = delim;
 	}

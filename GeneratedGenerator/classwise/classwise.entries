@@ -4,6 +4,8 @@ import "external.entries"
 import "internal.entries"
 property innerable
 	var isInner = false
+	setIsInner takes newInner as Boolean
+		set isInner = newInner
 property fileable
 	asFile as Entry
 		return
@@ -20,13 +22,11 @@ property nameable
 			'builder
 
 property importable
-	var importPackage as import = import:;
-	var externalImportList = []
-	getExternalImportPackage
-		return
-			e_import:importPackage;
-	setImport takes newImport as Entry
-		importPackage setParent
+	var importPackage as import_list = import_list:;
+	setPackage takes newPackage, newName
+		importPackage addPackage :newPackage newName;
+	addImports takes newImport as import_list
+		importPackage addImports
 			newImport
 property canAddSubClass
 	addSubClass takes newSubClass as Entry
@@ -38,13 +38,21 @@ property contextualizable
 	setContext takes newContext
 		set context = newContext
 property variablizable
-	var isVariable = false
+	var isVariable = true
 	setIsVariable takes newIsVariable as Boolean
 		set isVariable = newIsVariable
 property finalizable
 	var isFinal = false
 	setIsFinal takes newIsFinal as Boolean
 		set isFinal = newIsFinal
+property statickable
+	var isStatic = false
+	setIsStatic takes newIsStatic as Boolean
+		set isStatic = newIsStatic
+property inlinelistable
+	var isInlineList = false
+	setIsInlineList takes newIsInlineList as Boolean
+		set isInlineList = newIsInlineList
 property staticable
 	var isStatic = false
 	var asStatic = \""
@@ -56,47 +64,99 @@ property staticable
 			asStatic set :"";
 entry importHolder uses importable
 	constructor
-		var x = "x"
-entry import
-	entry myPackage = null
-	entry myName = null
-	entry myParent = null
+		importPackage setIsAnon :true;
+	constructor takes iPackageName as Entry, iName as Entry
+		importPackage addPackage
+			i_single_import: {iPackageName} {iName};
+		importPackage addPackage
+			e_single_import: {external bodyExact{iPackageName}} {iName};
+		importPackage setIsAnon :true;
+
+entry i_single_import
+	var myName as ListEntry = null
+	var myPackage as ListEntry = null
+	constructor takes iPackage as ListEntry, iName as ListEntry
+		set myPackage = iPackage
+		set myName = iName
+	output
+			(0 classwise asImport{myPackage myName}) if myPackage is not null and myPackage is not empty
+			{} otherwise
+entry e_single_import
+	var myName as ListEntry = null
+	var myPackage as ListEntry = null
+	constructor takes iPackage as ListEntry, iName as ListEntry
+		set myPackage = iPackage
+		set myName = iName
+	output
+			(0 classwise asExternalImport{myPackage myName}) if myPackage is not null and myPackage is not empty
+			{} otherwise
+entry import_list uses innerable
+	constant EXTERNAL
+		0
+	constant INTERNAL
+		1
+	entry myPackages = {}
+	entry myNames = {}
+	entry myInternal = []
+	entry myExternal = []
+	var mode = 0
+	var isAnonymous = false
+	setIsAnon takes newAnon as Boolean
+		set isAnonymous = true
 	constructor
-		set myParent = null
-	setParent takes newImport as Entry
-		set myParent = newImport
-	setPackage takes newPackage as Entry
-		set myPackage = newPackage
-	setName takes newName as Entry
-		set myName = newName
-	getPackageName as Entry
-		return
-			myPackage
-	output
-			myParent if myParent is not null
-			(0 classwise asImport{myPackage myName}) if myName is not null and myName is not "void" 
-			{} otherwise
-entry e_import
-	entry myPackage = null
-	entry myName = null
-	entry myParent = null
-	entry parentImport = null
-	constructor takes originalImport as import
-		set parentImport = originalImport
-	output
-			myParent if myParent is not null
-			(0 classwise asExternalImport{myPackage myName}) if myName is not null and myName is not "void" 
-			{} otherwise
-		var parentsParent as import
-			parentImport getMyParent
-		if parentsParent is not null
-			set myParent
-				e_import:parentsParent;
+		var x = "x"
+	constructor takes myPackage, myName
+		myPackages += \myPackage
+		myNames    += \myName 
+	clear
+		myInternal clear
+		myExternal clear
+	addImports takes newImports as import_list
+		var newPackages as ListEntry
+			newImports getMyPackages
+		var newNames as ListEntry
+			newImports getMyNames
+		if newImports does not getIsAnonymous
+			if newImports does getIsInner
+				myInternal +=
+					i_single_import:newPackages newNames;
+			if newImports does not getIsInner
+				myExternal +=
+					e_single_import:newPackages newNames;
+		myInternal +=
+			newImports getMyInternal
+		myExternal +=
+			newImports getMyExternal
+	addPackage takes newPackage as i_single_import
+		myInternal += newPackage
+	addPackage takes newPackage as e_single_import
+		myExternal += newPackage
+	addPackage takes packageName, nameName
+		myPackages clear
+		myNames clear
+		myPackages += \packageName
+		myNames    += \nameName
+	addPackage takes packageName as Entry, nameName as Entry
+		myPackages clear
+		myNames clear
+		myPackages += packageName
+		myNames    += nameName
+	setMode takes newMode as Integer
+		set mode = newMode
+	get as Entry takes option
+		var newSelf = import_list :;
+		newSelf addImports
+			this getSelf
+		if option is "EXTERNAL"
+			newSelf setMode :EXTERNAL;
 		else
-			set myPackage
-				parentImport getMyPackage
-			set myName
-				parentImport getMyName
+			newSelf setMode :INTERNAL;
+		return
+			newSelf
+	
+	output
+			myInternal if mode is INTERNAL
+			myExternal if mode is EXTERNAL
 entry context
 	var parentContext as context
 	constructor takes iParent as context

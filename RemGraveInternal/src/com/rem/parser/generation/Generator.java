@@ -111,6 +111,9 @@ public abstract class Generator {
 		return (int) (Math.random()*zeroTo);
 	}
 
+	public static String camelize(IToken token){
+		return camelize(token.getString());
+	}
 	public static String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(("" + name.charAt(0)).toUpperCase());

@@ -2,18 +2,28 @@ comment-s are Braced
 	[#,#] as COMMENT with WILD as comment
 token-s
 	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
-	[[^a-zA-Z0-9_\\s\\n=\\(\\)\\{\\}\\[\\]\\;\\\"\\\']+] as OPERATOR
+	[[^a-zA-Z0-9_\\s\\n\\(\\)\\{\\}\\[\\]\\;\\\"\\\'\\\\`,]+\\s*] as OPERATOR
+	[(\\d*\\.)?\\d+\\s*] as NUMBER
 	[.*] as WILD
 	"\n" as NEWLINE
 	"class " as CLASS
 	"interface " as INTERFACE
 	"method" as METHOD
 	"variable" as VARIABLE
+	"Class " as CLASS_TYPE
+	"Method " as METHOD_TYPE
+	"Variable " as VARIABLE_TYPE
+	"Body " as BODY_TYPE
+	"Context " as CONTEXT_TYPE
+	"Statement" as STATEMENT_TYPE
+	"Parameters" as PARAMETERS_TYPE
 	">" as IN
 	"inner " as NER
 	"<" as HID
 	"hidden " as DEN
 	"from " as FROM
+	"@" as STA
+	"static " as TIC
 	"->" as ACCESS
 	"=" as EQUALS
 	"," as COMMA
@@ -26,21 +36,33 @@ token-s
 	"^" as CAMEL
 	"cds" as CDS
 	"clws" as CLWS
-	"return" as RETURN
+	"return " as RETURN
+	"throw " as THROW 
 	"new " as NEW
 	"if" as IF
 	"else" as ELSE
 	"while" as WHILE
 	"for" as FOR
+	"null" as NULL
+	"true" as TRUE
+	"false" as FALSE
+	"~" as WEAK
+	"*" as AS_METHOD_NAME
+	"this" as THIS
+	"super" as SUPER
+	"..." as INLINE_LIST
 
 brace-s are Braced
 	[{,}] as CLASS_BODY with class_element*
 	[{,}] as METHOD_BODY with body_element*
 	[(,)] as METHOD_PARAMETERS with ( variable_declaration ( COMMA variable_declaration )*)?
-	[(,)] as PARAMETERS with ( method_argument ( COMMA method_argument )*)?
-	[<,>] as TEMPLATE_PARAMETERS with type_var ( COMMA type_var )*
+	[(,)] as PARAMETERS with ( NEWLINE* method_argument ( NEWLINE* COMMA NEWLINE* method_argument )*)?
+	[<,>] as TEMPLATE_PARAMETERS with all_type_name as template_parameter ( COMMA all_type_name as template_parameter )*
 	[\",\"] as QUOTE with WILD
+	[\'\',\'\'] as STATEMENT_AS_QUOTE with body_statement
 	[\',\'] as STATEMENT_AS_STRING with body_statement
+	[`,`] as STATEMENT_AS_METHOD with body_statement
+	[|,|] as AS_STATEMENT with (body_element+ | body_statement)
 	[,.] as CLASS_FILE with WILD as class_file_name
 class_name-s
 	[Boolean] as Boolean
@@ -49,7 +71,9 @@ class_name-s
 	[Integer] as Integer
 	[Double] as Double
 	[Float] as Float
+class_variable_name-s are empty
 variable_name-s are empty
+method_definitions are empty
 base is silent
 	base_element*
 base_element is silent
@@ -68,61 +92,89 @@ simport-s are Import
 anonymous_class
 	(HID|DEN) NAME as className in class_names (COLON|FROM) (name_var as packageName (DOT name_var as packageName)*)? SEMICOLON 
 class_declaration
-	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? (variable_name|NAME) as className in class_names NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? (variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
 class_element is silent
 	NEWLINE
 	COMMENT
-	variable_declaration SEMICOLON
+	class_declaration
 	method_declaration
+	variable_declaration SEMICOLON
 body_element
 	NEWLINE
 	COMMENT
 	((IN|NER) as inner? RETURN method_argument SEMICOLON ) as body_return
-	body_conditional
+	((IN|NER) as inner? THROW body_statement SEMICOLON ) as body_throw
 	( variable_declaration SEMICOLON) as body_line
+	( variable_assignment SEMICOLON) as body_line
 	body_manipulate
+	body_conditional
 	( body_statement SEMICOLON ) as body_line
 body_conditional
-	(IN|NER) as inner? (IF|ELSE IF|WHILE) as conditional body_statement METHOD_BODY
-	(IN|NER) as inner? ELSE as conditional METHOD_BODY
-	(IN|NER) as inner? FOR as conditional variable_declaration OPERATOR body_statement METHOD_BODY
+	(IN|NER) as inner? (IF|ELSE IF|WHILE) as conditional body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
+	(IN|NER) as inner? ELSE as conditional ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
+	(IN|NER) as inner? FOR  as conditional variable_declaration OPERATOR body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 body_statement
-	STATEMENT_AS_STRING as as_string
 	(IN|NER) as inner? body_call ( NEWLINE* OPERATOR  NEWLINE* body_call )*
+	STATEMENT_AS_STRING as as_string
 body_call
-	(NEW type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
-	(name_var PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
+	(NEW all_type_name as typeName PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
+	(name_var PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters?) as group )*
 	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
 body_manipulate
-	(IN|NER) type_var ( ACCESS name_var )? ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body )
-	(IN|NER) name_var ( COLON NAME as tokenName ( COLON NAME as variableName in variable_names )? NEWLINE* METHOD_BODY) as tokenInstance+
+	(IN|NER)? type_var ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body )
+	(IN|NER)? name_var COLON NAME as variableName in variable_names ( NEWLINE* COLON NAME as tokenName NEWLINE* METHOD_BODY) as tokenInstance+
 
 method_argument
 	class_declaration
 	method_declaration
 	variable_declaration SEMICOLON
+	AS_STATEMENT as as_statement
 	body_statement
-
+	METHOD_BODY as body_entries
 method_declaration
-	(IN|NER) as inner? type_var (DOT type_var)* (name_var | NAME) as methodName METHOD_PARAMETERS METHOD_BODY
+	method_definition as methodDefinition in method_definitions
+method_definition is silent
+	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName (AS_METHOD_NAME as NAME | name_var | NAME) as methodName METHOD_PARAMETERS METHOD_BODY
 variable_declaration
-	(IN|NER) as inner? type_var (DOT type_var)* (name_var | NAME ) as variableName in variable_names ( EQUALS method_argument)?
+	(IN|NER) as inner?  WEAK? (STA|TIC) as static? WEAK? ( class_name_definition | variable_name_definition ) ( EQUALS method_argument)?
+variable_assignment
+	(IN|NER) as inner? name_var EQUALS method_argument
 
+variable_name_definition is silent
+	all_type_name as typeName INLINE_LIST? (name_var | NAME ) as variableName in variable_names
+class_name_definition is silent
+	CLASS_TYPE as typeName (name_var | NAME ) as variableName in class_variable_names
+
+all_type_name is silent
+	CLASS_TYPE
+	METHOD_TYPE
+	VARIABLE_TYPE
+	BODY_TYPE
+	STATEMENT_TYPE
+	PARAMETERS_TYPE
+	CONTEXT_TYPE
+	type_var (DOT type_var)*
 
 name_var
-	( name_var_element as name_var ( ACCESS name_var_element as name_var )+ ) as access
-	( name_var_element as name_var ( PLUS name_var_element as name_var )+ ) as concat
+	( CAMEL? name_var_element as name_var ( ACCESS name_var_element as name_var )+ ) as access
+	( CAMEL? name_var_element as name_var ( PLUS name_var_element as name_var )+ ) as concat
 	name_var_element
 name_var_element is silent
+	( NUMBER as NAME ) as exact
+	STATEMENT_AS_METHOD as as_method
+	STATEMENT_AS_QUOTE as as_quote
 	STATEMENT_AS_STRING as as_string
-	( CAMEL? QUOTE ) as exact
 	( BACKSLASH CAMEL? (QUOTE|variable_name|NAME) ) as exact
-	( CAMEL? variable_name ) as variable
+	( CAMEL? ( variable_name ) ) as variable
+	( CAMEL? (QUOTE|(NUMBER|SUPER|THIS|NULL|TRUE|FALSE) as NAME) ) as exact
 type_var
-	( type_var_element as type_var ( ACCESS type_var_element as type_var )+ ) as access
-	( type_var_element as type_var ( PLUS type_var_element as type_var)+ ) as concat
+	( CAMEL? type_var_element as type_var ( ACCESS type_var_element as type_var )+ ( ACCESS AS_METHOD_NAME name_var? ) as as_method?) as access_multi
+	( CAMEL? type_var_element as type_var ACCESS AS_METHOD_NAME name_var? ) as access_method
+	( CAMEL? type_var_element as type_var ( PLUS type_var_element as type_var)+ ) as concat
 	type_var_element
 type_var_element is silent
+	STATEMENT_AS_METHOD as as_method
+	STATEMENT_AS_QUOTE as as_quote
 	STATEMENT_AS_STRING as as_string
 	( BACKSLASH CAMEL? ( variable_name | NAME )  TEMPLATE_PARAMETERS as template_parameters? ) as exact
-	(CAMEL? class_name TEMPLATE_PARAMETERS as template_parameters? ) as class
+	(CAMEL? (class_variable_name | class_name ) TEMPLATE_PARAMETERS as template_parameters? ) as class

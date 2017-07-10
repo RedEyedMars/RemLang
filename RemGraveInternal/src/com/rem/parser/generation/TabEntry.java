@@ -9,12 +9,18 @@ public class TabEntry implements Entry {
 		this.numberOfTabs = numberOfTabs;
 		this.subEntry = entry;
 	}
+	public TabEntry(Entry entry) {
+		this.subEntry = entry;
+	}
 	public void get(StringBuilder builder) {
 		builder.append('\n');
 		for (int i = 0; i < numberOfTabs; ++i) {
 			builder.append('\t');
 		}
 			subEntry.get(builder);
+	}
+	public void setTab(int tabs) {
+		this.numberOfTabs = tabs;
 	}
 }
 

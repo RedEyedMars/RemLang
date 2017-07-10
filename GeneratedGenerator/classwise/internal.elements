@@ -1,16 +1,23 @@
 
 
 camelize
-	"Generator.camelize(" In ")"
+	"Generator.camelize(" In ".toString())"
 getMethodName
 	"get" Name ""
 getVariableFromName
 	"MainClass." VariableName ""
+newBody
+	"new ExternalStatement.Body(" Body Elements ")"
 manipulateObject
 	"" Class Name "." Method "(" Parameter ");"
 
-manipulateToken
+manipulateSoloToken
 	"for(final IToken " Element Name ":" Subject ".getAllSafely(\"" Token Name "\")) {" Body ""
+manipulateMultiToken
+	"for(IToken.Key __" Element Name "__KEY:" Subject ".keySet()) {" Body ""
+manipulateOneMultiToken
+	"if(__" Element Name"__KEY.getName().equals(\"" Token Name"\")){ final IToken " Element Name " = " Subject ".get(__" Element Name "__KEY);" Body ""
+
 
 bodyEntry
 	"" Entry ""
@@ -36,12 +43,22 @@ bodyConditionalWithoutHeader
 	"" Name " {" Body ""
 bodyElement
 	"" Prefix "" Entry "" Suffix ""
-declareVariableWithAssignment
+declareVariableWithAssignmentFinal
 	"final " Type " " Name " = " Assignment ""
+declareVariableWithAssignmentNonFinal
+	"" Type " " Name " = " Assignment ""
 declareVariableWithoutAssignmentNonFinal
 	"" Type " " Name ""
 declareVariableWithoutAssignmentFinal
 	"final " Type " " Name ""
+declareStaticVariableWithAssignmentFinal
+	"static final " Type " " Name " = " Assignment ""
+declareStaticVariableWithAssignmentNonFinal
+	"static " Type " " Name " = " Assignment ""
+declareStaticVariableWithoutAssignmentNonFinal
+	"static " Type " " Name ""
+declareStaticVariableWithoutAssignmentFinal
+	"static final " Type " " Name ""
 declareMember
 	"protected " Name And Type " = " Assignment ";"
 declareMemberComplete
