@@ -24,6 +24,10 @@ bodyName
 	"/*Name*/new ExternalStatement(" Name ")"
 bodyNameWithParameters
 	"/*Name*/new ExternalStatement(new StringEntry(" Name "+\"<\"), new StringEntry(\">\"), \",\", " Parameters ")"
+bodyTypeName
+	"/*TypeName*/new ExternalStatement.TypeName(" Name ")"
+bodyTypeNameWithParameters
+	"/*TypeName*/new ExternalStatement.TypeName(" Name ", new ExternalStatement(new StringEntry(\"<\"), new StringEntry(\">\"), \",\", " Parameters "))"
 bodyInnerCall
 	"/*InCl*/new ExternalStatement(" Name ")"
 bodyExact
@@ -37,17 +41,10 @@ bodyEntry
 bodyOperator
 	"/*Optr*/new ExternalStatement(" Operator ", " Left ", " Right ")"
 bodyCallWithSubject
-	"/*Call*/new ExternalStatement(){
-					{
-						add(" Subject ");
-						set(\".\");
-						add(" Method Name ");
-						set(\"(\");
-						add(new ExternalStatement.Parameters(" Parameters "));
-						set(\").\");
-						suffix = new StringEntry(\")\");
-					}
-				}"
+	"/*Call*/new ExternalStatement(\"\",
+			 	new ExternalStatement(\".\", " Subject ", " Method Name "),
+			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\",
+			 		new ExternalStatement.Parameters(" Parameters ")))"
 bodyCallWithoutSubject
 	"/*Call*/new ExternalStatement(null,new StringEntry(\")\"),\"(\"," Method Name ",new ExternalStatement.Parameters(" Parameters "))"
 bodyAccessWithSubject
@@ -55,39 +52,26 @@ bodyAccessWithSubject
 bodyAccessWithoutSubject
 	"/*Acss*/new ExternalStatement(" Method Name ")"
 bodyNewObj
-	"/*NObj*/new ExternalStatement(new StringEntry(\"new \"),new StringEntry(\")\"),\"(\"," Type Name ",new ExternalStatement.Parameters(" Parameters "))"
+	"/*NObj*/new ExternalStatement.NewObject(" Type Name ",new ExternalStatement.Parameters(" Parameters "))"
 bodyElement
 	"/*Elem*/new ExternalStatement(new TabEntry(new StringEntry(" Preffix ")), new StringEntry(" Suffix "), " Entry ")"
+bodyThrow
+	"/*Thrw*/new ExternalStatement(new TabEntry(new StringEntry(\"throw new RuntimeException(\\\"\")), new StringEntry(\"\\\");\"),\"\", " Name Var ")"
 
+bodyCase
+	"/*Case*/new ExternalStatement.Conditional(
+			\"case \", 
+			" Header ",
+			" Body ").setBraces(\"\",\":\")"
 bodyConditional
-	"/*Cond*/new ExternalStatement(
-			new TabEntry(new StringEntry(\"" Name "(\")),
-			new TabEntry(new StringEntry(\"}\")), 
-			new ExternalStatement(null, new StringEntry(\")\"), " Header ")){
-			ExternalStatement __BODY__;
-			{
-				__BODY__ = " Body ";
-				super.add(__BODY__);
-			}
-			@Override
-			public boolean add(ExternalStatement statement){
-				return __BODY__.add(statement);
-			}
-		}"
+	"/*Cond*/new ExternalStatement.Conditional(
+			\"" Name "\", 
+			" Header ",
+			" Body ")"
 bodyConditionalWithoutHeader
-	"/*Cond*/new ExternalStatement(
-			new TabEntry(new StringEntry(\"" Name "\")),
-			new TabEntry(new StringEntry(\"}\"))){
-			ExternalStatement __BODY__;
-			{
-				__BODY__ = " Body ";
-				super.add(__BODY__);
-			}
-			@Override
-			public boolean add(ExternalStatement statement){
-				return __BODY__.add(statement);
-			}
-		}"
+	"/*Cond*/new ExternalStatement.Conditional(
+			\"" Name "\", null,
+			" Body ")"
 bodyParameters
 	"/*Parameters*/Arrays.asList(new ExternalVariableEntry[]{" Body "})"
 bodyBody
@@ -119,6 +103,8 @@ declareStaticVariableWithoutAssignmentFinal
 	"new ExternalVariableEntry(true, " Type ", " Name ")"
 declareMethod
 	"new ExternalMethodEntry(" Tabs ", " Type ", " Name ", " Parameters ", " Body ")"
+declareInterfaceMethod
+	"new ExternalMethodEntry(" Tabs ", " Type ", " Name ", " Parameters ", null )"
 
 getCompleteHeader
 	"new Entry(){
@@ -160,7 +146,7 @@ declareClass
 		new Entry(){
 			public void get(StringBuilder builder){" ImportList"
 			}
-		}, " Name ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
+		}, " Name ", " isInterface ", " Parent Class ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
 	}
 }"
 
@@ -172,7 +158,7 @@ declareClassAsArgument
 		new Entry(){
 			public void get(StringBuilder builder){" ImportList"
 			}
-		}," Name ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
+		}," Name ", " isInterface ", " Parent Class ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
 
 
 

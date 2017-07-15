@@ -15,6 +15,8 @@ concat
 	"" Left "+" Right ""
 access
 	"" Left ".get(" Right ")"
+accessDefault
+	"" Left "." Right ""
 accessClass
 	"" Left ".getSubClass(" Right ")"
 accessMethod
@@ -48,6 +50,8 @@ generators
 		}};
 	}
 	private String __ROOT_DIRECTORY__ = \".\";
+	public void setup(){" Setup All Classes "
+	}
 	public void output(String rootDirectory, ParseContext data){
 		__ROOT_DIRECTORY__ = rootDirectory;
 		getGenerators()[0].generate(data);"
@@ -57,3 +61,5 @@ addFile
 	directory = new File(__ROOT_DIRECTORY__, builder.toString().replace(\".\",\"/\"));
 	directory.mkdirs();
 	this.addFile(directory,Generator.camelize(\"" Class Name "\")+\".java\", " Class Name "Class);"
+setupClass
+	"" Class Name "Class.__INIT__();"

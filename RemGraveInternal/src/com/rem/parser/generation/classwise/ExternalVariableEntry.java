@@ -6,7 +6,6 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private Entry name;
 	private Entry assignment = null;
 	private ExternalContext classContext;
-	private ExternalContext currentContext;
 	private boolean isStatic;
 	
 	public ExternalVariableEntry(Boolean isStatic, Entry type, Entry name, ExternalImportEntry assignment){
@@ -15,12 +14,13 @@ public class ExternalVariableEntry extends ExternalStatement {
 		this.name = name;
 		this.assignment = assignment;
 		addImport(new ImportEntry(type));
-		addSubImport(assignment);
+		if(assignment!=null){
+			addSubImport(assignment);
+		}
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
-		currentContext = new ExternalContext(null,this);
-		currentContext.add(this);
+		getContext().add(this);
 	}
 	public ExternalVariableEntry(Boolean isStatic, Entry type, Entry name){
 		this.isStatic = isStatic;
@@ -30,7 +30,6 @@ public class ExternalVariableEntry extends ExternalStatement {
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
-		currentContext = new ExternalContext(null,this);
 	}
 	public String getName(){
 		StringBuilder builder = new StringBuilder();
@@ -53,7 +52,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 			@Override
 			public void get(StringBuilder builder) {
 				if(isStatic){
-					new TabEntry(tabs, new StringEntry("protected static ")).get(builder);
+					new TabEntry(tabs, new StringEntry("public ")).get(builder);
 				}
 				else {
 					new TabEntry(tabs, new StringEntry("protected ")).get(builder);
@@ -94,12 +93,37 @@ public class ExternalVariableEntry extends ExternalStatement {
 			
 		};
 	}
-	public void setParentContext(ExternalContext parentContext){
-		currentContext.setParent(parentContext);
+	public Entry getAsSuperParameter(){
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				builder.append("final ");
+				type.get(builder);
+				builder.append(" initalSuper");
+				StringBuilder subBuilder = new StringBuilder();
+				name.get(subBuilder);
+				builder.append(Generator.camelize(subBuilder.toString()));
+			}
+		};
+	}
+	public Entry getAsSuperArgument(){
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				builder.append("initalSuper");
+				StringBuilder subBuilder = new StringBuilder();
+				name.get(subBuilder);
+				builder.append(Generator.camelize(subBuilder.toString()));
+			}
+		};
+	}
+
+	public boolean isStatic() {
+		return isStatic;
 	}
 	public void get(StringBuilder builder){
 		if(isStatic){
-			builder.append("static");
+			builder.append("static ");
 		}
 		if(type != null){
 			type.get(builder);

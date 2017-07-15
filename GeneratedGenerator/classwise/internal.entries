@@ -143,6 +143,8 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 		2
 	constant ACCESS_METHOD
 		3
+	constant ACCESS_DEFAULT
+		4
 	entry sansTemp = {}
 	entry first = null
 	entry second = null
@@ -190,7 +192,10 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 			if operator is ".*"
 				set mode = ACCESS_METHOD
 			else
-				set mode = ACCESS_CLASS
+				if operator is "."
+					set mode = ACCESS_CLASS
+				if operator is ".."
+					set mode = ACCESS_DEFAULT
 		first setDelimiter :".";
 		sansTemp setDelimiter :".";
 	addSubClass takes newSubType as Entry
@@ -209,6 +214,7 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 		first += newSubType
 	output
 			internal bodyName{first} if second is null and templateParameters is empty and isVariable is false and mode is DEFAULT
+			internal bodyName{classwise accessDefault{first second}} if second is null and templateParameters is empty and isVariable is false and mode is ACCESS_DEFAULT
 			internal bodyName{classwise classAsVariable {first} } if second is null and templateParameters is empty and isVariable is true and mode is DEFAULT
 			internal bodyName{classwise concat{first second}} if second is not null and mode is CONCAT and templateParameters is empty 
 			internal bodyName{classwise accessClass {first second}} if second is not null and mode is ACCESS_CLASS and templateParameters is empty
@@ -591,7 +597,7 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		externalSubClasses+=(1 internal declareMemberClass{eName eName eAsFile})
 		this addImports
 			e getImportPackage
-		e setIsSubClass : completeName true;
+		e setIsSubClass : completeName completeName true;
 		var theirContext as context
 			e getContext
 		theirContext setParentContext:context;

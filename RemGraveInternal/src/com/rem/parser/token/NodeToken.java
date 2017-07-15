@@ -188,4 +188,9 @@ public class NodeToken implements IToken{
 		List<IToken> tokens = new ArrayList<IToken>(0);
 		return tokens;
 	}
+	
+	@Override
+	public String toString(){
+		return getString();
+	}
 }

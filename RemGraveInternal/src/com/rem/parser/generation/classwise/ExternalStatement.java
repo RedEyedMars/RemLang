@@ -17,6 +17,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	public ExternalContext getContext() {
 		return bottomContext;
 	}
+	public ExternalContext getTopContext() {
+		return topContext;
+	}
 	public void setTabs(int newTabs){
 		tabs = newTabs;
 	}
@@ -37,39 +40,87 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 	}
 	public ExternalStatement(Entry initialPrefix, Entry initialSuffix, String firstDelimiter, ExternalStatement...statements){
-		prefix = initialPrefix;
-		suffix = initialSuffix;
 		delimiter = firstDelimiter;
+		if(initialPrefix instanceof ExternalStatement){
+			add((ExternalStatement) initialPrefix);
+		}
+		else {
+			prefix = initialPrefix;
+		}
+		if(initialSuffix instanceof ExternalStatement){
+			add((ExternalStatement) initialSuffix);
+		}
+		else {
+			suffix = initialSuffix;
+		}
 		if(statements!=null){
 			for(ExternalStatement statement:statements){
 				add(statement);
 			}
+		}
+		if(initialPrefix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialPrefix);
+		}
+		if(initialSuffix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialSuffix);
 		}
 	}
 	public ExternalStatement(Entry initialPrefix, Entry initialSuffix, ExternalStatement...statements){
-		prefix = initialPrefix;
-		suffix = initialSuffix;
+		if(initialPrefix instanceof ExternalStatement){
+			add((ExternalStatement) initialPrefix);
+		}
+		else {
+			prefix = initialPrefix;
+		}
+		if(initialSuffix instanceof ExternalStatement){
+			add((ExternalStatement) initialSuffix);
+		}
+		else {
+			suffix = initialSuffix;
+		}
 		if(statements!=null){
 			for(ExternalStatement statement:statements){
 				add(statement);
 			}
+		}
+		if(initialPrefix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialPrefix);
+		}
+		if(initialSuffix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialSuffix);
 		}
 	}
 	public ExternalStatement(Entry initialPrefix, String firstDelimiter, ExternalStatement...statements){
-		prefix = initialPrefix;
 		delimiter = firstDelimiter;
+		if(initialPrefix instanceof ExternalStatement){
+			add((ExternalStatement) initialPrefix);
+		}
+		else {
+			prefix = initialPrefix;
+		}
 		if(statements!=null){
 			for(ExternalStatement statement:statements){
 				add(statement);
 			}
 		}
+		if(initialPrefix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialPrefix);
+		}
 	}
 	public ExternalStatement(Entry initialPrefix, ExternalStatement...statements){
-		prefix = initialPrefix;
+		if(initialPrefix instanceof ExternalStatement){
+			add((ExternalStatement) initialPrefix);
+		}
+		else {
+			prefix = initialPrefix;
+		}
 		if(statements!=null){
 			for(ExternalStatement statement:statements){
 				add(statement);
 			}
+		}
+		if(initialPrefix instanceof ExternalStatement){
+			addSubImport((ExternalStatement)initialPrefix);
 		}
 	}
 	public void negate(){
@@ -83,12 +134,46 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		else {
 			delimiters.add("");
 		}
-		statement.setParentContext(this.bottomContext);
-		bottomContext = statement.getContext();
+		//System.out.println("#"+statement+"#"+bottomContext+"<"+statement.topContext+">"+statement.getContext());
+		statement.setParentContext(this.topContext);
+		bottomContext.setParent(statement.getContext());
 		return subStatements.add(statement);
 	}
 	public void set(String newDelimiter){
 		delimiter = newDelimiter;
+	}
+	public void debug(){
+		StringBuilder builder = new StringBuilder();
+		builder.append("[\n\tnegated =");
+		builder.append(negated);
+		builder.append("\n\tprefix ");
+		if(prefix!=null){
+			builder.append("{");
+			prefix.get(builder);
+			builder.append("}");
+		}
+		else {
+			builder.append("null.");
+		}
+		for(int i=0;i<subStatements.size();++i){
+			builder.append("\n\t");
+			builder.append(i);
+			builder.append(":");
+			builder.append(delimiters.get(i));
+			builder.append(" {");
+			subStatements.get(i).get(builder);
+			builder.append(" }");
+		}
+		builder.append("\n\tsuffix ");
+		if(suffix!=null){
+			builder.append("{");
+			suffix.get(builder);
+			builder.append("}");
+		}
+		else {
+			builder.append("null.");
+		}
+		System.out.println(builder.toString());
 	}
 	@Override
 	public void get(StringBuilder builder) {
@@ -98,6 +183,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		if(prefix!=null){
 			if(prefix instanceof TabEntry){
 				((TabEntry)prefix).setTab(tabs);
+			}
+			else if(prefix instanceof ExternalStatement){
+				((ExternalStatement)prefix).setTabs(tabs);
 			}
 			prefix.get(builder);
 		}
@@ -109,6 +197,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		if(suffix!=null){
 			if(suffix instanceof TabEntry){
 				((TabEntry)suffix).setTab(tabs);
+			}
+			else if(suffix instanceof ExternalStatement){
+				((ExternalStatement)suffix).setTabs(tabs);
 			}
 			suffix.get(builder);
 		}
@@ -122,6 +213,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 
 	@Override
 	public int size() {
+		return subStatements.size();
+	}
+	public Integer getSize(){
 		return subStatements.size();
 	}
 	@Override
@@ -246,13 +340,68 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	public static class Body extends ExternalStatement {
 
 		public Body(ExternalStatement... entries) {
-			super(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",entries);
+			super(new StringEntry("{"),"",entries);
 		}
-
+		@Override
+		public void setTabs(int newTabs){
+			this.tabs = newTabs+1;
+		}
+		@Override
+		public void get(StringBuilder builder){
+			super.get(builder);
+			new TabEntry(tabs-1,new StringEntry("}")).get(builder);
+		}
 	}
 	public static class Parameters extends ExternalStatement {
 		public Parameters( ExternalStatement...statements){
 			super(",",statements);
+		}
+	}
+	public static class NewObject extends ExternalStatement {
+		public NewObject(ExternalStatement name, ExternalStatement parameters){
+			super(new StringEntry("new "),new StringEntry(")"),"(",name,parameters);
+			this.addImport(new ImportEntry(name));
+			StringBuilder nameBuilder = new StringBuilder();
+			name.get(nameBuilder);
+		}
+	}
+	public static class TypeName extends ExternalStatement {
+		public TypeName(Entry name){
+			super(name);
+			this.addImport(new ImportEntry(name));
+		}
+		public TypeName(Entry name, Entry templateParameters){
+			super(name,templateParameters);
+			this.addImport(new ImportEntry(name));
+		}
+	}
+	public static class Conditional extends ExternalStatement {
+		private ExternalStatement __BODY__;
+		private StringEntry leftBrace = new StringEntry("(");
+		private StringEntry rightBrace = new StringEntry(")");
+		public Conditional(String name, ExternalStatement header, ExternalStatement body){
+			super(new TabEntry(new StringEntry(name)));
+			__BODY__ = body;
+			if(header != null){
+				super.add(new ExternalStatement(leftBrace,rightBrace,"",header));
+			}
+			if(__BODY__ instanceof ExternalStatement.Body){
+				super.add(body);
+			}
+			else {
+				super.add(body);
+				//super.add(new ExternalStatement(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",body));
+			}
+	    }
+		@Override
+		public boolean add(ExternalStatement element){
+			return __BODY__.add(element);
+		}
+
+		public ExternalStatement setBraces(String left, String right){
+			leftBrace.set(left);
+			rightBrace.set(right);
+			return this;
 		}
 	}
 }

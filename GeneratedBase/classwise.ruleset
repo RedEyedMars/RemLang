@@ -3,7 +3,7 @@ comment-s are Braced
 token-s
 	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
 	[[^a-zA-Z0-9_\\s\\n\\(\\)\\{\\}\\[\\]\\;\\\"\\\'\\\\`,]+\\s*] as OPERATOR
-	[(\\d*\\.)?\\d+\\s*] as NUMBER
+	[[-]?(\\d*\\.)?\\d+f?\\s*] as NUMBER
 	[.*] as WILD
 	"\n" as NEWLINE
 	"class " as CLASS
@@ -37,12 +37,16 @@ token-s
 	"cds" as CDS
 	"clws" as CLWS
 	"return " as RETURN
+	"void" as VOID
 	"throw " as THROW 
 	"new " as NEW
 	"if" as IF
 	"else" as ELSE
 	"while" as WHILE
 	"for" as FOR
+	"synchronized" as SYNCHRONIZED
+	"switch" as SWITCH
+	"case" as CASE
 	"null" as NULL
 	"true" as TRUE
 	"false" as FALSE
@@ -92,7 +96,7 @@ simport-s are Import
 anonymous_class
 	(HID|DEN) NAME as className in class_names (COLON|FROM) (name_var as packageName (DOT name_var as packageName)*)? SEMICOLON 
 class_declaration
-	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? (variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
 class_element is silent
 	NEWLINE
 	COMMENT
@@ -102,7 +106,7 @@ class_element is silent
 body_element
 	NEWLINE
 	COMMENT
-	((IN|NER) as inner? RETURN method_argument SEMICOLON ) as body_return
+	((IN|NER) as inner? RETURN (VOID | method_argument) SEMICOLON ) as body_return
 	((IN|NER) as inner? THROW body_statement SEMICOLON ) as body_throw
 	( variable_declaration SEMICOLON) as body_line
 	( variable_assignment SEMICOLON) as body_line
@@ -110,18 +114,18 @@ body_element
 	body_conditional
 	( body_statement SEMICOLON ) as body_line
 body_conditional
-	(IN|NER) as inner? (IF|ELSE IF|WHILE) as conditional body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
+	(IN|NER) as inner? (IF|ELSE IF|WHILE|SYNCHRONIZED|SWITCH|CASE) as conditional body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 	(IN|NER) as inner? ELSE as conditional ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 	(IN|NER) as inner? FOR  as conditional variable_declaration OPERATOR body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 body_statement
-	(IN|NER) as inner? body_call ( NEWLINE* OPERATOR  NEWLINE* body_call )*
+	(IN|NER) as inner? body_call ( NEWLINE* ( BACKSLASH? OPERATOR)  NEWLINE* body_call )*
 	STATEMENT_AS_STRING as as_string
 body_call
 	(NEW all_type_name as typeName PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
 	(name_var PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters?) as group )*
 	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
 body_manipulate
-	(IN|NER)? type_var ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body )
+	(IN|NER)? type_var ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body | AS_STATEMENT as body )
 	(IN|NER)? name_var COLON NAME as variableName in variable_names ( NEWLINE* COLON NAME as tokenName NEWLINE* METHOD_BODY) as tokenInstance+
 
 method_argument

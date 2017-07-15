@@ -62,9 +62,13 @@ property staticable
 			asStatic set :"static ";
 		else
 			asStatic set :"";
+property interfaceable
+	var isInterface = false
+	setIsInterface takes newIsInterface as Boolean
+		set newIsInterface = newIsInterface
 entry importHolder uses importable
 	constructor
-		importPackage setIsAnon :true;
+		importPackage setIsAnon :false;
 	constructor takes iPackageName as Entry, iName as Entry
 		importPackage addPackage
 			i_single_import: {iPackageName} {iName};
@@ -102,7 +106,7 @@ entry import_list uses innerable
 	var mode = 0
 	var isAnonymous = false
 	setIsAnon takes newAnon as Boolean
-		set isAnonymous = true
+		set isAnonymous = newAnon
 	constructor
 		var x = "x"
 	constructor takes myPackage, myName
@@ -123,6 +127,9 @@ entry import_list uses innerable
 			if newImports does not getIsInner
 				myExternal +=
 					e_single_import:newPackages newNames;
+		else
+			myExternal +=
+				e_single_import:newPackages newNames;
 		myInternal +=
 			newImports getMyInternal
 		myExternal +=
