@@ -43,7 +43,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 
 		ExternalStatement.Body constructorBody = new ExternalStatement.Body();
 		constructorMethod = new ExternalMethodEntry(
-				0, new Entry(){public void get(StringBuilder builder){new StringEntry(name).get(builder);}},
+				0, false, new Entry(){public void get(StringBuilder builder){new StringEntry(name).get(builder);}},
 				new Entry(){public void get(StringBuilder builder){new StringEntry("*").get(builder);}},
 				new ArrayList<ExternalVariableEntry>(),
 				constructorBody);
@@ -68,7 +68,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		//System.out.println(this.getFullName());
 		myContext.add(variable);
 		addSubImport(variable);
-		addMethod(new ExternalMethodEntry(0,variable.getType(),new Entry(){
+		addMethod(new ExternalMethodEntry(0,false, variable.getType(),new Entry(){
 			@Override
 			public void get(StringBuilder builder) {
 				builder.append("get");
@@ -77,6 +77,41 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		},new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body(
 				new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry(variable.getName())))
 				)));
+		if(variable.isWeak()){
+			StringBuilder typeBuilder = new StringBuilder();
+			variable.getType().get(typeBuilder);
+			final String camelName = Generator.camelize(variable.getName());
+			String soloMethodName = "set"+camelName;
+			String methodName = soloMethodName+"["+typeBuilder.toString()+",]";
+			if(getMethod(methodName)!=null){
+				getMethod(methodName).prependToBody(
+						new ExternalStatement.Body(
+								new ExternalStatement(new TabEntry(new StringEntry(variable.getName()+" = ")),
+										new StringEntry(";"),"",new ExternalStatement(new StringEntry("new"+Generator.camelize(variable.getName())))))
+						);
+			}
+			else {
+				addMethod(new ExternalMethodEntry(0,false, new ExternalStatement.TypeName(new StringEntry("void")),new Entry(){
+					@Override
+					public void get(StringBuilder builder) {
+						builder.append("set");
+						builder.append(Generator.camelize(variable.getName()));
+					}
+				},new ArrayList<ExternalVariableEntry>(Arrays.asList(
+						new ExternalVariableEntry(false,variable.getType(),
+								new Entry(){
+							@Override
+							public void get(StringBuilder builder) {
+								builder.append("new");
+								builder.append(camelName);
+							}
+						}
+								))),new ExternalStatement.Body(
+										new ExternalStatement(new TabEntry(new StringEntry(variable.getName()+" = ")),
+												new StringEntry(";"),"",new ExternalStatement(new StringEntry("new"+Generator.camelize(variable.getName()))))
+										)));
+			}
+		}
 	}
 	public void addMethod(ExternalMethodEntry method){
 		methods.put(method.getName(), method);
@@ -181,7 +216,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 				}
 			}
 			for(String variableKey:variables.keySet()){
-				if(!variables.get(variableKey).isStatic()){
+				if(!variables.get(variableKey).isStatic()&&!variables.get(variableKey).isWeak()){
 					variables.get(variableKey).setTabs(tabs+2);
 					variables.get(variableKey).getAsConstructorElement().get(builder);
 				}
@@ -234,14 +269,18 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 		for(String variableKey:variables.keySet()){
 			if(!variables.get(variableKey).isStatic()){
-				builder.append(comma);
+				Entry result;
 				if(first){
-					variables.get(variableKey).getAsParameter().get(builder);
+					result = variables.get(variableKey).getAsParameter();
 				}
 				else {
-					variables.get(variableKey).getAsSuperParameter().get(builder);
+					result = variables.get(variableKey).getAsSuperParameter();
 				}
-				comma = ", ";
+				if(result!=null){
+					builder.append(comma);
+					result.get(builder);
+					comma = ", ";
+				}
 			}
 		}
 		return comma;
@@ -257,9 +296,12 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 		for(String variableKey:variables.keySet()){
 			if(!variables.get(variableKey).isStatic()){
-				builder.append(comma);
-				variables.get(variableKey).getAsSuperArgument().get(builder);
-				comma = ", ";
+				Entry result = variables.get(variableKey).getAsSuperArgument();
+				if(result!=null){
+					builder.append(comma);
+					result.get(builder);
+					comma = ", ";
+				}
 			}
 		}
 		return comma;

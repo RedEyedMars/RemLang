@@ -111,6 +111,11 @@ public abstract class Generator {
 		return (int) (Math.random()*zeroTo);
 	}
 
+	public static String camelize(Entry entry){
+		StringBuilder builder = new StringBuilder();
+		entry.get(builder);
+		return camelize(builder.toString());
+	}
 	public static String camelize(IToken token){
 		return camelize(token.getString());
 	}

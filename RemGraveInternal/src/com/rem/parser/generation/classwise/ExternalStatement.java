@@ -283,7 +283,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		super.addSubImport(element);
 		if(index==0){
 			element.setParentContext(topContext);
-			subStatements.get(index+1).getContext().setParent(element.getContext());
+			if(!subStatements.isEmpty()){
+				subStatements.get(index+1).getContext().setParent(element.getContext());
+			}
 		}
 		else if(index>=size()){
 			element.setParentContext(bottomContext);
@@ -300,7 +302,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		super.addSubImport(element);
 		if(index==0){
 			element.setParentContext(topContext);
-			subStatements.get(index).getContext().setParent(element.getContext());
+			if(!subStatements.isEmpty()){
+				subStatements.get(index).getContext().setParent(element.getContext());
+			}
 		}
 		else if(index>=size()){
 			element.setParentContext(bottomContext);

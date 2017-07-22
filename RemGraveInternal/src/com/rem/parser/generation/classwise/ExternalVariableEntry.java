@@ -7,12 +7,17 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private Entry assignment = null;
 	private ExternalContext classContext;
 	private boolean isStatic;
+	private boolean isWeak = false;
 	
 	public ExternalVariableEntry(Boolean isStatic, Entry type, Entry name, ExternalImportEntry assignment){
+		this(isStatic,false,type,name,assignment);
+	}
+	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, Entry name, ExternalImportEntry assignment){
 		this.isStatic = isStatic;
 		this.type = type;
 		this.name = name;
 		this.assignment = assignment;
+		this.isWeak = isWeak;
 		addImport(new ImportEntry(type));
 		if(assignment!=null){
 			addSubImport(assignment);
@@ -31,10 +36,23 @@ public class ExternalVariableEntry extends ExternalStatement {
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
 	}
+	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, Entry name){
+		this.isStatic = isStatic;
+		this.type = type;
+		this.name = name;
+		this.isWeak = isWeak;
+		addImport(new ImportEntry(type));
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+	}
 	public String getName(){
 		StringBuilder builder = new StringBuilder();
 		name.get(builder);
 		return builder.toString();
+	}
+	public boolean isWeak(){
+		return isWeak;
 	}
 	public Entry getType(){
 		return type;
@@ -64,6 +82,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsParameter(){
+		if(isWeak){
+			return null;
+		}
 		return new Entry(){
 			@Override
 			public void get(StringBuilder builder) {
@@ -76,6 +97,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsConstructorElement(){
+		if(isWeak){
+			return null;
+		}
 		final ExternalVariableEntry self = this;
 		return new Entry(){
 			@Override
@@ -94,6 +118,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsSuperParameter(){
+		if(isWeak){
+			return null;
+		}
 		return new Entry(){
 			@Override
 			public void get(StringBuilder builder) {
@@ -107,6 +134,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsSuperArgument(){
+		if(isWeak){
+			return null;
+		}
 		return new Entry(){
 			@Override
 			public void get(StringBuilder builder) {

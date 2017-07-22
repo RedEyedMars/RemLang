@@ -89,10 +89,12 @@ declareMember
 
 declareVariableAsInlineList
 	"new ExternalVariableEntry(false, " Type ", new ExternalStatement(new StringEntry(\"...\"), " Name "))"
-declareVariableWithAssignment
+declareVariableWithAssignmentFinal
 	"new ExternalVariableEntry(false, " Type ", " Name ", " Assignment ")"
+declareVariableWithAssignmentNonFinal
+	"new ExternalVariableEntry(false, true, " Type ", " Name ", " Assignment ")"
 declareVariableWithoutAssignmentNonFinal
-	"new ExternalVariableEntry(false, " Type ", " Name ")"
+	"new ExternalVariableEntry(false, true, " Type ", " Name ")"
 declareVariableWithoutAssignmentFinal
 	"new ExternalVariableEntry(false, " Type ", " Name ")"
 declareStaticVariableWithAssignment
@@ -101,10 +103,12 @@ declareStaticVariableWithoutAssignmentNonFinal
 	"new ExternalVariableEntry(true, " Type ", " Name ")"
 declareStaticVariableWithoutAssignmentFinal
 	"new ExternalVariableEntry(true, " Type ", " Name ")"
+declareStaticMethod
+	"new ExternalMethodEntry(" Tabs ", true," Type ", " Name ", " Parameters ", " Body ")"
 declareMethod
-	"new ExternalMethodEntry(" Tabs ", " Type ", " Name ", " Parameters ", " Body ")"
+	"new ExternalMethodEntry(" Tabs ", false," Type ", " Name ", " Parameters ", " Body ")"
 declareInterfaceMethod
-	"new ExternalMethodEntry(" Tabs ", " Type ", " Name ", " Parameters ", null )"
+	"new ExternalMethodEntry(" Tabs ", false, " Type ", " Name ", " Parameters ", null )"
 
 getCompleteHeader
 	"new Entry(){

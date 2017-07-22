@@ -12,12 +12,14 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	private ExternalContext classContext;
 	private ExternalContext headerContext;
 	private boolean isInterface = false;
-	public ExternalMethodEntry(Integer tabs, Entry type, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
+	private boolean isStatic = false;
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
 		this.tabs = tabs;
 		this.type = type;
 		this.name = name;
 		this.parameters = parameters;
 		this.body = body;
+		this.isStatic = isStatic;
 
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
@@ -96,6 +98,9 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	}
 	public void get(StringBuilder builder){
 		new TabEntry(tabs, new StringEntry("public ")).get(builder);
+		if(isStatic){
+			builder.append("static ");
+		}
 		type.get(builder);
 		if(!getSimpleName().contains("*")){
 			builder.append(" ");

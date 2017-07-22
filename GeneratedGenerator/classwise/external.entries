@@ -361,6 +361,7 @@ entry e_variable uses innerable importable nameable finalizable statickable inli
 		set type = iType
 		var typeAsImportable as importable = iType
 		set assignment = iAssignment
+		this setIsFinal :true;
 		this addImports
 			typeAsImportable getImportPackage
 	setAssignment takes newAssignment as Entry
@@ -371,14 +372,15 @@ entry e_variable uses innerable importable nameable finalizable statickable inli
 				assignmentAsImportable getImportPackage
 	output
 			external declareVariableAsInlineList { type name } if isInlineList is true
-			external declareVariableWithAssignment { type name assignment} if assignment is not null and isStatic is false
-			external declareVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false and isStatic is false
+			external declareVariableWithAssignmentFinal { type name assignment} if assignment is not null and isStatic is false and isFinal is true
+			external declareVariableWithAssignmentNonFinal { type name assignment} if assignment is not null and isStatic is false and isFinal is false
 			external declareVariableWithoutAssignmentFinal { type name } if assignment is null and isFinal is true and isStatic is false
+			external declareVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false and isStatic is false
 			external declareStaticVariableWithAssignment { type name assignment} if assignment is not null and isStatic is true
 			external declareStaticVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false and isStatic is true
 			external declareStaticVariableWithoutAssignmentFinal { type name } if assignment is null and isFinal is true and isStatic is true
 
-entry e_method uses innerable importable contextualizable nameable interfaceable
+entry e_method uses innerable importable contextualizable nameable interfaceable statickable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
@@ -408,6 +410,7 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 		methodBody setDelimiter
 			",\n/*BODY*/\t\t\t\t"
 	output
+			external declareStaticMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true
 			external declareInterfaceMethod{e_tabs type name external bodyParameters{parameters} }                     if isInterface is true
 			external declareMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false 
 		if context is null
@@ -487,6 +490,8 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 				this addImports
 					iIntefaceType getImportPackage
 				extItrf += itrf
+			extItrf setDelimiter
+				".get(builder);builder.append(\",\"); "
 			set externalInterfaces = external implements {extItrf}
 			
 		else

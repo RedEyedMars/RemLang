@@ -183,14 +183,21 @@ classwise
 						return
 							e_name_var:left right;
 			concat
-				entry left = null
-				entry right = null
+				var left as Entry = null
+				var right as Entry = null
 				element to atom
 					name_var
 						if left is null
 							set left = generate name_var :isInner;
 						else
-							set right = generate name_var :isInner;
+							if right is null
+								set right = generate name_var :isInner;
+							else
+								if isInner is true
+									set left = i_name_var:left "+" right;
+								else
+									set left = e_name_var:left "+" right;
+								set right = generate name_var :isInner;
 				if isInner is true
 					if element->CAMEL is not null
 						return
@@ -298,14 +305,14 @@ classwise
 				else
 					if element->CAMEL is not null
 						if element->class_variable_names is not null
-							set value = external camelize{ \'element->class_variable_names}
+							set value = external camelize{ ``'element->class_variable_names`` }
 						else
-							set value = external camelize{ \'element->variable_names}
+							set value = external camelize{ ``'element->variable_names`` }
 					else
 						if element->class_variable_names is not null
-							set value = \'element->class_variable_names
+							set value = external exact{``'element->class_variable_names``}
 						else
-							set value = \'element->variable_names
+							set value = external exact{``'element->variable_names``}
 					return
 						e_name_var:value ;
 		return
@@ -1142,8 +1149,11 @@ method
 				return
 					i_method: typeName i_exact:\'definition->methodName; parameters methodBody parentContext;
 			else
+				var eMethod = e_method: typeName e_exact:\'definition->methodName; parameters methodBody parentContext;
+				if definition->static is not null
+					eMethod setIsStatic : true;
 				return
-					e_method: typeName e_exact:\'definition->methodName; parameters methodBody parentContext;
+					eMethod
 		else
 			var vName as Entry
 				classwise generateNameVar
@@ -1153,8 +1163,11 @@ method
 				return
 					i_method: typeName vName parameters methodBody parentContext;
 			else
+				var eMethod = e_method: typeName vName parameters methodBody parentContext;
+				if definition->static is not null
+					eMethod setIsStatic : true;
 				return
-					e_method: typeName vName parameters methodBody parentContext;
+					eMethod
 variable
 	generate declaration takes isInner as Boolean
 		if isInner is false

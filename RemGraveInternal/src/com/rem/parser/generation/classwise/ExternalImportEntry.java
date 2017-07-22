@@ -73,7 +73,8 @@ public abstract class ExternalImportEntry implements Entry{
 			if(!containsKey(packageName)){
 				put(packageName, new HashSet<String>());
 			}
-			get(packageName).add(className);
+			if(get(packageName).add(className)){
+			}
 		}
 		public void add(ImportEntry entry){
 			if(entry instanceof ImportClassEntry){
