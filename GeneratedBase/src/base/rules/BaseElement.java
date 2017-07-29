@@ -20,6 +20,7 @@ public class BaseElement extends ConcreteRule {
 			new ChoiceParser(
 					Tokens.NEWLINE,
 					Comments.parser,
+					RuleImports.IMPORT_RULE,
 					new AddTokenToListParser(
 						Rules.custom_declaration,"custom_declaration","rules"),
 					new AddTokenToListParser(

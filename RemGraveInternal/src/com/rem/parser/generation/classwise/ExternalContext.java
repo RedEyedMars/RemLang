@@ -1,7 +1,6 @@
 package com.rem.parser.generation.classwise;
 import java.util.*;
 
-import com.rem.parser.generation.Entry;
 
 public class ExternalContext {
 
@@ -40,6 +39,7 @@ public class ExternalContext {
 	public void add(ExternalMethodEntry entry){
 		entry.getHeaderContext().setParent(this);
 		links.put(entry.getName(), entry.getClassContext());
+		links.put(entry.getSimpleName(), entry.getClassContext());
 	}
 	public void setParent(ExternalContext newParentContext){
 		parentContext = newParentContext;

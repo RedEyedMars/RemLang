@@ -3,6 +3,7 @@ package com.rem.parser;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
+
 import com.rem.parser.generation.FlowController;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.IPatterned;
@@ -19,7 +22,15 @@ import com.rem.parser.token.IToken;
 
 public class ParseContext {
 
-	private static Set<String> listnames = new HashSet<String>();
+	private static Set<String> listnames = new TreeSet<String>(new Comparator<String>(){
+		@Override
+		public int compare(String o1, String o2) {
+			if(o1.length()==o2.length()&&!o1.equals(o2)){
+				return 1;
+			}
+			else return o2.length()-o1.length();
+		}}
+			);
 	private static Map<String,Map<String,ParseContext>> namedContexts = new HashMap<String,Map<String,ParseContext>>();
 	private static Map<String,Map<Integer,ParseContext>> allSubContexts = new HashMap<String,Map<Integer,ParseContext>>();
 	private static List<Object[]> parameterList = Collections.synchronizedList(new ArrayList<Object[]>());
@@ -460,6 +471,7 @@ public class ParseContext {
 
 
 	public void accumulateLists(FlowController controller) {
+		listnames.clear();
 		rootToken.accumulateLists(this);
 		if(controller!=null){
 			controller.assignListElementNames(this, rootToken);

@@ -1,43 +1,18 @@
 package com.rem.parser.parser;
 
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
-
 import com.rem.parser.ParseContext;
 import com.rem.parser.token.NodeToken;
 
 public class ListNameParser extends ConcreteParser{
 	public static final IParser parser = new ListNameParser();
-	private Set<String> listnames;
 
 	public void real_parse(ParseContext data){
 		if(NameParser.lazyParser!=null){
 			NameParser.lazyParser.parse(data);
 		}
 		else {
-			if(listnames==null){
-				listnames = new TreeSet<String>(new Comparator<String>(){
-					@Override
-					public int compare(String o1, String o2) {
-						if(o1.length()==o2.length()&&!o1.equals(o2)){
-							return 1;
-						}
-						else return o2.length()-o1.length();
-					}}
-						);
-				listnames.addAll(data.getListNames());
-				listnames.add("listnames");
-			}
-			else {
-				if(data.getListNames().size()!=listnames.size()){
-					listnames.clear();
-					listnames.addAll(data.getListNames());
-					listnames.add("listnames");
-				}
-			}
 			String toExamine = data.get();
-			for(String listName:listnames){
+			for(String listName:data.getListNames()){
 
 				boolean isValid = true;
 				if(listName.length()>toExamine.length()){

@@ -97,8 +97,13 @@ classwise
 					newClass getImportPackage
 				var getPackageName as Entry
 					classImport getMyPackages
+				var classNameBuilder
+					new StringBuilder
+				className get
+					classNameBuilder
+				var classNameAsString = 'classNameBuilder
 				addClassFileList +=
-					classwise addFile{getPackageName className className}
+					classwise addFile{getPackageName ``classNameAsString`` className}
 				setupClassList +=
 					classwise setupClass{className}
 		var methodContext = context:context:;;
@@ -719,8 +724,11 @@ clazz
 			return
 				iret
 		else
-			packageName setDelimiter
-				".get(builder);\n\t\t\t\tbuilder.append(\".\");\n\t\t\t\t"
+			if packageName is empty
+				set packageName = null
+			else
+				packageName setDelimiter
+					".get(__BUILDER__);\n\t\t\t\t__BUILDER__.append(\".\");\n\t\t\t\t"
 			var className as Entry
 			var actualName
 			if declaration->className->NAME is not null
@@ -747,6 +755,9 @@ clazz
 					var eAsEClass as e_class = e
 					eret addSubClass
 						eAsEClass
+			if declaration->WEAK is not null
+				eret setIsWeak
+					true
 			return
 				eret
 
@@ -799,6 +810,28 @@ body
 				else
 					return
 						e_throw:statement parentContext;
+			class_declaration
+				var aClass as e_class = generate clazz declaration :false context:; ;
+				var argument as Entry
+					aClass getAsArgument
+				var variableName
+					body buildString
+						aClass getName
+						"Class"
+				var className as Entry
+					aClass getName
+				var classImport as import_list
+					aClass getImportPackage
+				var getPackageName as Entry
+					classImport getMyPackages
+				return
+					i_body:{
+					  i_element:"" i_variable:i_exact:\"ExternalClassEntry"; \variableName argument; semicolon parentContext;
+					  i_element:"" i_call:i_exact:\variableName; \"__INIT__" {}; semicolon parentContext;
+					  i_element:"" i_variable:i_exact:\"StringBuilder"; \"__BUILDER__" null; semicolon parentContext;
+					  i_element:"" i_variable:i_exact:\"File"; \"__DIRECTORY__" null; semicolon parentContext;
+					  i_element:"" i_exact:classwise addFile{getPackageName className className}; "" parentContext;
+					  } parentContext;
 			body_conditional
 				if isInner is true or atom->inner is not null
 					set isInner = true
@@ -899,6 +932,8 @@ body
 						set operand = e_operator:operand operator generate call:false;;
 			OPERATOR
 				set operator = 'element
+				set operator
+					operator trim 
 		return
 			operand
 	generate call takes isInner as Boolean
@@ -1004,7 +1039,7 @@ body
 			entry arguments = {}
 			var importList as import_list
 			manipulate type_var to element
-				set type = generate classwise type_var:true 2;
+				set type = generate classwise type_var:true 0;
 				set realType = generate classwise type_var:true 3;
 				var typeBuilder
 					new StringBuilder

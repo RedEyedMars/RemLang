@@ -17,6 +17,7 @@ public class Listnames extends ParseList {
 
 	public static final RegexParser comment = new RegexParser("comment","listnames","comments\b");
 	public static final RegexParser token = new RegexParser("token","listnames","tokens\b");
+	public static final RegexParser ruleImport = new RegexParser("ruleImport","listnames","ruleImports\b");
 	public static final RegexParser brace = new RegexParser("brace","listnames","braces\b");
 	public static final RegexParser altbrace = new RegexParser("altbrace","listnames","altbraces\b");
 	public static final RegexParser list_rule = new RegexParser("list_rule","listnames","list_rules\b");
@@ -27,5 +28,5 @@ public class Listnames extends ParseList {
 	public static final RegexParser custom_variable_name = new RegexParser("custom_variable_name","listnames","custom_variable_names\b");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				comment,token,brace,altbrace,list_rule,rule,rule_parameter,definition,custom_declaration,custom_variable_name);
+				comment,token,ruleImport,brace,altbrace,list_rule,rule,rule_parameter,definition,custom_declaration,custom_variable_name);
 }

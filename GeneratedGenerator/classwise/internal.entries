@@ -315,6 +315,31 @@ entry i_new_obj uses innerable importable
 		parameters setDelimiter :",";
 	output
 			internal bodyNewObj{className parameters} if className is not null
+entry i_body uses innerable importable contextualizable
+	entry body = null
+	constructor takes iBody as ListEntry, iContext as context
+		set isInner = true
+		set body = {}
+		set context = iContext
+		var semicolon = ";"
+		each e as Entry in iBody
+			var i as importable = e
+			var c as contextualizable = e
+			c setContext
+				context
+			this addImports
+				i getImportPackage
+			body +=	e
+		
+		body setDelimiter :"";
+	output
+			(tabs body) if context is not null
+		if context is null
+			set tabs = 0
+		else
+			set tabs
+				context getTab
+		e_tabs set :'tabs;
 entry i_conditional uses innerable importable contextualizable
 	entry name = null
 	entry header = null

@@ -8,10 +8,10 @@ token-s
 	"+" as PLUS
 	"?" as OPTIONAL
 	"*" as MANY
-	"as" as AS
+	"as " as AS
 	"in" as IN
-	"with" as WITH
-	"are" as ARE
+	"with " as WITH
+	"are " as ARE
 	"," as COMMA
 	"from" as FROM
 	"." as DOT
@@ -37,6 +37,9 @@ token-s
 	"<-" as BACK_ARROW
 	"->" as FOR_ARROW
 
+ruleImport-s are Import
+	[import <<file_name,\".ruleset\">>\n] as IMPORT_RULE from base; with RULE_FILE
+
 #Braces
 brace-s are Braced
 	[(,)] as CUSTOM_BRACE with event_element? (COMMA event_element)*
@@ -48,6 +51,7 @@ brace-s are Braced
 
 altbrace-s are CharitableBraced
 	[,\n] as NEWLINED_DEF with definition
+	[,\n] as RULE_FILE with WILD as file_name
 
 
 #List Prototypes
@@ -64,6 +68,7 @@ base is silent
 base_element is silent
 	NEWLINE
 	comments
+	IMPORT_RULE
 	custom_declaration as custom_declaration in rules
 	rule as rule in rules
 	list_rule as list_rule in list_rules

@@ -420,7 +420,8 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 				context getTab
 		e_tabs set :'tabs;
 entry e_class uses innerable nameable importable contextualizable fileable interfaceable
-	entry packageName = null
+	var packageName as Entry = null
+	var externalPackageName as Entry = null
 	entry asStatic = \""
 	entry asFile = null
 	entry asArgument = null
@@ -441,16 +442,18 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 	entry externalConstructorVariables = {}
 	entry externalConstructorMethods = {}
 	entry externalConstructorSubClass = {}
+	entry externalInterfacesEntry = {}
 	entry getHeader = null
-	var isSubClass = false
-	var hasOutput = false
+	var isSubClass  = false
+	var isWeak      = false
+	var hasOutput   = false
 	var completeUnsulliedName as ListEntry = {}
 	constructor takes iPackageName as Entry, iType, sName, iName as Entry, templateTypeName as IToken, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
 		set isInner = false
 		set packageName = iPackageName
 		set name = \sName
 		set completeName = {classwise classAsVariable{\sName}}
-		set completeUnsulliedName = {\sName}
+		set completeUnsulliedName = {iName}
 		completeName setDelimiter :".";
 		completeUnsulliedName setDelimiter :".";
 		var establishedImportable as importable
@@ -458,9 +461,13 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 				this getFullName
 		set importPackage
 			establishedImportable getImportPackage
-		importPackage addPackage
-			packageName
-			completeUnsulliedName
+		if packageName is not null
+			importPackage addPackage
+				packageName
+				completeUnsulliedName
+			set externalPackageName = external exactEntry { packageName }
+		else
+			set externalPackageName = \"null"
 		importPackage setIsInner :false;
 		set classType = \iType
 		if iType does contains "interface"
@@ -481,7 +488,7 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		else
 			set parent = {}
 			set externalParent      = external exact{``""``}
-			set externalParentEntry = external exact{``""``}
+			set externalParentEntry = \"null"
 		if iInterfaces is not empty
 			set interfaces = classwise implements{iInterfaces}
 			entry extItrf = {} 
@@ -497,6 +504,7 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		else
 			set interfaces = {}
 			set externalInterfaces = external exact{``""``}
+		set externalInterfacesEntry = external asEntryList{iInterfaces}
 		each ev as Entry in iVariables
 			var i as innerable = ev
 			if i does getIsInner
@@ -528,10 +536,10 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		externalConstructorMethods setDelimiter :",";
 		externalConstructorSubClass setDelimiter :",";
 		
-		set getHeader = i_exact:(2 external getCompleteHeader{ asStatic classType externalName externalTemplateTypeName externalParent externalInterfaces});
+		set getHeader = i_exact:(2 external getCompleteHeader{asStatic classType externalName externalTemplateTypeName});
 		
-		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses externalSubClasses packageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
-		set asArgument = i_exact:external declareClassAsArgument{packageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
+		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		set asArgument = i_exact:external declareClassAsArgument{externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
 	addVariable takes i as i_variable
 		internalVariables+=(2 internal declareMemberComplete{i})
 		var iAssignment as Entry
@@ -599,7 +607,7 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 			'nameBuilder
 	setIsSubClass takes superCompleteName as Entry, superUnsulliedName as Entry, newStatus
 		set isSubClass = newStatus
-		if isSubClass is true
+		if isSubClass is true and isWeak is not true
 			asStatic set :"static";
 		else
 			asStatic set :"";
@@ -609,9 +617,10 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		
 		completeUnsulliedName clear
 		completeUnsulliedName += superUnsulliedName
-		
-		getHeader setValue
-			(2 external getSubHeader{asStatic classType externalName externalParent externalInterfaces})
+	setIsWeak takes newIsWeak as Boolean
+		set isWeak = newIsWeak
+		if isWeak is true
+			asStatic set :"";
 	output
 			|completeName| if name is not null
 		if context is null

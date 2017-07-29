@@ -33,6 +33,7 @@ token-s
 	"+=" as ADD
 	"+" as PLUS
 	"\\" as BACKSLASH
+	"/" as FORSLASH
 	"^" as CAMEL
 	"cds" as CDS
 	"clws" as CLWS
@@ -75,6 +76,7 @@ class_name-s
 	[Integer] as Integer
 	[Double] as Double
 	[Float] as Float
+	[Object] as Object
 class_variable_name-s are empty
 variable_name-s are empty
 method_definitions are empty
@@ -96,7 +98,8 @@ simport-s are Import
 anonymous_class
 	(HID|DEN) NAME as className in class_names (COLON|FROM) (name_var as packageName (DOT name_var as packageName)*)? SEMICOLON 
 class_declaration
-	(IN|NER) as inner? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*)? (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? WEAK? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*) (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? WEAK? (CLASS|INTERFACE) as objectType (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* FORSLASH ( type_var as parentName )? NEWLINE* FORSLASH ( type_var as interfaceName )* CLASS_BODY
 class_element is silent
 	NEWLINE
 	COMMENT
@@ -108,6 +111,7 @@ body_element
 	COMMENT
 	((IN|NER) as inner? RETURN (VOID | method_argument) SEMICOLON ) as body_return
 	((IN|NER) as inner? THROW body_statement SEMICOLON ) as body_throw
+	class_declaration
 	( variable_declaration SEMICOLON) as body_line
 	( variable_assignment SEMICOLON) as body_line
 	body_manipulate

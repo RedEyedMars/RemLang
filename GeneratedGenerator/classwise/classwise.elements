@@ -10,7 +10,7 @@ semicoloned
 asImport
 	"import " Package "." Name ";"
 asExternalImport
-	"builder.append(\"\\nimport \");" Package ".get(builder);builder.append(\".\");new StringEntry(\"" Name "\").get(builder);builder.append(\";\");"
+	"__BUILDER__.append(\"\\nimport \");" Package ".get(__BUILDER__);__BUILDER__.append(\".\");new StringEntry(" Name ").get(__BUILDER__);__BUILDER__.append(\";\");"
 concat
 	"" Left "+" Right ""
 access
@@ -40,8 +40,8 @@ generators
 			public void setup(ParseContext data){
 			}
 			public void generate(ParseContext data){
-				StringBuilder builder;
-				File directory;
+				StringBuilder __BUILDER__;
+				File __DIRECTORY__;
 				" Class Wise Add File "
 				outputAll();
 			}
@@ -50,16 +50,21 @@ generators
 		}};
 	}
 	private String __ROOT_DIRECTORY__ = \".\";
-	public void setup(){" Setup All Classes "
+	public void setup(String rootDirectory){
+		__ROOT_DIRECTORY__ = rootDirectory;" Setup All Classes "
 	}
-	public void output(String rootDirectory, ParseContext data){
-		__ROOT_DIRECTORY__ = rootDirectory;
-		getGenerators()[0].generate(data);"
+	public void output(ParseContext data){
+		ExternalImportEntry.solidify();
+		getGenerators()[0].generate(data);
+		for(Generator gen:privateFiles){
+			gen.outputAll();
+		}
+		System.out.println(\"Output Complete\")"
 addFile
-	"builder = new StringBuilder();
-	" Package Name ".get(builder);
-	directory = new File(__ROOT_DIRECTORY__, builder.toString().replace(\".\",\"/\"));
-	directory.mkdirs();
-	this.addFile(directory,Generator.camelize(\"" Class Name "\")+\".java\", " Class Name "Class);"
+	"__BUILDER__ = new StringBuilder();
+	" Package Name ".get(__BUILDER__);
+	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(\".\",\"/\"));
+	__DIRECTORY__.mkdirs();
+	addFile(__DIRECTORY__,Generator.camelize(" Class Name ")+\".java\", " Class Name "Class);"
 setupClass
 	"" Class Name "Class.__INIT__();"

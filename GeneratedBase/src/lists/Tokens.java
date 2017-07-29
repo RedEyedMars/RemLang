@@ -19,10 +19,10 @@ public class Tokens extends ParseList {
 	public static final ExactParser PLUS = new ExactParser("PLUS","tokens","+");
 	public static final ExactParser OPTIONAL = new ExactParser("OPTIONAL","tokens","?");
 	public static final ExactParser MANY = new ExactParser("MANY","tokens","*");
-	public static final ExactParser AS = new ExactParser("AS","tokens","as");
+	public static final ExactParser AS = new ExactParser("AS","tokens","as ");
 	public static final ExactParser IN = new ExactParser("IN","tokens","in");
-	public static final ExactParser WITH = new ExactParser("WITH","tokens","with");
-	public static final ExactParser ARE = new ExactParser("ARE","tokens","are");
+	public static final ExactParser WITH = new ExactParser("WITH","tokens","with ");
+	public static final ExactParser ARE = new ExactParser("ARE","tokens","are ");
 	public static final ExactParser COMMA = new ExactParser("COMMA","tokens",",");
 	public static final ExactParser FROM = new ExactParser("FROM","tokens","from");
 	public static final ExactParser DOT = new ExactParser("DOT","tokens",".");

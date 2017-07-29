@@ -3,7 +3,9 @@ import com.rem.parser.generation.*;
 import java.util.*;
 public abstract class ExternalClassEntry extends ExternalImportEntry {
 
-	public static final Map<String,ExternalClassEntry> allClasses = new HashMap<String,ExternalClassEntry>();
+	public static final List<ExternalClassEntry> allClasses = new ArrayList<ExternalClassEntry>();
+	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>();
+	public static final Map<String,List<ExternalClassEntry>> allOffspring = new HashMap<String,List<ExternalClassEntry>>();
 
 	private Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
 	private Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
@@ -17,8 +19,10 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	private boolean isSubClass = false;
 
 	private ExternalContext myContext;
-	private ExternalClassEntry superClass;
+	private ExternalClassEntry enclosingClass;
 	private Entry parentClass;
+	private ExternalClassEntry bonifideParentClass;
+	private List<Entry> interfaces;
 	private boolean isInterface;
 
 	private ExternalMethodEntry constructorMethod;
@@ -26,20 +30,46 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		super();
 	}
 	public void __INIT__(){}
-	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
-		super.__SETUP__(preImports);
+	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
+
 		isInterface = classType.contains("interface");
 		StringBuilder builder = new StringBuilder();
 		initialName.get(builder);
 		name = builder.toString();
 		myContext = ExternalContext.getClassContext(getName());
-		packageName = initialPackageName;
-		ExternalImportEntry.packages.put(name, packageName);
-		allClasses.put(name, this);
 		header = initialHeader;
 		parentClass = initialParentClass;
-
-		addParentImport(parentClass);
+		interfaces = initialInterfaces;
+		packageName = initialPackageName;
+		if(packageName!=null){
+			ExternalImportEntry.packages.put(name, packageName);
+		}
+		allClasses.add(this);
+		classMap.put(name, this);
+		if(allOffspring.containsKey(name)){
+			for(ExternalClassEntry offspring:allOffspring.get(name)){
+				offspring.myContext.setParent(myContext);
+			}
+		}
+		if(parentClass!=null){
+			StringBuilder parentNameBuilder = new StringBuilder();
+			parentClass.get(parentNameBuilder);
+			if(classMap.containsKey(parentNameBuilder.toString())){
+				myContext.setParent(classMap.get(parentNameBuilder.toString()).myContext);
+			}
+			else {
+				if(!allOffspring.containsKey(parentNameBuilder.toString())){
+					allOffspring.put(parentNameBuilder.toString(),new ArrayList<ExternalClassEntry>());
+				}
+				allOffspring.get(parentNameBuilder.toString()).add(this);
+			}
+			addParentImport(parentClass);
+		}
+		if(interfaces!=null){
+			for(Entry interfaceClass:interfaces){
+				addParentImport(interfaceClass);
+			}
+		}
 
 		ExternalStatement.Body constructorBody = new ExternalStatement.Body();
 		constructorMethod = new ExternalMethodEntry(
@@ -62,6 +92,21 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		for(ExternalClassEntry subClass:initialSubClasses){
 			addSubClass(subClass);
 		}
+	}
+	public ExternalClassEntry getParentClass(){
+		if(bonifideParentClass==null){
+			if(parentClass!=null){
+				StringBuilder parentNameBuilder = new StringBuilder();
+				parentClass.get(parentNameBuilder);
+				if(classMap.containsKey(parentNameBuilder.toString())){
+					bonifideParentClass = classMap.get(parentNameBuilder.toString());
+				}
+			}
+		}
+		return bonifideParentClass;
+	}
+	public ExternalClassEntry getEnclosingClass(){
+		return enclosingClass;
 	}
 	public void addVariable(final ExternalVariableEntry variable){
 		variables.put(variable.getName(), variable);
@@ -124,14 +169,13 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void addSubClass(ExternalClassEntry subClass){
 		subClass.__INIT__();
-		ExternalImportEntry.addTopClass(this.getName(),subClass.getName());
 		ExternalContext.freeClass(subClass.getName());
 		classes.put(subClass.getName(), subClass);
 		addSubImport(subClass);
 		subClass.isSubClass  = true;
-		subClass.superClass = this;
+		subClass.enclosingClass = this;
 		subClass.myContext.setParent(myContext);
-		ExternalClassEntry.allClasses.put(subClass.getFullName(),subClass);
+		ExternalClassEntry.classMap.put(subClass.getFullName(),subClass);
 		ExternalContext.getClassContext(subClass.getFullName()).setParent(subClass.myContext);
 	}
 	public ExternalVariableEntry getVariable(String variableName){
@@ -171,8 +215,8 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		return fullBuilder.toString();
 	}
 	private void getFullName(StringBuilder builder){
-		if(superClass!=null){
-			superClass.getFullName(builder);
+		if(enclosingClass!=null){
+			enclosingClass.getFullName(builder);
 			builder.append(".");
 		}
 		builder.append(name);
@@ -187,46 +231,44 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 			builder.append(";");
 			builder.append("\nimport java.util.*;");
 			builder.append("\nimport java.io.*;");
-			outputImport(builder);
 			for(String classKey: classes.keySet()){
-				classes.get(classKey).outputParentImports(builder);
+				classes.get(classKey).accumulateParentImports(this);
 			}
+			if(getParentClass()!=null){
+				for(String key:bonifideParentClass.variables.keySet()){
+					if(!bonifideParentClass.variables.get(key).isWeak()&&!bonifideParentClass.variables.get(key).isStatic()){
+						addImport(new ImportEntry(bonifideParentClass.variables.get(key).getType()));
+					}
+				}
+			}
+			outputImport(builder);
 		}
-		new TabEntry(tabs, header).get(builder);
+		new TabEntry(tabs, new StringEntry("public ")).get(builder);;
+		header.get(builder);
+		if(parentClass!=null){
+			builder.append(" extends ");
+			parentClass.get(builder);
+		}
+		String prefix = " implements ";
+		for(Entry interfaceClass:interfaces){
+			builder.append(prefix);
+			interfaceClass.get(builder);
+			prefix = ",";
+		}
+		builder.append("{");
 		for(String variableKey:variables.keySet()){
 			variables.get(variableKey).setTabs(tabs+1);
 			variables.get(variableKey).getAsMember().get(builder);
 		}
 		if(!isInterface){
-			new TabEntry(tabs+1,new StringEntry("public ")).get(builder);
-			builder.append(name);
-			builder.append("(");
-			String comma = getHeader("",true,builder);
-			boolean hasEmptyConstructor = "".equals(comma);
-			builder.append(") {");
-			if(parentClass!=null){
-				comma = "";
-				StringBuilder parentClassBuilder = new StringBuilder();
-				parentClass.get(parentClassBuilder);
-				if(allClasses.containsKey(parentClassBuilder.toString())){
-					ExternalClassEntry realParentClass = allClasses.get(parentClassBuilder.toString());
-					new TabEntry(tabs+2,new StringEntry("super(")).get(builder);
-					comma = realParentClass.getSuperCall(comma,builder);
-					builder.append(");");
-				}
+			int constructorState = 2;
+			if(getParentClass()!=null){
+				constructorState = outputConstructor(builder,true);
 			}
-			for(String variableKey:variables.keySet()){
-				if(!variables.get(variableKey).isStatic()&&!variables.get(variableKey).isWeak()){
-					variables.get(variableKey).setTabs(tabs+2);
-					variables.get(variableKey).getAsConstructorElement().get(builder);
-				}
+			if(constructorState>1){
+				constructorState = outputConstructor(builder,false);	
 			}
-			for(ExternalStatement statement:getMethod("*").getBody()){
-				statement.setTabs(tabs+2);
-				statement.get(builder);
-			}
-			new TabEntry(tabs+1,new StringEntry("}")).get(builder);
-			if(!hasEmptyConstructor){
+			if(constructorState>0){
 				new TabEntry(tabs+1,new StringEntry("public ")).get(builder);
 				builder.append(name);
 				builder.append("(");
@@ -250,57 +292,86 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 		new TabEntry(tabs, new StringEntry("}")).get(builder);
 	}
-	public void outputParentImports(StringBuilder builder){
-		if(parentClass!=null){
-			StringBuilder parentClassBuilder = new StringBuilder();
-			parentClass.get(parentClassBuilder);
-			if(allClasses.containsKey(parentClassBuilder.toString())){
-				allClasses.get(parentClassBuilder.toString()).outputImport(builder);
+	private int outputConstructor(StringBuilder builder, boolean withParentVariables){
+		new TabEntry(tabs+1,new StringEntry("public ")).get(builder);
+		builder.append(name);
+		builder.append("(");
+		String comma = getHeader("",true,withParentVariables,builder,new HashSet<ExternalClassEntry>());
+		int result = 0;
+		builder.append(") {");
+		if(withParentVariables&&getParentClass()!=null){
+			comma = "";
+			new TabEntry(tabs+2,new StringEntry("super(")).get(builder);
+			comma = getParentClass().getSuperCall(comma,builder,new HashSet<ExternalClassEntry>());
+			result += "".equals(comma)?0:1;
+			builder.append(");");
+		}
+		boolean hasSelfVar = false;
+		for(String variableKey:variables.keySet()){
+			if(!variables.get(variableKey).isStatic()&&!variables.get(variableKey).isWeak()){
+				variables.get(variableKey).setTabs(tabs+2);
+				variables.get(variableKey).getAsConstructorElement().get(builder);
+				hasSelfVar = true;
 			}
+		}
+		for(ExternalStatement statement:getMethod("*").getBody()){
+			statement.setTabs(tabs+2);
+			statement.get(builder);
+		}
+		new TabEntry(tabs+1,new StringEntry("}")).get(builder);
+		if(hasSelfVar){
+			result+=1;
+		}
+		return result;
+
+	}
+	private void accumulateParentImports(ExternalClassEntry subToAll){
+		if(getParentClass()!=null){
+			for(String variableName:getParentClass().getVariables().keySet()){
+				ExternalVariableEntry variable = getParentClass().getVariables().get(variableName);
+				subToAll.addImport(new ImportEntry(variable.getType()));
+			}
+			getParentClass().accumulateParentImports(subToAll);
 		}
 	}
-	public String getHeader(String comma, boolean first, StringBuilder builder){
-		if(parentClass!=null){
-			StringBuilder parentClassBuilder = new StringBuilder();
-			parentClass.get(parentClassBuilder);
-			if(allClasses.containsKey(parentClassBuilder.toString())){
-				comma = allClasses.get(parentClassBuilder.toString()).getHeader(comma,false,builder);
+	public String getHeader(String comma, boolean first, boolean useParent, StringBuilder builder, Set<ExternalClassEntry> alreadyClasses){
+		if(alreadyClasses.add(this)){
+			if(useParent&&getParentClass()!=null){
+				comma = getParentClass().getHeader(comma,false,true,builder,alreadyClasses);
 			}
-		}
-		for(String variableKey:variables.keySet()){
-			if(!variables.get(variableKey).isStatic()){
-				Entry result;
-				if(first){
-					result = variables.get(variableKey).getAsParameter();
-				}
-				else {
-					result = variables.get(variableKey).getAsSuperParameter();
-				}
-				if(result!=null){
-					builder.append(comma);
-					result.get(builder);
-					comma = ", ";
+			for(String variableKey:variables.keySet()){
+				if(!variables.get(variableKey).isStatic()){
+					Entry result;
+					if(first){
+						result = variables.get(variableKey).getAsParameter();
+					}
+					else {
+						result = variables.get(variableKey).getAsSuperParameter();
+					}
+					if(result!=null){
+						builder.append(comma);
+						result.get(builder);
+						comma = ", ";
+					}
 				}
 			}
 		}
 		return comma;
 	}
 
-	public String getSuperCall(String comma, StringBuilder builder){
-		if(parentClass!=null){
-			StringBuilder parentClassBuilder = new StringBuilder();
-			parentClass.get(parentClassBuilder);
-			if(allClasses.containsKey(parentClassBuilder.toString())){
-				comma = allClasses.get(parentClassBuilder.toString()).getSuperCall(comma,builder);
+	public String getSuperCall(String comma, StringBuilder builder, Set<ExternalClassEntry> alreadyClasses){
+		if(alreadyClasses.add(this)){
+			if(getParentClass()!=null){
+				comma = getParentClass().getSuperCall(comma,builder,alreadyClasses);
 			}
-		}
-		for(String variableKey:variables.keySet()){
-			if(!variables.get(variableKey).isStatic()){
-				Entry result = variables.get(variableKey).getAsSuperArgument();
-				if(result!=null){
-					builder.append(comma);
-					result.get(builder);
-					comma = ", ";
+			for(String variableKey:variables.keySet()){
+				if(!variables.get(variableKey).isStatic()){
+					Entry result = variables.get(variableKey).getAsSuperArgument();
+					if(result!=null){
+						builder.append(comma);
+						result.get(builder);
+						comma = ", ";
+					}
 				}
 			}
 		}

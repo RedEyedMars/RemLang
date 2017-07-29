@@ -6,9 +6,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.rem.parser.ParseContext;
 import com.rem.parser.token.IToken;
@@ -17,6 +19,26 @@ import com.rem.parser.token.NodeToken;
 
 public abstract class Generator {
 
+	private static int concreteIndex = 0;
+	public static class Concrete extends Generator {
+		private int id = concreteIndex++;
+		@Override
+		public String getName() {
+			return "$CONCRETE"+id;
+		}
+
+		@Override
+		public void setup(ParseContext data) {
+		}
+
+		@Override
+		public void generate(ParseContext data) {
+		}
+
+		@Override
+		public void generateRoot(IToken rootToken) {
+		}
+	}
 	private Map<String, PageOverview> pages = new HashMap<String, PageOverview>();
 	private Map<String, Element> elements = new LinkedHashMap<String, Element>();
 	protected List<ICheck> checks = new ArrayList<ICheck>();
@@ -510,8 +532,10 @@ public abstract class Generator {
 		completeTokenErrorMessage(offender,0,builder);
 		return builder.toString();
 	}
-	private static void completeTokenErrorMessage(IToken offender, int tab, StringBuilder builder){		
-		for(IToken.Key key:offender.keySet()){
+	private static void completeTokenErrorMessage(IToken offender, int tab, StringBuilder builder){
+		Set<IToken.Key> keys = new HashSet<IToken.Key>();
+		keys.addAll(offender.keySet());
+		for(IToken.Key key:keys){
 			builder.append('\n');
 			for(int i=0;i<tab;++i){
 				builder.append('\t');

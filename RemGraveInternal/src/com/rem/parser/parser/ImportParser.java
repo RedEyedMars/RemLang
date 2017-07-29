@@ -109,27 +109,28 @@ public class ImportParser extends ConcreteParser{
 								@Override
 								public void act(){
 									try {
-									newContext.setBackPosition(-1);
-									newContext.setFrontPosition(0);
-									if(startParser==null){
-										newContext.getRootParser().parse(newContext);
-									}
-									else {
-										startParser.parse(newContext);
-									}
-									newContext.collectTokens();
+										newContext.setBackPosition(-1);
+										newContext.setFrontPosition(0);
+										if(startParser==null){
+											newContext.getRootParser().parse(newContext);
+										}
+										else {
+											startParser.parse(newContext);
+										}
+										newContext.collectTokens();
 
-									if(!newContext.isDone()){
-										System.err.println(newContext+":"+fileName+" error at("+newContext.getFurthestPosition()+","+newContext.getLineNumber(newContext.getFurthestPosition())+
-												"):"+
-												newContext.get().substring(0,newContext.getFurthestPosition()-newContext.getFrontPosition())+
-												"$>"+
-												newContext.get().substring(newContext.getFurthestPosition()-newContext.getFrontPosition()));
+										if(!newContext.isDone()){
+											System.err.println(newContext+":"+fileName+" error at("+newContext.getFurthestPosition()+","+newContext.getLineNumber(newContext.getFurthestPosition())+
+													"):"+
+													newContext.get().substring(0,newContext.getFurthestPosition()-newContext.getFrontPosition())+
+													"$>"+
+													newContext.get().substring(newContext.getFurthestPosition()-newContext.getFrontPosition()));
 
-										newContext.setFrontPosition(0);	
-									}
+											newContext.setFrontPosition(0);	
+										}
 									}
 									catch(Exception e){
+										data.invalidate();
 										System.err.println(newContext.getFileName()+":"+newContext.getLineNumber(newContext.getFrontPosition()));
 										BufferedWriter writer;
 										try {

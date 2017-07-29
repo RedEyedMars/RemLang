@@ -1,6 +1,7 @@
 package com.rem.parser.generation;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.rem.parser.ParseContext;
@@ -13,6 +14,7 @@ import com.rem.parser.token.IToken;
 public abstract class FlowController {
 
 	private static FlowController flow;
+	protected List<Generator> privateFiles = new ArrayList<Generator>();
 	public void parse(String... fileNames){
 		flow = this;
 		try {
@@ -52,6 +54,24 @@ public abstract class FlowController {
 		for(Generator gen:getGenerators()){
 			gen.outputAll();
 		}
+	}
+	
+	protected void addFile(File directory, String fileName, ListEntry file){
+		Generator privateGenerator = new Generator.Concrete();
+		privateGenerator.addFile(directory, fileName, file);
+		privateFiles.add(privateGenerator);
+		System.out.println(">add File>");
+	}
+	protected void addFile(File directory, String fileName, ElementEntry file){
+		Generator privateGenerator = new Generator.Concrete();
+		privateGenerator.addFile(directory, fileName, file);
+		privateFiles.add(privateGenerator);
+		System.out.println(">add File<");
+	}
+	protected void addFile(File directory, String fileName, Entry file){
+		Generator privateGenerator = new Generator.Concrete();
+		privateGenerator.addFile(directory, fileName, file);
+		privateFiles.add(privateGenerator);
 	}
 
 	protected void println(String... subStrings){

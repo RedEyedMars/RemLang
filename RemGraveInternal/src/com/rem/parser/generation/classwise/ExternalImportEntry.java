@@ -3,39 +3,46 @@ import java.util.*;
 import com.rem.parser.generation.*;
 
 public abstract class ExternalImportEntry implements Entry{
+	public static final Map<String,String> solidPackages = new HashMap<String,String>();
 	public static final Map<String,Entry> packages = new HashMap<String,Entry>();
-	private static final Map<String,String> topClasses = new HashMap<String,String>();
+	private static final Map<String,String> domClasses = new HashMap<String,String>();
 
-	public static void addTopClass(String dom, String sub) {
-		topClasses.put(sub, dom);
-	}
 	static {
-		packages.put("List", new StringEntry("java.util"));
-		packages.put("ArrayList", new StringEntry("java.util"));
-		packages.put("LinkedList", new StringEntry("java.util"));
-		packages.put("Arrays", new StringEntry("java.util"));
-		packages.put("Map", new StringEntry("java.util"));
-		packages.put("HashMap", new StringEntry("java.util"));
-		packages.put("Set", new StringEntry("java.util"));
-		packages.put("HashSet", new StringEntry("java.util"));
+		solidPackages.put("List", "java.util");
+		solidPackages.put("ArrayList", "java.util");
+		solidPackages.put("LinkedList", "java.util");
+		solidPackages.put("Arrays", "java.util");
+		solidPackages.put("Map", "java.util");
+		solidPackages.put("HashMap", "java.util");
+		solidPackages.put("Set", "java.util");
+		solidPackages.put("HashSet", "java.util");
 
-		packages.put("File", new StringEntry("java.io"));
+		solidPackages.put("File", "java.io");
+	}
+	public static void solidify(){
+		for(String key:packages.keySet()){
+			StringBuilder packageBuilder = new StringBuilder();
+			packages.get(key).get(packageBuilder);
+			solidPackages.put(key, packageBuilder.toString());
+		}
+		for(ExternalClassEntry subClass:ExternalClassEntry.allClasses){
+			String firstName = subClass.getName();
+			String fullName = subClass.getFullName();
+			ExternalClassEntry parentClass = subClass.getEnclosingClass();
+			while(parentClass!=null){
+				subClass = parentClass;
+				parentClass = subClass.getEnclosingClass();
+			}
+			if(solidPackages.containsKey(subClass.getName())){
+				solidPackages.put(fullName, solidPackages.get(subClass.getName()));
+				domClasses.put(fullName, subClass.getName());
+				domClasses.put(firstName, subClass.getName());
+			}
+		}
 	}
 	List<ExternalImportEntry> subImports = new ArrayList<ExternalImportEntry>();
 	List<ImportEntry> imports = new ArrayList<ImportEntry>();
-	private Entry header = new Entry(){
-		@Override
-		public void get(StringBuilder arg0) {
-		}
-	};
 	public ExternalImportEntry(){
-	}
-	public ExternalImportEntry(Entry initialImports){
-		this.header = initialImports;
-	}
-
-	public void __SETUP__(Entry preImports) {
-		this.header = preImports;
 	}
 	public void addSubImport(ExternalImportEntry importEntry){
 		subImports.add(importEntry);
@@ -48,17 +55,10 @@ public abstract class ExternalImportEntry implements Entry{
 	}
 	public void outputImport(StringBuilder builder){
 		ImportSet list = new ImportSet();
-		list.add(header);
-		for(ExternalImportEntry imp: subImports){
-			imp.spread(list);
-		}
-		for(ImportEntry entry:imports){
-			list.add(entry);
-		}
+		spread(list);
 		list.get(builder);
 	}
 	private void spread(ImportSet list){
-		list.add(header);
 		for(ExternalImportEntry imp: subImports){
 			imp.spread(list);
 		}
@@ -69,29 +69,34 @@ public abstract class ExternalImportEntry implements Entry{
 	private static class ImportSet extends HashMap<String,Set<String>> implements Entry{
 
 		private static final long serialVersionUID = 372051253943029641L;
+		private static String lul = "[]";
 		public void add(String packageName, String className){
 			if(!containsKey(packageName)){
 				put(packageName, new HashSet<String>());
 			}
 			if(get(packageName).add(className)){
+				//System.out.println(packageName+"::"+className + "::"+lul);
 			}
 		}
 		public void add(ImportEntry entry){
 			if(entry instanceof ImportClassEntry){
 				StringBuilder classFinder = new StringBuilder();
 				entry.getName().get(classFinder);
-				ExternalClassEntry parentClass = ExternalClassEntry.allClasses.get(classFinder.toString());
+				ExternalClassEntry parentClass = ExternalClassEntry.classMap.get(classFinder.toString());
 				if(parentClass!=null){
 					for(String key: parentClass.getVariables().keySet()){
-						StringBuilder typeFinder = new StringBuilder();
-						parentClass.getVariables().get(key).getType().get(typeFinder);
+						if(!parentClass.getVariables().get(key).isWeak()){
+							StringBuilder typeFinder = new StringBuilder();
+							parentClass.getVariables().get(key).getType().get(typeFinder);
 
-						ExternalClassEntry variableType = ExternalClassEntry.allClasses.get(typeFinder.toString());
-						if(variableType!=null){
-							addImport(new ImportEntry(parentClass.getVariables().get(key).getType()));
+							ExternalClassEntry variableType = ExternalClassEntry.classMap.get(typeFinder.toString());
+							if(variableType!=null){
+								addImport(new ImportEntry(parentClass.getVariables().get(key).getType()));
+							}
 						}
 					}
 				}
+				addImport(entry);
 			}
 			else {
 				addImport(entry);
@@ -101,37 +106,19 @@ public abstract class ExternalImportEntry implements Entry{
 			StringBuilder classFinder = new StringBuilder();
 			entry.getName().get(classFinder);
 			String firstName = classFinder.toString();
-			int indexOfDot = firstName.indexOf('.');
-			if(indexOfDot>-1){
-				firstName = firstName.substring(0, indexOfDot);
+			lul = firstName;
+			int indexOfAngle = firstName.indexOf('<');
+			if(indexOfAngle>-1){
+				firstName = firstName.substring(0, indexOfAngle);
 			}
-
-			if(packages.containsKey(firstName)){
-				StringBuilder actualClassName = new StringBuilder();
-				entry.getName().get(actualClassName);
-
-				StringBuilder packageBuilder = new StringBuilder();
-				packages.get(firstName).get(packageBuilder);
-
-				String domName = firstName;
-				while(topClasses.containsKey(domName)){
-					domName = topClasses.get(domName);
+			if(solidPackages.containsKey(firstName)){
+				if(domClasses.containsKey(firstName)){
+					add(solidPackages.get(domClasses.get(firstName)),domClasses.get(firstName));
 				}
-				add(packageBuilder.toString(),domName);
-			}
-		}
-		public void add(Entry header){
-			StringBuilder headerBuilder = new StringBuilder();
-			header.get(headerBuilder);
-			String[] newLineSplit = headerBuilder.toString().split(";");
-			for(String line:newLineSplit){
-				int lastDot = line.lastIndexOf('.');
-				if(lastDot>-1){
-					int firstSpace = line.indexOf(' ');
-					add(line.substring(firstSpace+1,lastDot),line.substring(lastDot+1));
+				else {
+					add(solidPackages.get(firstName),firstName);
 				}
 			}
-
 		}
 		@Override
 		public void get(StringBuilder builder) {
@@ -148,7 +135,7 @@ public abstract class ExternalImportEntry implements Entry{
 			}
 		}
 	}
-	public static class ImportEntry implements Entry {
+	public static class ImportEntry {
 
 		private Entry className;
 		public ImportEntry(Entry className){
@@ -156,30 +143,6 @@ public abstract class ExternalImportEntry implements Entry{
 		}
 		public Entry getName(){
 			return className;
-		}
-		@Override
-		public void get(StringBuilder builder) {
-			StringBuilder classFinder = new StringBuilder();
-			className.get(classFinder);
-			String firstName = classFinder.toString();
-			int indexOfDot = firstName.indexOf('.');
-			if(indexOfDot>-1){
-				firstName = firstName.substring(0, indexOfDot);
-			}
-
-			if(packages.containsKey(firstName)){
-				builder.append("\nimport ");
-				StringBuilder actualClassName = new StringBuilder();
-				className.get(actualClassName);
-				packages.get(firstName).get(builder);
-				builder.append(".");
-				String domName = firstName;
-				while(topClasses.containsKey(domName)){
-					domName = topClasses.get(domName);
-				}
-				builder.append(domName);
-				builder.append(";");
-			}
 		}
 	}
 	public static class ImportClassEntry extends ImportEntry {

@@ -181,6 +181,12 @@ public class BranchToken implements IToken {
 		}
 		else {
 			IToken.Key id = (IToken.Key)key;
+			if(tokens.get(id.getName()).size()<=id.getIndex()){
+				tokens.get(id.getName()).get(0).print();
+				tokens.get(id.getName()).get(1).print();
+				System.err.println(id.getName());
+				
+			}
 			return tokens.get(id.getName()).get(id.getIndex());
 		}
 	}

@@ -1,6 +1,5 @@
 package com.rem.parser.generation.classwise;
 import com.rem.parser.generation.*;
-import com.rem.parser.generation.classwise.ExternalImportEntry.ImportEntry;
 
 import java.util.List;
 public class ExternalMethodEntry extends ExternalImportEntry {
@@ -57,9 +56,11 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		StringBuilder builder = new StringBuilder();
 		name.get(builder);
 		builder.append("[");
+		String comma = "";
 		for(ExternalVariableEntry variable:parameters){
+			builder.append(comma);
 			variable.getType().get(builder);
-			builder.append(",");
+			comma = ",";
 		}
 		builder.append("]");
 		return builder.toString();

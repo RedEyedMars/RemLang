@@ -100,7 +100,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		if(isWeak){
 			return null;
 		}
-		final ExternalVariableEntry self = this;
+		//final ExternalVariableEntry self = this;
 		return new Entry(){
 			@Override
 			public void get(StringBuilder builder) {

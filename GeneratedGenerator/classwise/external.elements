@@ -7,6 +7,11 @@ accessMethod
 	"new ExternalStatement(\".\", " Left ", " Right ")"
 exact
 	"new StringEntry(" In ")"
+exactEntry
+	"new Entry(){
+			public void get(StringBuilder __BUILDER__){" In ".get(__BUILDER__);
+			}
+		}"
 asTemplate
 	"new StringEntry(\"<" In ">\")"
 camelize
@@ -17,6 +22,8 @@ extends
 implements
 	"builder.append(\" implements \");
 	" Implements Name ""
+asEntryList
+	"new ArrayList<Entry>(Arrays.asList(new Entry[]{" Class List "}))"
 
 bodyConcat
 	"/*Concat*/new ExternalStatement(\"\", " Left ", " Right ")"
@@ -113,26 +120,9 @@ declareInterfaceMethod
 getCompleteHeader
 	"new Entry(){
 		public void get(StringBuilder builder){
-			builder.append(\"public " IsStatic " " Class Type "\");
+			builder.append(\"" Statickality " " Class Type "\");
 			" Class Name ".get(builder);
 			" Template Name ".get(builder);
-			builder.append(\" \");
-			" Extends ".get(builder);
-			builder.append(\" \");
-			" Implements ".get(builder);
-			builder.append(\" {\");
-		}
-	}"
-getSubHeader
-	"new Entry(){
-		public void get(StringBuilder builder){
-			builder.append(\"public " IsStatic " " Class Type "\");
-			" Class Name ".get(builder);
-			builder.append(\" \");
-			" Extends ".get(builder);
-			builder.append(\" \");
-			" Implements ".get(builder);
-			builder.append(\" {\");
 		}
 	}"
 addTailBrace
@@ -143,26 +133,20 @@ declareClass
 	public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n" Classes "\n
 	public void __INIT__(){
 		super.__SETUP__(
+		" Package Name ", 
 		new Entry(){
-			public void get(StringBuilder builder){"Package Name".get(builder);
+			public void get(StringBuilder __BUILDER__){" ImportList"
 			}
-		}, 
-		new Entry(){
-			public void get(StringBuilder builder){" ImportList"
-			}
-		}, " Name ", " isInterface ", " Parent Class ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
+		}, " Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
 	}
 }"
 
 declareClassAsArgument
-	"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
-			public void get(StringBuilder builder){" Package Name".get(builder);
-			}
-		}, 
+	"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(" Package Name", 
 		new Entry(){
-			public void get(StringBuilder builder){" ImportList"
+			public void get(StringBuilder __BUILDER__){" ImportList"
 			}
-		}," Name ", " isInterface ", " Parent Class ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
+		}," Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
 
 
 
