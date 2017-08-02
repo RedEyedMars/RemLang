@@ -7,7 +7,7 @@ public class ExternalContext {
 	private static final Map<String,ExternalContext> types = new HashMap<String, ExternalContext>();
 	public static ExternalContext getClassContext(String className) {
 		if(!types.containsKey(className)){
-			types.put(className, new ExternalContext(null));
+			types.put(className, new ExternalContext(true,null));
 		}
 		return types.get(className);
 	}
@@ -17,32 +17,59 @@ public class ExternalContext {
 	}
 
 	protected ExternalContext   parentContext = null;
+	protected boolean isBody = false;
 	protected Map<String, ExternalContext > links = new HashMap<String, ExternalContext>();
 	protected ExternalStatement ender;
 
-	public ExternalContext(ExternalContext initialParentContext, ExternalVariableEntry... variables){
+	public ExternalContext(boolean isBody){
+		this.isBody = isBody;
+	}
+	public ExternalContext(boolean isBody, ExternalContext initialParentContext, ExternalVariableEntry... variables){
+		this.isBody = isBody;
 		parentContext = initialParentContext;
 		for(ExternalVariableEntry variable:variables){
 			add(variable);
 		}
 	}
-	public ExternalContext(ExternalContext initialParentContext, List<ExternalVariableEntry> variables){
+	public ExternalContext(boolean isBody, ExternalContext initialParentContext, List<ExternalVariableEntry> variables){
+		this.isBody = isBody;
 		parentContext = initialParentContext;
 		for(ExternalVariableEntry variable:variables){
 			add(variable);
+		}
+	}
+	public void setIsBody(boolean newIsBody){
+		this.isBody = newIsBody;
+	}
+	public void add(String name, ExternalContext context){
+		if(isBody){
+			links.put(name, context);
+		}
+		else {
+			if(parentContext!=null){
+				parentContext.add(name, context);
+			}
+			else {
+				links.put(name, context);
+			}
 		}
 	}
 	public void add(ExternalVariableEntry entry){
-		//System.out.println("\t"+this.toString()+"++"+entry.getName());
-		links.put(entry.getName(), entry.getClassContext());
+		add(entry.getName(), entry.getClassContext());
 	}
 	public void add(ExternalMethodEntry entry){
 		entry.getHeaderContext().setParent(this);
-		links.put(entry.getName(), entry.getClassContext());
-		links.put(entry.getSimpleName(), entry.getClassContext());
+		add(entry.getName(), entry.getClassContext());
+		add(entry.getSimpleName(), entry.getClassContext());
 	}
 	public void setParent(ExternalContext newParentContext){
 		parentContext = newParentContext;
+		if(!isBody){
+			for(String entryName:links.keySet()){
+				parentContext.add(entryName, links.get(entryName));
+			}
+			links.clear();
+		}
 	}
 	public void setEnder(ExternalStatement ender){
 		this.ender = ender;
@@ -87,6 +114,8 @@ public class ExternalContext {
 			if(parentContext!=null){
 				parentContext.print(tab,set);
 			}
+			else {
+			}
 			if(links.isEmpty()){
 				for(int i=0;i<tab;++i){
 					System.out.print("\t");
@@ -97,7 +126,7 @@ public class ExternalContext {
 				for(int i=0;i<tab;++i){
 					System.out.print("\t");
 				}
-				System.out.println(this.toString()+":>");
+				System.out.println(this.toString()+"P:>");
 				for(String key:this.links.keySet()){
 					for(int i=0;i<tab;++i){
 						System.out.print("\t");

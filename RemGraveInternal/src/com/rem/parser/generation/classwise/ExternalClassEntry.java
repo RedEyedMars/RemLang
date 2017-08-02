@@ -4,9 +4,63 @@ import java.util.*;
 public abstract class ExternalClassEntry extends ExternalImportEntry {
 
 	public static final List<ExternalClassEntry> allClasses = new ArrayList<ExternalClassEntry>();
-	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>();
+	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>(){
+		@Override
+		public boolean containsKey(Object query){
+			if(super.containsKey(query)){
+				return true;
+			}
+			if(query instanceof String){
+				String className = (String)query;
+				int indexOfAngle = className.indexOf('<');
+				if(indexOfAngle>-1){
+					query = className.substring(0, indexOfAngle);
+				}
+			}
+			return super.containsKey(query);
+		}
+		@Override
+		public ExternalClassEntry get(Object query){
+			if(super.containsKey(query)){
+				return super.get(query);
+			}
+			if(query instanceof String){
+				String className = (String)query;
+				int indexOfAngle = className.indexOf('<');
+				if(indexOfAngle>-1){
+					query = className.substring(0, indexOfAngle);
+				}
+			}
+			return super.get(query);
+		}
+	};
 	public static final Map<String,List<ExternalClassEntry>> allOffspring = new HashMap<String,List<ExternalClassEntry>>();
 
+	static {
+		classMap.put("ArrayList", new ExternalClassEntry(){
+			@Override
+			public void __INIT__(){
+				super.__SETUP__(
+
+				new StringEntry("java.util"), 
+				new StringEntry(""),
+				new StringEntry("ArrayList"),
+				" class ",
+				null,
+				new ArrayList<Entry>(),
+				new StringEntry(" class ArrayList "),
+				new ArrayList<ExternalVariableEntry>(),
+				new ArrayList<ExternalMethodEntry>(Arrays.asList(new ExternalMethodEntry(
+						0, false, new StringEntry("void"), new StringEntry("addAll"),
+						new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body())
+						)),new ArrayList<ExternalClassEntry>()				
+				
+				);
+			}
+		});
+		classMap.get("ArrayList").__INIT__();
+	}
+	
 	private Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
 	private Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
 	private Map<String,ExternalMethodEntry> simpleMethods = new LinkedHashMap<String,ExternalMethodEntry>();
@@ -51,18 +105,17 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 				offspring.myContext.setParent(myContext);
 			}
 		}
-		if(parentClass!=null){
+		if(parentClass!=null&&getParentClass() == null){
 			StringBuilder parentNameBuilder = new StringBuilder();
 			parentClass.get(parentNameBuilder);
-			if(classMap.containsKey(parentNameBuilder.toString())){
-				myContext.setParent(classMap.get(parentNameBuilder.toString()).myContext);
+			if(!allOffspring.containsKey(parentNameBuilder.toString())){
+				allOffspring.put(parentNameBuilder.toString(),new ArrayList<ExternalClassEntry>());
 			}
-			else {
-				if(!allOffspring.containsKey(parentNameBuilder.toString())){
-					allOffspring.put(parentNameBuilder.toString(),new ArrayList<ExternalClassEntry>());
-				}
-				allOffspring.get(parentNameBuilder.toString()).add(this);
-			}
+			allOffspring.get(parentNameBuilder.toString()).add(this);
+			addParentImport(parentClass);
+		}
+		else if(bonifideParentClass!=null){
+			myContext.setParent(bonifideParentClass.myContext);
 			addParentImport(parentClass);
 		}
 		if(interfaces!=null){
@@ -174,7 +227,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		addSubImport(subClass);
 		subClass.isSubClass  = true;
 		subClass.enclosingClass = this;
-		subClass.myContext.setParent(myContext);
+		//subClass.myContext.setParent(myContext);
 		ExternalClassEntry.classMap.put(subClass.getFullName(),subClass);
 		ExternalContext.getClassContext(subClass.getFullName()).setParent(subClass.myContext);
 	}

@@ -54,6 +54,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 	public boolean isWeak(){
 		return isWeak;
 	}
+	public void setIsWeak(Boolean newIsWeak){
+		isWeak = newIsWeak;
+	}
 	public Entry getType(){
 		return type;
 	}
@@ -150,6 +153,12 @@ public class ExternalVariableEntry extends ExternalStatement {
 
 	public boolean isStatic() {
 		return isStatic;
+	}
+	public void setAssignment(ExternalStatement newAssignment){
+		assignment = newAssignment;
+		if(newAssignment!=null){
+			addSubImport(newAssignment);
+		}
 	}
 	public void get(StringBuilder builder){
 		if(isStatic){

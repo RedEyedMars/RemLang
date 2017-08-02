@@ -1,5 +1,6 @@
 package com.rem.parser.generation.classwise;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -8,17 +9,13 @@ import java.util.ListIterator;
 import com.rem.parser.generation.*;
 public class ExternalStatement extends ExternalImportEntry implements List<ExternalStatement>{
 	protected int tabs = 0;
-	private ExternalContext topContext = new ExternalContext(null);
-	private ExternalContext bottomContext = new ExternalContext(topContext);
+	protected ExternalContext context = new ExternalContext(false);
 
 	public void setParentContext(ExternalContext newContext){
-		topContext.setParent(newContext);
+		context.setParent(newContext);
 	}
 	public ExternalContext getContext() {
-		return bottomContext;
-	}
-	public ExternalContext getTopContext() {
-		return topContext;
+		return context;
 	}
 	public void setTabs(int newTabs){
 		tabs = newTabs;
@@ -29,6 +26,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	protected Entry prefix = null;
 	protected Entry suffix = null;
 	private boolean negated = false;
+	private boolean braced = false;
 	public ExternalStatement(){
 	}
 	public ExternalStatement(String firstDelimiter, ExternalStatement...statements){
@@ -126,6 +124,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	public void negate(){
 		negated = !negated;
 	}
+	public void brace(){
+		braced = !braced;
+	}
 	public boolean add(ExternalStatement statement){
 		this.addSubImport(statement);
 		if(subStatements.size()>0){
@@ -135,8 +136,11 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			delimiters.add("");
 		}
 		//System.out.println("#"+statement+"#"+bottomContext+"<"+statement.topContext+">"+statement.getContext());
-		statement.setParentContext(this.topContext);
-		bottomContext.setParent(statement.getContext());
+		statement.setParentContext(context);
+
+		if(statement instanceof ExternalVariableEntry){
+			context.add(((ExternalVariableEntry)statement));
+		}
 		return subStatements.add(statement);
 	}
 	public void set(String newDelimiter){
@@ -180,6 +184,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		if(negated){
 			builder.append("!");
 		}
+		if(braced){
+			builder.append("(");
+		}
 		if(prefix!=null){
 			if(prefix instanceof TabEntry){
 				((TabEntry)prefix).setTab(tabs);
@@ -203,7 +210,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			}
 			suffix.get(builder);
 		}
-
+		if(braced){
+			builder.append(")");
+		}
 	}
 
 
@@ -281,39 +290,13 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	@Override
 	public ExternalStatement set(int index, ExternalStatement element) {
 		super.addSubImport(element);
-		if(index==0){
-			element.setParentContext(topContext);
-			if(!subStatements.isEmpty()){
-				subStatements.get(index+1).getContext().setParent(element.getContext());
-			}
-		}
-		else if(index>=size()){
-			element.setParentContext(bottomContext);
-			bottomContext = element.getContext();
-		}
-		else {
-			element.setParentContext(subStatements.get(index-1).getContext());
-			subStatements.get(index+1).getContext().setParent(element.getContext());
-		}
+		element.setParentContext(context);
 		return subStatements.set(index, element);
 	}
 	@Override
 	public void add(int index, ExternalStatement element) {
 		super.addSubImport(element);
-		if(index==0){
-			element.setParentContext(topContext);
-			if(!subStatements.isEmpty()){
-				subStatements.get(index).getContext().setParent(element.getContext());
-			}
-		}
-		else if(index>=size()){
-			element.setParentContext(bottomContext);
-			bottomContext = element.getContext();
-		}
-		else {
-			element.setParentContext(subStatements.get(index-1).getContext());
-			subStatements.get(index).getContext().setParent(element.getContext());
-		}
+		element.setParentContext(context);
 		subStatements.add(index, element);
 	}
 	@Override
@@ -344,7 +327,10 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	public static class Body extends ExternalStatement {
 
 		public Body(ExternalStatement... entries) {
-			super(new StringEntry("{"),"",entries);
+			super(new StringEntry("{"),"");
+			context.setIsBody(true);
+			addAll(Arrays.asList(entries));
+			
 		}
 		@Override
 		public void setTabs(int newTabs){
@@ -393,6 +379,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				super.add(body);
 			}
 			else {
+				body.context.setIsBody(true);
 				super.add(body);
 				//super.add(new ExternalStatement(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",body));
 			}

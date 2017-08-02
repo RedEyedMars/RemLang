@@ -23,7 +23,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
-		headerContext = new ExternalContext(null,parameters);
+		headerContext = new ExternalContext(true,null,parameters);
 		if(!getSimpleName().contains("*")){
 			addImport(new ImportEntry(type));
 		}
@@ -68,7 +68,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	public ExternalContext getClassContext() {
 		return classContext;
 	}
-	public ExternalContext getCurrentContext(){
+	public ExternalContext getContext(){
 		return body.getContext();
 	}
 
