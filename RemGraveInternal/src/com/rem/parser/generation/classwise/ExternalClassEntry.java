@@ -5,6 +5,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 
 	public static final List<ExternalClassEntry> allClasses = new ArrayList<ExternalClassEntry>();
 	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>(){
+		private static final long serialVersionUID = 19849465L;
 		@Override
 		public boolean containsKey(Object query){
 			if(super.containsKey(query)){
@@ -36,31 +37,47 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	};
 	public static final Map<String,List<ExternalClassEntry>> allOffspring = new HashMap<String,List<ExternalClassEntry>>();
 
+	public static void suppliment(final String className,final String packageName){
+		if(!classMap.containsKey(className)){
+			classMap.put(className, new ExternalClassEntry(){
+				@Override
+				public void __INIT__(){
+					super.__SETUP__(new StringEntry(packageName),new StringEntry(""),new StringEntry(className)," class ",null,new ArrayList<Entry>(),new StringEntry(" class "+className+" "),new ArrayList<ExternalVariableEntry>(),new ArrayList<ExternalMethodEntry>(),new ArrayList<ExternalClassEntry>());
+				}
+			});
+			classMap.get(className).__INIT__();
+		}
+	}
 	static {
 		classMap.put("ArrayList", new ExternalClassEntry(){
 			@Override
 			public void __INIT__(){
 				super.__SETUP__(
 
-				new StringEntry("java.util"), 
-				new StringEntry(""),
-				new StringEntry("ArrayList"),
-				" class ",
-				null,
-				new ArrayList<Entry>(),
-				new StringEntry(" class ArrayList "),
-				new ArrayList<ExternalVariableEntry>(),
-				new ArrayList<ExternalMethodEntry>(Arrays.asList(new ExternalMethodEntry(
-						0, false, new StringEntry("void"), new StringEntry("addAll"),
-						new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body())
-						)),new ArrayList<ExternalClassEntry>()				
-				
-				);
+						new StringEntry("java.util"), 
+						new StringEntry(""),
+						new StringEntry("ArrayList"),
+						" class ",
+						null,
+						new ArrayList<Entry>(),
+						new StringEntry(" class ArrayList "),
+						new ArrayList<ExternalVariableEntry>(),
+						new ArrayList<ExternalMethodEntry>(Arrays.asList(
+								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("addAll"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("sort"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body())
+								)
+								),new ArrayList<ExternalClassEntry>()				
+
+						);
 			}
 		});
 		classMap.get("ArrayList").__INIT__();
 	}
-	
+
 	private Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
 	private Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
 	private Map<String,ExternalMethodEntry> simpleMethods = new LinkedHashMap<String,ExternalMethodEntry>();

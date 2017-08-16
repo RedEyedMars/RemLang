@@ -5,6 +5,9 @@ accessClass
 	"new ExternalStatement(\".\", " Left ", " Right ")"
 accessMethod
 	"new ExternalStatement(\".\", " Left ", " Right ")"
+
+getClassFromClassMap
+	"ExternalClassEntry.classMap.get(" Class Name ")"
 exact
 	"new StringEntry(" In ")"
 exactEntry
@@ -47,6 +50,8 @@ bodyEntry
 	"/*Enty*/new ExternalStatement(new StringEntry(" Value "))"
 bodyOperator
 	"/*Optr*/new ExternalStatement(" Operator ", " Left ", " Right ")"
+bodyForIntHeader
+	"/*FIHd*/new ExternalStatement(\";\", " Variable Declaration ", new ExternalStatement(" Operator ", " Variable Name ", " Variable Limit "), new ExternalStatement(new StringEntry(\"++\"),\"\"," Variable Name "))"
 bodyCallWithSubject
 	"/*Call*/new ExternalStatement(\"\",
 			 	new ExternalStatement(\".\", " Subject ", " Method Name "),

@@ -257,6 +257,30 @@ entry i_operator uses innerable importable
 	output
 			internal bodyEntry{left} if right is null
 			internal bodyOperator{left operator right} if right is not null
+
+entry i_for_int_header uses innerable importable
+	entry left = null
+	entry variableName = null
+	entry right = null
+	entry operator = null
+	constructor takes iLeft as Entry, iOperator, iRight as Entry
+		set left as Entry = iLeft
+		set right as Entry = iRight
+		var leftAsVariable as i_variable = iLeft
+		leftAsVariable setIsFinal :false;
+		leftAsVariable setAssignment
+			i_exact:\"0";
+		set variableName
+			leftAsVariable getName
+		set operator = \iOperator
+		var leftAsImport as importable = iLeft
+		var rightAsImport as importable = iRight
+		this addImports
+			leftAsImport getImportPackage
+		this addImports
+			rightAsImport getImportPackage
+	output
+			internal bodyForIntHeader{left variableName operator right variableName} if right is not null
 entry i_call uses innerable importable
 	entry subject = null
 	entry methodName = null

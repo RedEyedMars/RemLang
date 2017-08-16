@@ -68,3 +68,5 @@ addFile
 	addFile(__DIRECTORY__,Generator.camelize(" Class Name ")+\".java\", " Class Name "Class);"
 setupClass
 	"" Class Name "Class.__INIT__();"
+addAnonymousClass
+	"ExternalClassEntry.suppliment(\"" ClassName "\", \"" PackageName "\");"

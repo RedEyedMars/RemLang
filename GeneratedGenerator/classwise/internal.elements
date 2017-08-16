@@ -6,6 +6,8 @@ getMethodName
 	"get" Name ""
 getVariableFromName
 	"MainClass." VariableName ""
+getClassFromClassMap
+	"ExternalClassEntry.classMap.get(" Class Name ")"
 newBody
 	"new ExternalStatement.Body(" Body Elements ")"
 manipulateObject
@@ -33,6 +35,8 @@ bodyAccessWithoutSubject
 	"" Method ""
 bodyName
 	"" Name ""
+bodyForIntHeader
+	"" Variable Declaration "; " VariableName " " Operator " " Variable Limit "; ++" Variable Name ""
 bodyNameWithParameters
 	"" Name "<" Parameters ">"
 bodyNewObj

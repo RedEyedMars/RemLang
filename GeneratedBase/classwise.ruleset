@@ -25,6 +25,7 @@ token-s
 	"@" as STA
 	"static " as TIC
 	"->" as ACCESS
+	"\\>" as SPECIAL_ACCESS
 	"=" as EQUALS
 	"," as COMMA
 	"." as DOT
@@ -34,6 +35,7 @@ token-s
 	"+" as PLUS
 	"\\" as BACKSLASH
 	"/" as FORSLASH
+	"$" as ISTYPENAME
 	"^" as CAMEL
 	"cds" as CDS
 	"clws" as CLWS
@@ -164,7 +166,7 @@ all_type_name is silent
 	type_var (DOT type_var)*
 
 name_var
-	( CAMEL? name_var_element as name_var ( ACCESS name_var_element as name_var )+ ) as access
+	( CAMEL? name_var_element as name_var ( (ACCESS) name_var_element as name_var )+ ) as access
 	( CAMEL? name_var_element as name_var ( PLUS name_var_element as name_var )+ ) as concat
 	name_var_element
 name_var_element is silent
@@ -176,10 +178,10 @@ name_var_element is silent
 	( CAMEL? ( variable_name ) ) as variable
 	( CAMEL? (QUOTE|(NUMBER|SUPER|THIS|NULL|TRUE|FALSE) as NAME) ) as exact
 type_var
-	( CAMEL? type_var_element as type_var ( ACCESS type_var_element as type_var )+ ( ACCESS AS_METHOD_NAME name_var? ) as as_method?) as access_multi
-	( CAMEL? type_var_element as type_var ACCESS AS_METHOD_NAME name_var? ) as access_method
-	( CAMEL? type_var_element as type_var ( PLUS type_var_element as type_var)+ ) as concat
-	type_var_element
+	( ISTYPENAME? CAMEL? type_var_element as type_var ( (ACCESS|SPECIAL_ACCESS) type_var_element as type_var )+ ( (ACCESS) AS_METHOD_NAME name_var? ) as as_method?) as access_multi
+	( ISTYPENAME? CAMEL? type_var_element as type_var (ACCESS) AS_METHOD_NAME name_var? ) as access_method
+	( ISTYPENAME? CAMEL? type_var_element as type_var ( PLUS type_var_element as type_var)+ ) as concat
+	ISTYPENAME? type_var_element
 type_var_element is silent
 	STATEMENT_AS_METHOD as as_method
 	STATEMENT_AS_QUOTE as as_quote

@@ -78,6 +78,8 @@ classwise
 			importables put
 				className
 				importHolder: packageName \className ;
+			setupClassList +=
+				classwise addAnonymousClass{\className packageName }
 		
 		all class_declaration to element
 			var newCl as Entry = generate clazz declaration:false null;
@@ -469,11 +471,19 @@ classwise
 						element->body_statement
 						true
 				if isInner is true
-					return
-						i_type_var:i_call: subject \"toString" {};;
+					if accessIndex is 0
+						return
+							i_type_var:i_exact: internal getClassFromClassMap { subject }   ;;
+					else	
+						return
+							i_type_var:i_call: subject \"toString" {};;
 				else
-					return
-						e_type_var:e_entry: i_call: subject \"toString" {};;;
+					if accessIndex is 0
+						return
+							i_type_var:i_exact: external bodyTypeName { subject }   ;;
+					else
+						return
+							e_type_var:e_entry: i_call: subject \"toString" {};;;
 			exact
 				entry templateParameters "," = {} 
 				element template_parameters to atom
@@ -487,7 +497,10 @@ classwise
 				if isInner is true
 					if element->CAMEL is not null
 						if element->NAME is not null
-							set value = ``^element->NAME``
+							if accessIndex is 0
+								set value = internal getClassFromClassMap {``^element->NAME``}
+							else	
+								set value = ``^element->NAME``
 						else
 							if accessIndex is 2
 								set value = \^element->variable_names
@@ -499,7 +512,10 @@ classwise
 								set value = \^element->variable_names	
 					else
 						if element->NAME is not null
-							set value = ``'element->NAME``
+							if accessIndex is 0
+								set value = internal getClassFromClassMap {``'element->NAME``}
+							else	
+								set value = ``'element->NAME``
 						else
 							if accessIndex is 2
 								set value = \'element->variable_names
@@ -860,9 +876,9 @@ body
 							set statement = e_operator :generate variable declaration :isInner; operator statement;
 					else
 						if isInner is true
-							set statement = i_operator :\"CANNOT YET DO INTEGER FORS";
+							set statement = i_for_int_header :generate variable declaration :isInner; operator statement;
 						else
-							set statement = e_operator :\"CANNOT YET DO INTEGER FORS";
+							set statement = e_for_int_header :generate variable declaration :isInner; operator statement;
 				var coloncolon = ":" 
 				atom as_body to quark
 					entry conditionalBody "" = {}
