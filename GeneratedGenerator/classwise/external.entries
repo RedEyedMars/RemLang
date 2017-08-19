@@ -406,8 +406,9 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
-	constructor takes iType as Entry, iName as Entry, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
-		
+	var pas = false
+	constructor takes iType as Entry, iName as Entry, iParametersAreStatement as Boolean, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+		set pas = iParametersAreStatement
 		set name = iName
 		set type = iType
 		var typeAsImportable as importable = iType
@@ -432,9 +433,12 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 		methodBody setDelimiter
 			",\n/*BODY*/\t\t\t\t"
 	output
-			external declareStaticMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true
-			external declareInterfaceMethod{e_tabs type name external bodyParameters{parameters} }                     if isInterface is true
-			external declareMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false 
+			external declareStaticMethod{e_tabs type name parameters external bodyBody{methodBody}} if isStatic is true and pas is true
+			external declareInterfaceMethod{e_tabs type name parameters }                     if isInterface is true and pas is true
+			external declareMethod{e_tabs type name parameters external bodyBody{methodBody}} if isInterface is false and pas is true
+			external declareStaticMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true and pas is false
+			external declareInterfaceMethod{e_tabs type name external bodyParameters{parameters} }                     if isInterface is true and pas is false
+			external declareMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false and pas is false
 		if context is null
 			set tabs = 0
 		else

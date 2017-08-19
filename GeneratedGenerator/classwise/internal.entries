@@ -532,6 +532,8 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		importPackage addPackage
 			i_single_import :{\"java.io"} {\"*"};
 		importPackage addPackage
+			i_single_import :{\"java.nio"} {\"*"};
+		importPackage addPackage
 			packageName
 			iName
 		importPackage setIsInner :true;

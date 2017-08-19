@@ -19,12 +19,13 @@ public class JobProcessor extends Thread {
 	@Override
 	public void run(){
 		try {
+			creator.ready(this);
 			while(JobCreator.isRunning()){
 				synchronized(this){
 					while(job==null&&JobCreator.isRunning()){
 						this.wait();
 					}
-					if(job!=null){
+					if(job!=null&&JobCreator.isRunning()){
 						try {
 							job.act();
 						}
@@ -33,7 +34,8 @@ public class JobProcessor extends Thread {
 							JobCreator.end();
 						}
 						job = null;
-						creator.addProcessor(this);
+						creator.ready(this);
+						creator.complete();
 					}
 				}
 			}
@@ -46,10 +48,9 @@ public class JobProcessor extends Thread {
 	}
 
 	public void end() {
-		if(job==null){
-			synchronized(this){
-				this.notifyAll();
-			}
+		job = null;
+		synchronized(this){
+			this.notifyAll();
 		}
 	}
 

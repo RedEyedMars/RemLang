@@ -47,6 +47,10 @@ token-s
 	"else" as ELSE
 	"while" as WHILE
 	"for" as FOR
+	"try" as TRY
+	"catch" as CATCH
+	"print" as PRINT
+	"|" as PIPE
 	"synchronized" as SYNCHRONIZED
 	"switch" as SWITCH
 	"case" as CASE
@@ -55,6 +59,7 @@ token-s
 	"false" as FALSE
 	"~" as WEAK
 	"*" as AS_METHOD_NAME
+	"*" as AS_GENERIC
 	"this" as THIS
 	"super" as SUPER
 	"..." as INLINE_LIST
@@ -123,6 +128,8 @@ body_conditional
 	(IN|NER) as inner? (IF|ELSE IF|WHILE|SYNCHRONIZED|SWITCH|CASE) as conditional body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 	(IN|NER) as inner? ELSE as conditional ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 	(IN|NER) as inner? FOR  as conditional variable_declaration OPERATOR body_statement ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
+	(IN|NER) as inner? TRY  as conditional ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
+	(IN|NER) as inner? PRINT? CATCH  as conditional (AS_GENERIC | NAME) as exception ( PIPE (AS_GENERIC | NAME) as exception )* ( METHOD_BODY as as_body | STATEMENT_AS_METHOD as as_method )
 body_statement
 	(IN|NER) as inner? body_call ( NEWLINE* ( BACKSLASH? OPERATOR)  NEWLINE* body_call )*
 	STATEMENT_AS_STRING as as_string
@@ -144,7 +151,7 @@ method_argument
 method_declaration
 	method_definition as methodDefinition in method_definitions
 method_definition is silent
-	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName (AS_METHOD_NAME as NAME | name_var | NAME) as methodName METHOD_PARAMETERS METHOD_BODY
+	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName (AS_METHOD_NAME as NAME | name_var | NAME) as methodName ( METHOD_PARAMETERS as inline | STATEMENT_AS_METHOD as variableParameters ) METHOD_BODY
 variable_declaration
 	(IN|NER) as inner?  WEAK? (STA|TIC) as static? WEAK? ( class_name_definition | variable_name_definition ) ( EQUALS method_argument)?
 variable_assignment

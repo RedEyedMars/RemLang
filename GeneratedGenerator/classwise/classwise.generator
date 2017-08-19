@@ -75,6 +75,10 @@ classwise
 			element packageName to atom
 				atom name_var to quark
 					packageName += generate name_var :true;
+			var mainClassImport as import_list
+				main_class getImportPackage
+			mainClassImport addPackage
+				i_single_import :{packageName} {\className};
 			importables put
 				className
 				importHolder: packageName \className ;
@@ -778,6 +782,7 @@ clazz
 				eret
 
 body
+	var exceptionIndex = 0
 	generate element takes isInner as Boolean, parentContext as context
 		var semicolon = ";"
 		element to atom
@@ -879,9 +884,47 @@ body
 							set statement = i_for_int_header :generate variable declaration :isInner; operator statement;
 						else
 							set statement = e_for_int_header :generate variable declaration :isInner; operator statement;
+				atom exception to quark
+					var exceptionType
+					if 'quark is "*"
+						set exceptionType = "Exception"
+					else
+						set exceptionType
+							body buildString
+								^quark
+								"Exception"
+					if statement is null
+						if isInner is true
+							set statement = i_exact :\exceptionType;
+						else
+							set statement = e_exact :\exceptionType;
+					else
+						if isInner is true
+							set statement = i_operator :statement "|"  i_exact:\exceptionType;;
+						else
+							set statement = e_operator :statement "|"  e_exact:\exceptionType;;
+				if atom->exception is not null
+					var exceptionVariable
+						body buildString
+							"e"
+							'exceptionIndex
+					if isInner is true
+						set statement = i_operator :statement " "  i_exact :\exceptionVariable;;
+					else
+						set statement = e_operator :statement " "  e_exact :\exceptionVariable;;
 				var coloncolon = ":" 
 				atom as_body to quark
 					entry conditionalBody "" = {}
+					if atom->PRINT is not null
+						var printTrace
+							body buildString
+								"e"
+								exceptionIndex
+								".printStackTrace()"
+						if isInner is true									
+							conditionalBody += i_element:"" i_exact:\printTrace; semicolon parentContext;
+						else									
+							conditionalBody += e_element:"" e_exact:\printTrace; semicolon parentContext;
 					quark body_element to quanta
 						entry bodyElem = generate element :isInner conditionalContext;
 						if bodyElem is not null
@@ -912,6 +955,8 @@ body
 					else
 						return
 							e_conditional:'conditionalName statement e_inner_call:subject; parentContext;
+				if atom->exception is not null
+					set exceptionIndex = exceptionIndex + 1
 		return
 			null
 	generate statement takes isInner as Boolean
@@ -1188,9 +1233,15 @@ method
 				generate classwise all_type :isInner;
 		entry methodBody "" = {} 
 		entry parameters = {}
+		var parametersAreStatement = false
 		entry bodyContext = context:parentContext;
-		definition variable_declaration to element
-			parameters += generate variable declaration :isInner;
+		definition inline to element
+			element variable_declaration to atom
+				parameters += generate variable declaration :isInner;
+		definition variableParameters to element
+			set parametersAreStatement = true
+			element body_statement to atom
+				parameters += generate body statement :true;
 		definition body_element to element
 			entry bodyElem = generate body element:isInner bodyContext;
 			if bodyElem is not null
@@ -1200,7 +1251,7 @@ method
 				return
 					i_method: typeName i_exact:\'definition->methodName; parameters methodBody parentContext;
 			else
-				var eMethod = e_method: typeName e_exact:\'definition->methodName; parameters methodBody parentContext;
+				var eMethod = e_method: typeName e_exact:\'definition->methodName; parametersAreStatement parameters methodBody parentContext;
 				if definition->static is not null
 					eMethod setIsStatic : true;
 				return
@@ -1214,7 +1265,7 @@ method
 				return
 					i_method: typeName vName parameters methodBody parentContext;
 			else
-				var eMethod = e_method: typeName vName parameters methodBody parentContext;
+				var eMethod = e_method: typeName vName parametersAreStatement parameters methodBody parentContext;
 				if definition->static is not null
 					eMethod setIsStatic : true;
 				return

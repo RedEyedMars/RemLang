@@ -1,6 +1,7 @@
 package com.rem.parser.generation.classwise;
 import com.rem.parser.generation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 public class ExternalMethodEntry extends ExternalImportEntry {
 	private Integer tabs = 0;
@@ -17,6 +18,36 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		this.type = type;
 		this.name = name;
 		this.parameters = parameters;
+		this.body = body;
+		this.isStatic = isStatic;
+
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+		headerContext = new ExternalContext(true,null,parameters);
+		if(!getSimpleName().contains("*")){
+			addImport(new ImportEntry(type));
+		}
+		for(ExternalVariableEntry variable:parameters){
+			addSubImport(variable);
+		}
+		if(body!=null){
+			body.setParentContext(headerContext);
+			addSubImport(body);
+		}
+		else {
+			this.isInterface = true;
+		}
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
+		this.tabs = tabs;
+		this.type = type;
+		this.name = name;
+		this.parameters = new ArrayList<ExternalVariableEntry>();
+		for(ExternalStatement param:params){
+			parameters.add((ExternalVariableEntry)param);
+			((ExternalVariableEntry)param).setAssignment(null);
+		}
 		this.body = body;
 		this.isStatic = isStatic;
 
