@@ -1,0 +1,93 @@
+#Comments
+comment-s
+	[#[^\n]*\n] as comment 
+
+#Tokens
+cargon_token-s
+	[[a-zA-Z_][a-zA-Z0-9_-]*] as NAME
+	[\\n] as NEWLINE
+	[.*] as WILD
+	[.] as ANYCHAR
+	[[-]?\\d+] as NUMBER
+	[[^\\s]+] as NONSPACE
+	"|" as PIPE
+	"+" as PLUS
+	"?" as OPTIONAL
+	"*" as MANY
+	"as" as AS
+	"in" as IN
+	"with" as WITH
+	"are" as ARE
+	"," as COMMA
+	"from" as FROM
+	"." as DOT
+	"\t" as TAB
+	"\n\t" as NEWTAB
+	":" as COLON
+	"silent" as SILENT
+	"Braced" as BRACED
+	"Imports" as IMPORTS
+	"->" as ACCESS
+	"list" as LIST
+	"=" as EQUALSIGN
+	"^" as CARROT
+	"-" as DASH
+	"\\d" as REGEX_NUMBER
+	"\\s" as REGEX_WHITESPACE
+	"\\." as REGEX_DOT
+	"\\\"" as REGEX_QUOTE
+
+#Braces
+brace-s are Braced
+	[(,)] as BRACE with definition  
+	[[,]] as REGEX with regex
+	[[,]] as REGEX_OPTION with CARROT as negate? ( ANYCHAR as left DASH ANYCHAR as right ) as range* regex_special* ANYCHAR as standAlone*
+	[(,)] as REGEX_GROUP with regex
+	[\",\"] as QUOTE with WILD as quote
+
+altbrace-s are CharitableBraced
+	[,\n] as RULE_PARAMETERS with ( SILENT | BRACED braced_parameters | IMPORTS import_parameters )? ( COMMA (SILENT|BRACED braced_parameters |IMPORTS import_parameters))*
+braced_parameters
+	NONSPACE as left NONSPACE as right
+import_parameters
+	( QUOTE | NAME as ruleName )+
+
+#List Prototypes
+rule-s are empty
+list-s are empty
+list_name-s are empty
+
+#Rules
+base is silent
+	( NEWLINE | comments | list as list in lists | rule as rule in rules )+
+
+rule is silent
+	NAME as ruleName RULE_PARAMETERS? ( NEWTAB | EQUALSIGN ) definition
+
+list is silent
+	NAME as listName in list_names LIST ( NEWTAB QUOTE )*
+
+
+definition
+	element as chain+ ( ( PIPE | NEWTAB ) definition ) as choice?
+
+element
+	atom ( AS NAME as newName)? ( IN NAME as listName)?
+
+atom is silent
+	( definition ( OPTIONAL | MANY | PLUS ) as option ) as multiple
+	BRACE as braced
+	QUOTE as quoteToken
+	REGEX as regexToken
+	list_name as listToken
+	NAME as ruleName
+
+regex
+	regex_element+
+regex_element
+	REGEX_OPTION as option ( OPTIONAL | MANY | PLUS ) as multiple?
+	REGEX_GROUP as group ( OPTIONAL | MANY | PLUS ) as multiple?
+	regex_special ( OPTIONAL | MANY | PLUS ) as multiple?
+	ANYCHAR as character ( OPTIONAL | MANY | PLUS ) as multiple?
+regex_special
+	( REGEX_NUMBER | REGEX_DOT | REGEX_WHITESPACE | REGEX_QUOTE )

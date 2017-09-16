@@ -23,6 +23,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	private List<ExternalStatement> subStatements = new ArrayList<ExternalStatement>();
 	private List<String> delimiters = new ArrayList<String>();
 	protected String delimiter = "";
+	protected String onEmptyDelimiter = null;
 	protected Entry prefix = null;
 	protected Entry suffix = null;
 	private boolean negated = false;
@@ -31,6 +32,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	}
 	public ExternalStatement(String firstDelimiter, ExternalStatement...statements){
 		delimiter = firstDelimiter;
+		onEmptyDelimiter = firstDelimiter;
 		if(statements!=null){
 			for(ExternalStatement statement:statements){
 				add(statement);
@@ -196,10 +198,17 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			}
 			prefix.get(builder);
 		}
-		for(int i=0;i<subStatements.size();++i){
-			builder.append(delimiters.get(i));
-			subStatements.get(i).setTabs(tabs);
-			subStatements.get(i).get(builder);
+		if(subStatements.isEmpty()){
+			if(onEmptyDelimiter!=null){
+				builder.append(onEmptyDelimiter);
+			}
+		}
+		else {
+			for(int i=0;i<subStatements.size();++i){
+				builder.append(delimiters.get(i));
+				subStatements.get(i).setTabs(tabs);
+				subStatements.get(i).get(builder);
+			}
 		}
 		if(suffix!=null){
 			if(suffix instanceof TabEntry){
@@ -325,12 +334,12 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	}
 
 	public static class Body extends ExternalStatement {
-
+		private boolean isCaptured = false; 
 		public Body(ExternalStatement... entries) {
 			super(new StringEntry("{"),"");
 			context.setIsBody(true);
 			addAll(Arrays.asList(entries));
-			
+
 		}
 		@Override
 		public void setTabs(int newTabs){
@@ -338,13 +347,29 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 		@Override
 		public void get(StringBuilder builder){
-			super.get(builder);
-			new TabEntry(tabs-1,new StringEntry("}")).get(builder);
+
+			if(isCaptured == false ){
+				super.get(builder);
+				new TabEntry(tabs-1,new StringEntry("}")).get(builder);
+			}
+			else {
+				int trueTab = tabs;
+				tabs = tabs - 1;
+				super.get(builder);
+				tabs = trueTab;
+			}
+		}
+		public void add(ExternalStatement.Body otherBody){
+			otherBody.prefix = null;
+			otherBody.suffix = null;
+			otherBody.isCaptured = true;
+			super.add(otherBody);
 		}
 	}
 	public static class Parameters extends ExternalStatement {
 		public Parameters( ExternalStatement...statements){
 			super(",",statements);
+			onEmptyDelimiter = null;
 		}
 	}
 	public static class NewObject extends ExternalStatement {
@@ -383,7 +408,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				super.add(body);
 				//super.add(new ExternalStatement(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",body));
 			}
-	    }
+		}
 		@Override
 		public boolean add(ExternalStatement element){
 			return __BODY__.add(element);

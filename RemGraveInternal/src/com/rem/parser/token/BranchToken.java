@@ -173,11 +173,17 @@ public class BranchToken implements IToken {
 		if(key instanceof String){
 
 			String id = (String)key;
-
-			if(tokens.containsKey(id)&&tokens.get(id).size()==1){
-				return tokens.get(id).get(0);
+			if(tokens.containsKey(id)){
+				if(tokens.get(id).isEmpty()){
+					return null;
+				}
+				else {
+					return tokens.get(id).get(0);
+				}
 			}
-			else return null;
+			else {
+				return null;
+			}
 		}
 		else {
 			IToken.Key id = (IToken.Key)key;

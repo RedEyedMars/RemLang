@@ -104,6 +104,10 @@ public abstract class FlowController {
 		return builder.toString();
 
 	}
+	
+	protected Character asChar(int i){
+		return (char)(i);
+	}
 
 	protected String getDirectory(String fileName, String knownDirectory){
 		if("".equals(fileName)){
