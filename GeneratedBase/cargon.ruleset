@@ -79,8 +79,7 @@ atom is silent
 	BRACE as braced
 	QUOTE as quoteToken
 	REGEX as regexToken
-	list_name as listToken
-	NAME as ruleName
+	NAME as ruleToken
 
 regex
 	regex_element+

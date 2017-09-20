@@ -37,7 +37,7 @@ public class Atom extends ConcreteRule {
 					new AddTokenParser(
 						new ListNameElementParser("list_names"),"listToken"),
 					new AddTokenParser(
-						CargonTokens.NAME,"ruleName")));
+						CargonTokens.NAME,"ruleToken")));
 
 	}
 
