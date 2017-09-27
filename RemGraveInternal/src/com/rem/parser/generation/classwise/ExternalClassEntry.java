@@ -180,7 +180,6 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void addVariable(final ExternalVariableEntry variable){
 		variables.put(variable.getName(), variable);
-		//System.out.println(this.getFullName());
 		myContext.add(variable);
 		addSubImport(variable);
 		addMethod(new ExternalMethodEntry(0,false, variable.getType(),new Entry(){

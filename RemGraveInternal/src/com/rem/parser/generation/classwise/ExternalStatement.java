@@ -58,12 +58,6 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				add(statement);
 			}
 		}
-		if(initialPrefix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialPrefix);
-		}
-		if(initialSuffix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialSuffix);
-		}
 	}
 	public ExternalStatement(Entry initialPrefix, Entry initialSuffix, ExternalStatement...statements){
 		if(initialPrefix instanceof ExternalStatement){
@@ -83,12 +77,6 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				add(statement);
 			}
 		}
-		if(initialPrefix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialPrefix);
-		}
-		if(initialSuffix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialSuffix);
-		}
 	}
 	public ExternalStatement(Entry initialPrefix, String firstDelimiter, ExternalStatement...statements){
 		delimiter = firstDelimiter;
@@ -103,9 +91,6 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				add(statement);
 			}
 		}
-		if(initialPrefix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialPrefix);
-		}
 	}
 	public ExternalStatement(Entry initialPrefix, ExternalStatement...statements){
 		if(initialPrefix instanceof ExternalStatement){
@@ -118,9 +103,6 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			for(ExternalStatement statement:statements){
 				add(statement);
 			}
-		}
-		if(initialPrefix instanceof ExternalStatement){
-			addSubImport((ExternalStatement)initialPrefix);
 		}
 	}
 	public void negate(){

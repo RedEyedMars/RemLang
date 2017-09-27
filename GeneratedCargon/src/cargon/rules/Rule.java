@@ -21,7 +21,10 @@ public class Rule extends ConcreteRule {
 					new AddTokenParser(
 						CargonTokens.NAME,"ruleName"),
 					new OptionalParser(
-							Altbraces.RULE_PARAMETERS),
+							
+							new ChoiceParser(
+									Altbraces.RULE_PARAMETERS,
+									Altbraces.EQUALS_RULE_PARAMETERS)),
 					
 					new ChoiceParser(
 							CargonTokens.NEWTAB,

@@ -10,6 +10,8 @@ cargon_token-s
 	[.] as ANYCHAR
 	[[-]?\\d+] as NUMBER
 	[[^\\s]+] as NONSPACE
+	"\"" as CHAR_QUOTE
+	[[^\"]*] as quote
 	"|" as PIPE
 	"+" as PLUS
 	"?" as OPTIONAL
@@ -36,6 +38,10 @@ cargon_token-s
 	"\\s" as REGEX_WHITESPACE
 	"\\." as REGEX_DOT
 	"\\\"" as REGEX_QUOTE
+	"\\\'" as REGEX_APOS
+
+uote is silent
+	CHAR_QUOTE quote CHAR_QUOTE 
 
 #Braces
 brace-s are Braced
@@ -43,14 +49,14 @@ brace-s are Braced
 	[[,]] as REGEX with regex
 	[[,]] as REGEX_OPTION with CARROT as negate? ( ANYCHAR as left DASH ANYCHAR as right ) as range* regex_special* ANYCHAR as standAlone*
 	[(,)] as REGEX_GROUP with regex
-	[\",\"] as QUOTE with WILD as quote
 
 altbrace-s are CharitableBraced
 	[,\n] as RULE_PARAMETERS with ( SILENT | BRACED braced_parameters | IMPORTS import_parameters )? ( COMMA (SILENT|BRACED braced_parameters |IMPORTS import_parameters))*
+	[,=] as EQUALS_RULE_PARAMETERS with ( SILENT | BRACED braced_parameters | IMPORTS import_parameters )? ( COMMA (SILENT|BRACED braced_parameters |IMPORTS import_parameters))*
 braced_parameters
 	NONSPACE as left NONSPACE as right
 import_parameters
-	( QUOTE | NAME as ruleName )+
+	( uote | NAME as ruleName )+
 
 #List Prototypes
 rule-s are empty
@@ -62,10 +68,10 @@ base is silent
 	( NEWLINE | comments | list as list in lists | rule as rule in rules )+
 
 rule is silent
-	NAME as ruleName RULE_PARAMETERS? ( NEWTAB | EQUALSIGN ) definition
+	NAME as ruleName ( RULE_PARAMETERS | EQUALS_RULE_PARAMETERS )? ( NEWTAB | EQUALSIGN ) definition
 
 list is silent
-	NAME as listName in list_names LIST ( NEWTAB QUOTE )*
+	NAME as listName in list_names LIST ( NEWTAB uote )*
 
 
 definition
@@ -77,7 +83,7 @@ element
 atom is silent
 	( definition ( OPTIONAL | MANY | PLUS ) as option ) as multiple
 	BRACE as braced
-	QUOTE as quoteToken
+	uote as quoteToken
 	REGEX as regexToken
 	NAME as ruleToken
 
@@ -89,4 +95,4 @@ regex_element
 	regex_special ( OPTIONAL | MANY | PLUS ) as multiple?
 	ANYCHAR as character ( OPTIONAL | MANY | PLUS ) as multiple?
 regex_special
-	( REGEX_NUMBER | REGEX_DOT | REGEX_WHITESPACE | REGEX_QUOTE )
+	( REGEX_NUMBER | REGEX_DOT | REGEX_WHITESPACE | REGEX_QUOTE | REGEX_APOS )

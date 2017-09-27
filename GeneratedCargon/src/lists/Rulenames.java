@@ -15,6 +15,7 @@ public class Rulenames extends ParseList {
 		return "rulename";
 	}
 
+	public static final RegexParser uote = new RegexParser("uote","rulenames","uote");
 	public static final RegexParser braced_parameters = new RegexParser("braced_parameters","rulenames","braced_parameters");
 	public static final RegexParser import_parameters = new RegexParser("import_parameters","rulenames","import_parameters");
 	public static final RegexParser base = new RegexParser("base","rulenames","base");
@@ -28,5 +29,5 @@ public class Rulenames extends ParseList {
 	public static final RegexParser regex_special = new RegexParser("regex_special","rulenames","regex_special");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				braced_parameters,import_parameters,base,rule,list,definition,element,atom,regex,regex_element,regex_special);
+				uote,braced_parameters,import_parameters,base,rule,list,definition,element,atom,regex,regex_element,regex_special);
 }

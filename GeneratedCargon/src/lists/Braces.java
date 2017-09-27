@@ -40,10 +40,7 @@ public class Braces extends ParseList {
 										CargonTokens.ANYCHAR,"standAlone"))),"REGEX_OPTION","braces","[,]");
 	public static final BracedParser REGEX_GROUP = new BracedParser(
 							Rules.regex,"REGEX_GROUP","braces","(,)");
-	public static final BracedParser QUOTE = new BracedParser(
-							new AddTokenParser(
-								CargonTokens.WILD,"quote"),"QUOTE","braces","\",\"");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,REGEX,REGEX_OPTION,REGEX_GROUP,QUOTE);
+				BRACE,REGEX,REGEX_OPTION,REGEX_GROUP);
 }

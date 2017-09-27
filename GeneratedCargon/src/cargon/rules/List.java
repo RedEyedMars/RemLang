@@ -25,7 +25,7 @@ public class List extends ConcreteRule {
 							
 								new ChainParser(
 									CargonTokens.NEWTAB,
-									Braces.QUOTE))));
+									Rules.uote))));
 
 	}
 

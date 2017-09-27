@@ -16,6 +16,7 @@ public class Rules extends ParseList {
 		return "rule";
 	}
 
+	public static final IRule uote = Uote.parser;
 	public static final IRule braced_parameters = BracedParameters.parser;
 	public static final IRule import_parameters = ImportParameters.parser;
 	public static final IRule base = Base.parser;
@@ -29,5 +30,5 @@ public class Rules extends ParseList {
 	public static final IRule regex_special = RegexSpecial.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				braced_parameters,import_parameters,base,rule,list,definition,element,atom,regex,regex_element,regex_special);
+				uote,braced_parameters,import_parameters,base,rule,list,definition,element,atom,regex,regex_element,regex_special);
 }

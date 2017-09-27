@@ -31,11 +31,9 @@ public class Atom extends ConcreteRule {
 					new AddTokenParser(
 						Braces.BRACE,"braced"),
 					new AddTokenParser(
-						Braces.QUOTE,"quoteToken"),
+						Rules.uote,"quoteToken"),
 					new AddTokenParser(
 						Braces.REGEX,"regexToken"),
-					new AddTokenParser(
-						new ListNameElementParser("list_names"),"listToken"),
 					new AddTokenParser(
 						CargonTokens.NAME,"ruleToken")));
 

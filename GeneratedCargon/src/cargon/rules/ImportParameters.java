@@ -19,7 +19,7 @@ public class ImportParameters extends ConcreteRule {
 					new MultipleParser(
 							
 							new ChoiceParser(
-									Braces.QUOTE,
+									Rules.uote,
 									new AddTokenParser(
 										CargonTokens.NAME,"ruleName"))));
 
