@@ -39,7 +39,21 @@ public class BodyStatement extends ConcreteRule {
 											Tokens.NEWLINE),
 									Rules.body_call))),
 					new AddTokenParser(
-						Braces.STATEMENT_AS_STRING,"as_string")));
+						Braces.STATEMENT_AS_STRING,"as_string"),
+					new AddTokenParser(
+						
+						new ChainParser(
+							new AddTokenParser(
+								Braces.STATEMENT_AS_BRACED,"left"),
+							new OptionalParser(
+									
+										new ChainParser(
+											new OptionalParser(
+													Tokens.BACKSLASH),
+											Tokens.OPERATOR)),
+							new OptionalParser(
+									new AddTokenParser(
+										Rules.body_statement,"right"))),"as_braced")));
 
 	}
 

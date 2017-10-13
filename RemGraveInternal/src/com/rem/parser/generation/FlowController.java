@@ -85,7 +85,7 @@ public abstract class FlowController {
 		return builder.toString();
 	}
 
-	protected String camelize(String name) {
+	public static String camelize(String name) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(("" + name.charAt(0)).toUpperCase());
 		boolean cap = false;

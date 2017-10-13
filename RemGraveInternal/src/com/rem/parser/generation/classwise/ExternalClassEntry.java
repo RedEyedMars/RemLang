@@ -64,6 +64,15 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 						new ArrayList<ExternalVariableEntry>(),
 						new ArrayList<ExternalMethodEntry>(Arrays.asList(
 								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("add"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("remove"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
+										0, false, new StringEntry("Boolean"), new StringEntry("isEmpty"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
 										0, false, new StringEntry("void"), new StringEntry("addAll"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
@@ -149,7 +158,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 				constructorBody);
 		methods.put("*", constructorMethod);
 		myContext.add(constructorMethod);
-		myContext.add(new ExternalVariableEntry(false,initialName,new StringEntry("this"),null));
+		myContext.add(new ExternalVariableEntry(false,initialName,"",new StringEntry("this"),null));
 		addSubImport(constructorBody);
 		//addSubImport(constructorMethod);
 
@@ -212,7 +221,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 						builder.append(Generator.camelize(variable.getName()));
 					}
 				},new ArrayList<ExternalVariableEntry>(Arrays.asList(
-						new ExternalVariableEntry(false,variable.getType(),
+						new ExternalVariableEntry(false,variable.getType(),variable.getTypeSuffix(),
 								new Entry(){
 							@Override
 							public void get(StringBuilder builder) {

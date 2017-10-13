@@ -32,6 +32,8 @@ public class MethodDefinition extends ConcreteRule {
 									Tokens.TIC),"static")),
 					new AddTokenParser(
 						Rules.all_type_name,"typeName"),
+					new ManyParser(
+							Tokens.ARRAY_TYPE),
 					new AddTokenParser(
 						
 					new ChoiceParser(

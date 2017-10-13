@@ -20,6 +20,7 @@ public class ENewObjEntry implements Entry,IInnerable,IImportable {
 	private ImportListEntry importPackage = (ImportListEntry)new ImportListEntry();
 	private Entry className = null;
 	private ListEntry parameters = null;
+	private ListEntry array_parameters = null;
 
 	public ENewObjEntry(Entry iClassName,ListEntry iParameters){
 		className = iClassName;
@@ -29,6 +30,21 @@ public class ENewObjEntry implements Entry,IInnerable,IImportable {
 			this.addImports(i.getImportPackage());
 		}
 		parameters.setDelimiter(",");
+	}
+	public ENewObjEntry(Entry iClassName,ListEntry iParameters,ListEntry iArrayParameters){
+		className = iClassName;
+		parameters = iParameters;
+		array_parameters = iArrayParameters;
+		if((iParameters != null)){
+			for(Entry e:iParameters){
+				IImportable i = (IImportable)e;
+				this.addImports(i.getImportPackage());
+			}
+			parameters.setDelimiter(",");
+		}
+		if((iArrayParameters != null)){
+			array_parameters.setDelimiter("][");
+		}
 	}
 
 	public Boolean getIsInner(){
@@ -49,10 +65,21 @@ public class ENewObjEntry implements Entry,IInnerable,IImportable {
 		return className;
 	}	public ListEntry getParameters(){
 		return parameters;
+	}	public ListEntry getArrayParameters(){
+		return array_parameters;
 	}
 	public void get(StringBuilder builder){
-		if((className != null)){
-			new ElementEntry(ExternalGenerator.bodyNewObjElement,new ListEntry(className,parameters)).get(builder);
+		if((parameters != null && array_parameters != null)){
+			new ElementEntry(ExternalGenerator.bodyNewObjPAElement,new ListEntry(className,parameters,array_parameters)).get(builder);
+		}
+		else if((parameters != null && array_parameters == null)){
+			new ElementEntry(ExternalGenerator.bodyNewObjPElement,new ListEntry(className,parameters)).get(builder);
+		}
+		else if((parameters == null && array_parameters != null)){
+			new ElementEntry(ExternalGenerator.bodyNewObjAElement,new ListEntry(className,array_parameters)).get(builder);
+		}
+		else if((parameters == null && array_parameters == null)){
+			new ElementEntry(ExternalGenerator.bodyNewObjElement,new ListEntry(className)).get(builder);
 		}
 	}
 }

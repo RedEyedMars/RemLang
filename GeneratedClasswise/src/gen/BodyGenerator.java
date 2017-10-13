@@ -266,6 +266,26 @@ public class BodyGenerator extends Generator {
 					return new ECallEntry(subject,new StringEntry("toString"),new ListEntry());
 				}
 			}
+			else if("as_braced".equals(elementKey.getName())){
+				IToken element = statement.get(elementKey);
+				Entry subject = (Entry)Generators.body.generateStatement(element.get("left").get("body_statement"),isInner);
+				Entry oper = (Entry)null;
+				if((element.get("OPERATOR") != null)){
+					oper = new StringEntry(element.get("OPERATOR").getString());
+				}
+				Entry right = (Entry)null;
+				if((element.get("right") != null)){
+					right = Generators.body.generateStatement(element.get("right").get("body_statement"),isInner);
+				}
+				IInnerable subjectAsInnerable = (IInnerable)subject;
+				Boolean subjectIsInner = subjectAsInnerable.getIsInner();
+				if((isInner == true || subjectIsInner == true)){
+					return new IBracedEntry(subject,oper,right);
+				}
+				else {
+					return new EBracedEntry(subject,right);
+				}
+			}
 			else if("body_call".equals(elementKey.getName())){
 				IToken element = statement.get(elementKey);
 				if((operand == null)){
@@ -307,6 +327,7 @@ public class BodyGenerator extends Generator {
 		if(elementGroup != null){
 			for(IToken element:elementGroup){
 				ListEntry parameters = new ListEntry();
+				ListEntry array_parameters = new ListEntry();
 				Entry name_var = (Entry)null;
 				if((isInner == true)){
 					if((element.get("type_var") != null)){
@@ -368,24 +389,72 @@ public class BodyGenerator extends Generator {
 							}
 						}
 					}
+					Boolean containsArrayParameters = false;
+					List<IToken> quarkArrayParameters = element.getAll("array_parameters");
+					if(quarkArrayParameters != null){
+						for(IToken quark:quarkArrayParameters){
+							containsArrayParameters = true;
+							List<IToken> atomMethodArgument = quark.getAll("method_argument");
+							if(atomMethodArgument != null){
+								for(IToken atom:atomMethodArgument){
+									array_parameters.add(generateArgument(atom,true));
+								}
+							}
+						}
+					}
 					if((element.get("NEW") != null)){
-						ret = new INewObjEntry(name_var,parameters);
+						if((containsParameters == true)){
+							if((containsArrayParameters == true)){
+								ret = new INewObjEntry(name_var,parameters,array_parameters);
+							}
+							else {
+								ret = new INewObjEntry(name_var,parameters,null);
+							}
+						}
+						else {
+							if((containsArrayParameters == true)){
+								ret = new INewObjEntry(name_var,null,array_parameters);
+							}
+							else {
+								ret = new INewObjEntry(name_var,null,null);
+							}
+						}
 					}
 					else {
 						if((ret == null)){
 							if((containsParameters == true)){
-								ret = new ICallEntry(name_var,parameters);
+								if((containsArrayParameters == true)){
+									ret = new ICallEntry(name_var,parameters,array_parameters);
+								}
+								else {
+									ret = new ICallEntry(name_var,parameters);
+								}
 							}
 							else {
-								ret = new ICallEntry(name_var);
+								if((containsArrayParameters == true)){
+									ret = new ICallEntry(name_var,null,array_parameters);
+								}
+								else {
+									ret = new ICallEntry(name_var);
+								}
 							}
 						}
 						else {
 							if((containsParameters == true)){
-								ret = new ICallEntry(ret,name_var,parameters);
+								if((containsArrayParameters == true)){
+									ret = new ICallEntry(ret,name_var,parameters,array_parameters);
+								}
+								else {
+									ret = new ICallEntry(ret,name_var,parameters);
+								}
 							}
 							else {
-								ret = new ICallEntry(ret,name_var);
+								if((containsArrayParameters == true)){
+									ret = new ICallEntry(ret,name_var,null,array_parameters);
+								}
+								else {
+									ret = new ICallEntry(ret,name_var);
+								}
 							}
 						}
 					}
@@ -440,24 +509,62 @@ public class BodyGenerator extends Generator {
 							}
 						}
 					}
+					Boolean containsArrayParameters = false;
+					List<IToken> quarkArrayParameters = element.getAll("array_parameters");
+					if(quarkArrayParameters != null){
+						for(IToken quark:quarkArrayParameters){
+							containsArrayParameters = true;
+							List<IToken> atomMethodArgument = quark.getAll("method_argument");
+							if(atomMethodArgument != null){
+								for(IToken atom:atomMethodArgument){
+									array_parameters.add(generateArgument(atom,false));
+								}
+							}
+						}
+					}
 					if((element.get("NEW") != null)){
-						ret = new ENewObjEntry(name_var,parameters);
+						if((containsArrayParameters == true)){
+							ret = new ENewObjEntry(name_var,parameters,array_parameters);
+						}
+						else {
+							ret = new ENewObjEntry(name_var,parameters);
+						}
 					}
 					else {
 						if((ret == null)){
 							if((containsParameters == true)){
-								ret = new ECallEntry(name_var,parameters);
+								if((containsArrayParameters == true)){
+									ret = new ECallEntry(name_var,parameters,array_parameters);
+								}
+								else {
+									ret = new ECallEntry(name_var,parameters);
+								}
 							}
 							else {
-								ret = new ECallEntry(name_var);
+								if((containsArrayParameters == true)){
+									ret = new ECallEntry(name_var,null,array_parameters);
+								}
+								else {
+									ret = new ECallEntry(name_var);
+								}
 							}
 						}
 						else {
 							if((containsParameters == true)){
-								ret = new ECallEntry(ret,name_var,parameters);
+								if((containsArrayParameters == true)){
+									ret = new ECallEntry(ret,name_var,parameters,array_parameters);
+								}
+								else {
+									ret = new ECallEntry(ret,name_var,parameters);
+								}
 							}
 							else {
-								ret = new ECallEntry(ret,name_var);
+								if((containsArrayParameters == true)){
+									ret = new ECallEntry(ret,name_var,null,array_parameters);
+								}
+								else {
+									ret = new ECallEntry(ret,name_var);
+								}
 							}
 						}
 					}

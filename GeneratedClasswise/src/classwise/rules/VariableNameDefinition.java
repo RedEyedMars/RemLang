@@ -20,6 +20,8 @@ public class VariableNameDefinition extends ConcreteRule {
 				new ChainParser(
 					new AddTokenParser(
 						Rules.all_type_name,"typeName"),
+					new ManyParser(
+							Tokens.ARRAY_TYPE),
 					new OptionalParser(
 							Tokens.INLINE_LIST),
 					new AddTokenToListParser(

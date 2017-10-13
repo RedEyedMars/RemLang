@@ -74,7 +74,7 @@ public class ClasswiseGenerator extends Generator {
 			"\n	",/*Package Name*/".get(__BUILDER__);"+
 			"\n	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(\".\",\"/\"));"+
 			"\n	__DIRECTORY__.mkdirs();"+
-			"\n	addFile(__DIRECTORY__,Generator.camelize(",/*Class Name*/")+\".java\", ",/*Class Name*/"Class);"});
+			"\n	addFile(__DIRECTORY__,FlowController.camelize(",/*Class Name*/")+\".java\", ",/*Class Name*/"Class);"});
 	public static final Element setupClassElement = new Element("setupClass",new String[]{"",/*Class Name*/"Class.__INIT__();"});
 	public static final Element addAnonymousClassElement = new Element("addAnonymousClass",new String[]{"ExternalClassEntry.suppliment(\"",/*ClassName*/"\", \"",/*PackageName*/"\");"});
 	public ClasswiseGenerator(){

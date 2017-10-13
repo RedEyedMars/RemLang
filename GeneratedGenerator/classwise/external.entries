@@ -182,10 +182,49 @@ entry e_for_int_header uses innerable importable
 			rightAsImport getImportPackage
 	output
 			external bodyForIntHeader{left operator variableName right variableName} if right is not null
+entry e_braced uses innerable importable
+	entry subject = null
+	entry after = null
+	constructor takes iSubject as Entry, iAfterSubject as Entry
+		set isInner = false
+		set subject = iSubject
+		set after = iAfterSubject
+	output
+			external bodyBracedStatement { subject } if subject is not null and after is null
+			external bodyCastedStatement { subject after } if subject is not null and after is not null
 entry e_call uses innerable importable
 	entry subject = null
 	entry methodName = null
 	entry parameters = null
+	entry array_parameters = null
+	constructor takes iMethodName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
+		set methodName = iMethodName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
+	constructor takes iSubject as Entry, iMethodName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
+		set subject = iSubject
+		var subjectAsImporable as importable = iSubject
+		set methodName = iMethodName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		this addImports
+			subjectAsImporable getImportPackage
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
 	constructor takes iMethodName as Entry, iParameters as ListEntry
 		set methodName = iMethodName
 		set parameters = iParameters
@@ -217,15 +256,19 @@ entry e_call uses innerable importable
 		this addImports
 			subjectAsImporable getImportPackage
 	output
-			external bodyCallWithoutSubject{methodName parameters} if subject is null and parameters is not null
-			external bodyCallWithSubject{subject methodName parameters} if subject is not null and parameters is not null
-			external bodyAccessWithoutSubject{methodName} if subject is null and parameters is null
-			external bodyAccessWithSubject{subject methodName} if subject is not null and parameters is null
+			external bodyCallWithoutSubjectWithArray{methodName parameters array_parameters} if subject is null and parameters is not null and array_parameters is not null
+			external bodyCallWithSubjectWithArray{subject methodName parameters array_parameters} if subject is not null and parameters is not null and array_parameters is not null
+			external bodyAccessWithoutSubjectWithArray{methodName array_parameters} if subject is null and parameters is null and array_parameters is not null
+			external bodyAccessWithSubjectWithArray{subject methodName array_parameters} if subject is not null and parameters is null and array_parameters is not null
+			external bodyCallWithoutSubject{methodName parameters} if subject is null and parameters is not null and array_parameters is null
+			external bodyCallWithSubject{subject methodName parameters} if subject is not null and parameters is not null and array_parameters is null
+			external bodyAccessWithoutSubject{methodName} if subject is null and parameters is null and array_parameters is null
+			external bodyAccessWithSubject{subject methodName} if subject is not null and parameters is null and array_parameters is null
 entry e_new_obj uses innerable importable
 	entry className = null
 	entry parameters = null
+	entry array_parameters = null
 	constructor takes iClassName as Entry, iParameters as ListEntry
-		
 		set className = iClassName
 		set parameters = iParameters
 		each e as Entry in iParameters
@@ -234,8 +277,24 @@ entry e_new_obj uses innerable importable
 				i getImportPackage
 		parameters setDelimiter 
 			","
+	constructor takes iClassName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
+		set className = iClassName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter 
+				","
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
 	output
-			external bodyNewObj{className parameters} if className is not null
+			external bodyNewObjPA{className parameters array_parameters} if parameters is not null and array_parameters is not null
+			external bodyNewObjP{className parameters} if parameters is not null and array_parameters is null
+			external bodyNewObjA{className array_parameters} if parameters is null and array_parameters is not null
+			external bodyNewObj {className} if parameters is null and array_parameters is null
 entry e_conditional uses innerable importable contextualizable
 	entry name = null
 	entry header = null
@@ -374,7 +433,7 @@ entry e_body uses innerable importable
 			",\n/*BODY*/\t\t\t\t"
 	output
 			external bodyBody{realBody} if realBody is not null
-entry e_variable uses innerable importable nameable finalizable statickable inlinelistable
+entry e_variable uses innerable importable nameable finalizable statickable inlinelistable arraytypeable
 	entry type = null
 	entry assignment  = null
 	constructor takes iType as Entry, iName as Entry, iAssignment as Entry
@@ -393,16 +452,16 @@ entry e_variable uses innerable importable nameable finalizable statickable inli
 			this addImports
 				assignmentAsImportable getImportPackage
 	output
-			external declareVariableAsInlineList { type name } if isInlineList is true
-			external declareVariableWithAssignmentFinal { type name assignment} if assignment is not null and isStatic is false and isFinal is true
-			external declareVariableWithAssignmentNonFinal { type name assignment} if assignment is not null and isStatic is false and isFinal is false
-			external declareVariableWithoutAssignmentFinal { type name } if assignment is null and isFinal is true and isStatic is false
-			external declareVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false and isStatic is false
-			external declareStaticVariableWithAssignment { type name assignment} if assignment is not null and isStatic is true
-			external declareStaticVariableWithoutAssignmentNonFinal { type name } if assignment is null and isFinal is false and isStatic is true
-			external declareStaticVariableWithoutAssignmentFinal { type name } if assignment is null and isFinal is true and isStatic is true
+			external declareVariableAsInlineList { type arrayType name } if isInlineList is true
+			external declareVariableWithAssignmentFinal { type arrayType name assignment} if assignment is not null and isStatic is false and isFinal is true
+			external declareVariableWithAssignmentNonFinal { type arrayType name assignment} if assignment is not null and isStatic is false and isFinal is false
+			external declareVariableWithoutAssignmentFinal { type arrayType name } if assignment is null and isFinal is true and isStatic is false
+			external declareVariableWithoutAssignmentNonFinal { type arrayType name } if assignment is null and isFinal is false and isStatic is false
+			external declareStaticVariableWithAssignment { type arrayType name assignment} if assignment is not null and isStatic is true
+			external declareStaticVariableWithoutAssignmentNonFinal { type arrayType name } if assignment is null and isFinal is false and isStatic is true
+			external declareStaticVariableWithoutAssignmentFinal { type arrayType name } if assignment is null and isFinal is true and isStatic is true
 
-entry e_method uses innerable importable contextualizable nameable interfaceable statickable
+entry e_method uses innerable importable contextualizable nameable interfaceable statickable arraytypeable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
@@ -433,12 +492,12 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 		methodBody setDelimiter
 			",\n/*BODY*/\t\t\t\t"
 	output
-			external declareStaticMethod{e_tabs type name parameters external bodyBody{methodBody}} if isStatic is true and pas is true
-			external declareInterfaceMethod{e_tabs type name parameters }                     if isInterface is true and pas is true
-			external declareMethod{e_tabs type name parameters external bodyBody{methodBody}} if isInterface is false and pas is true
-			external declareStaticMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true and pas is false
-			external declareInterfaceMethod{e_tabs type name external bodyParameters{parameters} }                     if isInterface is true and pas is false
-			external declareMethod{e_tabs type name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false and pas is false
+			external declareStaticMethod{e_tabs type arrayType name parameters external bodyBody{methodBody}} if isStatic is true and pas is true
+			external declareInterfaceMethod{e_tabs type arrayType name parameters }                     if isInterface is true and pas is true
+			external declareMethod{e_tabs type arrayType name parameters external bodyBody{methodBody}} if isInterface is false and pas is true
+			external declareStaticMethod{e_tabs type arrayType name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true and pas is false
+			external declareInterfaceMethod{e_tabs type arrayType name external bodyParameters{parameters} }                     if isInterface is true and pas is false
+			external declareMethod{e_tabs type arrayType name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false and pas is false
 		if context is null
 			set tabs = 0
 		else

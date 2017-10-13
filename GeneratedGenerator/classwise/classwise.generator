@@ -980,6 +980,29 @@ body
 				else
 					return
 						e_call: subject \"toString" {};
+			as_braced
+				var subject as Entry
+					body generateStatement
+						element->left->body_statement
+						isInner
+				var oper as Entry = null
+				if element->OPERATOR is not null
+					set oper = \'element->OPERATOR
+				var right as Entry = null
+				if element->right is not null
+					set right
+						body generateStatement
+							element->right->body_statement
+							isInner
+				var subjectAsInnerable as innerable = subject
+				var subjectIsInner
+					subjectAsInnerable getIsInner
+				if isInner is true or subjectIsInner is true
+					return
+						i_braced: subject oper right;
+				else
+					return
+						e_braced: subject right;
 			body_call
 				if operand is null
 					if isInner is true
@@ -1006,9 +1029,9 @@ body
 		var ret as Entry = null
 		call group to element
 			entry parameters = {}
+			entry array_parameters = {}
 			var name_var as Entry = null
 			if isInner is true
-				
 				if element->type_var is not null
 					var tVar = i_type_var:;
 					element type_var to atom
@@ -1040,19 +1063,45 @@ body
 					set containsParameters = true
 					quark method_argument to atom
 						parameters+=generate argument :true;
+				var containsArrayParameters = false
+				element array_parameters to quark
+					set containsArrayParameters = true
+					quark method_argument to atom
+						array_parameters+=generate argument :true;
 				if element->NEW is not null
-					set ret = i_new_obj :name_var parameters;
+					if containsParameters is true
+						if containsArrayParameters is true
+							set ret = i_new_obj :name_var parameters array_parameters;
+						else
+							set ret = i_new_obj :name_var parameters null;
+					else
+						if containsArrayParameters is true
+							set ret = i_new_obj :name_var null array_parameters;
+						else
+							set ret = i_new_obj :name_var null null;
 				else
 					if ret is null
 						if containsParameters is true
-							set ret = i_call:name_var parameters;
+							if containsArrayParameters is true 
+								set ret = i_call:name_var parameters array_parameters;
+							else
+								set ret = i_call:name_var parameters;
 						else
-							set ret = i_call:name_var;
+							if containsArrayParameters is true 
+								set ret = i_call:name_var null array_parameters;
+							else
+								set ret = i_call:name_var;
 					else
 						if containsParameters is true
-							set ret = i_call:ret name_var parameters;
+							if containsArrayParameters is true 
+								set ret = i_call:ret name_var parameters array_parameters;
+							else
+								set ret = i_call:ret name_var parameters;
 						else
-							set ret = i_call:ret name_var;
+							if containsArrayParameters is true
+								set ret = i_call:ret name_var null array_parameters;
+							else
+								set ret = i_call:ret name_var;
 			else
 				if element->type_var is not null
 					var tVar = e_type_var:;
@@ -1077,19 +1126,39 @@ body
 					set containsParameters = true
 					quark method_argument to atom
 						parameters+=generate argument :false;
+				var containsArrayParameters = false
+				element array_parameters to quark
+					set containsArrayParameters = true
+					quark method_argument to atom
+						array_parameters+=generate argument :false;
 				if element->NEW is not null
-					set ret = e_new_obj :name_var parameters;
+					if containsArrayParameters is true
+						set ret = e_new_obj :name_var parameters array_parameters;
+					else
+						set ret = e_new_obj :name_var parameters;
 				else
 					if ret is null
 						if containsParameters is true
-							set ret = e_call:name_var parameters;
+							if containsArrayParameters is true
+								set ret = e_call:name_var parameters array_parameters;
+							else
+								set ret = e_call:name_var parameters;
 						else
-							set ret = e_call:name_var;
+							if containsArrayParameters is true
+								set ret = e_call:name_var null array_parameters;
+							else
+								set ret = e_call:name_var;
 					else
 						if containsParameters is true
-							set ret = e_call:ret name_var parameters;
+							if containsArrayParameters is true
+								set ret = e_call:ret name_var parameters array_parameters;
+							else
+								set ret = e_call:ret name_var parameters;
 						else
-							set ret = e_call:ret name_var;
+							if containsArrayParameters is true
+								set ret = e_call:ret name_var null array_parameters;
+							else
+								set ret = e_call:ret name_var;
 		return
 			ret
 	generate manipulate takes parentContext as context
@@ -1246,30 +1315,35 @@ method
 			entry bodyElem = generate body element:isInner bodyContext;
 			if bodyElem is not null
 				methodBody += bodyElem
+		var ret as Entry = null
 		if definition->methodName->NAME is not null
 			if isInner is true
-				return
-					i_method: typeName i_exact:\'definition->methodName; parameters methodBody parentContext;
+				set ret = i_method: typeName i_exact:\'definition->methodName; parameters methodBody parentContext;
 			else
 				var eMethod = e_method: typeName e_exact:\'definition->methodName; parametersAreStatement parameters methodBody parentContext;
 				if definition->static is not null
 					eMethod setIsStatic : true;
-				return
-					eMethod
+				set ret = eMethod
 		else
 			var vName as Entry
 				classwise generateNameVar
 					definition->methodName->name_var
 					isInner
 			if isInner is true
-				return
-					i_method: typeName vName parameters methodBody parentContext;
+				set ret = i_method: typeName vName parameters methodBody parentContext;
 			else
 				var eMethod = e_method: typeName vName parametersAreStatement parameters methodBody parentContext;
 				if definition->static is not null
 					eMethod setIsStatic : true;
-				return
-					eMethod
+				set ret = eMethod
+		if definition->ARRAY_TYPE is not null
+			var retAsArrayTypeable as arraytypeable = ret
+			entry arrayType "" = {}
+			retAsArrayTypeable setArrayType :arrayType;
+			definition ARRAY_TYPE to element
+				arrayType += \"[]"
+		return
+			ret
 variable
 	generate declaration takes isInner as Boolean
 		if isInner is false
@@ -1310,6 +1384,12 @@ variable
 		if declaration->INLINE_LIST is not null
 			var retAsInlineListable as inlinelistable = ret
 			retAsInlineListable setIsInlineList :true;
+		if declaration->ARRAY_TYPE is not null
+			var retAsArrayTypeable as arraytypeable = ret
+			entry arrayType "" = {}
+			retAsArrayTypeable setArrayType :arrayType;
+			declaration ARRAY_TYPE to element
+				arrayType += \"[]"
 		return
 			ret
 	generate assignment takes isInner as Boolean

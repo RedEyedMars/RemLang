@@ -908,6 +908,16 @@ class 'packageName'."parser" Parser {
         }|);
     }
     : ruleToken {
+      Statement optionWhile = new Statement ();
+      String optionNewline = "'\\n')";
+      String optionAmpersand = "&&(";
+      optionWhile.add(|"_position" < "_inputLength"|);
+      optionWhile.set('optionAmpersand');
+      optionWhile.add(|"_inputArray[_position]" == "' '"|);
+      optionWhile.set("||");
+      optionWhile.add(|"_inputArray[_position]" == "'\\t'"|);
+      optionWhile.add(|"_inputArray[_position]" == "'\\r'"|);
+      optionWhile.add(|"_inputArray[_position]" == 'optionNewline'|);
       if listNames.contains('query'){
         String listName = 'query';
         String newTokenClassName;
@@ -936,6 +946,9 @@ class 'packageName'."parser" Parser {
           if "_list_name_result" != null {
             "_token".add("_position",new Tokens->Name->'newTokenClassName'("_list_name_result"));
             "_position" \+= "_list_name_result".length();
+            while `optionWhile` {
+              "++_position";
+            }
           }
           else {
             "_state" = "FAILED";

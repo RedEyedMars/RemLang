@@ -71,6 +71,18 @@ public class VariableGenerator extends Generator {
 			IInlinelistable retAsInlineListable = (IInlinelistable)ret;
 			retAsInlineListable.setIsInlineList(true);
 		}
+		if((declaration.get("ARRAY_TYPE") != null)){
+			IArraytypeable retAsArrayTypeable = (IArraytypeable)ret;
+			ListEntry arrayType = new ListEntry();
+			arrayType.setDelimiter("");
+			retAsArrayTypeable.setArrayType(arrayType);
+			List<IToken> elementARRAYTYPE = declaration.getAll("ARRAY_TYPE");
+			if(elementARRAYTYPE != null){
+				for(IToken element:elementARRAYTYPE){
+					arrayType.add(new StringEntry("[]"));
+				}
+			}
+		}
 		return ret;
 	}
 	public Entry generateAssignment(IToken assignment,Boolean isInner){

@@ -1,0 +1,13 @@
+> String[] x = 0xFF;
+> String[] getMyArray(){
+    int i = 0;
+    int j = 21;
+    int[] pixels = new int[128];
+    X regions = new X();
+	regions.get(i).put(j, new X(i,j, pixels[i*32+j]));
+  }
+class "test" X {
+  String x = new String[10];
+  String[] getArray(){
+  }
+}

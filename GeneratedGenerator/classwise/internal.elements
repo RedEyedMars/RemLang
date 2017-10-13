@@ -1,7 +1,7 @@
 
 
 camelize
-	"Generator.camelize(" In ".toString())"
+	"FlowController.camelize(" In ".toString())"
 getMethodName
 	"get" Name ""
 getVariableFromName
@@ -25,6 +25,20 @@ bodyEntry
 	"" Entry ""
 bodyOperator
 	"" Left " " Operator " " Right ""
+bodyBracedStatement
+	"(" Subject ")"
+bodyBracedOperatorStatement
+	"(" Subject ") " Operator " " Right ""
+bodyCastedStatement
+	"(" Left ") " Right ""
+bodyCallWithSubjectWithArray
+	"" Subject "." Method "(" Parameters ")[" Array "]"
+bodyCallWithoutSubjectWithArray
+	"" Method "(" Parameters ")[" Array "]" 
+bodyAccessWithSubjectWithArray
+	"" Subject "." Method "[" Array "]"
+bodyAccessWithoutSubjectWithArray
+	"" Method "[" Array "]"
 bodyCallWithSubject
 	"" Subject "." Method "(" Parameters ")"
 bodyCallWithoutSubject
@@ -39,8 +53,14 @@ bodyForIntHeader
 	"" Variable Declaration "; " VariableName " " Operator " " Variable Limit "; ++" Variable Name ""
 bodyNameWithParameters
 	"" Name "<" Parameters ">"
-bodyNewObj
+bodyNewObjPA
+	"new " Method Name "(" Parameters ")[" Array "]"
+bodyNewObjP
 	"new " Method Name "(" Parameters ")"
+bodyNewObjA
+	"new " Method Name "[" Parameters "]"
+bodyNewObj
+	"new " Method Name ""
 bodyConditional
 	"" Name "(" Header ") {" Body ""
 bodyConditionalWithoutHeader
@@ -48,21 +68,21 @@ bodyConditionalWithoutHeader
 bodyElement
 	"" Prefix "" Entry "" Suffix ""
 declareVariableWithAssignmentFinal
-	"final " Type " " Name " = " Assignment ""
+	"final " Type "" Array " " Name " = " Assignment ""
 declareVariableWithAssignmentNonFinal
-	"" Type " " Name " = " Assignment ""
+	"" Type "" Array " " Name " = " Assignment ""
 declareVariableWithoutAssignmentNonFinal
-	"" Type " " Name ""
+	"" Type "" Array " " Name ""
 declareVariableWithoutAssignmentFinal
-	"final " Type " " Name ""
+	"final " Type "" Array " " Name ""
 declareStaticVariableWithAssignmentFinal
-	"static final " Type " " Name " = " Assignment ""
+	"static final " Type "" Array " " Name " = " Assignment ""
 declareStaticVariableWithAssignmentNonFinal
-	"static " Type " " Name " = " Assignment ""
+	"static " Type "" Array " " Name " = " Assignment ""
 declareStaticVariableWithoutAssignmentNonFinal
-	"static " Type " " Name ""
+	"static " Type "" Array " " Name ""
 declareStaticVariableWithoutAssignmentFinal
-	"static final " Type " " Name ""
+	"static final "" Array " Type " " Name ""
 declareMember
 	"protected " Name And Type " = " Assignment ";"
 declareMemberComplete
@@ -74,7 +94,7 @@ declareMemberMethod
 declareMemberClass
 	"protected " Name " " Name "Class = " Member ""
 declareMethod
-	"public " IsStatic "" Type " " Name "(" Parameters ") {" Method Body ""
+	"public " IsStatic "" Type "" Array " " Name "(" Parameters ") {" Method Body ""
 declareClass
 	"package " Package name ";
 " Import List "

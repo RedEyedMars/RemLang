@@ -47,6 +47,22 @@ public class Braces extends ParseList {
 															new ManyParser(
 																	Tokens.NEWLINE),
 															Rules.method_argument)))),"PARAMETERS","braces","(,)");
+	public static final BracedParser ARRAY_PARAMETERS = new BracedParser(
+							new OptionalParser(
+									
+										new ChainParser(
+											new ManyParser(
+													Tokens.NEWLINE),
+											Rules.method_argument,
+											new ManyParser(
+													
+														new ChainParser(
+															new ManyParser(
+																	Tokens.NEWLINE),
+															Tokens.COMMA,
+															new ManyParser(
+																	Tokens.NEWLINE),
+															Rules.method_argument)))),"ARRAY_PARAMETERS","braces","[,]");
 	public static final BracedParser TEMPLATE_PARAMETERS = new BracedParser(
 						new ChainParser(
 							new AddTokenParser(
@@ -65,6 +81,8 @@ public class Braces extends ParseList {
 							Rules.body_statement,"STATEMENT_AS_STRING","braces","\',\'");
 	public static final BracedParser STATEMENT_AS_METHOD = new BracedParser(
 							Rules.body_statement,"STATEMENT_AS_METHOD","braces","`,`");
+	public static final BracedParser STATEMENT_AS_BRACED = new BracedParser(
+							Rules.body_statement,"STATEMENT_AS_BRACED","braces","(,)");
 	public static final BracedParser AS_STATEMENT = new BracedParser(
 							
 							new ChoiceParser(
@@ -76,5 +94,5 @@ public class Braces extends ParseList {
 								Tokens.WILD,"class_file_name"),"CLASS_FILE","braces",",.");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				CLASS_BODY,METHOD_BODY,METHOD_PARAMETERS,PARAMETERS,TEMPLATE_PARAMETERS,QUOTE,STATEMENT_AS_QUOTE,STATEMENT_AS_STRING,STATEMENT_AS_METHOD,AS_STATEMENT,CLASS_FILE);
+				CLASS_BODY,METHOD_BODY,METHOD_PARAMETERS,PARAMETERS,ARRAY_PARAMETERS,TEMPLATE_PARAMETERS,QUOTE,STATEMENT_AS_QUOTE,STATEMENT_AS_STRING,STATEMENT_AS_METHOD,STATEMENT_AS_BRACED,AS_STATEMENT,CLASS_FILE);
 }

@@ -281,10 +281,53 @@ entry i_for_int_header uses innerable importable
 			rightAsImport getImportPackage
 	output
 			internal bodyForIntHeader{left variableName operator right variableName} if right is not null
+entry i_braced uses innerable importable
+	entry subject = null
+	entry after = null
+	entry operator = null
+	constructor takes iSubject as Entry, iOperator as Entry, iAfterSubject as Entry
+		set isInner = true
+		set subject = iSubject
+		set after = iAfterSubject
+		set operator = iOperator
+	output
+			internal bodyBracedStatement { subject } if subject is not null and after is null and operator is null
+			internal bodyCastedStatement { subject after } if subject is not null and after is not null and operator is null
+			internal bodyBracedOperatorStatement {subject operator after} if subject is not null and operator is not null and after is not null
 entry i_call uses innerable importable
 	entry subject = null
 	entry methodName = null
 	entry parameters = null
+	entry array_parameters = null
+	constructor takes iMethodName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry 
+		set isInner = true
+		set methodName = iMethodName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
+	constructor takes iSubject as Entry, iMethodName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
+		set subject = iSubject
+		var subjectAsImportable as importable = iSubject
+		set methodName = iMethodName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		this addImports
+			subjectAsImportable getImportPackage
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
 	constructor takes iMethodName as Entry, iParameters as ListEntry
 		set isInner = true
 		set methodName = iMethodName
@@ -318,13 +361,18 @@ entry i_call uses innerable importable
 		this addImports
 			subjectAsImporable getImportPackage
 	output
-			internal bodyCallWithoutSubject{methodName parameters} if subject is null and parameters is not null
-			internal bodyCallWithSubject{subject methodName parameters} if subject is not null and parameters is not null
-			internal bodyAccessWithoutSubject{methodName} if subject is null and parameters is null
-			internal bodyAccessWithSubject{subject methodName} if subject is not null and parameters is null
+			internal bodyCallWithoutSubjectWithArray{methodName parameters array_parameters} if subject is null and parameters is not null and array_parameters is not null
+			internal bodyCallWithSubjectWithArray{subject methodName parameters array_parameters} if subject is not null and parameters is not null and array_parameters is not null
+			internal bodyAccessWithoutSubjectWithArray{methodName array_parameters} if subject is null and parameters is null and array_parameters is not null
+			internal bodyAccessWithSubjectWithArray{subject methodName array_parameters} if subject is not null and parameters is null and array_parameters is not null
+			internal bodyCallWithoutSubject{methodName parameters} if subject is null and parameters is not null and array_parameters is null
+			internal bodyCallWithSubject{subject methodName parameters} if subject is not null and parameters is not null and array_parameters is null
+			internal bodyAccessWithoutSubject{methodName} if subject is null and parameters is null and array_parameters is null
+			internal bodyAccessWithSubject{subject methodName} if subject is not null and parameters is null and array_parameters is null
 entry i_new_obj uses innerable importable
 	entry className = null
 	entry parameters = null
+	entry array_parameters = null
 	constructor takes iClassName as Entry, iParameters as ListEntry
 		set isInner = true
 		set className = iClassName
@@ -332,13 +380,33 @@ entry i_new_obj uses innerable importable
 		var classNameAsImportable as importable = className
 		this addImports
 			classNameAsImportable getImportPackage
-		each e as Entry in iParameters
-			var i as importable = e
-			this addImports
-				i getImportPackage
-		parameters setDelimiter :",";
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+	constructor takes iClassName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
+		set isInner = true
+		set className = iClassName
+		set parameters = iParameters
+		set array_parameters = iArrayParameters
+		var classNameAsImportable as importable = className
+		this addImports
+			classNameAsImportable getImportPackage
+		if iParameters is not null
+			each e as Entry in iParameters
+				var i as importable = e
+				this addImports
+					i getImportPackage
+			parameters setDelimiter :",";
+		if iArrayParameters is not null
+			array_parameters setDelimiter :"][";
 	output
-			internal bodyNewObj{className parameters} if className is not null
+			internal bodyNewObjPA{className parameters array_parameters} if parameters is not null and array_parameters is not null
+			internal bodyNewObjP {className parameters} if parameters is not null and array_parameters is null
+			internal bodyNewObjA{className array_parameters} if parameters is null and array_parameters is not null
+			internal bodyNewObj{className} if parameters is null and array_parameters is null
 entry i_body uses innerable importable contextualizable
 	entry body = null
 	constructor takes iBody as ListEntry, iContext as context
@@ -423,7 +491,7 @@ entry i_element uses innerable importable contextualizable
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-entry i_variable uses innerable importable nameable finalizable statickable inlinelistable
+entry i_variable uses innerable importable nameable finalizable statickable inlinelistable arraytypeable
 	entry type = null
 	entry assignment  = null
 	constructor takes iType as Entry, iName as Entry, iAssignment as Entry
@@ -444,22 +512,29 @@ entry i_variable uses innerable importable nameable finalizable statickable inli
 			this addImports
 				assignmentAsImportable getImportPackage
 	output
-			internal declareVariableWithAssignmentNonFinal    { type name assignment} if assignment is not null and isFinal is false and isStatic is false
-			internal declareVariableWithAssignmentFinal       { type name assignment} if assignment is not null and isFinal is true and isStatic is false
-			internal declareVariableWithoutAssignmentNonFinal { type name} if assignment is null and isFinal is false and isStatic is false
-			internal declareVariableWithoutAssignmentFinal    { type name} if assignment is null  and isFinal is true and isStatic is false
-			internal declareStaticVariableWithAssignmentNonFinal    { type name assignment} if assignment is not null and isFinal is false and isStatic is true
-			internal declareStaticVariableWithAssignmentFinal       { type name assignment} if assignment is not null and isFinal is true and isStatic is true
-			internal declareStaticVariableWithoutAssignmentNonFinal { type name} if assignment is null and isFinal is false and isStatic is true
-			internal declareStaticVariableWithoutAssignmentFinal    { type name} if assignment is null  and isFinal is true and isStatic is true
-entry i_method uses innerable importable contextualizable nameable staticable
+			internal declareVariableWithAssignmentNonFinal    { type arrayType name assignment} if assignment is not null and isFinal is false and isStatic is false
+			internal declareVariableWithAssignmentFinal       { type arrayType name assignment} if assignment is not null and isFinal is true and isStatic is false
+			internal declareVariableWithoutAssignmentNonFinal { type arrayType name} if assignment is null and isFinal is false and isStatic is false
+			internal declareVariableWithoutAssignmentFinal    { type arrayType name} if assignment is null  and isFinal is true and isStatic is false
+			internal declareStaticVariableWithAssignmentNonFinal    { type arrayType name assignment} if assignment is not null and isFinal is false and isStatic is true
+			internal declareStaticVariableWithAssignmentFinal       { type arrayType name assignment} if assignment is not null and isFinal is true and isStatic is true
+			internal declareStaticVariableWithoutAssignmentNonFinal { type arrayType name} if assignment is null and isFinal is false and isStatic is true
+			internal declareStaticVariableWithoutAssignmentFinal    { type arrayType name} if assignment is null  and isFinal is true and isStatic is true
+entry i_method uses innerable importable contextualizable nameable staticable arraytypeable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
 	constructor takes iType as Entry, iName as Entry, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
 		
 		set isInner = true
-		set name = iName
+		var realName as StringBuilder
+			new StringBuilder
+		iName get
+			realName
+		if 'realName is "*"
+			set name as Entry = \""
+		else
+			set name = iName
 		set type = iType
 		var typeAsImportable as importable = iType
 		set parameters = iParameters
@@ -487,7 +562,7 @@ entry i_method uses innerable importable contextualizable nameable staticable
 		parameters setDelimiter :",";
 		methodBody setDelimiter :"";
 	output
-			(tabs internal declareMethod{asStatic type name parameters methodBody }) if context is not null
+			(tabs internal declareMethod{asStatic type arrayType name parameters methodBody }) if context is not null
 			+
 			(tabs \"}") if context is not null 
 		if context is null
@@ -511,7 +586,8 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 	var isSubClass = false
 	var hasOutput = false
 	constructor takes iPackageName as Entry, iType, iName as Entry, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
-		set isInner = false
+		set isInner = true
+		set iPackageName as Entry = \"clgen"
 		set packageName = iPackageName
 		set name = iName
 		completeName += name

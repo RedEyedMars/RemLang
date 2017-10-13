@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IFinalizable,IStatickable,IInlinelistable {
+public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IFinalizable,IStatickable,IInlinelistable,IArraytypeable {
 	public EVariableEntry getSelf(){
 		return this;
 	}
@@ -23,6 +23,7 @@ public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	private Boolean isFinal = false;
 	private Boolean isStatic = false;
 	private Boolean isInlineList = false;
+	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private Entry assignment = null;
 
@@ -78,6 +79,12 @@ public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	}
 	public void setIsInlineList(Boolean newIsInlineList) {
 		isInlineList = newIsInlineList;
+	}
+	public ListEntry getArrayType(){
+		return arrayType;
+	}
+	public void setArrayType(ListEntry newArrayType) {
+		arrayType = newArrayType;
 	}	public Entry getType(){
 		return type;
 	}	public Entry getAssignment(){
@@ -92,28 +99,28 @@ public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	}
 	public void get(StringBuilder builder){
 		if((isInlineList == true)){
-			new ElementEntry(ExternalGenerator.declareVariableAsInlineListElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(ExternalGenerator.declareVariableAsInlineListElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment != null && isStatic == false && isFinal == true)){
-			new ElementEntry(ExternalGenerator.declareVariableWithAssignmentFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(ExternalGenerator.declareVariableWithAssignmentFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment != null && isStatic == false && isFinal == false)){
-			new ElementEntry(ExternalGenerator.declareVariableWithAssignmentNonFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(ExternalGenerator.declareVariableWithAssignmentNonFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment == null && isFinal == true && isStatic == false)){
-			new ElementEntry(ExternalGenerator.declareVariableWithoutAssignmentFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(ExternalGenerator.declareVariableWithoutAssignmentFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment == null && isFinal == false && isStatic == false)){
-			new ElementEntry(ExternalGenerator.declareVariableWithoutAssignmentNonFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(ExternalGenerator.declareVariableWithoutAssignmentNonFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment != null && isStatic == true)){
-			new ElementEntry(ExternalGenerator.declareStaticVariableWithAssignmentElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(ExternalGenerator.declareStaticVariableWithAssignmentElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment == null && isFinal == false && isStatic == true)){
-			new ElementEntry(ExternalGenerator.declareStaticVariableWithoutAssignmentNonFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(ExternalGenerator.declareStaticVariableWithoutAssignmentNonFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment == null && isFinal == true && isStatic == true)){
-			new ElementEntry(ExternalGenerator.declareStaticVariableWithoutAssignmentFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(ExternalGenerator.declareStaticVariableWithoutAssignmentFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 	}
 }

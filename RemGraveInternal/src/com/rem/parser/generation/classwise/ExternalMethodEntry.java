@@ -13,9 +13,14 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	private ExternalContext headerContext;
 	private boolean isInterface = false;
 	private boolean isStatic = false;
+	private String typeSuffix = null;
 	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
+		this(tabs, isStatic, type, "", name, parameters, body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
 		this.tabs = tabs;
 		this.type = type;
+		this.typeSuffix = typeSuffix;
 		this.name = name;
 		this.parameters = parameters;
 		this.body = body;
@@ -40,8 +45,12 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		}
 	}
 	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
+		this(tabs, isStatic, type, "", name, params, body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
 		this.tabs = tabs;
 		this.type = type;
+		this.typeSuffix  = typeSuffix;
 		this.name = name;
 		this.parameters = new ArrayList<ExternalVariableEntry>();
 		for(ExternalStatement param:params){

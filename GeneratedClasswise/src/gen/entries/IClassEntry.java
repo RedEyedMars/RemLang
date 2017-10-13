@@ -39,7 +39,8 @@ public class IClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	private Boolean hasOutput = false;
 
 	public IClassEntry(Entry iPackageName,String iType,Entry iName,Entry iParent,ListEntry iInterfaces,ListEntry iVariables,ListEntry iMethods,ContextEntry iContext){
-		isInner = false;
+		isInner = true;
+		iPackageName = (Entry)new StringEntry("clgen");
 		packageName = iPackageName;
 		name = iName;
 		completeName.add(name);

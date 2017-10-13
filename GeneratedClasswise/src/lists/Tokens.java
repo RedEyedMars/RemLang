@@ -17,7 +17,7 @@ public class Tokens extends ParseList {
 
 	public static final RegexParser NAME = new RegexParser("NAME","tokens","[a-zA-Z_][a-zA-Z0-9_]*");
 	public static final RegexParser OPERATOR = new RegexParser("OPERATOR","tokens","[^a-zA-Z0-9_\\s\\n\\(\\)\\{\\}\\[\\]\\;\\\"\\\'\\\\`,]+\\s*");
-	public static final RegexParser NUMBER = new RegexParser("NUMBER","tokens","[-]?(\\d*\\.)?\\d+f?\\s*");
+	public static final RegexParser NUMBER = new RegexParser("NUMBER","tokens","[-]?(\\d*\\.)?\\d+f?(x[0-9ABCDEF]+)?\\s*");
 	public static final RegexParser WILD = new RegexParser("WILD","tokens",".*");
 	public static final ExactParser NEWLINE = new ExactParser("NEWLINE","tokens","\n");
 	public static final ExactParser CLASS = new ExactParser("CLASS","tokens","class ");
@@ -77,7 +77,8 @@ public class Tokens extends ParseList {
 	public static final ExactParser THIS = new ExactParser("THIS","tokens","this");
 	public static final ExactParser SUPER = new ExactParser("SUPER","tokens","super");
 	public static final ExactParser INLINE_LIST = new ExactParser("INLINE_LIST","tokens","...");
+	public static final ExactParser ARRAY_TYPE = new ExactParser("ARRAY_TYPE","tokens","[]");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NAME,OPERATOR,NUMBER,WILD,NEWLINE,CLASS,INTERFACE,METHOD,VARIABLE,CLASS_TYPE,METHOD_TYPE,VARIABLE_TYPE,BODY_TYPE,CONTEXT_TYPE,STATEMENT_TYPE,PARAMETERS_TYPE,IN,NER,HID,DEN,FROM,STA,TIC,ACCESS,SPECIAL_ACCESS,EQUALS,COMMA,DOT,SEMICOLON,COLON,ADD,PLUS,BACKSLASH,FORSLASH,ISTYPENAME,CAMEL,CDS,CLWS,RETURN,VOID,THROW,NEW,IF,ELSE,WHILE,FOR,TRY,CATCH,PRINT,PIPE,SYNCHRONIZED,SWITCH,CASE,NULL,TRUE,FALSE,WEAK,AS_METHOD_NAME,AS_GENERIC,THIS,SUPER,INLINE_LIST);
+				NAME,OPERATOR,NUMBER,WILD,NEWLINE,CLASS,INTERFACE,METHOD,VARIABLE,CLASS_TYPE,METHOD_TYPE,VARIABLE_TYPE,BODY_TYPE,CONTEXT_TYPE,STATEMENT_TYPE,PARAMETERS_TYPE,IN,NER,HID,DEN,FROM,STA,TIC,ACCESS,SPECIAL_ACCESS,EQUALS,COMMA,DOT,SEMICOLON,COLON,ADD,PLUS,BACKSLASH,FORSLASH,ISTYPENAME,CAMEL,CDS,CLWS,RETURN,VOID,THROW,NEW,IF,ELSE,WHILE,FOR,TRY,CATCH,PRINT,PIPE,SYNCHRONIZED,SWITCH,CASE,NULL,TRUE,FALSE,WEAK,AS_METHOD_NAME,AS_GENERIC,THIS,SUPER,INLINE_LIST,ARRAY_TYPE);
 }

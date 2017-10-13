@@ -25,7 +25,7 @@ public class ExternalGenerator extends Generator {
 			"\n			}"+
 			"\n		}"});
 	public static final Element asTemplateElement = new Element("asTemplate",new String[]{"new StringEntry(\"<",/*In*/">\")"});
-	public static final Element camelizeElement = new Element("camelize",new String[]{"new StringEntry(Generator.camelize(",/*In*/"))"});
+	public static final Element camelizeElement = new Element("camelize",new String[]{"new StringEntry(FlowController.camelize(",/*In*/"))"});
 	public static final Element extendsElement = new Element("extends",new String[]{"builder.append(\" extends \");"+
 			"\n	",/*Extends Name*/""});
 	public static final Element implementsElement = new Element("implements",new String[]{"builder.append(\" implements \");"+
@@ -43,6 +43,19 @@ public class ExternalGenerator extends Generator {
 	public static final Element bodyEntryElement = new Element("bodyEntry",new String[]{"/*Enty*/new ExternalStatement(new StringEntry(",/*Value*/"))"});
 	public static final Element bodyOperatorElement = new Element("bodyOperator",new String[]{"/*Optr*/new ExternalStatement(",/*Operator*/", ",/*Left*/", ",/*Right*/")"});
 	public static final Element bodyForIntHeaderElement = new Element("bodyForIntHeader",new String[]{"/*FIHd*/new ExternalStatement(\";\", ",/*Variable Declaration*/", new ExternalStatement(",/*Operator*/", ",/*Variable Name*/", ",/*Variable Limit*/"), new ExternalStatement(new StringEntry(\"++\"),\"\",",/*Variable Name*/"))"});
+	public static final Element bodyBracedStatementElement = new Element("bodyBracedStatement",new String[]{"/*Brac*/new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", ",/*Subject*/")"});
+	public static final Element bodyCastedStatementElement = new Element("bodyCastedStatement",new String[]{"/*Cast*/new ExternalStatement(\"\",new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", ",/*Type*/"), ",/*ToCast*/")"});
+	public static final Element bodyCallWithSubjectWithArrayElement = new Element("bodyCallWithSubjectWithArray",new String[]{"/*Call*/new ExternalStatement(\"\","+
+			"\n			 	new ExternalStatement(\".\", ",/*Subject*/", ",/*Method Name*/"),"+
+			"\n			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\","+
+			"\n			 		new ExternalStatement.Parameters(",/*Parameters*/")),"+
+			"\n			 	new ExternalStatement.ArrayParameters(",/*Array*/"))"});
+	public static final Element bodyCallWithoutSubjectWithArrayElement = new Element("bodyCallWithoutSubjectWithArray",new String[]{"/*Call*/new ExternalStatement(\"\",",/*Method Name*/","+
+			"\n			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\","+
+			"\n			 		new ExternalStatement.Parameters(",/*Parameters*/")),"+
+			"\n			 	new ExternalStatement.ArrayParameters(",/*Array*/"))"});
+	public static final Element bodyAccessWithSubjectWithArrayElement = new Element("bodyAccessWithSubjectWithArray",new String[]{"/*Acss*/new ExternalStatement(\".\", ",/*Subject*/", new ExternalStatement(\"\", ",/*Method Name*/", new ExternalStatement.ArrayParameters(",/*Array*/")))"});
+	public static final Element bodyAccessWithoutSubjectWithArrayElement = new Element("bodyAccessWithoutSubjectWithArray",new String[]{"/*Acss*/new ExternalStatement(\"\", ",/*Method Name*/", new ExternalStatement.ArrayParameters(",/*Array*/"))"});
 	public static final Element bodyCallWithSubjectElement = new Element("bodyCallWithSubject",new String[]{"/*Call*/new ExternalStatement(\"\","+
 			"\n			 	new ExternalStatement(\".\", ",/*Subject*/", ",/*Method Name*/"),"+
 			"\n			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\","+
@@ -50,7 +63,10 @@ public class ExternalGenerator extends Generator {
 	public static final Element bodyCallWithoutSubjectElement = new Element("bodyCallWithoutSubject",new String[]{"/*Call*/new ExternalStatement(null,new StringEntry(\")\"),\"(\",",/*Method Name*/",new ExternalStatement.Parameters(",/*Parameters*/"))"});
 	public static final Element bodyAccessWithSubjectElement = new Element("bodyAccessWithSubject",new String[]{"/*Acss*/new ExternalStatement(\".\", ",/*Subject*/", ",/*Method Name*/")"});
 	public static final Element bodyAccessWithoutSubjectElement = new Element("bodyAccessWithoutSubject",new String[]{"/*Acss*/new ExternalStatement(",/*Method Name*/")"});
-	public static final Element bodyNewObjElement = new Element("bodyNewObj",new String[]{"/*NObj*/new ExternalStatement.NewObject(",/*Type Name*/",new ExternalStatement.Parameters(",/*Parameters*/"))"});
+	public static final Element bodyNewObjPAElement = new Element("bodyNewObjPA",new String[]{"/*NObj*/new ExternalStatement.NewObject(",/*Type Name*/",new ExternalStatement.Parameters(",/*Parameters*/"), new ExternalStatement.ArrayParameters(",/*Array*/"))"});
+	public static final Element bodyNewObjPElement = new Element("bodyNewObjP",new String[]{"/*NObj*/new ExternalStatement.NewObject(",/*Type Name*/",new ExternalStatement.Parameters(",/*Parameters*/"))"});
+	public static final Element bodyNewObjAElement = new Element("bodyNewObjA",new String[]{"/*NObj*/new ExternalStatement.NewObject(",/*Type Name*/",new ExternalStatement.ArrayParameters(",/*Parameters*/"))"});
+	public static final Element bodyNewObjElement = new Element("bodyNewObj",new String[]{"/*NObj*/new ExternalStatement.NewObject(",/*Type Name*/")"});
 	public static final Element bodyElementElement = new Element("bodyElement",new String[]{"/*Elem*/new ExternalStatement(new TabEntry(new StringEntry(",/*Preffix*/")), new StringEntry(",/*Suffix*/"), ",/*Entry*/")"});
 	public static final Element bodyThrowElement = new Element("bodyThrow",new String[]{"/*Thrw*/new ExternalStatement(new TabEntry(new StringEntry(\"throw new RuntimeException(\\\"\")), new StringEntry(\"\\\");\"),\"\", ",/*Name Var*/")"});
 	public static final Element bodyCaseElement = new Element("bodyCase",new String[]{"/*Case*/new ExternalStatement.Conditional("+
@@ -73,17 +89,17 @@ public class ExternalGenerator extends Generator {
 			"\n					builder.append(\";\");"+
 			"\n				}"+
 			"\n			}"});
-	public static final Element declareVariableAsInlineListElement = new Element("declareVariableAsInlineList",new String[]{"new ExternalVariableEntry(false, ",/*Type*/", new ExternalStatement(new StringEntry(\"...\"), ",/*Name*/"))"});
-	public static final Element declareVariableWithAssignmentFinalElement = new Element("declareVariableWithAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareVariableWithAssignmentNonFinalElement = new Element("declareVariableWithAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareVariableWithoutAssignmentNonFinalElement = new Element("declareVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/", ",/*Name*/")"});
-	public static final Element declareVariableWithoutAssignmentFinalElement = new Element("declareVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/", ",/*Name*/")"});
-	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true, ",/*Type*/", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/", ",/*Name*/")"});
-	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/", ",/*Name*/")"});
-	public static final Element declareStaticMethodElement = new Element("declareStaticMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", true,",/*Type*/", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
-	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false,",/*Type*/", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
-	public static final Element declareInterfaceMethodElement = new Element("declareInterfaceMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false, ",/*Type*/", ",/*Name*/", ",/*Parameters*/", null )"});
+	public static final Element declareVariableAsInlineListElement = new Element("declareVariableAsInlineList",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", new ExternalStatement(new StringEntry(\"...\"), ",/*Name*/"))"});
+	public static final Element declareVariableWithAssignmentFinalElement = new Element("declareVariableWithAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareVariableWithAssignmentNonFinalElement = new Element("declareVariableWithAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareVariableWithoutAssignmentNonFinalElement = new Element("declareVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareVariableWithoutAssignmentFinalElement = new Element("declareVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareStaticMethodElement = new Element("declareStaticMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", true,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
+	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
+	public static final Element declareInterfaceMethodElement = new Element("declareInterfaceMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", null )"});
 	public static final Element getCompleteHeaderElement = new Element("getCompleteHeader",new String[]{"new Entry(){"+
 			"\n		public void get(StringBuilder builder){"+
 			"\n			builder.append(\"",/*Statickality*/" ",/*Class Type*/"\");"+
@@ -135,10 +151,19 @@ public class ExternalGenerator extends Generator {
 		addElement("bodyEntry",bodyEntryElement);
 		addElement("bodyOperator",bodyOperatorElement);
 		addElement("bodyForIntHeader",bodyForIntHeaderElement);
+		addElement("bodyBracedStatement",bodyBracedStatementElement);
+		addElement("bodyCastedStatement",bodyCastedStatementElement);
+		addElement("bodyCallWithSubjectWithArray",bodyCallWithSubjectWithArrayElement);
+		addElement("bodyCallWithoutSubjectWithArray",bodyCallWithoutSubjectWithArrayElement);
+		addElement("bodyAccessWithSubjectWithArray",bodyAccessWithSubjectWithArrayElement);
+		addElement("bodyAccessWithoutSubjectWithArray",bodyAccessWithoutSubjectWithArrayElement);
 		addElement("bodyCallWithSubject",bodyCallWithSubjectElement);
 		addElement("bodyCallWithoutSubject",bodyCallWithoutSubjectElement);
 		addElement("bodyAccessWithSubject",bodyAccessWithSubjectElement);
 		addElement("bodyAccessWithoutSubject",bodyAccessWithoutSubjectElement);
+		addElement("bodyNewObjPA",bodyNewObjPAElement);
+		addElement("bodyNewObjP",bodyNewObjPElement);
+		addElement("bodyNewObjA",bodyNewObjAElement);
 		addElement("bodyNewObj",bodyNewObjElement);
 		addElement("bodyElement",bodyElementElement);
 		addElement("bodyThrow",bodyThrowElement);

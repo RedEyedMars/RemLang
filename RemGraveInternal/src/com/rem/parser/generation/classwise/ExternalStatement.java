@@ -354,9 +354,35 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			onEmptyDelimiter = null;
 		}
 	}
+	public static class ArrayParameters extends ExternalStatement {
+		public ArrayParameters( ExternalStatement...statements){
+			super("][",statements);
+			onEmptyDelimiter = null;
+			prefix = new StringEntry("[");
+			suffix = new StringEntry("]");
+		}
+	}
 	public static class NewObject extends ExternalStatement {
-		public NewObject(ExternalStatement name, ExternalStatement parameters){
+		public NewObject(ExternalStatement name){
+			super(new StringEntry("new "),new StringEntry(")"),"(",name,new Parameters());
+			this.addImport(new ImportEntry(name));
+			StringBuilder nameBuilder = new StringBuilder();
+			name.get(nameBuilder);
+		}
+		public NewObject(ExternalStatement name, ExternalStatement.Parameters parameters){
 			super(new StringEntry("new "),new StringEntry(")"),"(",name,parameters);
+			this.addImport(new ImportEntry(name));
+			StringBuilder nameBuilder = new StringBuilder();
+			name.get(nameBuilder);
+		}
+		public NewObject(ExternalStatement name, ExternalStatement.ArrayParameters parameters){
+			super(new StringEntry("new "),"",name,parameters);
+			this.addImport(new ImportEntry(name));
+			StringBuilder nameBuilder = new StringBuilder();
+			name.get(nameBuilder);
+		}
+		public NewObject(ExternalStatement name, ExternalStatement.Parameters parameters, ExternalStatement.ArrayParameters array){
+			super(new StringEntry("new "),"",name,new ExternalStatement(new StringEntry("("),new StringEntry(")"),parameters),array);
 			this.addImport(new ImportEntry(name));
 			StringBuilder nameBuilder = new StringBuilder();
 			name.get(nameBuilder);

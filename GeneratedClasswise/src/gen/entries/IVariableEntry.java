@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IFinalizable,IStatickable,IInlinelistable {
+public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IFinalizable,IStatickable,IInlinelistable,IArraytypeable {
 	public IVariableEntry getSelf(){
 		return this;
 	}
@@ -23,6 +23,7 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	private Boolean isFinal = false;
 	private Boolean isStatic = false;
 	private Boolean isInlineList = false;
+	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private Entry assignment = null;
 
@@ -77,6 +78,12 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	}
 	public void setIsInlineList(Boolean newIsInlineList) {
 		isInlineList = newIsInlineList;
+	}
+	public ListEntry getArrayType(){
+		return arrayType;
+	}
+	public void setArrayType(ListEntry newArrayType) {
+		arrayType = newArrayType;
 	}	public Entry getType(){
 		return type;
 	}	public Entry getAssignment(){
@@ -94,28 +101,28 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	}
 	public void get(StringBuilder builder){
 		if((assignment != null && isFinal == false && isStatic == false)){
-			new ElementEntry(InternalGenerator.declareVariableWithAssignmentNonFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(InternalGenerator.declareVariableWithAssignmentNonFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment != null && isFinal == true && isStatic == false)){
-			new ElementEntry(InternalGenerator.declareVariableWithAssignmentFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(InternalGenerator.declareVariableWithAssignmentFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment == null && isFinal == false && isStatic == false)){
-			new ElementEntry(InternalGenerator.declareVariableWithoutAssignmentNonFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(InternalGenerator.declareVariableWithoutAssignmentNonFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment == null && isFinal == true && isStatic == false)){
-			new ElementEntry(InternalGenerator.declareVariableWithoutAssignmentFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(InternalGenerator.declareVariableWithoutAssignmentFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment != null && isFinal == false && isStatic == true)){
-			new ElementEntry(InternalGenerator.declareStaticVariableWithAssignmentNonFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(InternalGenerator.declareStaticVariableWithAssignmentNonFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment != null && isFinal == true && isStatic == true)){
-			new ElementEntry(InternalGenerator.declareStaticVariableWithAssignmentFinalElement,new ListEntry(type,name,assignment)).get(builder);
+			new ElementEntry(InternalGenerator.declareStaticVariableWithAssignmentFinalElement,new ListEntry(type,arrayType,name,assignment)).get(builder);
 		}
 		else if((assignment == null && isFinal == false && isStatic == true)){
-			new ElementEntry(InternalGenerator.declareStaticVariableWithoutAssignmentNonFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(InternalGenerator.declareStaticVariableWithoutAssignmentNonFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 		else if((assignment == null && isFinal == true && isStatic == true)){
-			new ElementEntry(InternalGenerator.declareStaticVariableWithoutAssignmentFinalElement,new ListEntry(type,name)).get(builder);
+			new ElementEntry(InternalGenerator.declareStaticVariableWithoutAssignmentFinalElement,new ListEntry(type,arrayType,name)).get(builder);
 		}
 	}
 }

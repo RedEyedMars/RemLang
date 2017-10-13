@@ -3,7 +3,7 @@ comment-s are Braced
 token-s
 	[[a-zA-Z_][a-zA-Z0-9_]*] as NAME
 	[[^a-zA-Z0-9_\\s\\n\\(\\)\\{\\}\\[\\]\\;\\\"\\\'\\\\`,]+\\s*] as OPERATOR
-	[[-]?(\\d*\\.)?\\d+f?\\s*] as NUMBER
+	[[-]?(\\d*\\.)?\\d+f?(x[0-9ABCDEF]+)?\\s*] as NUMBER
 	[.*] as WILD
 	"\n" as NEWLINE
 	"class " as CLASS
@@ -63,27 +63,43 @@ token-s
 	"this" as THIS
 	"super" as SUPER
 	"..." as INLINE_LIST
+	"[]" as ARRAY_TYPE
 
 brace-s are Braced
 	[{,}] as CLASS_BODY with class_element*
 	[{,}] as METHOD_BODY with body_element*
 	[(,)] as METHOD_PARAMETERS with ( variable_declaration ( COMMA variable_declaration )*)?
 	[(,)] as PARAMETERS with ( NEWLINE* method_argument ( NEWLINE* COMMA NEWLINE* method_argument )*)?
+	[[,]] as ARRAY_PARAMETERS with ( NEWLINE* method_argument ( NEWLINE* COMMA NEWLINE* method_argument )*)?
 	[<,>] as TEMPLATE_PARAMETERS with all_type_name as template_parameter ( COMMA all_type_name as template_parameter )*
 	[\",\"] as QUOTE with WILD
 	[\'\',\'\'] as STATEMENT_AS_QUOTE with body_statement
 	[\',\'] as STATEMENT_AS_STRING with body_statement
 	[`,`] as STATEMENT_AS_METHOD with body_statement
+	[(,)] as STATEMENT_AS_BRACED with body_statement
 	[|,|] as AS_STATEMENT with (body_element+ | body_statement)
 	[,.] as CLASS_FILE with WILD as class_file_name
 class_name-s
-	[Boolean] as Boolean
-	[String] as String
+	[String] as _String
 	[void] as _void
-	[Integer] as Integer
-	[Double] as Double
-	[Float] as Float
-	[Object] as Object
+	[Boolean] as _Boolean
+	[boolean] as _boolean
+	[Byte] as _Byte
+	[byte] as _byte
+	[Character] as _Character
+	[char] as _char
+	[Integer] as _Integer
+	[int] as _int
+	[Double] as _Double
+	[double] as _double
+	[Float] as _Float
+	[float] as _float
+	[Long] as _Long
+	[long] as _long
+	[Short] as _Short
+	[short] as _short
+	[System] as _System
+	[Object] as _Object
 class_variable_name-s are empty
 variable_name-s are empty
 method_definitions are empty
@@ -133,10 +149,11 @@ body_conditional
 body_statement
 	(IN|NER) as inner? body_call ( NEWLINE* ( BACKSLASH? OPERATOR)  NEWLINE* body_call )*
 	STATEMENT_AS_STRING as as_string
+	( STATEMENT_AS_BRACED as left ( BACKSLASH? OPERATOR)? body_statement as right? )  as as_braced
 body_call
-	(NEW all_type_name as typeName PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
-	(name_var PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters?) as group )*
-	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters?) as group )*
+	(NEW all_type_name as typeName PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
+	(name_var PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
+	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
 body_manipulate
 	(IN|NER)? type_var ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body | AS_STATEMENT as body )
 	(IN|NER)? name_var COLON NAME as variableName in variable_names ( NEWLINE* COLON NAME as tokenName NEWLINE* METHOD_BODY) as tokenInstance+
@@ -151,14 +168,14 @@ method_argument
 method_declaration
 	method_definition as methodDefinition in method_definitions
 method_definition is silent
-	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName (AS_METHOD_NAME as NAME | name_var | NAME) as methodName ( METHOD_PARAMETERS as inline | STATEMENT_AS_METHOD as variableParameters ) METHOD_BODY
+	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName ARRAY_TYPE* (AS_METHOD_NAME as NAME | name_var | NAME) as methodName ( METHOD_PARAMETERS as inline | STATEMENT_AS_METHOD as variableParameters ) METHOD_BODY
 variable_declaration
 	(IN|NER) as inner?  WEAK? (STA|TIC) as static? WEAK? ( class_name_definition | variable_name_definition ) ( EQUALS method_argument)?
 variable_assignment
 	(IN|NER) as inner? name_var EQUALS method_argument
 
 variable_name_definition is silent
-	all_type_name as typeName INLINE_LIST? (name_var | NAME ) as variableName in variable_names
+	all_type_name as typeName ARRAY_TYPE* INLINE_LIST? (name_var | NAME ) as variableName in variable_names
 class_name_definition is silent
 	CLASS_TYPE as typeName (name_var | NAME ) as variableName in class_variable_names
 

@@ -65,7 +65,7 @@ addFile
 	" Package Name ".get(__BUILDER__);
 	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(\".\",\"/\"));
 	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,Generator.camelize(" Class Name ")+\".java\", " Class Name "Class);"
+	addFile(__DIRECTORY__,FlowController.camelize(" Class Name ")+\".java\", " Class Name "Class);"
 setupClass
 	"" Class Name "Class.__INIT__();"
 addAnonymousClass

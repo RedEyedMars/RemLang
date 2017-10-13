@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualizable,INameable,IInterfaceable,IStatickable {
+public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualizable,INameable,IInterfaceable,IStatickable,IArraytypeable {
 	public EMethodEntry getSelf(){
 		return this;
 	}
@@ -25,6 +25,7 @@ public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	private ListEntry completeName = (ListEntry)new ListEntry();
 	private Boolean isInterface = false;
 	private Boolean isStatic = false;
+	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private ListEntry parameters = null;
 	private ListEntry methodBody = null;
@@ -103,6 +104,12 @@ public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	}
 	public void setIsStatic(Boolean newIsStatic) {
 		isStatic = newIsStatic;
+	}
+	public ListEntry getArrayType(){
+		return arrayType;
+	}
+	public void setArrayType(ListEntry newArrayType) {
+		arrayType = newArrayType;
 	}	public Entry getType(){
 		return type;
 	}	public ListEntry getParameters(){
@@ -122,22 +129,22 @@ public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 		}
 		e_tabs.set(tabs.toString());
 		if((isStatic == true && pas == true)){
-			new ElementEntry(ExternalGenerator.declareStaticMethodElement,new ListEntry(e_tabs,type,name,parameters,new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
+			new ElementEntry(ExternalGenerator.declareStaticMethodElement,new ListEntry(e_tabs,type,arrayType,name,parameters,new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
 		}
 		else if((isInterface == true && pas == true)){
-			new ElementEntry(ExternalGenerator.declareInterfaceMethodElement,new ListEntry(e_tabs,type,name,parameters)).get(builder);
+			new ElementEntry(ExternalGenerator.declareInterfaceMethodElement,new ListEntry(e_tabs,type,arrayType,name,parameters)).get(builder);
 		}
 		else if((isInterface == false && pas == true)){
-			new ElementEntry(ExternalGenerator.declareMethodElement,new ListEntry(e_tabs,type,name,parameters,new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
+			new ElementEntry(ExternalGenerator.declareMethodElement,new ListEntry(e_tabs,type,arrayType,name,parameters,new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
 		}
 		else if((isStatic == true && pas == false)){
-			new ElementEntry(ExternalGenerator.declareStaticMethodElement,new ListEntry(e_tabs,type,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)),new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
+			new ElementEntry(ExternalGenerator.declareStaticMethodElement,new ListEntry(e_tabs,type,arrayType,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)),new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
 		}
 		else if((isInterface == true && pas == false)){
-			new ElementEntry(ExternalGenerator.declareInterfaceMethodElement,new ListEntry(e_tabs,type,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)))).get(builder);
+			new ElementEntry(ExternalGenerator.declareInterfaceMethodElement,new ListEntry(e_tabs,type,arrayType,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)))).get(builder);
 		}
 		else if((isInterface == false && pas == false)){
-			new ElementEntry(ExternalGenerator.declareMethodElement,new ListEntry(e_tabs,type,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)),new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
+			new ElementEntry(ExternalGenerator.declareMethodElement,new ListEntry(e_tabs,type,arrayType,name,new ElementEntry(ExternalGenerator.bodyParametersElement,new ListEntry(parameters)),new ElementEntry(ExternalGenerator.bodyBodyElement,new ListEntry(methodBody)))).get(builder);
 		}
 	}
 }

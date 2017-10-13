@@ -26,7 +26,10 @@ public class BodyCall extends ConcreteRule {
 								Rules.all_type_name,"typeName"),
 							new OptionalParser(
 									new AddTokenParser(
-										Braces.PARAMETERS,"parameters"))),"group"),
+										Braces.PARAMETERS,"parameters")),
+							new OptionalParser(
+									new AddTokenParser(
+										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
 							
 								new ChainParser(
@@ -41,7 +44,10 @@ public class BodyCall extends ConcreteRule {
 											Tokens.NAME,
 											new OptionalParser(
 													new AddTokenParser(
-														Braces.PARAMETERS,"parameters"))),"group")))),
+														Braces.PARAMETERS,"parameters")),
+											new OptionalParser(
+													new AddTokenParser(
+														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group")))),
 				new ChainParser(
 					new AddTokenParser(
 						
@@ -49,7 +55,10 @@ public class BodyCall extends ConcreteRule {
 							Rules.name_var,
 							new OptionalParser(
 									new AddTokenParser(
-										Braces.PARAMETERS,"parameters"))),"group"),
+										Braces.PARAMETERS,"parameters")),
+							new OptionalParser(
+									new AddTokenParser(
+										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
 							
 								new ChainParser(
@@ -67,7 +76,10 @@ public class BodyCall extends ConcreteRule {
 													Tokens.NAME),
 											new OptionalParser(
 													new AddTokenParser(
-														Braces.PARAMETERS,"parameters"))),"group")))),
+														Braces.PARAMETERS,"parameters")),
+											new OptionalParser(
+													new AddTokenParser(
+														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group")))),
 				new ChainParser(
 					new AddTokenParser(
 						
@@ -84,7 +96,10 @@ public class BodyCall extends ConcreteRule {
 											Rules.type_var)),
 							new OptionalParser(
 									new AddTokenParser(
-										Braces.PARAMETERS,"parameters"))),"group"),
+										Braces.PARAMETERS,"parameters")),
+							new OptionalParser(
+									new AddTokenParser(
+										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
 							
 								new ChainParser(
@@ -99,7 +114,10 @@ public class BodyCall extends ConcreteRule {
 											Tokens.NAME,
 											new OptionalParser(
 													new AddTokenParser(
-														Braces.PARAMETERS,"parameters"))),"group"))))));
+														Braces.PARAMETERS,"parameters")),
+											new OptionalParser(
+													new AddTokenParser(
+														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"))))));
 
 	}
 

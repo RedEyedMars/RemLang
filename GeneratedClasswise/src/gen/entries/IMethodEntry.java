@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualizable,INameable,IStaticable {
+public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualizable,INameable,IStaticable,IArraytypeable {
 	public IMethodEntry getSelf(){
 		return this;
 	}
@@ -25,13 +25,21 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	private ListEntry completeName = (ListEntry)new ListEntry();
 	private Boolean isStatic = false;
 	private StringEntry asStatic = new StringEntry("");
+	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private ListEntry parameters = null;
 	private ListEntry methodBody = null;
 
 	public IMethodEntry(Entry iType,Entry iName,ListEntry iParameters,ListEntry iMethodBody,ContextEntry iContext){
 		isInner = true;
-		name = iName;
+		StringBuilder realName = (StringBuilder)new StringBuilder();
+		iName.get(realName);
+		if((realName.toString().equals("*"))){
+			name = (Entry)new StringEntry("");
+		}
+		else {
+			name = iName;
+		}
 		type = iType;
 		IImportable typeAsImportable = (IImportable)iType;
 		parameters = iParameters;
@@ -109,6 +117,12 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 		else {
 			asStatic.set("");
 		}
+	}
+	public ListEntry getArrayType(){
+		return arrayType;
+	}
+	public void setArrayType(ListEntry newArrayType) {
+		arrayType = newArrayType;
 	}	public Entry getType(){
 		return type;
 	}	public ListEntry getParameters(){
@@ -125,7 +139,7 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 		}
 		e_tabs.set(tabs.toString());
 		if((context != null)){
-			new TabEntry(tabs,new ListEntry(new ElementEntry(InternalGenerator.declareMethodElement,new ListEntry(asStatic,type,name,parameters,methodBody)))).get(builder);
+			new TabEntry(tabs,new ListEntry(new ElementEntry(InternalGenerator.declareMethodElement,new ListEntry(asStatic,type,arrayType,name,parameters,methodBody)))).get(builder);
 		}
 		if((context != null)){
 			new TabEntry(tabs,new ListEntry(new StringEntry("}"))).get(builder);

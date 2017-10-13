@@ -8,13 +8,15 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private ExternalContext classContext;
 	private boolean isStatic;
 	private boolean isWeak = false;
+	private String typeSuffix = "";
 	
-	public ExternalVariableEntry(Boolean isStatic, Entry type, Entry name, ExternalImportEntry assignment){
-		this(isStatic,false,type,name,assignment);
+	public ExternalVariableEntry(Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
+		this(isStatic,false,type,typeSuffix,name,assignment);
 	}
-	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, Entry name, ExternalImportEntry assignment){
+	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 		this.isStatic = isStatic;
 		this.type = type;
+		this.typeSuffix = typeSuffix;
 		this.name = name;
 		this.assignment = assignment;
 		this.isWeak = isWeak;
@@ -27,18 +29,20 @@ public class ExternalVariableEntry extends ExternalStatement {
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
 		getContext().add(this);
 	}
-	public ExternalVariableEntry(Boolean isStatic, Entry type, Entry name){
+	public ExternalVariableEntry(Boolean isStatic, Entry type, String typeSuffix, Entry name){
 		this.isStatic = isStatic;
 		this.type = type;
+		this.typeSuffix = typeSuffix;
 		this.name = name;
 		addImport(new ImportEntry(type));
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
 	}
-	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, Entry name){
+	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name){
 		this.isStatic = isStatic;
 		this.type = type;
+		this.typeSuffix = typeSuffix;
 		this.name = name;
 		this.isWeak = isWeak;
 		addImport(new ImportEntry(type));
@@ -59,6 +63,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 	}
 	public Entry getType(){
 		return type;
+	}
+	public String getTypeSuffix() {
+		return typeSuffix;
 	}
 	public ExternalContext getClassContext() {
 		return classContext;
@@ -93,6 +100,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 			public void get(StringBuilder builder) {
 				builder.append("final ");
 				type.get(builder);
+				builder.append(typeSuffix);
 				builder.append(" ");
 				name.get(builder);
 			}
@@ -129,6 +137,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 			public void get(StringBuilder builder) {
 				builder.append("final ");
 				type.get(builder);
+				builder.append(typeSuffix);
 				builder.append(" initalSuper");
 				StringBuilder subBuilder = new StringBuilder();
 				name.get(subBuilder);
@@ -166,6 +175,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		}
 		if(type != null){
 			type.get(builder);
+			builder.append(typeSuffix);
 			builder.append(" ");
 		}
 		name.get(builder);

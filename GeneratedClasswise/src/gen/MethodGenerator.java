@@ -80,31 +80,45 @@ public class MethodGenerator extends Generator {
 				}
 			}
 		}
+		Entry ret = (Entry)null;
 		if((definition.get("methodName").get("NAME") != null)){
 			if((isInner == true)){
-				return new IMethodEntry(typeName,new IExactEntry(new StringEntry(definition.get("methodName").getString())),parameters,methodBody,parentContext);
+				ret = new IMethodEntry(typeName,new IExactEntry(new StringEntry(definition.get("methodName").getString())),parameters,methodBody,parentContext);
 			}
 			else {
 				EMethodEntry eMethod = new EMethodEntry(typeName,new EExactEntry(new StringEntry(definition.get("methodName").getString())),parametersAreStatement,parameters,methodBody,parentContext);
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
-				return eMethod;
+				ret = eMethod;
 			}
 		}
 		else {
 			Entry vName = (Entry)Generators.classwise.generateNameVar(definition.get("methodName").get("name_var"),isInner);
 			if((isInner == true)){
-				return new IMethodEntry(typeName,vName,parameters,methodBody,parentContext);
+				ret = new IMethodEntry(typeName,vName,parameters,methodBody,parentContext);
 			}
 			else {
 				EMethodEntry eMethod = new EMethodEntry(typeName,vName,parametersAreStatement,parameters,methodBody,parentContext);
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
-				return eMethod;
+				ret = eMethod;
 			}
 		}
+		if((definition.get("ARRAY_TYPE") != null)){
+			IArraytypeable retAsArrayTypeable = (IArraytypeable)ret;
+			ListEntry arrayType = new ListEntry();
+			arrayType.setDelimiter("");
+			retAsArrayTypeable.setArrayType(arrayType);
+			List<IToken> elementARRAYTYPE = definition.getAll("ARRAY_TYPE");
+			if(elementARRAYTYPE != null){
+				for(IToken element:elementARRAYTYPE){
+					arrayType.add(new StringEntry("[]"));
+				}
+			}
+		}
+		return ret;
 	}
 
 

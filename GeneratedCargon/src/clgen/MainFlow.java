@@ -108,6 +108,15 @@ public void output() {
 			"else if ", 
 			/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_state")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("SUCCESS")))),
 			/*Body*/new ExternalStatement.Body(
+			/*Cond*/new ExternalStatement.Conditional(
+			"if ", 
+			/*Optr*/new ExternalStatement("!=", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_result")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("null")))),
+			/*Body*/new ExternalStatement.Body(
+				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_result_acceptor"))), /*Enty*/new ExternalStatement(new StringEntry("add"))),
+			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_result"))))))))))),
+/*BODY*/				
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_result_acceptor"))), /*Enty*/new ExternalStatement(new StringEntry("add"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
@@ -1223,6 +1232,16 @@ TokensClass.getSubClass("Plain").addSubClass(new ExternalClassEntry(){public voi
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("_position")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(currentPositionValue.toString()))))))))));
 		}
 		if(__query__KEY.getName().equals("ruleToken")){ final IToken query = element.get(__query__KEY);
+			final ExternalStatement optionWhile = new ExternalStatement();
+			final String optionNewline = "'\\n')";
+			final String optionAmpersand = "&&(";
+			optionWhile.add(/*Optr*/new ExternalStatement("<", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputLength")))));
+			optionWhile.set(optionAmpersand.toString());
+			optionWhile.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("' '")))));
+			optionWhile.set("||");
+			optionWhile.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\t'")))));
+			optionWhile.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\r'")))));
+			optionWhile.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(optionNewline.toString())))));
 			if (listNames.contains(query.toString())) {
 			final String listName = query.toString();
 			final String newTokenClassName;
@@ -1267,7 +1286,13 @@ TokensClass.getSubClass("Name").addSubClass(new ExternalClassEntry(){public void
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("+=", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))), /*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_list_name_result"))), /*Enty*/new ExternalStatement(new StringEntry("length"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters())))))),
+			 		new ExternalStatement.Parameters())))),
+/*BODY*/				
+			/*Cond*/new ExternalStatement.Conditional(
+			"while ", 
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(optionWhile))),
+			/*Body*/new ExternalStatement.Body(
+				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position"))))))))),
 		/*Cond*/new ExternalStatement.Conditional(
 			"else ", null,
 			/*Body*/new ExternalStatement.Body(

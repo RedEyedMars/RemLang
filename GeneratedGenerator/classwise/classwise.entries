@@ -53,6 +53,10 @@ property inlinelistable
 	var isInlineList = false
 	setIsInlineList takes newIsInlineList as Boolean
 		set isInlineList = newIsInlineList
+property arraytypeable
+	var arrayType as ListEntry = {}
+	setArrayType takes newArrayType as ListEntry
+		set arrayType = newArrayType
 property staticable
 	var isStatic = false
 	var asStatic = \""

@@ -20,6 +20,7 @@ public class INewObjEntry implements Entry,IInnerable,IImportable {
 	private ImportListEntry importPackage = (ImportListEntry)new ImportListEntry();
 	private Entry className = null;
 	private ListEntry parameters = null;
+	private ListEntry array_parameters = null;
 
 	public INewObjEntry(Entry iClassName,ListEntry iParameters){
 		isInner = true;
@@ -27,11 +28,31 @@ public class INewObjEntry implements Entry,IInnerable,IImportable {
 		parameters = iParameters;
 		IImportable classNameAsImportable = (IImportable)className;
 		this.addImports(classNameAsImportable.getImportPackage());
-		for(Entry e:iParameters){
-			IImportable i = (IImportable)e;
-			this.addImports(i.getImportPackage());
+		if((iParameters != null)){
+			for(Entry e:iParameters){
+				IImportable i = (IImportable)e;
+				this.addImports(i.getImportPackage());
+			}
+			parameters.setDelimiter(",");
 		}
-		parameters.setDelimiter(",");
+	}
+	public INewObjEntry(Entry iClassName,ListEntry iParameters,ListEntry iArrayParameters){
+		isInner = true;
+		className = iClassName;
+		parameters = iParameters;
+		array_parameters = iArrayParameters;
+		IImportable classNameAsImportable = (IImportable)className;
+		this.addImports(classNameAsImportable.getImportPackage());
+		if((iParameters != null)){
+			for(Entry e:iParameters){
+				IImportable i = (IImportable)e;
+				this.addImports(i.getImportPackage());
+			}
+			parameters.setDelimiter(",");
+		}
+		if((iArrayParameters != null)){
+			array_parameters.setDelimiter("][");
+		}
 	}
 
 	public Boolean getIsInner(){
@@ -52,10 +73,21 @@ public class INewObjEntry implements Entry,IInnerable,IImportable {
 		return className;
 	}	public ListEntry getParameters(){
 		return parameters;
+	}	public ListEntry getArrayParameters(){
+		return array_parameters;
 	}
 	public void get(StringBuilder builder){
-		if((className != null)){
-			new ElementEntry(InternalGenerator.bodyNewObjElement,new ListEntry(className,parameters)).get(builder);
+		if((parameters != null && array_parameters != null)){
+			new ElementEntry(InternalGenerator.bodyNewObjPAElement,new ListEntry(className,parameters,array_parameters)).get(builder);
+		}
+		else if((parameters != null && array_parameters == null)){
+			new ElementEntry(InternalGenerator.bodyNewObjPElement,new ListEntry(className,parameters)).get(builder);
+		}
+		else if((parameters == null && array_parameters != null)){
+			new ElementEntry(InternalGenerator.bodyNewObjAElement,new ListEntry(className,array_parameters)).get(builder);
+		}
+		else if((parameters == null && array_parameters == null)){
+			new ElementEntry(InternalGenerator.bodyNewObjElement,new ListEntry(className)).get(builder);
 		}
 	}
 }

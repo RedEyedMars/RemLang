@@ -18,7 +18,7 @@ exactEntry
 asTemplate
 	"new StringEntry(\"<" In ">\")"
 camelize
-	"new StringEntry(Generator.camelize(" In "))"
+	"new StringEntry(FlowController.camelize(" In "))"
 extends
 	"builder.append(\" extends \");
 	" Extends Name ""
@@ -52,6 +52,25 @@ bodyOperator
 	"/*Optr*/new ExternalStatement(" Operator ", " Left ", " Right ")"
 bodyForIntHeader
 	"/*FIHd*/new ExternalStatement(\";\", " Variable Declaration ", new ExternalStatement(" Operator ", " Variable Name ", " Variable Limit "), new ExternalStatement(new StringEntry(\"++\"),\"\"," Variable Name "))"
+bodyBracedStatement
+	"/*Brac*/new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", " Subject ")"
+bodyCastedStatement
+	"/*Cast*/new ExternalStatement(\"\",new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", " Type "), " ToCast ")"
+bodyCallWithSubjectWithArray
+	"/*Call*/new ExternalStatement(\"\",
+			 	new ExternalStatement(\".\", " Subject ", " Method Name "),
+			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\",
+			 		new ExternalStatement.Parameters(" Parameters ")),
+			 	new ExternalStatement.ArrayParameters(" Array "))"
+bodyCallWithoutSubjectWithArray
+	"/*Call*/new ExternalStatement(\"\"," Method Name ",
+			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\",
+			 		new ExternalStatement.Parameters(" Parameters ")),
+			 	new ExternalStatement.ArrayParameters(" Array "))"
+bodyAccessWithSubjectWithArray
+	"/*Acss*/new ExternalStatement(\".\", " Subject ", new ExternalStatement(\"\", " Method Name ", new ExternalStatement.ArrayParameters(" Array ")))"
+bodyAccessWithoutSubjectWithArray
+	"/*Acss*/new ExternalStatement(\"\", " Method Name ", new ExternalStatement.ArrayParameters(" Array "))"
 bodyCallWithSubject
 	"/*Call*/new ExternalStatement(\"\",
 			 	new ExternalStatement(\".\", " Subject ", " Method Name "),
@@ -63,8 +82,14 @@ bodyAccessWithSubject
 	"/*Acss*/new ExternalStatement(\".\", " Subject ", " Method Name ")"
 bodyAccessWithoutSubject
 	"/*Acss*/new ExternalStatement(" Method Name ")"
-bodyNewObj
+bodyNewObjPA
+	"/*NObj*/new ExternalStatement.NewObject(" Type Name ",new ExternalStatement.Parameters(" Parameters "), new ExternalStatement.ArrayParameters(" Array "))"
+bodyNewObjP
 	"/*NObj*/new ExternalStatement.NewObject(" Type Name ",new ExternalStatement.Parameters(" Parameters "))"
+bodyNewObjA
+	"/*NObj*/new ExternalStatement.NewObject(" Type Name ",new ExternalStatement.ArrayParameters(" Parameters "))"
+bodyNewObj
+	"/*NObj*/new ExternalStatement.NewObject(" Type Name ")"
 bodyElement
 	"/*Elem*/new ExternalStatement(new TabEntry(new StringEntry(" Preffix ")), new StringEntry(" Suffix "), " Entry ")"
 bodyThrow
@@ -100,27 +125,27 @@ declareMember
 
 
 declareVariableAsInlineList
-	"new ExternalVariableEntry(false, " Type ", new ExternalStatement(new StringEntry(\"...\"), " Name "))"
+	"new ExternalVariableEntry(false, " Type ",\"" Array "\", new ExternalStatement(new StringEntry(\"...\"), " Name "))"
 declareVariableWithAssignmentFinal
-	"new ExternalVariableEntry(false, " Type ", " Name ", " Assignment ")"
+	"new ExternalVariableEntry(false, " Type ",\"" Array "\", " Name ", " Assignment ")"
 declareVariableWithAssignmentNonFinal
-	"new ExternalVariableEntry(false, true, " Type ", " Name ", " Assignment ")"
+	"new ExternalVariableEntry(false, true, " Type ",\"" Array "\", " Name ", " Assignment ")"
 declareVariableWithoutAssignmentNonFinal
-	"new ExternalVariableEntry(false, true, " Type ", " Name ")"
+	"new ExternalVariableEntry(false, true, " Type ",\"" Array "\", " Name ")"
 declareVariableWithoutAssignmentFinal
-	"new ExternalVariableEntry(false, " Type ", " Name ")"
+	"new ExternalVariableEntry(false, " Type ",\"" Array "\", " Name ")"
 declareStaticVariableWithAssignment
-	"new ExternalVariableEntry(true, " Type ", " Name ", " Assignment ")"
+	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ", " Assignment ")"
 declareStaticVariableWithoutAssignmentNonFinal
-	"new ExternalVariableEntry(true, " Type ", " Name ")"
+	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ")"
 declareStaticVariableWithoutAssignmentFinal
-	"new ExternalVariableEntry(true, " Type ", " Name ")"
+	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ")"
 declareStaticMethod
-	"new ExternalMethodEntry(" Tabs ", true," Type ", " Name ", " Parameters ", " Body ")"
+	"new ExternalMethodEntry(" Tabs ", true," Type ",\"" Array "\", " Name ", " Parameters ", " Body ")"
 declareMethod
-	"new ExternalMethodEntry(" Tabs ", false," Type ", " Name ", " Parameters ", " Body ")"
+	"new ExternalMethodEntry(" Tabs ", false," Type ",\"" Array "\", " Name ", " Parameters ", " Body ")"
 declareInterfaceMethod
-	"new ExternalMethodEntry(" Tabs ", false, " Type ", " Name ", " Parameters ", null )"
+	"new ExternalMethodEntry(" Tabs ", false, " Type ",\"" Array "\", " Name ", " Parameters ", null )"
 
 getCompleteHeader
 	"new Entry(){
