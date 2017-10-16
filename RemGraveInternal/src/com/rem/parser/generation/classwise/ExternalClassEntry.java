@@ -191,7 +191,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		variables.put(variable.getName(), variable);
 		myContext.add(variable);
 		addSubImport(variable);
-		addMethod(new ExternalMethodEntry(0,false, variable.getType(),new Entry(){
+		addMethod(new ExternalMethodEntry(0,false, variable.getType(), variable.getTypeSuffix(),new Entry(){
 			@Override
 			public void get(StringBuilder builder) {
 				builder.append("get");

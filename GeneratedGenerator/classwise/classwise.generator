@@ -1132,10 +1132,16 @@ body
 					quark method_argument to atom
 						array_parameters+=generate argument :false;
 				if element->NEW is not null
-					if containsArrayParameters is true
-						set ret = e_new_obj :name_var parameters array_parameters;
+					if containsParameters is true
+						if containsArrayParameters is true
+							set ret = e_new_obj :name_var parameters array_parameters;
+						else
+							set ret = e_new_obj :name_var parameters;
 					else
-						set ret = e_new_obj :name_var parameters;
+						if containsArrayParameters is true
+							set ret = e_new_obj :name_var null array_parameters;
+						else
+							set ret = e_new_obj :name_var parameters;
 				else
 					if ret is null
 						if containsParameters is true

@@ -523,11 +523,21 @@ public class BodyGenerator extends Generator {
 						}
 					}
 					if((element.get("NEW") != null)){
-						if((containsArrayParameters == true)){
-							ret = new ENewObjEntry(name_var,parameters,array_parameters);
+						if((containsParameters == true)){
+							if((containsArrayParameters == true)){
+								ret = new ENewObjEntry(name_var,parameters,array_parameters);
+							}
+							else {
+								ret = new ENewObjEntry(name_var,parameters);
+							}
 						}
 						else {
-							ret = new ENewObjEntry(name_var,parameters);
+							if((containsArrayParameters == true)){
+								ret = new ENewObjEntry(name_var,null,array_parameters);
+							}
+							else {
+								ret = new ENewObjEntry(name_var,parameters);
+							}
 						}
 					}
 					else {

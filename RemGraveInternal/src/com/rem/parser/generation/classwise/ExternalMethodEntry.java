@@ -143,6 +143,9 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			builder.append("static ");
 		}
 		type.get(builder);
+		if (typeSuffix!=null){
+			builder.append(typeSuffix);
+		}
 		if(!getSimpleName().contains("*")){
 			builder.append(" ");
 			name.get(builder);

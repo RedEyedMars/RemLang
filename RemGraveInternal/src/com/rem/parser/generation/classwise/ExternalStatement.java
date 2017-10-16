@@ -382,7 +382,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			name.get(nameBuilder);
 		}
 		public NewObject(ExternalStatement name, ExternalStatement.Parameters parameters, ExternalStatement.ArrayParameters array){
-			super(new StringEntry("new "),"",name,new ExternalStatement(new StringEntry("("),new StringEntry(")"),parameters),array);
+			super(new StringEntry("new "),"",name,array,new ExternalStatement(new StringEntry("{"),new StringEntry("}"),parameters));
 			this.addImport(new ImportEntry(name));
 			StringBuilder nameBuilder = new StringBuilder();
 			name.get(nameBuilder);
