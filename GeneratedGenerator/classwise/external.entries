@@ -184,14 +184,17 @@ entry e_for_int_header uses innerable importable
 			external bodyForIntHeader{left operator variableName right variableName} if right is not null
 entry e_braced uses innerable importable
 	entry subject = null
+	entry operator = null
 	entry after = null
-	constructor takes iSubject as Entry, iAfterSubject as Entry
+	constructor takes iSubject as Entry, iOperator as Entry, iAfterSubject as Entry
 		set isInner = false
 		set subject = iSubject
+		set operator = iOperator
 		set after = iAfterSubject
 	output
-			external bodyBracedStatement { subject } if subject is not null and after is null
-			external bodyCastedStatement { subject after } if subject is not null and after is not null
+			external bodyBracedStatement { subject } if subject is not null and after is null and operator is null
+			external bodyCastedStatement { subject after } if subject is not null and after is not null and operator is null
+			external bodyBracedOperatorStatement { subject operator after } if subject is not null and after is not null and operator is not null
 entry e_call uses innerable importable
 	entry subject = null
 	entry methodName = null
@@ -208,7 +211,7 @@ entry e_call uses innerable importable
 					i getImportPackage
 			parameters setDelimiter :",";
 		if iArrayParameters is not null
-			array_parameters setDelimiter :"][";
+			array_parameters setDelimiter :",";
 	constructor takes iSubject as Entry, iMethodName as Entry, iParameters as ListEntry, iArrayParameters as ListEntry
 		set subject = iSubject
 		var subjectAsImporable as importable = iSubject
@@ -224,7 +227,7 @@ entry e_call uses innerable importable
 					i getImportPackage
 			parameters setDelimiter :",";
 		if iArrayParameters is not null
-			array_parameters setDelimiter :"][";
+			array_parameters setDelimiter :",";
 	constructor takes iMethodName as Entry, iParameters as ListEntry
 		set methodName = iMethodName
 		set parameters = iParameters
@@ -289,7 +292,7 @@ entry e_new_obj uses innerable importable
 			parameters setDelimiter 
 				","
 		if iArrayParameters is not null
-			array_parameters setDelimiter :"][";
+			array_parameters setDelimiter :",";
 	output
 			external bodyNewObjPA{className parameters array_parameters} if parameters is not null and array_parameters is not null
 			external bodyNewObjP{className parameters} if parameters is not null and array_parameters is null

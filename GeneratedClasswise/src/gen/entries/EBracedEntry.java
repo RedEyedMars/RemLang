@@ -19,11 +19,13 @@ public class EBracedEntry implements Entry,IInnerable,IImportable {
 	private Boolean isInner = false;
 	private ImportListEntry importPackage = (ImportListEntry)new ImportListEntry();
 	private Entry subject = null;
+	private Entry operator = null;
 	private Entry after = null;
 
-	public EBracedEntry(Entry iSubject,Entry iAfterSubject){
+	public EBracedEntry(Entry iSubject,Entry iOperator,Entry iAfterSubject){
 		isInner = false;
 		subject = iSubject;
+		operator = iOperator;
 		after = iAfterSubject;
 	}
 
@@ -43,15 +45,20 @@ public class EBracedEntry implements Entry,IInnerable,IImportable {
 		importPackage.addImports(newImport);
 	}	public Entry getSubject(){
 		return subject;
+	}	public Entry getOperator(){
+		return operator;
 	}	public Entry getAfter(){
 		return after;
 	}
 	public void get(StringBuilder builder){
-		if((subject != null && after == null)){
+		if((subject != null && after == null && operator == null)){
 			new ElementEntry(ExternalGenerator.bodyBracedStatementElement,new ListEntry(subject)).get(builder);
 		}
-		else if((subject != null && after != null)){
+		else if((subject != null && after != null && operator == null)){
 			new ElementEntry(ExternalGenerator.bodyCastedStatementElement,new ListEntry(subject,after)).get(builder);
+		}
+		else if((subject != null && after != null && operator != null)){
+			new ElementEntry(ExternalGenerator.bodyBracedOperatorStatementElement,new ListEntry(subject,operator,after)).get(builder);
 		}
 	}
 }

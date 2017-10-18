@@ -151,9 +151,9 @@ body_statement
 	STATEMENT_AS_STRING as as_string
 	( STATEMENT_AS_BRACED as left ( BACKSLASH? OPERATOR)? body_statement as right? )  as as_braced
 body_call
-	(NEW all_type_name as typeName PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
-	(name_var PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
-	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters?) as group )*
+	(NEW all_type_name as typeName PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
+	(name_var PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
+	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
 body_manipulate
 	(IN|NER)? type_var ADD  as methodName NEWLINE* ( class_declaration | method_declaration | variable_declaration | METHOD_BODY as body | AS_STATEMENT as body )
 	(IN|NER)? name_var COLON NAME as variableName in variable_names ( NEWLINE* COLON NAME as tokenName NEWLINE* METHOD_BODY) as tokenInstance+

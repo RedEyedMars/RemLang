@@ -35,7 +35,7 @@ public class ECallEntry implements Entry,IInnerable,IImportable {
 			parameters.setDelimiter(",");
 		}
 		if((iArrayParameters != null)){
-			array_parameters.setDelimiter("][");
+			array_parameters.setDelimiter(",");
 		}
 	}
 	public ECallEntry(Entry iSubject,Entry iMethodName,ListEntry iParameters,ListEntry iArrayParameters){
@@ -53,7 +53,7 @@ public class ECallEntry implements Entry,IInnerable,IImportable {
 			parameters.setDelimiter(",");
 		}
 		if((iArrayParameters != null)){
-			array_parameters.setDelimiter("][");
+			array_parameters.setDelimiter(",");
 		}
 	}
 	public ECallEntry(Entry iMethodName,ListEntry iParameters){

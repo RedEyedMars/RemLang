@@ -27,7 +27,7 @@ public class BodyCall extends ConcreteRule {
 							new OptionalParser(
 									new AddTokenParser(
 										Braces.PARAMETERS,"parameters")),
-							new OptionalParser(
+							new ManyParser(
 									new AddTokenParser(
 										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
@@ -45,7 +45,7 @@ public class BodyCall extends ConcreteRule {
 											new OptionalParser(
 													new AddTokenParser(
 														Braces.PARAMETERS,"parameters")),
-											new OptionalParser(
+											new ManyParser(
 													new AddTokenParser(
 														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group")))),
 				new ChainParser(

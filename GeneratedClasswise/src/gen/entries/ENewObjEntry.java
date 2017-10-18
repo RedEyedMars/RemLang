@@ -43,7 +43,7 @@ public class ENewObjEntry implements Entry,IInnerable,IImportable {
 			parameters.setDelimiter(",");
 		}
 		if((iArrayParameters != null)){
-			array_parameters.setDelimiter("][");
+			array_parameters.setDelimiter(",");
 		}
 	}
 

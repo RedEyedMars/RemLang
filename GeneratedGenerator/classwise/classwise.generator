@@ -1002,7 +1002,7 @@ body
 						i_braced: subject oper right;
 				else
 					return
-						e_braced: subject right;
+						e_braced: subject oper right;
 			body_call
 				if operand is null
 					if isInner is true
@@ -1066,8 +1066,11 @@ body
 				var containsArrayParameters = false
 				element array_parameters to quark
 					set containsArrayParameters = true
-					quark method_argument to atom
-						array_parameters+=generate argument :true;
+					if quark->method_argument is not null
+						quark method_argument to atom
+							array_parameters+=generate argument :true;
+					else 
+						array_parameters+=i_exact:\"";
 				if element->NEW is not null
 					if containsParameters is true
 						if containsArrayParameters is true
@@ -1129,8 +1132,11 @@ body
 				var containsArrayParameters = false
 				element array_parameters to quark
 					set containsArrayParameters = true
-					quark method_argument to atom
-						array_parameters+=generate argument :false;
+					if quark->method_argument is not null
+						quark method_argument to atom
+							array_parameters+=generate argument :false;
+					else 
+						array_parameters+=e_exact:\"";
 				if element->NEW is not null
 					if containsParameters is true
 						if containsArrayParameters is true

@@ -45,6 +45,7 @@ public class ExternalGenerator extends Generator {
 	public static final Element bodyForIntHeaderElement = new Element("bodyForIntHeader",new String[]{"/*FIHd*/new ExternalStatement(\";\", ",/*Variable Declaration*/", new ExternalStatement(",/*Operator*/", ",/*Variable Name*/", ",/*Variable Limit*/"), new ExternalStatement(new StringEntry(\"++\"),\"\",",/*Variable Name*/"))"});
 	public static final Element bodyBracedStatementElement = new Element("bodyBracedStatement",new String[]{"/*Brac*/new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", ",/*Subject*/")"});
 	public static final Element bodyCastedStatementElement = new Element("bodyCastedStatement",new String[]{"/*Cast*/new ExternalStatement(\"\",new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", ",/*Type*/"), ",/*ToCast*/")"});
+	public static final Element bodyBracedOperatorStatementElement = new Element("bodyBracedOperatorStatement",new String[]{"/*BrOp*/new ExternalStatement(\"\",new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\", ",/*Type*/"), new ExternalStatement(\"",/*Operator*/"\"), ",/*ToCast*/")"});
 	public static final Element bodyCallWithSubjectWithArrayElement = new Element("bodyCallWithSubjectWithArray",new String[]{"/*Call*/new ExternalStatement(\"\","+
 			"\n			 	new ExternalStatement(\".\", ",/*Subject*/", ",/*Method Name*/"),"+
 			"\n			 	new ExternalStatement(new StringEntry(\"(\"),new StringEntry(\")\"),\"\","+
@@ -153,6 +154,7 @@ public class ExternalGenerator extends Generator {
 		addElement("bodyForIntHeader",bodyForIntHeaderElement);
 		addElement("bodyBracedStatement",bodyBracedStatementElement);
 		addElement("bodyCastedStatement",bodyCastedStatementElement);
+		addElement("bodyBracedOperatorStatement",bodyBracedOperatorStatementElement);
 		addElement("bodyCallWithSubjectWithArray",bodyCallWithSubjectWithArrayElement);
 		addElement("bodyCallWithoutSubjectWithArray",bodyCallWithoutSubjectWithArrayElement);
 		addElement("bodyAccessWithSubjectWithArray",bodyAccessWithSubjectWithArrayElement);

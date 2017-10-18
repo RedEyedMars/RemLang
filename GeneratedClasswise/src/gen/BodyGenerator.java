@@ -283,7 +283,7 @@ public class BodyGenerator extends Generator {
 					return new IBracedEntry(subject,oper,right);
 				}
 				else {
-					return new EBracedEntry(subject,right);
+					return new EBracedEntry(subject,oper,right);
 				}
 			}
 			else if("body_call".equals(elementKey.getName())){
@@ -394,11 +394,16 @@ public class BodyGenerator extends Generator {
 					if(quarkArrayParameters != null){
 						for(IToken quark:quarkArrayParameters){
 							containsArrayParameters = true;
-							List<IToken> atomMethodArgument = quark.getAll("method_argument");
-							if(atomMethodArgument != null){
-								for(IToken atom:atomMethodArgument){
-									array_parameters.add(generateArgument(atom,true));
+							if((quark.get("method_argument") != null)){
+								List<IToken> atomMethodArgument = quark.getAll("method_argument");
+								if(atomMethodArgument != null){
+									for(IToken atom:atomMethodArgument){
+										array_parameters.add(generateArgument(atom,true));
+									}
 								}
+							}
+							else {
+								array_parameters.add(new IExactEntry(new StringEntry("")));
 							}
 						}
 					}
@@ -514,11 +519,16 @@ public class BodyGenerator extends Generator {
 					if(quarkArrayParameters != null){
 						for(IToken quark:quarkArrayParameters){
 							containsArrayParameters = true;
-							List<IToken> atomMethodArgument = quark.getAll("method_argument");
-							if(atomMethodArgument != null){
-								for(IToken atom:atomMethodArgument){
-									array_parameters.add(generateArgument(atom,false));
+							if((quark.get("method_argument") != null)){
+								List<IToken> atomMethodArgument = quark.getAll("method_argument");
+								if(atomMethodArgument != null){
+									for(IToken atom:atomMethodArgument){
+										array_parameters.add(generateArgument(atom,false));
+									}
 								}
+							}
+							else {
+								array_parameters.add(new EExactEntry(new StringEntry("")));
 							}
 						}
 					}
