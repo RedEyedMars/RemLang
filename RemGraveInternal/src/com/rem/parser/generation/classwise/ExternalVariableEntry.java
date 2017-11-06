@@ -29,6 +29,16 @@ public class ExternalVariableEntry extends ExternalStatement {
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
 		getContext().add(this);
 	}
+	public ExternalVariableEntry(Entry type, Entry name){
+		this.isStatic = false;
+		this.type = type;
+		this.typeSuffix = "";
+		this.name = name;
+		addImport(new ImportEntry(type));
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+	}
 	public ExternalVariableEntry(Boolean isStatic, Entry type, String typeSuffix, Entry name){
 		this.isStatic = isStatic;
 		this.type = type;
@@ -73,7 +83,18 @@ public class ExternalVariableEntry extends ExternalStatement {
 	public void setTabs(int newTabs){
 		tabs = newTabs;
 	}
-	
+
+	public Entry getAsEnumMember(final String comma) {
+		return new Entry(){
+			@Override
+			public void get(StringBuilder builder) {
+				builder.append(comma);
+
+				new TabEntry(tabs, name).get(builder);
+			}
+			
+		};
+	}
 	public Entry getAsMember() {
 		final ExternalVariableEntry self = this;
 		return new Entry(){
@@ -183,6 +204,14 @@ public class ExternalVariableEntry extends ExternalStatement {
 			builder.append(" = ");
 			assignment.get(builder);
 		}
+	}
+	public String getTypeName() {
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		if (typeSuffix != null) {
+			typeBuilder.append(typeSuffix);
+		}
+		return typeBuilder.toString();
 	}
 	
 }

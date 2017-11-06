@@ -17,6 +17,7 @@ public class InternalGenerator extends Generator {
 
 	public static final Element camelizeElement = new Element("camelize",new String[]{"FlowController.camelize(",/*In*/".toString())"});
 	public static final Element getMethodNameElement = new Element("getMethodName",new String[]{"get",/*Name*/""});
+	public static final Element getInternalMethodNameElement = new Element("getInternalMethodName",new String[]{"get_",/*Name*/""});
 	public static final Element getVariableFromNameElement = new Element("getVariableFromName",new String[]{"MainClass.",/*VariableName*/""});
 	public static final Element getClassFromClassMapElement = new Element("getClassFromClassMap",new String[]{"ExternalClassEntry.classMap.get(",/*Class Name*/")"});
 	public static final Element newBodyElement = new Element("newBody",new String[]{"new ExternalStatement.Body(",/*Body Elements*/")"});
@@ -59,10 +60,23 @@ public class InternalGenerator extends Generator {
 	public static final Element declareMemberCompleteElement = new Element("declareMemberComplete",new String[]{"protected ",/*Name And Type and Assignment*/";"});
 	public static final Element declareMemberVariableElement = new Element("declareMemberVariable",new String[]{"protected ExternalVariableEntry ",/*Name*/"Variable = ",/*Member*/";"});
 	public static final Element declareMemberMethodElement = new Element("declareMemberMethod",new String[]{"protected ExternalMethodEntry ",/*Name*/"Method = ",/*Member*/";"});
-	public static final Element declareMemberClassElement = new Element("declareMemberClass",new String[]{"protected ",/*Name*/" ",/*Name*/"Class = ",/*Member*/""});
-	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"public ",/*IsStatic*/"",/*Type*/"",/*Array*/" ",/*Name*/"(",/*Parameters*/") {",/*Method Body*/""});
-	public static final Element declareClassElement = new Element("declareClass",new String[]{"package ",/*Package name*/";",/*Import List*/""+
+	public static final Element declareMemberClassElement = new Element("declareMemberClass",new String[]{"public final ",/*Name*/" ",/*Name*/"Class = ",/*Member*/""});
+	public static final Element declareStaticMemberClassElement = new Element("declareStaticMemberClass",new String[]{"public static final ",/*Name*/" ",/*Name*/"Class = ",/*Member*/""});
+	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"public ",/*IsStatic*/"",/*Type*/"",/*Array*/" ",/*Name*/"(",/*Parameters*/") ",/*Throws*/" {",/*Method Body*/""});
+	public static final Element declareClassElement = new Element("declareClass",new String[]{"package ",/*Package name*/";"+
+			"\nimport java.util.*;"+
+			"\nimport java.io.*;"+
+			"\nimport lists.*;"+
+			"\nimport com.rem.parser.generation.classwise.*;"+
+			"\nimport com.rem.parser.generation.*;"+
+			"\nimport com.rem.parser.parser.*;"+
+			"\nimport com.rem.parser.token.*;"+
+			"\nimport com.rem.parser.*;",/*Imports*/""+
 			"\npublic ",/*IsStatic*/"",/*Class Type*/" ",/*Class Name*/" ",/*Extends*/" ",/*Implements*/" {"+
+			"\n	public static class classes {",/*Classes*/""+
+			"\n	}"+
+			"\n	public static ",/*Class Type*/" variables = null;"+
+			"\n	public static ",/*Class Type*/" methods = null;"+
 			"\n	//Externals",/*Variables*/"\n",/*Methods*/"\n",/*Classes*/""+
 			"\n	//Internals",/*Variables*/"\n",/*Methods*/"\n",/*Classes*/""+
 			"\n}"});
@@ -72,6 +86,7 @@ public class InternalGenerator extends Generator {
 	public InternalGenerator(){
 		addElement("camelize",camelizeElement);
 		addElement("getMethodName",getMethodNameElement);
+		addElement("getInternalMethodName",getInternalMethodNameElement);
 		addElement("getVariableFromName",getVariableFromNameElement);
 		addElement("getClassFromClassMap",getClassFromClassMapElement);
 		addElement("newBody",newBodyElement);
@@ -115,6 +130,7 @@ public class InternalGenerator extends Generator {
 		addElement("declareMemberVariable",declareMemberVariableElement);
 		addElement("declareMemberMethod",declareMemberMethodElement);
 		addElement("declareMemberClass",declareMemberClassElement);
+		addElement("declareStaticMemberClass",declareStaticMemberClassElement);
 		addElement("declareMethod",declareMethodElement);
 		addElement("declareClass",declareClassElement);
 		addElement("declareSubClass",declareSubClassElement);

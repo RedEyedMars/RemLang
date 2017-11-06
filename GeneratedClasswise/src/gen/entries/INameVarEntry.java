@@ -61,6 +61,16 @@ public class INameVarEntry implements Entry,IInnerable,IImportable {
 		return isConcat;
 	}
 	public void get(StringBuilder builder){
+		StringBuilder firstBuilder = new StringBuilder();
+		first.get(firstBuilder);
+		Set<String> definedVariables = (Set<String>)Generators.variable.getDefinedVariableNames();
+		if((definedVariables.contains(firstBuilder.toString()))){
+			first = new ElementEntry(ClasswiseGenerator.retrieveVariableElement,new ListEntry(new StringEntry(firstBuilder.toString())));
+		}
+		Set<String> definedMethods = (Set<String>)Generators.method.getDefinedMethodNames();
+		if((definedMethods.contains(firstBuilder.toString()))){
+			first = new ElementEntry(ClasswiseGenerator.retrieveMethodElement,new ListEntry(new StringEntry(firstBuilder.toString())));
+		}
 		if((second == null)){
 			first.get(builder);
 		}

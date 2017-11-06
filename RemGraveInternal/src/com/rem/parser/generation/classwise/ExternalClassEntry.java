@@ -49,48 +49,14 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 	}
 	static {
-		classMap.put("ArrayList", new ExternalClassEntry(){
-			@Override
-			public void __INIT__(){
-				super.__SETUP__(
-
-						new StringEntry("java.util"), 
-						new StringEntry(""),
-						new StringEntry("ArrayList"),
-						" class ",
-						null,
-						new ArrayList<Entry>(),
-						new StringEntry(" class ArrayList "),
-						new ArrayList<ExternalVariableEntry>(),
-						new ArrayList<ExternalMethodEntry>(Arrays.asList(
-								new ExternalMethodEntry(
-										0, false, new StringEntry("void"), new StringEntry("add"),
-										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
-								new ExternalMethodEntry(
-										0, false, new StringEntry("void"), new StringEntry("remove"),
-										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
-								new ExternalMethodEntry(
-										0, false, new StringEntry("Boolean"), new StringEntry("isEmpty"),
-										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
-								new ExternalMethodEntry(
-										0, false, new StringEntry("void"), new StringEntry("addAll"),
-										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
-								new ExternalMethodEntry(
-										0, false, new StringEntry("void"), new StringEntry("sort"),
-										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body())
-								)
-								),new ArrayList<ExternalClassEntry>()				
-
-						);
-			}
-		});
-		classMap.get("ArrayList").__INIT__();
+		ExternalClassHelper.setup();
 	}
 
-	private Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
-	private Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
+	protected Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
+	protected Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
 	private Map<String,ExternalMethodEntry> simpleMethods = new LinkedHashMap<String,ExternalMethodEntry>();
 	private Map<String,ExternalClassEntry> classes = new LinkedHashMap<String,ExternalClassEntry>();
+	private Map<String,ExternalClassEntry> classyclasses = new LinkedHashMap<String,ExternalClassEntry>();
 
 	private String name;
 	private int tabs;
@@ -104,15 +70,19 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	private ExternalClassEntry bonifideParentClass;
 	private List<Entry> interfaces;
 	private boolean isInterface;
+	private boolean isEnum;
+	private boolean displayConstructors = true;
 
 	private ExternalMethodEntry constructorMethod;
 	public ExternalClassEntry(){
 		super();
 	}
+	public static void main(String[] args0){}
 	public void __INIT__(){}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
 
 		isInterface = classType.contains("interface");
+		isEnum = classType.contains("enum");
 		StringBuilder builder = new StringBuilder();
 		initialName.get(builder);
 		name = builder.toString();
@@ -179,6 +149,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 				parentClass.get(parentNameBuilder);
 				if(classMap.containsKey(parentNameBuilder.toString())){
 					bonifideParentClass = classMap.get(parentNameBuilder.toString());
+
 				}
 			}
 		}
@@ -191,15 +162,17 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		variables.put(variable.getName(), variable);
 		myContext.add(variable);
 		addSubImport(variable);
-		addMethod(new ExternalMethodEntry(0,false, variable.getType(), variable.getTypeSuffix(),new Entry(){
-			@Override
-			public void get(StringBuilder builder) {
-				builder.append("get");
-				builder.append(Generator.camelize(variable.getName()));
-			}
-		},new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body(
-				new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry(variable.getName())))
-				)));
+		if(isEnum==false){
+			addMethod(new ExternalMethodEntry(0,false, variable.getType(), variable.getTypeSuffix(),new Entry(){
+				@Override
+				public void get(StringBuilder builder) {
+					builder.append("get");
+					builder.append(Generator.camelize(variable.getName()));
+				}
+			},new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body(
+					new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry(variable.getName())))
+					)));
+		}
 		if(variable.isWeak()){
 			StringBuilder typeBuilder = new StringBuilder();
 			variable.getType().get(typeBuilder);
@@ -245,16 +218,49 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 		method.setIsInterface(isInterface);
 	}
+	public void removeMethod(ExternalMethodEntry method){
+		methods.remove(method.getName());
+		simpleMethods.remove(method.getSimpleName());
+	}
+	public Collection<String> getMethodNames(){
+		return methods.keySet();
+	}
 	public void addSubClass(ExternalClassEntry subClass){
 		subClass.__INIT__();
 		ExternalContext.freeClass(subClass.getName());
 		classes.put(subClass.getName(), subClass);
+		classyclasses.put(subClass.getName()+"Class", subClass);
 		addSubImport(subClass);
 		subClass.isSubClass  = true;
 		subClass.enclosingClass = this;
 		//subClass.myContext.setParent(myContext);
 		ExternalClassEntry.classMap.put(subClass.getFullName(),subClass);
 		ExternalContext.getClassContext(subClass.getFullName()).setParent(subClass.myContext);
+	}
+	public void addParentClass(ExternalClassEntry newParentClass){
+		bonifideParentClass = null;
+		parentClass = new StringEntry(newParentClass.getFullName());
+		if(parentClass!=null&&getParentClass() == null){
+			StringBuilder parentNameBuilder = new StringBuilder();
+			parentClass.get(parentNameBuilder);
+			if(!allOffspring.containsKey(parentNameBuilder.toString())){
+				allOffspring.put(parentNameBuilder.toString(),new ArrayList<ExternalClassEntry>());
+			}
+			allOffspring.get(parentNameBuilder.toString()).add(this);
+			addParentImport(parentClass);
+		}
+		else if(bonifideParentClass!=null){
+			myContext.setParent(bonifideParentClass.myContext);
+
+			addParentImport(parentClass);
+		}
+	}
+	public void addInterfaceClass(ExternalClassEntry newInterfaceClass){
+		if(interfaces==null){
+			interfaces = new ArrayList<Entry>();
+		}
+		interfaces.add(newInterfaceClass);
+		addParentImport(newInterfaceClass);
 	}
 	public ExternalVariableEntry getVariable(String variableName){
 		return variables.get(variableName);
@@ -268,7 +274,12 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 		}
 	}
 	public ExternalClassEntry getSubClass(String subClassName){
-		return classes.get(subClassName);
+		if (classes.containsKey(subClassName)){
+			return classes.get(subClassName);
+		}
+		else {
+			return classyclasses.get(subClassName);
+		}
 	}
 	public ExternalVariableEntry getVariable(ExternalVariableEntry variable){
 		return variables.get(variable.getName());
@@ -302,6 +313,9 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	public void setTabs(int newTabs){
 		tabs = newTabs;
 	}
+	public void setDisplayConstructors(boolean option){
+		displayConstructors = option;
+	}
 	public void get(StringBuilder builder){
 		if(isSubClass == false){
 			builder.append("package ");
@@ -334,11 +348,18 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 			prefix = ",";
 		}
 		builder.append("{");
+		String enumComma = "";
 		for(String variableKey:variables.keySet()){
 			variables.get(variableKey).setTabs(tabs+1);
-			variables.get(variableKey).getAsMember().get(builder);
+			if(isEnum){
+				variables.get(variableKey).getAsEnumMember(enumComma).get(builder);
+				enumComma = ",";
+			}
+			else {
+				variables.get(variableKey).getAsMember().get(builder);
+			}
 		}
-		if(!isInterface){
+		if(!isInterface&&!isEnum&&displayConstructors){
 			int constructorState = 2;
 			if(getParentClass()!=null){
 				constructorState = outputConstructor(builder,true);

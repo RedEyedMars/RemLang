@@ -50,7 +50,8 @@ public class CargonTokens extends ParseList {
 	public static final ExactParser REGEX_DOT = new ExactParser("REGEX_DOT","cargon_tokens","\\.");
 	public static final ExactParser REGEX_QUOTE = new ExactParser("REGEX_QUOTE","cargon_tokens","\\\"");
 	public static final ExactParser REGEX_APOS = new ExactParser("REGEX_APOS","cargon_tokens","\\\'");
+	public static final ExactParser PASS_SYMBOL = new ExactParser("PASS_SYMBOL","cargon_tokens","@");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS);
+				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS,PASS_SYMBOL);
 }

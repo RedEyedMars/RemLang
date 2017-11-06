@@ -13,9 +13,15 @@ import lists.*;
 
 public class MethodGenerator extends Generator {
 
+	private HashSet<String> definedMethodNames = new HashSet<String>();
 
 
 	public MethodGenerator(){
+	}
+	public void addDefinedMethodName(Entry methodEntry){
+		StringBuilder methodName = new StringBuilder();
+		methodEntry.get(methodName);
+		definedMethodNames.add(methodName.toString());
 	}
 	public Entry generateDeclaration(IToken declaration,Boolean isInner,ContextEntry parentContext){
 		List<IToken> elementMethodDefinition = declaration.getAll("methodDefinition");
@@ -40,7 +46,7 @@ public class MethodGenerator extends Generator {
 		List<IToken> atomTypeName = definition.getAll("typeName");
 		if(atomTypeName != null){
 			for(IToken atom:atomTypeName){
-				typeName.addSubClass(Generators.classwise.generateAllType(atom,isInner));
+				typeName.addSubClass(Generators.classwise.generateAllType(atom,isInner,parentContext));
 			}
 		}
 		ListEntry methodBody = new ListEntry();
@@ -54,7 +60,7 @@ public class MethodGenerator extends Generator {
 				List<IToken> atomVariableDeclaration = element.getAll("variable_declaration");
 				if(atomVariableDeclaration != null){
 					for(IToken atom:atomVariableDeclaration){
-						parameters.add(Generators.variable.generateDeclaration(atom,isInner));
+						parameters.add(Generators.variable.generateDeclaration(atom,isInner,parentContext));
 					}
 				}
 			}
@@ -66,9 +72,17 @@ public class MethodGenerator extends Generator {
 				List<IToken> atomBodyStatement = element.getAll("body_statement");
 				if(atomBodyStatement != null){
 					for(IToken atom:atomBodyStatement){
-						parameters.add(Generators.body.generateStatement(atom,true));
+						parameters.add(Generators.body.generateStatement(atom,true,parentContext));
 					}
 				}
+			}
+		}
+		ListEntry methodThrowsStatement = new ListEntry();
+		List<IToken> elementThrowException = definition.getAll("throwException");
+		if(elementThrowException != null){
+			for(IToken element:elementThrowException){
+				String fullException = Generators.method.buildString(element.getString(),"Exception");
+				methodThrowsStatement.add(new StringEntry(fullException.toString()));
 			}
 		}
 		List<IToken> elementBodyElement = definition.getAll("body_element");
@@ -83,10 +97,10 @@ public class MethodGenerator extends Generator {
 		Entry ret = (Entry)null;
 		if((definition.get("methodName").get("NAME") != null)){
 			if((isInner == true)){
-				ret = new IMethodEntry(typeName,new IExactEntry(new StringEntry(definition.get("methodName").getString())),parameters,methodBody,parentContext);
+				ret = new IMethodEntry(typeName,new IExactEntry(new StringEntry(definition.get("methodName").getString())),parameters,methodThrowsStatement,methodBody,parentContext);
 			}
 			else {
-				EMethodEntry eMethod = new EMethodEntry(typeName,new EExactEntry(new StringEntry(definition.get("methodName").getString())),parametersAreStatement,parameters,methodBody,parentContext);
+				EMethodEntry eMethod = new EMethodEntry(typeName,new EExactEntry(new StringEntry(definition.get("methodName").getString())),parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext);
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
@@ -96,10 +110,10 @@ public class MethodGenerator extends Generator {
 		else {
 			Entry vName = (Entry)Generators.classwise.generateNameVar(definition.get("methodName").get("name_var"),isInner);
 			if((isInner == true)){
-				ret = new IMethodEntry(typeName,vName,parameters,methodBody,parentContext);
+				ret = new IMethodEntry(typeName,vName,parameters,methodThrowsStatement,methodBody,parentContext);
 			}
 			else {
-				EMethodEntry eMethod = new EMethodEntry(typeName,vName,parametersAreStatement,parameters,methodBody,parentContext);
+				EMethodEntry eMethod = new EMethodEntry(typeName,vName,parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext);
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
@@ -121,6 +135,9 @@ public class MethodGenerator extends Generator {
 		return ret;
 	}
 
+	public HashSet<String> getDefinedMethodNames(){
+		return definedMethodNames;
+	}
 
 	public String getName(){
 		return "Method";

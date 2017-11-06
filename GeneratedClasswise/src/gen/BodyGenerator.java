@@ -31,15 +31,15 @@ public class BodyGenerator extends Generator {
 				for(IToken.Key quarkKey:atom.keySet()){
 					if("variable_declaration".equals(quarkKey.getName())){
 						IToken quark = atom.get(quarkKey);
-						in = Generators.variable.generateDeclaration(quark,isInner);
+						in = Generators.variable.generateDeclaration(quark,isInner,parentContext);
 					}
 					else if("variable_assignment".equals(quarkKey.getName())){
 						IToken quark = atom.get(quarkKey);
-						in = Generators.variable.generateAssignment(quark,isInner);
+						in = Generators.variable.generateAssignment(quark,isInner,parentContext);
 					}
 					else if("body_statement".equals(quarkKey.getName())){
 						IToken quark = atom.get(quarkKey);
-						in = generateStatement(quark,isInner);
+						in = generateStatement(quark,isInner,parentContext);
 					}
 				}
 				IInnerable inb = (IInnerable)in;
@@ -56,10 +56,10 @@ public class BodyGenerator extends Generator {
 				if(quarkMethodArgument != null){
 					for(IToken quark:quarkMethodArgument){
 						if((isInner == true || atom.get("inner") != null)){
-							return new IElementEntry("return ",generateArgument(quark,true),semicolon,parentContext);
+							return new IElementEntry("return ",generateArgument(quark,true,parentContext),semicolon,parentContext);
 						}
 						else {
-							return new EElementEntry("return ",generateArgument(quark,false),semicolon,parentContext);
+							return new EElementEntry("return ",generateArgument(quark,false,parentContext),semicolon,parentContext);
 						}
 					}
 				}
@@ -79,7 +79,7 @@ public class BodyGenerator extends Generator {
 				List<IToken> quarkBodyStatement = atom.getAll("body_statement");
 				if(quarkBodyStatement != null){
 					for(IToken quark:quarkBodyStatement){
-						statement = Generators.body.generateStatement(quark,isInner);
+						statement = Generators.body.generateStatement(quark,isInner,parentContext);
 					}
 				}
 				if((isInner == true || atom.get("inner") != null)){
@@ -97,7 +97,8 @@ public class BodyGenerator extends Generator {
 				Entry className = (Entry)aClass.getName();
 				ImportListEntry classImport = (ImportListEntry)aClass.getImportPackage();
 				Entry getPackageName = (Entry)classImport.getMyPackages();
-				return new IBodyEntry(new ListEntry(new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("ExternalClassEntry")),new StringEntry(variableName),argument),semicolon,parentContext),new IElementEntry("",new ICallEntry(new IExactEntry(new StringEntry(variableName)),new StringEntry("__INIT__"),new ListEntry()),semicolon,parentContext),new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("StringBuilder")),new StringEntry("__BUILDER__"),null),semicolon,parentContext),new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("File")),new StringEntry("__DIRECTORY__"),null),semicolon,parentContext),new IElementEntry("",new IExactEntry(new ElementEntry(ClasswiseGenerator.addFileElement,new ListEntry(getPackageName,className,className))),"",parentContext)),parentContext);
+				parentContext.addMethodBoundClass(Generators.body.buildString(aClass.getName()));
+				return new IBodyEntry(new ListEntry(new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("ExternalClassEntry")),new StringEntry(variableName),argument),semicolon,parentContext),new IElementEntry("",new ICallEntry(new IExactEntry(new StringEntry(variableName)),new StringEntry("__INIT__"),new ListEntry()),semicolon,parentContext),new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("StringBuilder")),new StringEntry("__BUILDER__"),null),semicolon,parentContext),new IElementEntry("",new IVariableEntry(new IExactEntry(new StringEntry("File")),new StringEntry("__DIRECTORY__"),null),semicolon,parentContext),new IElementEntry("",new IExactEntry(new ElementEntry(ClasswiseGenerator.addFileInMethodElement,new ListEntry(getPackageName,className,className))),"",parentContext)),parentContext);
 			}
 			else if("body_conditional".equals(atomKey.getName())){
 				IToken atom = element.get(atomKey);
@@ -124,7 +125,7 @@ public class BodyGenerator extends Generator {
 				List<IToken> quarkBodyStatement = atom.getAll("body_statement");
 				if(quarkBodyStatement != null){
 					for(IToken quark:quarkBodyStatement){
-						statement = generateStatement(quark,isInner);
+						statement = generateStatement(quark,isInner,parentContext);
 					}
 				}
 				List<IToken> quarkVariableDeclaration = atom.getAll("variable_declaration");
@@ -133,18 +134,18 @@ public class BodyGenerator extends Generator {
 						String operator = atom.get("OPERATOR").getString();
 						if((operator.contains(":"))){
 							if((isInner == true)){
-								statement = new IOperatorEntry(Generators.variable.generateDeclaration(quark,isInner),operator,statement);
+								statement = new IOperatorEntry(Generators.variable.generateDeclaration(quark,isInner,parentContext),operator,statement);
 							}
 							else {
-								statement = new EOperatorEntry(Generators.variable.generateDeclaration(quark,isInner),operator,statement);
+								statement = new EOperatorEntry(Generators.variable.generateDeclaration(quark,isInner,parentContext),operator,statement);
 							}
 						}
 						else {
 							if((isInner == true)){
-								statement = new IForIntHeaderEntry(Generators.variable.generateDeclaration(quark,isInner),operator,statement);
+								statement = new IForIntHeaderEntry(Generators.variable.generateDeclaration(quark,isInner,parentContext),operator,statement);
 							}
 							else {
-								statement = new EForIntHeaderEntry(Generators.variable.generateDeclaration(quark,isInner),operator,statement);
+								statement = new EForIntHeaderEntry(Generators.variable.generateDeclaration(quark,isInner,parentContext),operator,statement);
 							}
 						}
 					}
@@ -231,7 +232,7 @@ public class BodyGenerator extends Generator {
 				List<IToken> quarkAsMethod = atom.getAll("as_method");
 				if(quarkAsMethod != null){
 					for(IToken quark:quarkAsMethod){
-						Entry subject = (Entry)Generators.body.generateStatement(quark.get("body_statement"),true);
+						Entry subject = (Entry)Generators.body.generateStatement(quark.get("body_statement"),true,parentContext);
 						if((isCase == true)){
 							return new ECaseEntry(statement,new EInnerCallEntry(subject),parentContext);
 						}
@@ -247,7 +248,7 @@ public class BodyGenerator extends Generator {
 		}
 		return null;
 	}
-	public Entry generateStatement(IToken statement,Boolean isInner){
+	public Entry generateStatement(IToken statement,Boolean isInner,ContextEntry parentContext){
 		if((isInner == false)){
 			isInner = (statement.get("inner") != null);
 		}
@@ -256,7 +257,7 @@ public class BodyGenerator extends Generator {
 		for(IToken.Key elementKey:statement.keySet()){
 			if("as_string".equals(elementKey.getName())){
 				IToken element = statement.get(elementKey);
-				Entry subject = (Entry)Generators.body.generateStatement(element.get("body_statement"),isInner);
+				Entry subject = (Entry)Generators.body.generateStatement(element.get("body_statement"),isInner,parentContext);
 				IInnerable subjectAsInnerable = (IInnerable)subject;
 				Boolean subjectIsInner = subjectAsInnerable.getIsInner();
 				if((isInner == true || subjectIsInner == true)){
@@ -266,42 +267,22 @@ public class BodyGenerator extends Generator {
 					return new ECallEntry(subject,new StringEntry("toString"),new ListEntry());
 				}
 			}
-			else if("as_braced".equals(elementKey.getName())){
-				IToken element = statement.get(elementKey);
-				Entry subject = (Entry)Generators.body.generateStatement(element.get("left").get("body_statement"),isInner);
-				Entry oper = (Entry)null;
-				if((element.get("OPERATOR") != null)){
-					oper = new StringEntry(element.get("OPERATOR").getString());
-				}
-				Entry right = (Entry)null;
-				if((element.get("right") != null)){
-					right = Generators.body.generateStatement(element.get("right").get("body_statement"),isInner);
-				}
-				IInnerable subjectAsInnerable = (IInnerable)subject;
-				Boolean subjectIsInner = subjectAsInnerable.getIsInner();
-				if((isInner == true || subjectIsInner == true)){
-					return new IBracedEntry(subject,oper,right);
-				}
-				else {
-					return new EBracedEntry(subject,oper,right);
-				}
-			}
 			else if("body_call".equals(elementKey.getName())){
 				IToken element = statement.get(elementKey);
 				if((operand == null)){
 					if((isInner == true)){
-						operand = new IOperatorEntry(generateCall(element,true));
+						operand = new IOperatorEntry(generateCall(element,true,parentContext));
 					}
 					else {
-						operand = new EOperatorEntry(generateCall(element,false));
+						operand = new EOperatorEntry(generateCall(element,false,parentContext));
 					}
 				}
 				else {
 					if((isInner == true)){
-						operand = new IOperatorEntry(operand,operator,generateCall(element,true));
+						operand = new IOperatorEntry(operand,operator,generateCall(element,true,parentContext));
 					}
 					else {
-						operand = new EOperatorEntry(operand,operator,generateCall(element,false));
+						operand = new EOperatorEntry(operand,operator,generateCall(element,false,parentContext));
 					}
 				}
 			}
@@ -313,13 +294,37 @@ public class BodyGenerator extends Generator {
 		}
 		return operand;
 	}
-	public Entry generateCall(IToken call,Boolean isInner){
+	public Entry generateCall(IToken call,Boolean isInner,ContextEntry parentContext){
 		if((isInner == false)){
 			if((call.get("inner") != null)){
 				isInner = true;
 			}
 			else {
 				isInner = false;
+			}
+		}
+		if((call.get("as_braced") != null)){
+			List<IToken> elementAsBraced = call.getAll("as_braced");
+			if(elementAsBraced != null){
+				for(IToken element:elementAsBraced){
+					Entry subject = (Entry)Generators.body.generateStatement(element.get("left").get("body_statement"),isInner,parentContext);
+					Entry oper = (Entry)null;
+					if((element.get("OPERATOR") != null)){
+						oper = new StringEntry(element.get("OPERATOR").getString());
+					}
+					Entry right = (Entry)null;
+					if((element.get("right") != null)){
+						right = Generators.body.generateStatement(element.get("right").get("body_statement"),isInner,parentContext);
+					}
+					IInnerable subjectAsInnerable = (IInnerable)subject;
+					Boolean subjectIsInner = subjectAsInnerable.getIsInner();
+					if((isInner == true || subjectIsInner == true)){
+						return new IBracedEntry(subject,oper,right);
+					}
+					else {
+						return new EBracedEntry(subject,oper,right);
+					}
+				}
 			}
 		}
 		Entry ret = (Entry)null;
@@ -336,10 +341,10 @@ public class BodyGenerator extends Generator {
 						if(atomTypeVar != null){
 							for(IToken atom:atomTypeVar){
 								if((element.get("NEW") != null)){
-									tVar.addSubClass(Generators.classwise.generateTypeVar(atom,isInner,2));
+									tVar.addSubClass(Generators.classwise.generateTypeVar(atom,isInner,2,parentContext));
 								}
 								else {
-									tVar.addSubClass(Generators.classwise.generateTypeVar(atom,true,2));
+									tVar.addSubClass(Generators.classwise.generateTypeVar(atom,true,2,parentContext));
 								}
 							}
 						}
@@ -352,10 +357,10 @@ public class BodyGenerator extends Generator {
 							if(atomTypeName != null){
 								for(IToken atom:atomTypeName){
 									if((element.get("NEW") != null)){
-										tVar.addSubClass(Generators.classwise.generateAllType(atom,isInner));
+										tVar.addSubClass(Generators.classwise.generateAllType(atom,isInner,parentContext));
 									}
 									else {
-										tVar.addSubClass(Generators.classwise.generateAllType(atom,true));
+										tVar.addSubClass(Generators.classwise.generateAllType(atom,true,parentContext));
 									}
 								}
 							}
@@ -384,7 +389,7 @@ public class BodyGenerator extends Generator {
 							List<IToken> atomMethodArgument = quark.getAll("method_argument");
 							if(atomMethodArgument != null){
 								for(IToken atom:atomMethodArgument){
-									parameters.add(generateArgument(atom,true));
+									parameters.add(generateArgument(atom,true,parentContext));
 								}
 							}
 						}
@@ -398,7 +403,7 @@ public class BodyGenerator extends Generator {
 								List<IToken> atomMethodArgument = quark.getAll("method_argument");
 								if(atomMethodArgument != null){
 									for(IToken atom:atomMethodArgument){
-										array_parameters.add(generateArgument(atom,true));
+										array_parameters.add(generateArgument(atom,true,parentContext));
 									}
 								}
 							}
@@ -470,7 +475,7 @@ public class BodyGenerator extends Generator {
 						List<IToken> atomTypeVar = element.getAll("type_var");
 						if(atomTypeVar != null){
 							for(IToken atom:atomTypeVar){
-								tVar.addSubClass(Generators.classwise.generateTypeVar(atom,false,2));
+								tVar.addSubClass(Generators.classwise.generateTypeVar(atom,false,2,parentContext));
 							}
 						}
 						name_var = tVar;
@@ -481,7 +486,7 @@ public class BodyGenerator extends Generator {
 							List<IToken> atomTypeName = element.getAll("typeName");
 							if(atomTypeName != null){
 								for(IToken atom:atomTypeName){
-									tVar.addSubClass(Generators.classwise.generateAllType(atom,false));
+									tVar.addSubClass(Generators.classwise.generateAllType(atom,false,parentContext));
 								}
 							}
 							name_var = tVar;
@@ -509,7 +514,7 @@ public class BodyGenerator extends Generator {
 							List<IToken> atomMethodArgument = quark.getAll("method_argument");
 							if(atomMethodArgument != null){
 								for(IToken atom:atomMethodArgument){
-									parameters.add(generateArgument(atom,false));
+									parameters.add(generateArgument(atom,false,parentContext));
 								}
 							}
 						}
@@ -523,7 +528,7 @@ public class BodyGenerator extends Generator {
 								List<IToken> atomMethodArgument = quark.getAll("method_argument");
 								if(atomMethodArgument != null){
 									for(IToken atom:atomMethodArgument){
-										array_parameters.add(generateArgument(atom,false));
+										array_parameters.add(generateArgument(atom,false,parentContext));
 									}
 								}
 							}
@@ -603,8 +608,8 @@ public class BodyGenerator extends Generator {
 			List<IToken> elementTypeVar = manipulate.getAll("type_var");
 			if(elementTypeVar != null){
 				for(IToken element:elementTypeVar){
-					type = Generators.classwise.generateTypeVar(element,true,0);
-					realType = Generators.classwise.generateTypeVar(element,true,3);
+					type = Generators.classwise.generateTypeVar(element,true,0,parentContext);
+					realType = Generators.classwise.generateTypeVar(element,true,3,parentContext);
 					StringBuilder typeBuilder = new StringBuilder();
 					type.get(typeBuilder);
 					IImportable getType = (IImportable)Generators.classwise.getType(typeBuilder.toString());
@@ -637,7 +642,7 @@ public class BodyGenerator extends Generator {
 				}
 				else if("variable_declaration".equals(atomKey.getName())){
 					IToken atom = manipulate.get(atomKey);
-					Entry aVariable = (Entry)Generators.variable.generateDeclaration(atom,false);
+					Entry aVariable = (Entry)Generators.variable.generateDeclaration(atom,false,parentContext);
 					arguments.add(aVariable);
 					arg_type = 2;
 				}
@@ -710,7 +715,7 @@ public class BodyGenerator extends Generator {
 			return new ManTokEntry(subject,elementName,man_body,parentContext);
 		}
 	}
-	public Entry generateArgument(IToken argument,Boolean isInner){
+	public Entry generateArgument(IToken argument,Boolean isInner,ContextEntry parentContext){
 		for(IToken.Key elementKey:argument.keySet()){
 			if("class_declaration".equals(elementKey.getName())){
 				IToken element = argument.get(elementKey);
@@ -722,11 +727,11 @@ public class BodyGenerator extends Generator {
 			}
 			else if("variable_declaration".equals(elementKey.getName())){
 				IToken element = argument.get(elementKey);
-				return Generators.variable.generateDeclaration(element,false);
+				return Generators.variable.generateDeclaration(element,false,parentContext);
 			}
 			else if("body_statement".equals(elementKey.getName())){
 				IToken element = argument.get(elementKey);
-				return generateStatement(element,isInner);
+				return generateStatement(element,isInner,parentContext);
 			}
 			else if("as_statement".equals(elementKey.getName())){
 				IToken element = argument.get(elementKey);
@@ -743,7 +748,7 @@ public class BodyGenerator extends Generator {
 				List<IToken> atomBodyStatement = element.getAll("body_statement");
 				if(atomBodyStatement != null){
 					for(IToken atom:atomBodyStatement){
-						return generateStatement(atom,false);
+						return generateStatement(atom,false,parentContext);
 					}
 				}
 				return new EInnerCallEntry(body);

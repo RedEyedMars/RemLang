@@ -49,6 +49,14 @@ property statickable
 	var isStatic = false
 	setIsStatic takes newIsStatic as Boolean
 		set isStatic = newIsStatic
+property globalizable
+	var isGlobal = false
+	setIsGlobal takes newIsGlobal as Boolean
+		set isGlobal = newIsGlobal
+property concretizable
+	var isConcrete = false
+	setIsConcrete takes newIsConcrete as Boolean
+		set isConcrete = newIsConcrete
 property inlinelistable
 	var isInlineList = false
 	setIsInlineList takes newIsInlineList as Boolean
@@ -170,6 +178,7 @@ entry import_list uses innerable
 			{} if mode is EXTERNAL
 entry context
 	var parentContext as context
+	var methodBoundClasses as Set<String> = null
 	constructor takes iParent as context
 		set parentContext = iParent
 	constructor
@@ -183,5 +192,18 @@ entry context
 		else
 			return
 				0
+	addMethodBoundClass takes newClass as String
+		if methodBoundClasses is null
+			set methodBoundClasses
+				new HashSet<String>
+		methodBoundClasses add
+			newClass
+	containsMethodBoundClass takes findClass as String
+		if methodBoundClasses is null
+			return
+				false
+		return as Boolean
+			methodBoundClasses contains
+				findClass
 	setParentContext takes newParent
 		set parentContext = newParent

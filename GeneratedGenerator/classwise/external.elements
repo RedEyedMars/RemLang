@@ -8,6 +8,8 @@ accessMethod
 
 getClassFromClassMap
 	"ExternalClassEntry.classMap.get(" Class Name ")"
+throwsStatement
+	" throws " Exceptions " "
 exact
 	"new StringEntry(" In ")"
 exactEntry
@@ -143,11 +145,11 @@ declareStaticVariableWithoutAssignmentNonFinal
 declareStaticVariableWithoutAssignmentFinal
 	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ")"
 declareStaticMethod
-	"new ExternalMethodEntry(" Tabs ", true," Type ",\"" Array "\", " Name ", " Parameters ", " Body ")"
+	"new ExternalMethodEntry(" Tabs ", true," Type ",\"" Array "\", " Name ", " Parameters ", \"" Throws "\", " Body ")"
 declareMethod
-	"new ExternalMethodEntry(" Tabs ", false," Type ",\"" Array "\", " Name ", " Parameters ", " Body ")"
+	"new ExternalMethodEntry(" Tabs ", false," Type ",\"" Array "\", " Name ", " Parameters ", \"" Throws "\", " Body ")"
 declareInterfaceMethod
-	"new ExternalMethodEntry(" Tabs ", false, " Type ",\"" Array "\", " Name ", " Parameters ", null )"
+	"new ExternalMethodEntry(" Tabs ", false, " Type ",\"" Array "\", " Name ", " Parameters " , \"" Throws "\", null )"
 
 getCompleteHeader
 	"new Entry(){
@@ -160,6 +162,8 @@ getCompleteHeader
 addTailBrace
 	"new TabEntry(" Tabs ", new StringEntry(\"}\")).get(builder);"
 
+declareNewClass
+	"new " Name "();"
 declareClass
 	"new " Name "();
 	public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n" Classes "\n
@@ -170,6 +174,34 @@ declareClass
 			public void get(StringBuilder __BUILDER__){" ImportList"
 			}
 		}, " Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
+	}
+}"
+
+declareOutputClass
+	"package clgen;
+import java.util.*;
+import java.io.*;
+import com.rem.parser.generation.classwise.*;
+import com.rem.parser.generation.*;
+import com.rem.parser.parser.*;
+import com.rem.parser.token.*;
+import com.rem.parser.*;
+" Imports "
+public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" Classes "\n" Classes "\n
+	public void __INIT__(){
+		super.__SETUP__(
+			" Package Name ", 
+			new Entry(){
+				public void get(StringBuilder __BUILDER__){" ImportList"
+				}}, 
+			" Name ", 
+			" isInterface ", 
+			" Parent Class ", 
+			" Interfaces ",
+			" Header ",
+			Arrays.asList(new ExternalVariableEntry[]{" Variables "}), 
+			Arrays.asList(new ExternalMethodEntry[]{" Methods "}), 
+			Arrays.asList(new ExternalClassEntry[]{" Classes "}));
 	}
 }"
 

@@ -39,6 +39,7 @@ cargon_token-s
 	"\\." as REGEX_DOT
 	"\\\"" as REGEX_QUOTE
 	"\\\'" as REGEX_APOS
+	"@" as PASS_SYMBOL
 
 uote is silent
 	CHAR_QUOTE quote CHAR_QUOTE 
@@ -47,12 +48,20 @@ uote is silent
 brace-s are Braced
 	[(,)] as BRACE with definition  
 	[[,]] as REGEX with regex
-	[[,]] as REGEX_OPTION with CARROT as negate? ( ANYCHAR as left DASH ANYCHAR as right ) as range* regex_special* ANYCHAR as standAlone*
+	[[,]] as REGEX_OPTION with CARROT as negate? regex_option*
 	[(,)] as REGEX_GROUP with regex
+regex_option is silent
+	( ANYCHAR as left DASH ANYCHAR as right ) as range
+	regex_special
+	ANYCHAR as standAlone
 
 altbrace-s are CharitableBraced
-	[,\n] as RULE_PARAMETERS with ( SILENT | BRACED braced_parameters | IMPORTS import_parameters )? ( COMMA (SILENT|BRACED braced_parameters |IMPORTS import_parameters))*
-	[,=] as EQUALS_RULE_PARAMETERS with ( SILENT | BRACED braced_parameters | IMPORTS import_parameters )? ( COMMA (SILENT|BRACED braced_parameters |IMPORTS import_parameters))*
+	[,\n] as RULE_PARAMETERS with rule_params? ( COMMA rule_params )*
+	[,=] as EQUALS_RULE_PARAMETERS with rule_params? ( COMMA rule_params )*
+rule_params is silent
+	SILENT
+	(PASS_SYMBOL NUMBER as passConstraint)? BRACED braced_parameters
+	IMPORTS import_parameters
 braced_parameters
 	NONSPACE as left NONSPACE as right
 import_parameters

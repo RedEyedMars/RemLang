@@ -17,6 +17,7 @@ public class ContextEntry implements Entry {
 
 
 	private ContextEntry parentContext = (ContextEntry)null;
+	private Set<String> methodBoundClasses = (Set<String>)null;
 
 	public ContextEntry(ContextEntry iParent){
 		parentContext = iParent;
@@ -28,6 +29,9 @@ public class ContextEntry implements Entry {
 	public ContextEntry getParentContext(){
 		return parentContext;
 	}
+	public Set<String> getMethodBoundClasses(){
+		return methodBoundClasses;
+	}
 	public Integer getTab(){
 		if((parentContext != null)){
 			Integer tab = parentContext.getTab();
@@ -36,6 +40,18 @@ public class ContextEntry implements Entry {
 		else {
 			return 0;
 		}
+	}
+	public void addMethodBoundClass(String newClass){
+		if((methodBoundClasses == null)){
+			methodBoundClasses = new HashSet<String>();
+		}
+		methodBoundClasses.add(newClass);
+	}
+	public Boolean containsMethodBoundClass(String findClass){
+		if((methodBoundClasses == null)){
+			return false;
+		}
+		return (Boolean)methodBoundClasses.contains(findClass);
 	}
 	public void setParentContext(ContextEntry newParent){
 		parentContext = newParent;

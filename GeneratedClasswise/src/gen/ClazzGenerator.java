@@ -42,7 +42,7 @@ public class ClazzGenerator extends Generator {
 		List<IToken> elementVariableDeclaration = declaration.getAll("variable_declaration");
 		if(elementVariableDeclaration != null){
 			for(IToken element:elementVariableDeclaration){
-				variableBody.add(Generators.variable.generateDeclaration(element,isInner));
+				variableBody.add(Generators.variable.generateDeclaration(element,isInner,parentContext));
 			}
 		}
 		List<IToken> elementMethodDeclaration = declaration.getAll("method_declaration");
@@ -63,7 +63,7 @@ public class ClazzGenerator extends Generator {
 				List<IToken> atomTypeVar = element.getAll("type_var");
 				if(atomTypeVar != null){
 					for(IToken atom:atomTypeVar){
-						parent = Generators.classwise.generateTypeVar(atom,isInner,2);
+						parent = Generators.classwise.generateTypeVar(atom,isInner,2,context);
 					}
 				}
 			}
@@ -74,7 +74,7 @@ public class ClazzGenerator extends Generator {
 				List<IToken> atomTypeVar = element.getAll("type_var");
 				if(atomTypeVar != null){
 					for(IToken atom:atomTypeVar){
-						interfaces.add(Generators.classwise.generateTypeVar(atom,isInner,2));
+						interfaces.add(Generators.classwise.generateTypeVar(atom,isInner,2,context));
 					}
 				}
 			}

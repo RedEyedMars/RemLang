@@ -47,6 +47,18 @@ public class MethodDefinition extends ConcreteRule {
 								Braces.METHOD_PARAMETERS,"inline"),
 							new AddTokenParser(
 								Braces.STATEMENT_AS_METHOD,"variableParameters")),
+					new OptionalParser(
+							
+								new ChainParser(
+									Tokens.THROWS,
+									new AddTokenParser(
+										Tokens.NAME,"throwException"),
+									new ManyParser(
+											
+												new ChainParser(
+													Tokens.COMMA,
+													new AddTokenParser(
+														Tokens.NAME,"throwException"))))),
 					Braces.METHOD_BODY));
 
 	}

@@ -17,6 +17,7 @@ public abstract class FlowController {
 	protected List<Generator> privateFiles = new ArrayList<Generator>();
 	public void parse(String... fileNames){
 		flow = this;
+		initializeFlowController();
 		try {
 		for(String fileName:fileNames){
 			ParseUtil.parse(getRootParser(), new File(fileName), this, getRules(), getListnames());
@@ -39,7 +40,8 @@ public abstract class FlowController {
 	public abstract RegexParser getLazyNameParser();
 	public abstract void assignListElementNames(ParseContext data, IToken rootToken);
 	public abstract void setup(ParseContext data);
-	
+	public void initializeFlowController(){
+	}
 	public void generate(ParseContext data){
 		setup(data);
 		for(Generator gen:getGenerators()){
@@ -56,19 +58,19 @@ public abstract class FlowController {
 		}
 	}
 	
-	protected void addFile(File directory, String fileName, ListEntry file){
+	public void addFile(File directory, String fileName, ListEntry file){
 		Generator privateGenerator = new Generator.Concrete();
 		privateGenerator.addFile(directory, fileName, file);
 		privateFiles.add(privateGenerator);
 		System.out.println(">add File>");
 	}
-	protected void addFile(File directory, String fileName, ElementEntry file){
+	public void addFile(File directory, String fileName, ElementEntry file){
 		Generator privateGenerator = new Generator.Concrete();
 		privateGenerator.addFile(directory, fileName, file);
 		privateFiles.add(privateGenerator);
 		System.out.println(">add File<");
 	}
-	protected void addFile(File directory, String fileName, Entry file){
+	public void addFile(File directory, String fileName, Entry file){
 		Generator privateGenerator = new Generator.Concrete();
 		privateGenerator.addFile(directory, fileName, file);
 		privateFiles.add(privateGenerator);

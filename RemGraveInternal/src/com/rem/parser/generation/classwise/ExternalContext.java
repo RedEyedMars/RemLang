@@ -6,8 +6,25 @@ public class ExternalContext {
 
 	private static final Map<String,ExternalContext> types = new HashMap<String, ExternalContext>();
 	public static ExternalContext getClassContext(String className) {
+		
+		
 		if(!types.containsKey(className)){
-			types.put(className, new ExternalContext(true,null));
+			int indexOfAngle = className.indexOf('<');
+			if (indexOfAngle>0){
+			  int indexOfClose = className.lastIndexOf('>');
+			  String templateClassName = className.substring(indexOfAngle+1,indexOfClose);
+			  String parentClassName = className.substring(0,indexOfAngle);
+			  if(parentClassName.equals("List")||parentClassName.equals("ArrayList")){
+				  types.put(className, new ExternalContext(true,null));
+				  types.put(className, ExternalClassHelper.supplimentListClass(className,parentClassName,templateClassName));
+			  }
+			  else {
+				  types.put(className, new ExternalContext(true,null));
+			  }
+			}
+			else {
+			  types.put(className, new ExternalContext(true,null));
+			}
 		}
 		return types.get(className);
 	}
@@ -19,6 +36,7 @@ public class ExternalContext {
 	protected ExternalContext   parentContext = null;
 	protected boolean isBody = false;
 	protected Map<String, ExternalContext > links = new HashMap<String, ExternalContext>();
+	protected Map<String, String > linkedTypes = new HashMap<String, String>();
 	protected ExternalStatement ender;
 
 	public ExternalContext(boolean isBody){
@@ -41,34 +59,37 @@ public class ExternalContext {
 	public void setIsBody(boolean newIsBody){
 		this.isBody = newIsBody;
 	}
-	public void add(String name, ExternalContext context){
+	public void add(String name, String type, ExternalContext context){
 		if(isBody){
 			links.put(name, context);
+			linkedTypes.put(name, type);
 		}
 		else {
 			if(parentContext!=null){
-				parentContext.add(name, context);
+				parentContext.add(name, type, context);
 			}
 			else {
 				links.put(name, context);
+				linkedTypes.put(name, type);
 			}
 		}
 	}
 	public void add(ExternalVariableEntry entry){
-		add(entry.getName(), entry.getClassContext());
+		add(entry.getName(),entry.getTypeName(), entry.getClassContext());
 	}
 	public void add(ExternalMethodEntry entry){
 		entry.getHeaderContext().setParent(this);
-		add(entry.getName(), entry.getClassContext());
-		add(entry.getSimpleName(), entry.getClassContext());
+		add(entry.getName(), entry.getTypeName(), entry.getClassContext());
+		add(entry.getSimpleName(), entry.getTypeName(), entry.getClassContext());
 	}
 	public void setParent(ExternalContext newParentContext){
 		parentContext = newParentContext;
 		if(!isBody){
 			for(String entryName:links.keySet()){
-				parentContext.add(entryName, links.get(entryName));
+				parentContext.add(entryName, linkedTypes.get(entryName), links.get(entryName));
 			}
 			links.clear();
+			linkedTypes.clear();
 		}
 	}
 	public void setEnder(ExternalStatement ender){
@@ -93,7 +114,6 @@ public class ExternalContext {
 	}
 	public ExternalContext link(String query){
 		return link(query,new HashSet<ExternalContext>());
-
 	}
 	private ExternalContext link(String query, Set<ExternalContext> set){
 		if(set.add(this)){
@@ -102,6 +122,20 @@ public class ExternalContext {
 			}
 			else if (parentContext != null) {
 				return parentContext.link(query,set);
+			}
+		}
+		return null;
+	}
+	public String type(String query){
+		return type(query,new HashSet<ExternalContext>());
+	}
+	private String type(String query, Set<ExternalContext> set){
+		if(set.add(this)){
+			if(linkedTypes.containsKey(query)){
+				return linkedTypes.get(query);
+			}
+			else if (parentContext != null) {
+				return parentContext.type(query,set);
 			}
 		}
 		return null;

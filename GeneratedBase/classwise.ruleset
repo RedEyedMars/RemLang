@@ -8,6 +8,7 @@ token-s
 	"\n" as NEWLINE
 	"class " as CLASS
 	"interface " as INTERFACE
+	"enum " as ENUMERATION
 	"method" as METHOD
 	"variable" as VARIABLE
 	"Class " as CLASS_TYPE
@@ -60,6 +61,7 @@ token-s
 	"~" as WEAK
 	"*" as AS_METHOD_NAME
 	"*" as AS_GENERIC
+	"throws" as THROWS
 	"this" as THIS
 	"super" as SUPER
 	"..." as INLINE_LIST
@@ -121,8 +123,8 @@ simport-s are Import
 anonymous_class
 	(HID|DEN) NAME as className in class_names (COLON|FROM) (name_var as packageName (DOT name_var as packageName)*)? SEMICOLON 
 class_declaration
-	(IN|NER) as inner? WEAK? (CLASS|INTERFACE) as objectType (name_var as packageName (DOT name_var as packageName)*) (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
-	(IN|NER) as inner? WEAK? (CLASS|INTERFACE) as objectType (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* FORSLASH ( type_var as parentName )? NEWLINE* FORSLASH ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? WEAK? (CLASS|INTERFACE|ENUMERATION) as objectType (name_var as packageName (DOT name_var as packageName)*) (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* ( type_var as parentName )? NEWLINE? ( type_var as interfaceName )* CLASS_BODY
+	(IN|NER) as inner? WEAK? (CLASS|INTERFACE|ENUMERATION) as objectType (variable_name|class_variable_name|NAME) as className in class_names NEWLINE* ( HID NAME as templateTypeName in class_variable_names IN)? NEWLINE* FORSLASH ( type_var as parentName )? NEWLINE* FORSLASH ( type_var as interfaceName )* CLASS_BODY
 class_element is silent
 	NEWLINE
 	COMMENT
@@ -149,8 +151,8 @@ body_conditional
 body_statement
 	(IN|NER) as inner? body_call ( NEWLINE* ( BACKSLASH? OPERATOR)  NEWLINE* body_call )*
 	STATEMENT_AS_STRING as as_string
-	( STATEMENT_AS_BRACED as left ( BACKSLASH? OPERATOR)? body_statement as right? )  as as_braced
 body_call
+	( STATEMENT_AS_BRACED as left ( BACKSLASH? OPERATOR)? body_statement as right? )  as as_braced
 	(NEW all_type_name as typeName PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
 	(name_var PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* ((name_var | NAME) PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
 	(type_var (NEWLINE* DOT NEWLINE* type_var)* PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group ( NEWLINE* DOT NEWLINE* (NAME PARAMETERS as parameters? ARRAY_PARAMETERS as array_parameters*) as group )*
@@ -168,7 +170,7 @@ method_argument
 method_declaration
 	method_definition as methodDefinition in method_definitions
 method_definition is silent
-	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName ARRAY_TYPE* (AS_METHOD_NAME as NAME | name_var | NAME) as methodName ( METHOD_PARAMETERS as inline | STATEMENT_AS_METHOD as variableParameters ) METHOD_BODY
+	(IN|NER) as inner? (STA|TIC) as static? all_type_name as typeName ARRAY_TYPE* (AS_METHOD_NAME as NAME | name_var | NAME) as methodName ( METHOD_PARAMETERS as inline | STATEMENT_AS_METHOD as variableParameters ) ( THROWS NAME as throwException ( COMMA NAME as throwException )* )? METHOD_BODY
 variable_declaration
 	(IN|NER) as inner?  WEAK? (STA|TIC) as static? WEAK? ( class_name_definition | variable_name_definition ) ( EQUALS method_argument)?
 variable_assignment

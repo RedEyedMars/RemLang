@@ -14,15 +14,18 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	private boolean isInterface = false;
 	private boolean isStatic = false;
 	private String typeSuffix = null;
-	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
-		this(tabs, isStatic, type, "", name, parameters, body);
+	private String throwsStatement = null;
+	public ExternalMethodEntry(String newType, ExternalMethodEntry otherMethod){
+		this(otherMethod.tabs, otherMethod.isStatic, new StringEntry(newType),
+				otherMethod.typeSuffix, otherMethod.name, otherMethod.parameters , otherMethod.throwsStatement, otherMethod.body);
 	}
-	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters , String throwStatement, ExternalStatement.Body body){
 		this.tabs = tabs;
 		this.type = type;
 		this.typeSuffix = typeSuffix;
 		this.name = name;
 		this.parameters = parameters;
+		this.throwsStatement = throwStatement;
 		this.body = body;
 		this.isStatic = isStatic;
 
@@ -44,14 +47,12 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			this.isInterface = true;
 		}
 	}
-	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
-		this(tabs, isStatic, type, "", name, params, body);
-	}
-	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalStatement.Parameters params, String throwStatement, ExternalStatement.Body body){
 		this.tabs = tabs;
 		this.type = type;
 		this.typeSuffix  = typeSuffix;
 		this.name = name;
+		this.throwsStatement = throwStatement;
 		this.parameters = new ArrayList<ExternalVariableEntry>();
 		for(ExternalStatement param:params){
 			parameters.add((ExternalVariableEntry)param);
@@ -77,6 +78,24 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		else {
 			this.isInterface = true;
 		}
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, List<ExternalVariableEntry> parameters, String throwStatement, ExternalStatement.Body body){
+		this(tabs, isStatic, type, "", name, parameters, throwStatement, body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, ExternalStatement.Parameters params , String throwStatement,  ExternalStatement.Body body){
+		this(tabs, isStatic, type, "", name, params,          "", body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
+		this(tabs, isStatic, type, "",         name, parameters,"", body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters, ExternalStatement.Body body){
+		this(tabs, isStatic, type, typeSuffix, name, parameters,"", body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
+		this(tabs, isStatic, type, ""        , name, params, "", body);
+	}
+	public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalStatement.Parameters params, ExternalStatement.Body body){
+		this(tabs, isStatic, type, typeSuffix, name, params, "", body);
 	}
 
 	public void setIsInterface(boolean isInterface) {
@@ -159,15 +178,27 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			parameters.get(i).get(builder);
 		}
 		if(isInterface){
-			builder.append(");");
+			builder.append(")");
+			builder.append(throwsStatement);
+			builder.append(";");
 		}
 		else {
-			builder.append(") {");
+			builder.append(")");
+			builder.append(throwsStatement);
+			builder.append("{");
 			for(int i=0;i<body.size();++i){
 				body.get(i).setTabs(tabs+1);
 				body.get(i).get(builder);
 			}
 			new TabEntry(tabs, new StringEntry("}")).get(builder);
 		}
+	}
+	public String getTypeName() {
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		if (typeSuffix != null) {
+			typeBuilder.append(typeSuffix);
+		}
+		return typeBuilder.toString();
 	}
 }

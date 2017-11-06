@@ -30,7 +30,8 @@ public class ClassDeclaration extends ConcreteRule {
 						
 					new ChoiceParser(
 							Tokens.CLASS,
-							Tokens.INTERFACE),"objectType"),
+							Tokens.INTERFACE,
+							Tokens.ENUMERATION),"objectType"),
 					
 						new ChainParser(
 							new AddTokenParser(
@@ -82,7 +83,8 @@ public class ClassDeclaration extends ConcreteRule {
 						
 					new ChoiceParser(
 							Tokens.CLASS,
-							Tokens.INTERFACE),"objectType"),
+							Tokens.INTERFACE,
+							Tokens.ENUMERATION),"objectType"),
 					new AddTokenToListParser(
 						
 					new ChoiceParser(

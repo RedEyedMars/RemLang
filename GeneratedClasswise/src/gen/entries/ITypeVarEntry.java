@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubClass,IVariablizable {
+public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubClass,IVariablizable,IConcretizable {
 	public ITypeVarEntry getSelf(){
 		return this;
 	}
@@ -24,11 +24,13 @@ public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 	private Boolean isInner = false;
 	private ImportListEntry importPackage = (ImportListEntry)new ImportListEntry();
 	private Boolean isVariable = true;
+	private Boolean isConcrete = false;
 	private ListEntry sansTemp = new ListEntry();
-	private ListEntry first = null;
+	private ListEntry first = (ListEntry)null;
 	private Entry second = null;
 	private Integer mode = DEFAULT;
 	private ListEntry templateParameters = new ListEntry();
+	private Boolean isSurroundedInQuotes = false;
 
 	public ITypeVarEntry(){
 		isInner = true;
@@ -112,9 +114,16 @@ public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 	}
 	public void setIsVariable(Boolean newIsVariable) {
 		isVariable = newIsVariable;
+	}
+	public Boolean getIsConcrete(){
+		return isConcrete;
+	}
+	public void setIsConcrete(Boolean newIsConcrete) {
+		isConcrete = newIsConcrete;
 	}	public ListEntry getSansTemp(){
 		return sansTemp;
-	}	public ListEntry getFirst(){
+	}
+	public ListEntry getFirst(){
 		return first;
 	}	public Entry getSecond(){
 		return second;
@@ -123,6 +132,20 @@ public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 		return mode;
 	}	public ListEntry getTemplateParameters(){
 		return templateParameters;
+	}
+	public Boolean getIsSurroundedInQuotes(){
+		return isSurroundedInQuotes;
+	}
+	public void surroundInNonQuotes(){
+		isSurroundedInQuotes = true;
+	}
+	public void surroundInQuotes(){
+		if((isSurroundedInQuotes == false)){
+			isSurroundedInQuotes = true;
+			StringBuilder builder = new StringBuilder();
+			first.get(builder);
+			first = new ListEntry(new QuoteEntry(builder.toString()));
+		}
 	}
 	public void get(StringBuilder builder){
 		if((isVariable == true)){
@@ -133,6 +156,10 @@ public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 			if((definedClassNames.contains(checkBuilder.toString()))){
 				isVariable = true;
 			}
+			if((second != null && mode == ACCESS_CLASS)){
+				ITypeVarEntry secondAsType = (ITypeVarEntry)second;
+				secondAsType.surroundInQuotes();
+			}
 		}
 		if((second == null && templateParameters.isEmpty() && isVariable == false && mode == DEFAULT)){
 			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(first)).get(builder);
@@ -140,8 +167,11 @@ public class ITypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 		else if((second == null && templateParameters.isEmpty() && isVariable == false && mode == ACCESS_DEFAULT)){
 			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.accessDefaultElement,new ListEntry(first,second)))).get(builder);
 		}
+		else if((templateParameters.isEmpty() && mode == ACCESS_DEFAULT)){
+			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.accessDefaultElement,new ListEntry(first,second)))).get(builder);
+		}
 		else if((second == null && templateParameters.isEmpty() && isVariable == true && mode == DEFAULT)){
-			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.classAsVariableElement,new ListEntry(first)))).get(builder);
+			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.retrieveClassElement,new ListEntry(first)))).get(builder);
 		}
 		else if((second != null && mode == CONCAT && templateParameters.isEmpty())){
 			new ElementEntry(InternalGenerator.bodyNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.concatElement,new ListEntry(first,second)))).get(builder);

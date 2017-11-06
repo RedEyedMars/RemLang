@@ -29,8 +29,9 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	private Entry type = null;
 	private ListEntry parameters = null;
 	private ListEntry methodBody = null;
+	private Entry sThrows = null;
 
-	public IMethodEntry(Entry iType,Entry iName,ListEntry iParameters,ListEntry iMethodBody,ContextEntry iContext){
+	public IMethodEntry(Entry iType,Entry iName,ListEntry iParameters,ListEntry iThrows,ListEntry iMethodBody,ContextEntry iContext){
 		isInner = true;
 		StringBuilder realName = (StringBuilder)new StringBuilder();
 		iName.get(realName);
@@ -51,6 +52,12 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 			this.addImports(i.getImportPackage());
 			IFinalizable f = (IFinalizable)e;
 			f.setIsFinal(true);
+		}
+		if((!iThrows.isEmpty())){
+			sThrows = (Entry)new ElementEntry(ExternalGenerator.throwsStatementElement,new ListEntry(iThrows));
+		}
+		else {
+			sThrows = (Entry)new ListEntry();
 		}
 		ContextEntry methodBodyContext = new ContextEntry(iContext);
 		String semicolon = ";";
@@ -129,6 +136,8 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 		return parameters;
 	}	public ListEntry getMethodBody(){
 		return methodBody;
+	}	public Entry getSThrows(){
+		return sThrows;
 	}
 	public void get(StringBuilder builder){
 		if((context == null)){
@@ -139,7 +148,7 @@ public class IMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 		}
 		e_tabs.set(tabs.toString());
 		if((context != null)){
-			new TabEntry(tabs,new ListEntry(new ElementEntry(InternalGenerator.declareMethodElement,new ListEntry(asStatic,type,arrayType,name,parameters,methodBody)))).get(builder);
+			new TabEntry(tabs,new ListEntry(new ElementEntry(InternalGenerator.declareMethodElement,new ListEntry(asStatic,type,arrayType,name,parameters,sThrows,methodBody)))).get(builder);
 		}
 		if((context != null)){
 			new TabEntry(tabs,new ListEntry(new StringEntry("}"))).get(builder);

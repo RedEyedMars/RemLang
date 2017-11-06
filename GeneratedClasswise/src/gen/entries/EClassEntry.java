@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class EClassEntry implements Entry,IInnerable,INameable,IImportable,IContextualizable,IFileable,IInterfaceable {
+public class EClassEntry implements Entry,IInnerable,INameable,IImportable,IContextualizable,IFileable,IInterfaceable,IGlobalizable {
 	public EClassEntry getSelf(){
 		return this;
 	}
@@ -24,10 +24,13 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	private Integer tabs = 0;
 	private StringEntry e_tabs = (StringEntry)new StringEntry("0");
 	private Boolean isInterface = false;
+	private Boolean isGlobal = false;
 	private Entry packageName = (Entry)null;
 	private Entry externalPackageName = (Entry)null;
 	private StringEntry asStatic = new StringEntry("");
 	private IExactEntry asFile = null;
+	private IExactEntry asFileVariable = null;
+	private IExactEntry asInternalFile = null;
 	private IExactEntry asArgument = null;
 	private StringEntry classType = null;
 	private Entry externalName = (Entry)null;
@@ -57,7 +60,7 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		isInner = false;
 		packageName = iPackageName;
 		name = new StringEntry(sName);
-		completeName = new ListEntry(new ElementEntry(ClasswiseGenerator.classAsVariableElement,new ListEntry(new StringEntry(sName))));
+		completeName = new ListEntry(new ElementEntry(ClasswiseGenerator.retrieveClassElement,new ListEntry(new StringEntry(sName))));
 		completeUnsulliedName = new ListEntry(iName);
 		completeName.setDelimiter(".");
 		completeUnsulliedName.setDelimiter(".");
@@ -144,6 +147,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		externalConstructorSubClass.setDelimiter(",");
 		getHeader = new IExactEntry(new TabEntry(2,new ListEntry(new ElementEntry(ExternalGenerator.getCompleteHeaderElement,new ListEntry(asStatic,classType,externalName,externalTemplateTypeName)))));
 		asFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassElement,new ListEntry(name,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
+		Entry classwizeImports = (Entry)Generators.classwise.getInternalImports();
+		asInternalFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareOutputClassElement,new ListEntry(classwizeImports,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
+		asFileVariable = new IExactEntry(new ElementEntry(ExternalGenerator.declareNewClassElement,new ListEntry(name)));
 		asArgument = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassAsArgumentElement,new ListEntry(externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
 	}
 
@@ -194,6 +200,12 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	public void setIsInterface(Boolean newIsInterface) {
 		newIsInterface = newIsInterface;
 	}
+	public Boolean getIsGlobal(){
+		return isGlobal;
+	}
+	public void setIsGlobal(Boolean newIsGlobal) {
+		isGlobal = newIsGlobal;
+	}
 	public Entry getPackageName(){
 		return packageName;
 	}
@@ -203,6 +215,10 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		return asStatic;
 	}	public IExactEntry getAsFile(){
 		return asFile;
+	}	public IExactEntry getAsFileVariable(){
+		return asFileVariable;
+	}	public IExactEntry getAsInternalFile(){
+		return asInternalFile;
 	}	public IExactEntry getAsArgument(){
 		return asArgument;
 	}	public StringEntry getClassType(){
@@ -341,7 +357,10 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 			tabs = context.getTab();
 		}
 		e_tabs.set(tabs.toString());
-		if((name != null)){
+		if((name != null && isGlobal == true)){
+			new ElementEntry(ClasswiseGenerator.retrieveClassElement,new ListEntry(completeName)).get(builder);
+		}
+		else if((name != null && isGlobal == false)){
 			completeName.get(builder);
 		}
 	}

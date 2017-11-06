@@ -25,19 +25,7 @@ public class Braces extends ParseList {
 									new AddTokenParser(
 										CargonTokens.CARROT,"negate")),
 							new ManyParser(
-									new AddTokenParser(
-										
-										new ChainParser(
-											new AddTokenParser(
-												CargonTokens.ANYCHAR,"left"),
-											CargonTokens.DASH,
-											new AddTokenParser(
-												CargonTokens.ANYCHAR,"right")),"range")),
-							new ManyParser(
-									Rules.regex_special),
-							new ManyParser(
-									new AddTokenParser(
-										CargonTokens.ANYCHAR,"standAlone"))),"REGEX_OPTION","braces","[,]");
+									Rules.regex_option)),"REGEX_OPTION","braces","[,]");
 	public static final BracedParser REGEX_GROUP = new BracedParser(
 							Rules.regex,"REGEX_GROUP","braces","(,)");
 

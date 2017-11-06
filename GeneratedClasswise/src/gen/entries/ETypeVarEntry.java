@@ -10,7 +10,7 @@ import gen.checks.*;
 import gen.properties.*;
 import lists.*;
 
-public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubClass,IVariablizable {
+public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubClass,IVariablizable,IGlobalizable {
 	public ETypeVarEntry getSelf(){
 		return this;
 	}
@@ -23,22 +23,27 @@ public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 	private Boolean isInner = false;
 	private ImportListEntry importPackage = (ImportListEntry)new ImportListEntry();
 	private Boolean isVariable = true;
+	private Boolean isGlobal = false;
 	private ListEntry first = null;
 	private Entry second = null;
 	private Integer mode = DEFAULT;
 	private ListEntry templateParameters = new ListEntry();
+	private ContextEntry parentContext = (ContextEntry)null;
 
 	public ETypeVarEntry(){
 		isVariable = false;
 		first = new ListEntry();
 		first.setDelimiter(".");
+		isGlobal = true;
 	}
-	public ETypeVarEntry(Entry iValue){
+	public ETypeVarEntry(Entry iValue,ContextEntry iContext){
 		isVariable = false;
 		first = new ListEntry(iValue);
 		first.setDelimiter(".");
+		isGlobal = true;
+		parentContext = iContext;
 	}
-	public ETypeVarEntry(Entry iValue,ListEntry iTemplateParameters,IImportable importType){
+	public ETypeVarEntry(Entry iValue,ListEntry iTemplateParameters,IImportable importType,ContextEntry iContext){
 		isVariable = false;
 		first = new ListEntry(iValue);
 		templateParameters = iTemplateParameters;
@@ -47,8 +52,10 @@ public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 			this.addImports(importType.getImportPackage());
 		}
 		templateParameters.setDelimiter(",");
+		isGlobal = true;
+		parentContext = iContext;
 	}
-	public ETypeVarEntry(Entry iFirst,String operator,Entry iSecond){
+	public ETypeVarEntry(Entry iFirst,String operator,Entry iSecond,ContextEntry iContext){
 		isVariable = false;
 		first = new ListEntry(iFirst);
 		second = iSecond;
@@ -64,6 +71,8 @@ public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 			}
 		}
 		first.setDelimiter(".");
+		isGlobal = true;
+		parentContext = iContext;
 	}
 
 	public Boolean getIsInner(){
@@ -93,6 +102,12 @@ public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 	}
 	public void setIsVariable(Boolean newIsVariable) {
 		isVariable = newIsVariable;
+	}
+	public Boolean getIsGlobal(){
+		return isGlobal;
+	}
+	public void setIsGlobal(Boolean newIsGlobal) {
+		isGlobal = newIsGlobal;
 	}	public ListEntry getFirst(){
 		return first;
 	}	public Entry getSecond(){
@@ -103,12 +118,25 @@ public class ETypeVarEntry implements Entry,IInnerable,IImportable,ICanAddSubCla
 	}	public ListEntry getTemplateParameters(){
 		return templateParameters;
 	}
+	public ContextEntry getParentContext(){
+		return parentContext;
+	}
 	public void get(StringBuilder builder){
+		if((parentContext != null && second == null && templateParameters.isEmpty() && isVariable == true && mode == DEFAULT)){
+			StringBuilder firstBuilder = new StringBuilder();
+			first.get(firstBuilder);
+			if((parentContext.containsMethodBoundClass(firstBuilder.toString()))){
+				isGlobal = false;
+			}
+		}
 		if((second == null && templateParameters.isEmpty() && isVariable == false && mode == DEFAULT)){
 			new ElementEntry(ExternalGenerator.bodyTypeNameElement,new ListEntry(first)).get(builder);
 		}
-		else if((second == null && templateParameters.isEmpty() && isVariable == true && mode == DEFAULT)){
+		else if((second == null && templateParameters.isEmpty() && isVariable == true && isGlobal == true && mode == DEFAULT)){
 			new ElementEntry(ExternalGenerator.bodyTypeNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.classAsVariableElement,new ListEntry(first)))).get(builder);
+		}
+		else if((second == null && templateParameters.isEmpty() && isVariable == true && isGlobal == true && mode == DEFAULT)){
+			new ElementEntry(ExternalGenerator.bodyTypeNameElement,new ListEntry(new ElementEntry(ClasswiseGenerator.retrieveClassElement,new ListEntry(first)))).get(builder);
 		}
 		else if((second == null && templateParameters.isEmpty() && mode == DEFAULT)){
 			new ElementEntry(ExternalGenerator.bodyTypeNameElement,new ListEntry(first)).get(builder);

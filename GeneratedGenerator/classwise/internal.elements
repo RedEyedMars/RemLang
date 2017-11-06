@@ -4,6 +4,8 @@ camelize
 	"FlowController.camelize(" In ".toString())"
 getMethodName
 	"get" Name ""
+getInternalMethodName
+	"get_" Name ""
 getVariableFromName
 	"MainClass." VariableName ""
 getClassFromClassMap
@@ -92,13 +94,27 @@ declareMemberVariable
 declareMemberMethod
 	"protected ExternalMethodEntry " Name "Method = " Member ";"
 declareMemberClass
-	"protected " Name " " Name "Class = " Member ""
+	"public final " Name " " Name "Class = " Member ""
+declareStaticMemberClass
+	"public static final " Name " " Name "Class = " Member ""
 declareMethod
-	"public " IsStatic "" Type "" Array " " Name "(" Parameters ") {" Method Body ""
+	"public " IsStatic "" Type "" Array " " Name "(" Parameters ") " Throws " {" Method Body ""
 declareClass
 	"package " Package name ";
-" Import List "
+import java.util.*;
+import java.io.*;
+import lists.*;
+import com.rem.parser.generation.classwise.*;
+import com.rem.parser.generation.*;
+import com.rem.parser.parser.*;
+import com.rem.parser.token.*;
+import com.rem.parser.*;
+" Imports "
 public " IsStatic "" Class Type " " Class Name " " Extends " " Implements " {
+	public static class classes {" Classes "
+	}
+	public static " Class Type " variables = null;
+	public static " Class Type " methods = null;
 	//Externals" Variables "\n" Methods "\n" Classes "
 	//Internals" Variables "\n" Methods "\n" Classes "
 }"

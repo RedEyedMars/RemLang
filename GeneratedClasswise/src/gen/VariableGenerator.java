@@ -13,11 +13,17 @@ import lists.*;
 
 public class VariableGenerator extends Generator {
 
+	private HashSet<String> definedVariableNames = new HashSet<String>();
 
 
 	public VariableGenerator(){
 	}
-	public Entry generateDeclaration(IToken declaration,Boolean isInner){
+	public void addDefinedVariableName(Entry variableEntry){
+		StringBuilder variableName = new StringBuilder();
+		variableEntry.get(variableName);
+		definedVariableNames.add(variableName.toString());
+	}
+	public Entry generateDeclaration(IToken declaration,Boolean isInner,ContextEntry parentContext){
 		if((isInner == false)){
 			isInner = (declaration.get("inner") != null);
 		}
@@ -31,14 +37,14 @@ public class VariableGenerator extends Generator {
 		List<IToken> atomTypeName = declaration.getAll("typeName");
 		if(atomTypeName != null){
 			for(IToken atom:atomTypeName){
-				typeName.addSubClass(Generators.classwise.generateAllType(atom,isInner));
+				typeName.addSubClass(Generators.classwise.generateAllType(atom,isInner,parentContext));
 			}
 		}
 		Entry assignment = null;
 		List<IToken> atomMethodArgument = declaration.getAll("method_argument");
 		if(atomMethodArgument != null){
 			for(IToken atom:atomMethodArgument){
-				assignment = Generators.body.generateArgument(atom,isInner);
+				assignment = Generators.body.generateArgument(atom,isInner,parentContext);
 			}
 		}
 		Entry ret = (Entry)null;
@@ -85,7 +91,7 @@ public class VariableGenerator extends Generator {
 		}
 		return ret;
 	}
-	public Entry generateAssignment(IToken assignment,Boolean isInner){
+	public Entry generateAssignment(IToken assignment,Boolean isInner,ContextEntry parentContext){
 		if((isInner == false)){
 			isInner = (assignment.get("inner") != null);
 		}
@@ -93,7 +99,7 @@ public class VariableGenerator extends Generator {
 		List<IToken> atomMethodArgument = assignment.getAll("method_argument");
 		if(atomMethodArgument != null){
 			for(IToken atom:atomMethodArgument){
-				assignmentVar = Generators.body.generateArgument(atom,isInner);
+				assignmentVar = Generators.body.generateArgument(atom,isInner,parentContext);
 			}
 		}
 		Entry vName = (Entry)Generators.classwise.generateNameVar(assignment.get("name_var"),isInner);
@@ -105,6 +111,9 @@ public class VariableGenerator extends Generator {
 		}
 	}
 
+	public HashSet<String> getDefinedVariableNames(){
+		return definedVariableNames;
+	}
 
 	public String getName(){
 		return "Variable";

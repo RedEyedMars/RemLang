@@ -26,10 +26,12 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private Entry assignment = null;
+	private Entry realName = null;
 
 	public IVariableEntry(Entry iType,Entry iName,Entry iAssignment){
 		isInner = true;
 		name = iName;
+		realName = iName;
 		type = iType;
 		isFinal = true;
 		this.setAssignment(iAssignment);
@@ -88,6 +90,8 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 		return type;
 	}	public Entry getAssignment(){
 		return assignment;
+	}	public Entry getRealName(){
+		return realName;
 	}
 	public void setAssignment(Entry newAssignment){
 		importPackage.clear();
@@ -98,6 +102,12 @@ public class IVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 			IImportable assignmentAsImportable = (IImportable)assignment;
 			this.addImports(assignmentAsImportable.getImportPackage());
 		}
+	}
+	public void setIsGlobal(){
+		realName = name;
+		StringBuilder nameBuilder = new StringBuilder();
+		name.get(nameBuilder);
+		name = new IExactEntry(new ElementEntry(ClasswiseGenerator.variableAsGlobalElement,new ListEntry(new StringEntry(nameBuilder.toString()))));
 	}
 	public void get(StringBuilder builder){
 		if((assignment != null && isFinal == false && isStatic == false)){

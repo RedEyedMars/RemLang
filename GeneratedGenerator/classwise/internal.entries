@@ -134,7 +134,19 @@ entry i_name_var uses innerable importable
 			first if second is null
 			classwise concat{first second} if second is not null and isConcat is true
 			classwise access{first second} if second is not null and isConcat is false
-entry i_type_var uses innerable importable canAddSubClass variablizable
+		var firstBuilder
+			new StringBuilder
+		first get
+			firstBuilder
+		var definedVariables as Set<String>
+			variable getDefinedVariableNames
+		if definedVariables does contains 'firstBuilder
+			set first = classwise retrieveVariable { \'firstBuilder }
+		var definedMethods as Set<String>
+			method getDefinedMethodNames
+		if definedMethods does contains 'firstBuilder
+			set first = classwise retrieveMethod { \'firstBuilder }
+entry i_type_var uses innerable importable canAddSubClass variablizable concretizable
 	constant DEFAULT
 		0
 	constant CONCAT
@@ -146,10 +158,12 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 	constant ACCESS_DEFAULT
 		4
 	entry sansTemp = {}
-	entry first = null
+	var first as ListEntry = null
 	entry second = null
 	var mode = DEFAULT
 	entry templateParameters = {}
+	var isSurroundedInQuotes = false
+	
 	constructor
 		set isInner = true
 		
@@ -198,6 +212,16 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 					set mode = ACCESS_DEFAULT
 		first setDelimiter :".";
 		sansTemp setDelimiter :".";
+	surroundInNonQuotes
+		set isSurroundedInQuotes = true
+	surroundInQuotes
+		if isSurroundedInQuotes is false
+			set isSurroundedInQuotes = true
+			var builder
+				new StringBuilder
+			first get
+				builder
+			set first = { `` 'builder `` }
 	addSubClass takes newSubType as Entry
 		var newTypeVar as i_type_var = newSubType
 		sansTemp +=
@@ -215,7 +239,8 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 	output
 			internal bodyName{first} if second is null and templateParameters is empty and isVariable is false and mode is DEFAULT
 			internal bodyName{classwise accessDefault{first second}} if second is null and templateParameters is empty and isVariable is false and mode is ACCESS_DEFAULT
-			internal bodyName{classwise classAsVariable {first} } if second is null and templateParameters is empty and isVariable is true and mode is DEFAULT
+			internal bodyName{classwise accessDefault{first second}} if templateParameters is empty and mode is ACCESS_DEFAULT
+			internal bodyName{classwise retrieveClass {first} } if second is null and templateParameters is empty and isVariable is true and mode is DEFAULT
 			internal bodyName{classwise concat{first second}} if second is not null and mode is CONCAT and templateParameters is empty 
 			internal bodyName{classwise accessClass {first second}} if second is not null and mode is ACCESS_CLASS and templateParameters is empty
 			internal bodyName{classwise accessMethod{first second}} if second is not null and mode is ACCESS_METHOD and templateParameters is empty
@@ -233,6 +258,9 @@ entry i_type_var uses innerable importable canAddSubClass variablizable
 				clazz getDefinedClassNames
 			if definedClassNames does contains 'checkBuilder
 				set isVariable = true
+			if second is not null and mode is ACCESS_CLASS
+				var secondAsType as i_type_var = second
+				secondAsType surroundInQuotes
 entry i_operator uses innerable importable
 	entry left = null
 	entry right = null
@@ -494,9 +522,11 @@ entry i_element uses innerable importable contextualizable
 entry i_variable uses innerable importable nameable finalizable statickable inlinelistable arraytypeable
 	entry type = null
 	entry assignment  = null
+	entry realName = null
 	constructor takes iType as Entry, iName as Entry, iAssignment as Entry
 		set isInner = true
 		set name = iName
+		set realName = iName
 		set type  = iType
 		set isFinal = true
 		this setAssignment
@@ -511,6 +541,13 @@ entry i_variable uses innerable importable nameable finalizable statickable inli
 			var assignmentAsImportable as importable = assignment
 			this addImports
 				assignmentAsImportable getImportPackage
+	setIsGlobal
+		set realName = name
+		var nameBuilder
+			new StringBuilder
+		name get
+			nameBuilder
+		set name = i_exact:classwise variableAsGlobal { \'nameBuilder };
 	output
 			internal declareVariableWithAssignmentNonFinal    { type arrayType name assignment} if assignment is not null and isFinal is false and isStatic is false
 			internal declareVariableWithAssignmentFinal       { type arrayType name assignment} if assignment is not null and isFinal is true and isStatic is false
@@ -524,7 +561,8 @@ entry i_method uses innerable importable contextualizable nameable staticable ar
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
-	constructor takes iType as Entry, iName as Entry, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+	entry sThrows = null
+	constructor takes iType as Entry, iName as Entry, iParameters as ListEntry, iThrows as ListEntry, iMethodBody as ListEntry, iContext as context
 		
 		set isInner = true
 		var realName as StringBuilder
@@ -549,6 +587,10 @@ entry i_method uses innerable importable contextualizable nameable staticable ar
 			var f as finalizable = e
 			f setIsFinal
 				true
+		if iThrows is not empty
+			set sThrows as Entry = external throwsStatement {iThrows}
+		else
+			set sThrows as Entry = {}
 		var methodBodyContext = context:iContext;
 		var semicolon = ";"
 		each e as Entry in iMethodBody
@@ -562,7 +604,7 @@ entry i_method uses innerable importable contextualizable nameable staticable ar
 		parameters setDelimiter :",";
 		methodBody setDelimiter :"";
 	output
-			(tabs internal declareMethod{asStatic type arrayType name parameters methodBody }) if context is not null
+			(tabs internal declareMethod{asStatic type arrayType name parameters sThrows methodBody }) if context is not null
 			+
 			(tabs \"}") if context is not null 
 		if context is null
@@ -571,7 +613,6 @@ entry i_method uses innerable importable contextualizable nameable staticable ar
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-
 entry i_class uses innerable nameable importable contextualizable fileable staticable
 	entry packageName = null
 	entry classType = null
@@ -583,6 +624,7 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 	entry externalMethods = {}
 	entry internalSubClasses = {}
 	entry externalSubClasses = {}
+	entry externalClasses = {}
 	var isSubClass = false
 	var hasOutput = false
 	constructor takes iPackageName as Entry, iType, iName as Entry, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
@@ -657,6 +699,7 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		externalMethods setDelimiter :"";
 		internalSubClasses setDelimiter :"";
 		externalSubClasses setDelimiter :"";
+		externalClasses setDelimiter :"";
 	getFullName
 		var builder
 			new StringBuilder
@@ -675,6 +718,8 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		var iType as Entry
 			i getType
 		var iName as Entry
+			i getRealName
+		var iRealName as Entry
 			i getName
 		var cBuilder
 			new StringBuilder
@@ -683,8 +728,18 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		if iAssignment is null
 			i setAssignment
 				i_new_obj:iType {};
+		var iExternalGetMethod
+			i_method:iType i_exact:internal getMethodName{\^cBuilder}; {} {} {i_element:"return " iRealName semicolon context:;;} context:context:;;;
+		iExternalGetMethod setArrayType
+			i getArrayType
 		this addMethod
-			i_method:iType i_exact:internal getMethodName{\^cBuilder}; {} {i_element:"return " iName semicolon context:;;} context:context:;;;
+			iExternalGetMethod
+		var iInternalGetMethod
+			i_method:iType i_exact:internal getInternalMethodName{\'cBuilder}; {} {} {i_element:"return " iRealName semicolon context:;;} context:context:;;;
+		iInternalGetMethod setArrayType
+			i getArrayType
+		this addMethod
+			iInternalGetMethod
 	addVariable takes e as e_variable
 		var eName as Entry
 			e getName
@@ -719,9 +774,9 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 	addSubClass takes e as e_class
 		var eName as Entry
 			e getName
-		var eAsFile as Entry
-			e getAsFile
-		externalSubClasses+=(1 internal declareMemberClass{eName eName eAsFile})
+		var eAsFileVariable as Entry
+			e getAsFileVariable
+		externalSubClasses+=(1 internal declareMemberClass{eName eName eAsFileVariable})
 		this addImports
 			e getImportPackage
 		e setIsSubClass : completeName completeName true;
@@ -737,9 +792,9 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 	addClass takes e as e_class
 		var eName as Entry
 			e getName
-		var eAsFile as Entry
-			e getAsFile
-		externalSubClasses+=(1 internal declareMemberClass{eName eName eAsFile})
+		var eAsFileVariable as Entry
+			e getAsFileVariable
+		externalClasses+=(2 internal declareStaticMemberClass{eName eName eAsFileVariable})
 		this addImports
 			e getImportPackage
 		var nameBuilder
@@ -757,7 +812,7 @@ entry i_class uses innerable nameable importable contextualizable fileable stati
 		completeName += superCompleteName
 		completeName += name
 	output
-			internal declareClass{packageName importPackage->INTERNAL asStatic classType name parent interfaces externalVariables externalMethods externalSubClasses internalVariables internalMethods internalSubClasses } if isSubClass is false
+			internal declareClass{packageName importPackage->INTERNAL asStatic classType name parent interfaces externalClasses name name externalVariables externalMethods externalSubClasses internalVariables internalMethods internalSubClasses } if isSubClass is false
 			(tabs internal declareSubClass{asStatic classType name parent interfaces externalVariables externalMethods externalSubClasses internalVariables internalMethods internalSubClasses }) if isSubClass is true
 			+
 			(tabs \"}") if isSubClass is true

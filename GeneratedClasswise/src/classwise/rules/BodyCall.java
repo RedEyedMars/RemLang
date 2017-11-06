@@ -17,6 +17,20 @@ public class BodyCall extends ConcreteRule {
 	public void setup(){
 		set(
 			new ChoiceParser(
+					new AddTokenParser(
+						
+						new ChainParser(
+							new AddTokenParser(
+								Braces.STATEMENT_AS_BRACED,"left"),
+							new OptionalParser(
+									
+										new ChainParser(
+											new OptionalParser(
+													Tokens.BACKSLASH),
+											Tokens.OPERATOR)),
+							new OptionalParser(
+									new AddTokenParser(
+										Rules.body_statement,"right"))),"as_braced"),
 				new ChainParser(
 					new AddTokenParser(
 						
@@ -56,7 +70,7 @@ public class BodyCall extends ConcreteRule {
 							new OptionalParser(
 									new AddTokenParser(
 										Braces.PARAMETERS,"parameters")),
-							new OptionalParser(
+							new ManyParser(
 									new AddTokenParser(
 										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
@@ -77,7 +91,7 @@ public class BodyCall extends ConcreteRule {
 											new OptionalParser(
 													new AddTokenParser(
 														Braces.PARAMETERS,"parameters")),
-											new OptionalParser(
+											new ManyParser(
 													new AddTokenParser(
 														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group")))),
 				new ChainParser(
@@ -97,7 +111,7 @@ public class BodyCall extends ConcreteRule {
 							new OptionalParser(
 									new AddTokenParser(
 										Braces.PARAMETERS,"parameters")),
-							new OptionalParser(
+							new ManyParser(
 									new AddTokenParser(
 										Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"),
 					new ManyParser(
@@ -115,7 +129,7 @@ public class BodyCall extends ConcreteRule {
 											new OptionalParser(
 													new AddTokenParser(
 														Braces.PARAMETERS,"parameters")),
-											new OptionalParser(
+											new ManyParser(
 													new AddTokenParser(
 														Braces.ARRAY_PARAMETERS,"array_parameters"))),"group"))))));
 

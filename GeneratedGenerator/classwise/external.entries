@@ -71,7 +71,7 @@ entry e_name_var uses innerable importable
 			external bodyName{external bodyConcat{first second}} if second is not null and isConcat is true
 			external bodyName{classwise access{first second}} if second is not null and isConcat is false
 
-entry e_type_var uses innerable importable canAddSubClass variablizable
+entry e_type_var uses innerable importable canAddSubClass variablizable globalizable
 	constant DEFAULT
 		0
 	constant CONCAT
@@ -84,15 +84,19 @@ entry e_type_var uses innerable importable canAddSubClass variablizable
 	entry second = null
 	var mode = DEFAULT
 	entry templateParameters = {}
+	var parentContext as context = null
 	constructor
 		set isVariable = false
 		set first = {}
 		first setDelimiter :".";
-	constructor takes iValue as Entry
+		set isGlobal = true
+	constructor takes iValue as Entry, iContext as context
 		set isVariable = false
 		set first = {iValue}
 		first setDelimiter :".";
-	constructor takes iValue as Entry, iTemplateParameters as ListEntry, importType as importable
+		set isGlobal = true
+		set parentContext = iContext
+	constructor takes iValue as Entry, iTemplateParameters as ListEntry, importType as importable, iContext as context
 		set isVariable = false
 		set first = {iValue}
 		set templateParameters = iTemplateParameters
@@ -102,7 +106,9 @@ entry e_type_var uses innerable importable canAddSubClass variablizable
 				importType getImportPackage
 		templateParameters setDelimiter
 			","
-	constructor takes iFirst as Entry, operator, iSecond as Entry
+		set isGlobal = true
+		set parentContext = iContext
+	constructor takes iFirst as Entry, operator, iSecond as Entry, iContext as context
 		set isVariable = false
 		set first = {iFirst}
 		set second = iSecond
@@ -114,6 +120,8 @@ entry e_type_var uses innerable importable canAddSubClass variablizable
 			else
 				set mode = ACCESS_CLASS
 		first setDelimiter :".";
+		set isGlobal = true
+		set parentContext = iContext
 	addSubClass takes newSubType as Entry
 		first += newSubType
 		var builder
@@ -127,7 +135,8 @@ entry e_type_var uses innerable importable canAddSubClass variablizable
 			importType getImportPackage
 	output
 			external bodyTypeName{first} if second is null and templateParameters is empty and isVariable is false and mode is DEFAULT
-			external bodyTypeName{ classwise classAsVariable {first} } if second is null and templateParameters is empty and isVariable is true and mode is DEFAULT
+			external bodyTypeName{ classwise classAsVariable {first} } if second is null and templateParameters is empty and isVariable is true and isGlobal is true and mode is DEFAULT
+			external bodyTypeName{ classwise retrieveClass {first} } if second is null and templateParameters is empty and isVariable is true and isGlobal is true and mode is DEFAULT
 			external bodyTypeName{first} if second is null and templateParameters is empty and mode is DEFAULT
 			external bodyTypeName{classwise concat{first second}} if second is not null and mode is CONCAT and templateParameters is empty
 			external bodyTypeName{external accessClass{first second}} if second is not null and mode is ACCESS_CLASS and templateParameters is empty
@@ -136,7 +145,13 @@ entry e_type_var uses innerable importable canAddSubClass variablizable
 			external bodyTypeNameWithParameters{classwise concat{first second} templateParameters} if second is not null and mode is CONCAT and templateParameters is not empty
 			external bodyTypeNameWithParameters{classwise accessClass{first second} templateParameters} if second is not null and mode is ACCESS_CLASS and templateParameters is not empty
 			external bodyTypeNameWithParameters{classwise accessMethod{first second} templateParameters} if second is not null and mode is ACCESS_METHOD and templateParameters is not empty
-
+		if parentContext is not null and second is null and templateParameters is empty and isVariable is true and mode is DEFAULT
+			var firstBuilder
+				new StringBuilder
+			first get
+				firstBuilder
+			if parentContext does containsMethodBoundClass 'firstBuilder
+				set isGlobal = false
 entry e_operator uses innerable importable
 	entry left = null
 	entry right = null
@@ -468,8 +483,9 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 	entry type = null
 	entry parameters  = null
 	entry methodBody = null
+	entry sThrows = null
 	var pas = false
-	constructor takes iType as Entry, iName as Entry, iParametersAreStatement as Boolean, iParameters as ListEntry, iMethodBody as ListEntry, iContext as context
+	constructor takes iType as Entry, iName as Entry, iParametersAreStatement as Boolean, iParameters as ListEntry, iThrows as ListEntry, iMethodBody as ListEntry, iContext as context
 		set pas = iParametersAreStatement
 		set name = iName
 		set type = iType
@@ -483,6 +499,10 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 			var i as importable = e
 			this addImports
 				i getImportPackage
+		if iThrows is not empty
+			set sThrows as Entry = external throwsStatement {iThrows}
+		else
+			set sThrows as Entry = {}
 		var methodBodyContext = context:iContext;
 		var semicolon = ";"
 		each e as Entry in iMethodBody
@@ -495,23 +515,25 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 		methodBody setDelimiter
 			",\n/*BODY*/\t\t\t\t"
 	output
-			external declareStaticMethod{e_tabs type arrayType name parameters external bodyBody{methodBody}} if isStatic is true and pas is true
-			external declareInterfaceMethod{e_tabs type arrayType name parameters }                     if isInterface is true and pas is true
-			external declareMethod{e_tabs type arrayType name parameters external bodyBody{methodBody}} if isInterface is false and pas is true
-			external declareStaticMethod{e_tabs type arrayType name external bodyParameters{parameters} external bodyBody{methodBody}} if isStatic is true and pas is false
-			external declareInterfaceMethod{e_tabs type arrayType name external bodyParameters{parameters} }                     if isInterface is true and pas is false
-			external declareMethod{e_tabs type arrayType name external bodyParameters{parameters} external bodyBody{methodBody}} if isInterface is false and pas is false
+			external declareStaticMethod{e_tabs type arrayType name parameters sThrows external bodyBody{methodBody}} if isStatic is true and pas is true
+			external declareInterfaceMethod{e_tabs type arrayType name parameters sThrows }                     if isInterface is true and pas is true
+			external declareMethod{e_tabs type arrayType name parameters sThrows external bodyBody{methodBody}} if isInterface is false and pas is true
+			external declareStaticMethod{e_tabs type arrayType name external bodyParameters{parameters} sThrows external bodyBody{methodBody}} if isStatic is true and pas is false
+			external declareInterfaceMethod{e_tabs type arrayType name external bodyParameters{parameters} sThrows }                     if isInterface is true and pas is false
+			external declareMethod{e_tabs type arrayType name external bodyParameters{parameters} sThrows external bodyBody{methodBody}} if isInterface is false and pas is false
 		if context is null
 			set tabs = 0
 		else
 			set tabs
 				context getTab
 		e_tabs set :'tabs;
-entry e_class uses innerable nameable importable contextualizable fileable interfaceable
+entry e_class uses innerable nameable importable contextualizable fileable interfaceable globalizable
 	var packageName as Entry = null
 	var externalPackageName as Entry = null
 	entry asStatic = \""
 	entry asFile = null
+	entry asFileVariable = null
+	entry asInternalFile = null
 	entry asArgument = null
 	entry classType = null
 	var externalName as Entry = null
@@ -540,7 +562,7 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		set isInner = false
 		set packageName = iPackageName
 		set name = \sName
-		set completeName = {classwise classAsVariable{\sName}}
+		set completeName = {classwise retrieveClass{\sName}}
 		set completeUnsulliedName = {iName}
 		completeName setDelimiter :".";
 		completeUnsulliedName setDelimiter :".";
@@ -627,6 +649,10 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		set getHeader = i_exact:(2 external getCompleteHeader{asStatic classType externalName externalTemplateTypeName});
 		
 		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		var classwizeImports as Entry
+			classwise getInternalImports
+		set asInternalFile = i_exact:external declareOutputClass{classwizeImports name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		set asFileVariable = i_exact: external declareNewClass { name } ;
 		set asArgument = i_exact:external declareClassAsArgument{externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
 	addVariable takes i as i_variable
 		internalVariables+=(2 internal declareMemberComplete{i})
@@ -710,7 +736,8 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		if isWeak is true
 			asStatic set :"";
 	output
-			|completeName| if name is not null
+			classwise retrieveClass { completeName } if name is not null and isGlobal is true
+			|completeName| if name is not null and isGlobal is false
 		if context is null
 			set tabs = 0
 		else

@@ -19,6 +19,7 @@ public class ExternalGenerator extends Generator {
 	public static final Element accessClassElement = new Element("accessClass",new String[]{"new ExternalStatement(\".\", ",/*Left*/", ",/*Right*/")"});
 	public static final Element accessMethodElement = new Element("accessMethod",new String[]{"new ExternalStatement(\".\", ",/*Left*/", ",/*Right*/")"});
 	public static final Element getClassFromClassMapElement = new Element("getClassFromClassMap",new String[]{"ExternalClassEntry.classMap.get(",/*Class Name*/")"});
+	public static final Element throwsStatementElement = new Element("throwsStatement",new String[]{" throws ",/*Exceptions*/" "});
 	public static final Element exactElement = new Element("exact",new String[]{"new StringEntry(",/*In*/")"});
 	public static final Element exactEntryElement = new Element("exactEntry",new String[]{"new Entry(){"+
 			"\n			public void get(StringBuilder __BUILDER__){",/*In*/".get(__BUILDER__);"+
@@ -98,9 +99,9 @@ public class ExternalGenerator extends Generator {
 	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
 	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
 	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
-	public static final Element declareStaticMethodElement = new Element("declareStaticMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", true,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
-	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", ",/*Body*/")"});
-	public static final Element declareInterfaceMethodElement = new Element("declareInterfaceMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", null )"});
+	public static final Element declareStaticMethodElement = new Element("declareStaticMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", true,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", \"",/*Throws*/"\", ",/*Body*/")"});
+	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", \"",/*Throws*/"\", ",/*Body*/")"});
+	public static final Element declareInterfaceMethodElement = new Element("declareInterfaceMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/" , \"",/*Throws*/"\", null )"});
 	public static final Element getCompleteHeaderElement = new Element("getCompleteHeader",new String[]{"new Entry(){"+
 			"\n		public void get(StringBuilder builder){"+
 			"\n			builder.append(\"",/*Statickality*/" ",/*Class Type*/"\");"+
@@ -109,6 +110,7 @@ public class ExternalGenerator extends Generator {
 			"\n		}"+
 			"\n	}"});
 	public static final Element addTailBraceElement = new Element("addTailBrace",new String[]{"new TabEntry(",/*Tabs*/", new StringEntry(\"}\")).get(builder);"});
+	public static final Element declareNewClassElement = new Element("declareNewClass",new String[]{"new ",/*Name*/"();"});
 	public static final Element declareClassElement = new Element("declareClass",new String[]{"new ",/*Name*/"();"+
 			"\n	public class ",/*Name*/" extends ExternalClassEntry {",/*Variables*/"\n",/*Methods*/"\n",/*Classes*/"\n",/*Classes*/"\n"+
 			"\n	public void __INIT__(){"+
@@ -118,6 +120,31 @@ public class ExternalGenerator extends Generator {
 			"\n			public void get(StringBuilder __BUILDER__){",/*ImportList*/""+
 			"\n			}"+
 			"\n		}, ",/*Name*/", ",/*isInterface*/", ",/*Parent Class*/", ",/*Interfaces*/", ",/*Header*/", Arrays.asList(new ExternalVariableEntry[]{",/*Variables*/"}), Arrays.asList(new ExternalMethodEntry[]{",/*Methods*/"}), Arrays.asList(new ExternalClassEntry[]{",/*Classes*/"}));"+
+			"\n	}"+
+			"\n}"});
+	public static final Element declareOutputClassElement = new Element("declareOutputClass",new String[]{"package clgen;"+
+			"\nimport java.util.*;"+
+			"\nimport java.io.*;"+
+			"\nimport com.rem.parser.generation.classwise.*;"+
+			"\nimport com.rem.parser.generation.*;"+
+			"\nimport com.rem.parser.parser.*;"+
+			"\nimport com.rem.parser.token.*;"+
+			"\nimport com.rem.parser.*;",/*Imports*/""+
+			"\npublic class ",/*Name*/" extends ExternalClassEntry {",/*Variables*/"\n",/*Methods*/"\n",/*Classes*/"\n",/*Classes*/"\n"+
+			"\n	public void __INIT__(){"+
+			"\n		super.__SETUP__("+
+			"\n			",/*Package Name*/", "+
+			"\n			new Entry(){"+
+			"\n				public void get(StringBuilder __BUILDER__){",/*ImportList*/""+
+			"\n				}}, "+
+			"\n			",/*Name*/", "+
+			"\n			",/*isInterface*/", "+
+			"\n			",/*Parent Class*/", "+
+			"\n			",/*Interfaces*/","+
+			"\n			",/*Header*/","+
+			"\n			Arrays.asList(new ExternalVariableEntry[]{",/*Variables*/"}), "+
+			"\n			Arrays.asList(new ExternalMethodEntry[]{",/*Methods*/"}), "+
+			"\n			Arrays.asList(new ExternalClassEntry[]{",/*Classes*/"}));"+
 			"\n	}"+
 			"\n}"});
 	public static final Element declareClassAsArgumentElement = new Element("declareClassAsArgument",new String[]{"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(",/*Package Name*/", "+
@@ -133,6 +160,7 @@ public class ExternalGenerator extends Generator {
 		addElement("accessClass",accessClassElement);
 		addElement("accessMethod",accessMethodElement);
 		addElement("getClassFromClassMap",getClassFromClassMapElement);
+		addElement("throwsStatement",throwsStatementElement);
 		addElement("exact",exactElement);
 		addElement("exactEntry",exactEntryElement);
 		addElement("asTemplate",asTemplateElement);
@@ -188,7 +216,9 @@ public class ExternalGenerator extends Generator {
 		addElement("declareInterfaceMethod",declareInterfaceMethodElement);
 		addElement("getCompleteHeader",getCompleteHeaderElement);
 		addElement("addTailBrace",addTailBraceElement);
+		addElement("declareNewClass",declareNewClassElement);
 		addElement("declareClass",declareClassElement);
+		addElement("declareOutputClass",declareOutputClassElement);
 		addElement("declareClassAsArgument",declareClassAsArgumentElement);
 		addElement("addMemberVariable",addMemberVariableElement);
 		addElement("addMemberMethod",addMemberMethodElement);

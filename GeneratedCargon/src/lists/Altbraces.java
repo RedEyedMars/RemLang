@@ -18,53 +18,21 @@ public class Altbraces extends ParseList {
 	public static final CharitableBracedParser RULE_PARAMETERS = new CharitableBracedParser(
 						new ChainParser(
 							new OptionalParser(
-									
-									new ChoiceParser(
-											CargonTokens.SILENT,
-										new ChainParser(
-											CargonTokens.BRACED,
-											Rules.braced_parameters),
-										new ChainParser(
-											CargonTokens.IMPORTS,
-											Rules.import_parameters))),
+									Rules.rule_params),
 							new ManyParser(
 									
 										new ChainParser(
 											CargonTokens.COMMA,
-											
-											new ChoiceParser(
-													CargonTokens.SILENT,
-												new ChainParser(
-													CargonTokens.BRACED,
-													Rules.braced_parameters),
-												new ChainParser(
-													CargonTokens.IMPORTS,
-													Rules.import_parameters))))),"RULE_PARAMETERS","altbraces",",\n");
+											Rules.rule_params))),"RULE_PARAMETERS","altbraces",",\n");
 	public static final CharitableBracedParser EQUALS_RULE_PARAMETERS = new CharitableBracedParser(
 						new ChainParser(
 							new OptionalParser(
-									
-									new ChoiceParser(
-											CargonTokens.SILENT,
-										new ChainParser(
-											CargonTokens.BRACED,
-											Rules.braced_parameters),
-										new ChainParser(
-											CargonTokens.IMPORTS,
-											Rules.import_parameters))),
+									Rules.rule_params),
 							new ManyParser(
 									
 										new ChainParser(
 											CargonTokens.COMMA,
-											
-											new ChoiceParser(
-													CargonTokens.SILENT,
-												new ChainParser(
-													CargonTokens.BRACED,
-													Rules.braced_parameters),
-												new ChainParser(
-													CargonTokens.IMPORTS,
-													Rules.import_parameters))))),"EQUALS_RULE_PARAMETERS","altbraces",",=");
+											Rules.rule_params))),"EQUALS_RULE_PARAMETERS","altbraces",",=");
 
 	public static final ChoiceParser parser = new ChoiceParser(
 				RULE_PARAMETERS,EQUALS_RULE_PARAMETERS);

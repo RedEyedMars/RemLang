@@ -24,9 +24,15 @@ accessMethod
 accessVariable
 	"" Left ".getVariable(" Right ")"
 classAsVariable
-	"" Left "Class"
-retrieveClass
 	"" Class Name "Class"
+retrieveVariable
+	"MainFlow.variables.get_" Variable Name "()"
+retrieveMethod
+	"MainFlow.methods." Method Name ""
+retrieveClass
+	"MainFlow.classes." Class Name "Class"
+variableAsGlobal
+	"__VAR__" Name ""
 extends
 	"extends " Parent Class ""
 implements
@@ -49,9 +55,15 @@ generators
 			}
 		}};
 	}
-	private String __ROOT_DIRECTORY__ = \".\";
+	public static String __ROOT_DIRECTORY__ = \".\";
+	@Override
+	public void initializeFlowController(){
+	  MainFlow.variables = this;
+	  MainFlow.methods = this;
+	}
 	public void setup(String rootDirectory){
-		__ROOT_DIRECTORY__ = rootDirectory;" Setup All Classes "
+		__ROOT_DIRECTORY__ = rootDirectory;
+		" Setup All classes "
 	}
 	public void output(ParseContext data){
 		ExternalImportEntry.solidify();
@@ -65,8 +77,14 @@ addFile
 	" Package Name ".get(__BUILDER__);
 	__DIRECTORY__ = new File(__ROOT_DIRECTORY__, __BUILDER__.toString().replace(\".\",\"/\"));
 	__DIRECTORY__.mkdirs();
-	addFile(__DIRECTORY__,FlowController.camelize(" Class Name ")+\".java\", " Class Name "Class);"
+	addFile(__DIRECTORY__,FlowController.camelize(" Class Name ")+\".java\", MainFlow.classes." Class Name "Class);"
+addFileInMethod
+	"__BUILDER__ = new StringBuilder();
+	" Package Name ".get(__BUILDER__);
+	__DIRECTORY__ = new File(MainFlow.__ROOT_DIRECTORY__, __BUILDER__.toString().replace(\".\",\"/\"));
+	__DIRECTORY__.mkdirs();
+	MainFlow.methods.addFile(__DIRECTORY__,FlowController.camelize(" Class Name ")+\".java\", " Class Name "Class);"
 setupClass
-	"" Class Name "Class.__INIT__();"
+	"MainFlow.classes." Class Name "Class.__INIT__();"
 addAnonymousClass
 	"ExternalClassEntry.suppliment(\"" ClassName "\", \"" PackageName "\");"

@@ -3,8 +3,13 @@
     int i = 0;
     int j = 21;
     int[] pixels = new int[128];
+    String[] newX = x;
     X regions = new X();
+    \blah(X);
 	regions.get(i).put(j, new X(i,j, pixels[i*32+j]));
+	X += int y = "0"
+  }
+> void blah(Class newClass){
   }
 class "test" X {
   String x = new String[10];

@@ -22,6 +22,7 @@ public class Tokens extends ParseList {
 	public static final ExactParser NEWLINE = new ExactParser("NEWLINE","tokens","\n");
 	public static final ExactParser CLASS = new ExactParser("CLASS","tokens","class ");
 	public static final ExactParser INTERFACE = new ExactParser("INTERFACE","tokens","interface ");
+	public static final ExactParser ENUMERATION = new ExactParser("ENUMERATION","tokens","enum ");
 	public static final ExactParser METHOD = new ExactParser("METHOD","tokens","method");
 	public static final ExactParser VARIABLE = new ExactParser("VARIABLE","tokens","variable");
 	public static final ExactParser CLASS_TYPE = new ExactParser("CLASS_TYPE","tokens","Class ");
@@ -74,11 +75,12 @@ public class Tokens extends ParseList {
 	public static final ExactParser WEAK = new ExactParser("WEAK","tokens","~");
 	public static final ExactParser AS_METHOD_NAME = new ExactParser("AS_METHOD_NAME","tokens","*");
 	public static final ExactParser AS_GENERIC = new ExactParser("AS_GENERIC","tokens","*");
+	public static final ExactParser THROWS = new ExactParser("THROWS","tokens","throws");
 	public static final ExactParser THIS = new ExactParser("THIS","tokens","this");
 	public static final ExactParser SUPER = new ExactParser("SUPER","tokens","super");
 	public static final ExactParser INLINE_LIST = new ExactParser("INLINE_LIST","tokens","...");
 	public static final ExactParser ARRAY_TYPE = new ExactParser("ARRAY_TYPE","tokens","[]");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NAME,OPERATOR,NUMBER,WILD,NEWLINE,CLASS,INTERFACE,METHOD,VARIABLE,CLASS_TYPE,METHOD_TYPE,VARIABLE_TYPE,BODY_TYPE,CONTEXT_TYPE,STATEMENT_TYPE,PARAMETERS_TYPE,IN,NER,HID,DEN,FROM,STA,TIC,ACCESS,SPECIAL_ACCESS,EQUALS,COMMA,DOT,SEMICOLON,COLON,ADD,PLUS,BACKSLASH,FORSLASH,ISTYPENAME,CAMEL,CDS,CLWS,RETURN,VOID,THROW,NEW,IF,ELSE,WHILE,FOR,TRY,CATCH,PRINT,PIPE,SYNCHRONIZED,SWITCH,CASE,NULL,TRUE,FALSE,WEAK,AS_METHOD_NAME,AS_GENERIC,THIS,SUPER,INLINE_LIST,ARRAY_TYPE);
+				NAME,OPERATOR,NUMBER,WILD,NEWLINE,CLASS,INTERFACE,ENUMERATION,METHOD,VARIABLE,CLASS_TYPE,METHOD_TYPE,VARIABLE_TYPE,BODY_TYPE,CONTEXT_TYPE,STATEMENT_TYPE,PARAMETERS_TYPE,IN,NER,HID,DEN,FROM,STA,TIC,ACCESS,SPECIAL_ACCESS,EQUALS,COMMA,DOT,SEMICOLON,COLON,ADD,PLUS,BACKSLASH,FORSLASH,ISTYPENAME,CAMEL,CDS,CLWS,RETURN,VOID,THROW,NEW,IF,ELSE,WHILE,FOR,TRY,CATCH,PRINT,PIPE,SYNCHRONIZED,SWITCH,CASE,NULL,TRUE,FALSE,WEAK,AS_METHOD_NAME,AS_GENERIC,THROWS,THIS,SUPER,INLINE_LIST,ARRAY_TYPE);
 }
