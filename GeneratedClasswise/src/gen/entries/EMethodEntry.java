@@ -31,8 +31,10 @@ public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	private ListEntry methodBody = null;
 	private Entry sThrows = null;
 	private Boolean pas = false;
+	private String methodIndex = null;
 
-	public EMethodEntry(Entry iType,Entry iName,Boolean iParametersAreStatement,ListEntry iParameters,ListEntry iThrows,ListEntry iMethodBody,ContextEntry iContext){
+	public EMethodEntry(Entry iType,Entry iName,Boolean iParametersAreStatement,ListEntry iParameters,ListEntry iThrows,ListEntry iMethodBody,ContextEntry iContext,Integer iIndex){
+		methodIndex = iIndex.toString();
 		pas = iParametersAreStatement;
 		name = iName;
 		type = iType;
@@ -128,6 +130,9 @@ public class EMethodEntry implements Entry,IInnerable,IImportable,IContextualiza
 	}
 	public Boolean getPas(){
 		return pas;
+	}
+	public String getMethodIndex(){
+		return methodIndex;
 	}
 	public void get(StringBuilder builder){
 		if((context == null)){

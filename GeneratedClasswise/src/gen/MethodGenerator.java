@@ -14,6 +14,7 @@ import lists.*;
 public class MethodGenerator extends Generator {
 
 	private HashSet<String> definedMethodNames = new HashSet<String>();
+	private Integer methodIndex = 0;
 
 
 	public MethodGenerator(){
@@ -100,7 +101,8 @@ public class MethodGenerator extends Generator {
 				ret = new IMethodEntry(typeName,new IExactEntry(new StringEntry(definition.get("methodName").getString())),parameters,methodThrowsStatement,methodBody,parentContext);
 			}
 			else {
-				EMethodEntry eMethod = new EMethodEntry(typeName,new EExactEntry(new StringEntry(definition.get("methodName").getString())),parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext);
+				EMethodEntry eMethod = new EMethodEntry(typeName,new EExactEntry(new StringEntry(definition.get("methodName").getString())),parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext,methodIndex);
+				methodIndex = methodIndex + 1;
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
@@ -113,7 +115,8 @@ public class MethodGenerator extends Generator {
 				ret = new IMethodEntry(typeName,vName,parameters,methodThrowsStatement,methodBody,parentContext);
 			}
 			else {
-				EMethodEntry eMethod = new EMethodEntry(typeName,vName,parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext);
+				EMethodEntry eMethod = new EMethodEntry(typeName,vName,parametersAreStatement,parameters,methodThrowsStatement,methodBody,parentContext,methodIndex);
+				methodIndex = methodIndex + 1;
 				if((definition.get("static") != null)){
 					eMethod.setIsStatic(true);
 				}
@@ -137,6 +140,10 @@ public class MethodGenerator extends Generator {
 
 	public HashSet<String> getDefinedMethodNames(){
 		return definedMethodNames;
+	}
+
+	public Integer getMethodIndex(){
+		return methodIndex;
 	}
 
 	public String getName(){

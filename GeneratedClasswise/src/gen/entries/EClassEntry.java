@@ -25,6 +25,7 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	private StringEntry e_tabs = (StringEntry)new StringEntry("0");
 	private Boolean isInterface = false;
 	private Boolean isGlobal = false;
+	private String classIndex = null;
 	private Entry packageName = (Entry)null;
 	private Entry externalPackageName = (Entry)null;
 	private StringEntry asStatic = new StringEntry("");
@@ -46,6 +47,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	private ListEntry externalMethods = new ListEntry();
 	private ListEntry internalSubClasses = new ListEntry();
 	private ListEntry externalSubClasses = new ListEntry();
+	private ListEntry externalConstructorVariableAddMethodCalls = new ListEntry();
+	private ListEntry externalConstructorMethodAddMethodCalls = new ListEntry();
+	private ListEntry externalConstructorSubClassAddMethodCalls = new ListEntry();
 	private ListEntry externalConstructorVariables = new ListEntry();
 	private ListEntry externalConstructorMethods = new ListEntry();
 	private ListEntry externalConstructorSubClass = new ListEntry();
@@ -56,7 +60,8 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	private Boolean hasOutput = false;
 	private ListEntry completeUnsulliedName = (ListEntry)new ListEntry();
 
-	public EClassEntry(Entry iPackageName,String iType,String sName,Entry iName,IToken templateTypeName,Entry iParent,ListEntry iInterfaces,ListEntry iVariables,ListEntry iMethods,ContextEntry iContext){
+	public EClassEntry(Entry iPackageName,String iType,String sName,Entry iName,IToken templateTypeName,Entry iParent,ListEntry iInterfaces,ListEntry iVariables,ListEntry iMethods,ContextEntry iContext,Integer iIndex){
+		classIndex = iIndex.toString();
 		isInner = false;
 		packageName = iPackageName;
 		name = new StringEntry(sName);
@@ -136,21 +141,25 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 			}
 		}
 		context = iContext;
+		String addMethodDelimiter = "";
 		internalVariables.setDelimiter("");
 		externalVariables.setDelimiter("");
 		internalMethods.setDelimiter("");
 		externalMethods.setDelimiter("");
 		internalSubClasses.setDelimiter("");
 		externalSubClasses.setDelimiter("");
-		externalConstructorVariables.setDelimiter(",");
-		externalConstructorMethods.setDelimiter(",");
-		externalConstructorSubClass.setDelimiter(",");
+		externalConstructorVariableAddMethodCalls.setDelimiter(addMethodDelimiter);
+		externalConstructorMethodAddMethodCalls.setDelimiter(addMethodDelimiter);
+		externalConstructorSubClassAddMethodCalls.setDelimiter(addMethodDelimiter);
+		externalConstructorVariables.setDelimiter("");
+		externalConstructorMethods.setDelimiter("");
+		externalConstructorSubClass.setDelimiter("");
 		getHeader = new IExactEntry(new TabEntry(2,new ListEntry(new ElementEntry(ExternalGenerator.getCompleteHeaderElement,new ListEntry(asStatic,classType,externalName,externalTemplateTypeName)))));
-		asFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassElement,new ListEntry(name,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
+		asFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassElement,new ListEntry(name,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariableAddMethodCalls,externalConstructorMethodAddMethodCalls,externalConstructorSubClassAddMethodCalls,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
 		Entry classwizeImports = (Entry)Generators.classwise.getInternalImports();
-		asInternalFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareOutputClassElement,new ListEntry(classwizeImports,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
+		asInternalFile = new IExactEntry(new ElementEntry(ExternalGenerator.declareOutputClassElement,new ListEntry(classwizeImports,name,internalVariables,internalMethods,internalSubClasses,externalSubClasses,externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariableAddMethodCalls,externalConstructorMethodAddMethodCalls,externalConstructorSubClassAddMethodCalls,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
 		asFileVariable = new IExactEntry(new ElementEntry(ExternalGenerator.declareNewClassElement,new ListEntry(name)));
-		asArgument = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassAsArgumentElement,new ListEntry(externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
+		asArgument = new IExactEntry(new ElementEntry(ExternalGenerator.declareClassAsArgumentElement,new ListEntry(externalPackageName,importPackage.get("EXTERNAL"),externalName,new QuoteEntry(iType),externalParentEntry,externalInterfacesEntry,getHeader,externalConstructorVariableAddMethodCalls,externalConstructorMethodAddMethodCalls,externalConstructorSubClassAddMethodCalls,externalConstructorVariables,externalConstructorMethods,externalConstructorSubClass)));
 	}
 
 	public Boolean getIsInner(){
@@ -206,6 +215,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 	public void setIsGlobal(Boolean newIsGlobal) {
 		isGlobal = newIsGlobal;
 	}
+	public String getClassIndex(){
+		return classIndex;
+	}
 	public Entry getPackageName(){
 		return packageName;
 	}
@@ -256,6 +268,12 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		return internalSubClasses;
 	}	public ListEntry getExternalSubClasses(){
 		return externalSubClasses;
+	}	public ListEntry getExternalConstructorVariableAddMethodCalls(){
+		return externalConstructorVariableAddMethodCalls;
+	}	public ListEntry getExternalConstructorMethodAddMethodCalls(){
+		return externalConstructorMethodAddMethodCalls;
+	}	public ListEntry getExternalConstructorSubClassAddMethodCalls(){
+		return externalConstructorSubClassAddMethodCalls;
 	}	public ListEntry getExternalConstructorVariables(){
 		return externalConstructorVariables;
 	}	public ListEntry getExternalConstructorMethods(){
@@ -295,7 +313,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 			e.setAssignment(new ENewObjEntry(eType,new ListEntry()));
 		}
 		externalVariables.add(new TabEntry(2,new ListEntry(new ElementEntry(InternalGenerator.declareMemberClassElement,new ListEntry(eName,eName,new ElementEntry(ExternalGenerator.declareMemberElement,new ListEntry(e_tabs,e)))))));
-		externalConstructorVariables.add(e);
+		String eId = (String)e.getVariableIndex();
+		externalConstructorVariableAddMethodCalls.add(new ElementEntry(ExternalGenerator.callVariableAddMethodElement,new ListEntry(new StringEntry(eId))));
+		externalConstructorVariables.add(new ElementEntry(ExternalGenerator.declareVariableAddMethodElement,new ListEntry(new StringEntry(eId),e)));
 		this.addImports(e.getImportPackage());
 	}
 	public void addMethod(IMethodEntry i){
@@ -305,7 +325,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		Entry eName = (Entry)e.getName();
 		e.setIsInterface(isInterface);
 		externalMethods.add(new TabEntry(1,new ListEntry(new ElementEntry(InternalGenerator.declareMemberMethodElement,new ListEntry(eName,e)))));
-		externalConstructorMethods.add(e);
+		String eId = (String)e.getMethodIndex();
+		externalConstructorMethodAddMethodCalls.add(new ElementEntry(ExternalGenerator.callMethodAddMethodElement,new ListEntry(new StringEntry(eId))));
+		externalConstructorMethods.add(new ElementEntry(ExternalGenerator.declareMethodAddMethodElement,new ListEntry(new StringEntry(eId),e)));
 		this.addImports(e.getImportPackage());
 	}
 	public void addSubClass(IClassEntry i){
@@ -320,7 +342,9 @@ public class EClassEntry implements Entry,IInnerable,INameable,IImportable,ICont
 		String eName = Generators.classwise.buildString(e.getName(),"Class");
 		Entry eAsFile = (Entry)e.getAsFile();
 		externalSubClasses.add(new TabEntry(1,new ListEntry(new ElementEntry(InternalGenerator.declareMemberClassElement,new ListEntry(ePlainName,ePlainName,eAsFile)))));
-		externalConstructorSubClass.add(e);
+		String eId = (String)e.getClassIndex();
+		externalConstructorSubClassAddMethodCalls.add(new ElementEntry(ExternalGenerator.callSubClassAddMethodElement,new ListEntry(new StringEntry(eId))));
+		externalConstructorSubClass.add(new ElementEntry(ExternalGenerator.declareSubClassAddMethodElement,new ListEntry(new StringEntry(eId),e)));
 		this.addImports(e.getImportPackage());
 		e.setIsSubClass(completeName,completeUnsulliedName,true);
 		ContextEntry theirContext = (ContextEntry)e.getContext();

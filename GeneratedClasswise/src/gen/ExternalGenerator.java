@@ -91,6 +91,12 @@ public class ExternalGenerator extends Generator {
 			"\n					builder.append(\";\");"+
 			"\n				}"+
 			"\n			}"});
+	public static final Element callVariableAddMethodElement = new Element("callVariableAddMethod",new String[]{""+
+			"\n		add_variable_",/*Variable Index*/"();"});
+	public static final Element declareVariableAddMethodElement = new Element("declareVariableAddMethod",new String[]{""+
+			"\n		private void add_variable_",/*Variable Index*/"() {"+
+			"\n	 		addVariable(",/*Variable Constructor*/");"+
+			"\n	 	}"});
 	public static final Element declareVariableAsInlineListElement = new Element("declareVariableAsInlineList",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", new ExternalStatement(new StringEntry(\"...\"), ",/*Name*/"))"});
 	public static final Element declareVariableWithAssignmentFinalElement = new Element("declareVariableWithAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
 	public static final Element declareVariableWithAssignmentNonFinalElement = new Element("declareVariableWithAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
@@ -99,6 +105,12 @@ public class ExternalGenerator extends Generator {
 	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
 	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
 	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element callMethodAddMethodElement = new Element("callMethodAddMethod",new String[]{""+
+			"\n		add_method_",/*Variable Index*/"();"});
+	public static final Element declareMethodAddMethodElement = new Element("declareMethodAddMethod",new String[]{""+
+			"\n		private void add_method_",/*Variable Index*/"() {"+
+			"\n	 		addMethod(",/*Variable Constructor*/");"+
+			"\n	 	}"});
 	public static final Element declareStaticMethodElement = new Element("declareStaticMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", true,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", \"",/*Throws*/"\", ",/*Body*/")"});
 	public static final Element declareMethodElement = new Element("declareMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false,",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/", \"",/*Throws*/"\", ",/*Body*/")"});
 	public static final Element declareInterfaceMethodElement = new Element("declareInterfaceMethod",new String[]{"new ExternalMethodEntry(",/*Tabs*/", false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Parameters*/" , \"",/*Throws*/"\", null )"});
@@ -119,8 +131,13 @@ public class ExternalGenerator extends Generator {
 			"\n		new Entry(){"+
 			"\n			public void get(StringBuilder __BUILDER__){",/*ImportList*/""+
 			"\n			}"+
-			"\n		}, ",/*Name*/", ",/*isInterface*/", ",/*Parent Class*/", ",/*Interfaces*/", ",/*Header*/", Arrays.asList(new ExternalVariableEntry[]{",/*Variables*/"}), Arrays.asList(new ExternalMethodEntry[]{",/*Methods*/"}), Arrays.asList(new ExternalClassEntry[]{",/*Classes*/"}));"+
-			"\n	}"+
+			"\n		}, ",/*Name*/", ",/*isInterface*/", ",/*Parent Class*/", ",/*Interfaces*/", ",/*Header*/");	"+
+			"\n       /* Variables */",/*Variables*/" "+
+			"\n	   /* Methods */",/*Methods*/" "+
+			"\n	   /* Classes */",/*Classes*/""+
+			"\n	}",/*Variable Add Methods*/""+
+			"\n	",/*Method Add Methods*/""+
+			"\n	",/*Class Add Methods*/""+
 			"\n}"});
 	public static final Element declareOutputClassElement = new Element("declareOutputClass",new String[]{"package clgen;"+
 			"\nimport java.util.*;"+
@@ -141,17 +158,32 @@ public class ExternalGenerator extends Generator {
 			"\n			",/*isInterface*/", "+
 			"\n			",/*Parent Class*/", "+
 			"\n			",/*Interfaces*/","+
-			"\n			",/*Header*/","+
-			"\n			Arrays.asList(new ExternalVariableEntry[]{",/*Variables*/"}), "+
-			"\n			Arrays.asList(new ExternalMethodEntry[]{",/*Methods*/"}), "+
-			"\n			Arrays.asList(new ExternalClassEntry[]{",/*Classes*/"}));"+
-			"\n	}"+
+			"\n			",/*Header*/");"+
+			"\n       /* Variables */",/*Variables*/" "+
+			"\n	   /* Methods */",/*Methods*/" "+
+			"\n	   /* Classes */",/*Classes*/""+
+			"\n	}",/*Variable Add Methods*/""+
+			"\n	",/*Method Add Methods*/""+
+			"\n	",/*Class Add Methods*/""+
 			"\n}"});
+	public static final Element callSubClassAddMethodElement = new Element("callSubClassAddMethod",new String[]{""+
+			"\n		add_subclass_",/*SubClass Index*/"();"});
+	public static final Element declareSubClassAddMethodElement = new Element("declareSubClassAddMethod",new String[]{""+
+			"\n		private void add_subclass_",/*SubClass Index*/"() {"+
+			"\n	 		addSubClass(",/*SubClass Constructor*/");"+
+			"\n	 	}"});
 	public static final Element declareClassAsArgumentElement = new Element("declareClassAsArgument",new String[]{"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(",/*Package Name*/", "+
 			"\n		new Entry(){"+
 			"\n			public void get(StringBuilder __BUILDER__){",/*ImportList*/""+
 			"\n			}"+
-			"\n		},",/*Name*/", ",/*isInterface*/", ",/*Parent Class*/", ",/*Interfaces*/", ",/*Header*/", Arrays.asList(new ExternalVariableEntry[]{",/*Variables*/"}), Arrays.asList(new ExternalMethodEntry[]{",/*Methods*/"}), Arrays.asList(new ExternalClassEntry[]{",/*Classes*/"})) ;}}"});
+			"\n		},",/*Name*/", ",/*isInterface*/", ",/*Parent Class*/", ",/*Interfaces*/", ",/*Header*/");"+
+			"\n       /* Variables */",/*Variables*/" "+
+			"\n	   /* Methods */",/*Methods*/" "+
+			"\n	   /* Classes */",/*Classes*/""+
+			"\n	}",/*Variable Add Methods*/""+
+			"\n	",/*Method Add Methods*/""+
+			"\n	",/*Class Add Methods*/""+
+			"\n}"});
 	public static final Element addMemberVariableElement = new Element("addMemberVariable",new String[]{"addVariable(\"",/*Name*/"\", ",/*Entry*/");"});
 	public static final Element addMemberMethodElement = new Element("addMemberMethod",new String[]{"addMethod(\"",/*Name*/"\", ",/*Entry*/");"});
 	public static final Element addMemberSubClassElement = new Element("addMemberSubClass",new String[]{"addSubClass(\"",/*Name*/"\", ",/*Entry*/");"});
@@ -203,6 +235,8 @@ public class ExternalGenerator extends Generator {
 		addElement("bodyParameters",bodyParametersElement);
 		addElement("bodyBody",bodyBodyElement);
 		addElement("declareMember",declareMemberElement);
+		addElement("callVariableAddMethod",callVariableAddMethodElement);
+		addElement("declareVariableAddMethod",declareVariableAddMethodElement);
 		addElement("declareVariableAsInlineList",declareVariableAsInlineListElement);
 		addElement("declareVariableWithAssignmentFinal",declareVariableWithAssignmentFinalElement);
 		addElement("declareVariableWithAssignmentNonFinal",declareVariableWithAssignmentNonFinalElement);
@@ -211,6 +245,8 @@ public class ExternalGenerator extends Generator {
 		addElement("declareStaticVariableWithAssignment",declareStaticVariableWithAssignmentElement);
 		addElement("declareStaticVariableWithoutAssignmentNonFinal",declareStaticVariableWithoutAssignmentNonFinalElement);
 		addElement("declareStaticVariableWithoutAssignmentFinal",declareStaticVariableWithoutAssignmentFinalElement);
+		addElement("callMethodAddMethod",callMethodAddMethodElement);
+		addElement("declareMethodAddMethod",declareMethodAddMethodElement);
 		addElement("declareStaticMethod",declareStaticMethodElement);
 		addElement("declareMethod",declareMethodElement);
 		addElement("declareInterfaceMethod",declareInterfaceMethodElement);
@@ -219,6 +255,8 @@ public class ExternalGenerator extends Generator {
 		addElement("declareNewClass",declareNewClassElement);
 		addElement("declareClass",declareClassElement);
 		addElement("declareOutputClass",declareOutputClassElement);
+		addElement("callSubClassAddMethod",callSubClassAddMethodElement);
+		addElement("declareSubClassAddMethod",declareSubClassAddMethodElement);
 		addElement("declareClassAsArgument",declareClassAsArgumentElement);
 		addElement("addMemberVariable",addMemberVariableElement);
 		addElement("addMemberMethod",addMemberMethodElement);

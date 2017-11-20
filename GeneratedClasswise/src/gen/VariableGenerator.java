@@ -14,6 +14,7 @@ import lists.*;
 public class VariableGenerator extends Generator {
 
 	private HashSet<String> definedVariableNames = new HashSet<String>();
+	private Integer variableIndex = 0;
 
 
 	public VariableGenerator(){
@@ -53,7 +54,8 @@ public class VariableGenerator extends Generator {
 				ret = new IVariableEntry(typeName,new IExactEntry(new StringEntry(declaration.get("variableName").getString())),assignment);
 			}
 			else {
-				ret = new EVariableEntry(typeName,new EExactEntry(new QuoteEntry(declaration.get("variableName").getString())),assignment);
+				ret = new EVariableEntry(typeName,new EExactEntry(new QuoteEntry(declaration.get("variableName").getString())),assignment,variableIndex);
+				variableIndex = variableIndex + 1;
 			}
 		}
 		else {
@@ -62,7 +64,8 @@ public class VariableGenerator extends Generator {
 				ret = new IVariableEntry(typeName,vName,assignment);
 			}
 			else {
-				ret = new EVariableEntry(typeName,vName,assignment);
+				ret = new EVariableEntry(typeName,vName,assignment,variableIndex);
+				variableIndex = variableIndex + 1;
 			}
 		}
 		if((declaration.get("WEAK") != null)){
@@ -113,6 +116,10 @@ public class VariableGenerator extends Generator {
 
 	public HashSet<String> getDefinedVariableNames(){
 		return definedVariableNames;
+	}
+
+	public Integer getVariableIndex(){
+		return variableIndex;
 	}
 
 	public String getName(){

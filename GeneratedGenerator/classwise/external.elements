@@ -126,8 +126,14 @@ declareMember
 					builder.append(\";\");
 				}
 			}"
-
-
+callVariableAddMethod
+	"
+		add_variable_" Variable Index "();"
+declareVariableAddMethod
+	"
+		private void add_variable_" Variable Index "() {
+	 		addVariable(" Variable Constructor ");
+	 	}"
 declareVariableAsInlineList
 	"new ExternalVariableEntry(false, " Type ",\"" Array "\", new ExternalStatement(new StringEntry(\"...\"), " Name "))"
 declareVariableWithAssignmentFinal
@@ -144,6 +150,14 @@ declareStaticVariableWithoutAssignmentNonFinal
 	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ")"
 declareStaticVariableWithoutAssignmentFinal
 	"new ExternalVariableEntry(true, " Type ",\"" Array "\", " Name ")"
+callMethodAddMethod
+	"
+		add_method_" Variable Index "();"
+declareMethodAddMethod
+	"
+		private void add_method_" Variable Index "() {
+	 		addMethod(" Variable Constructor ");
+	 	}"
 declareStaticMethod
 	"new ExternalMethodEntry(" Tabs ", true," Type ",\"" Array "\", " Name ", " Parameters ", \"" Throws "\", " Body ")"
 declareMethod
@@ -173,8 +187,13 @@ declareClass
 		new Entry(){
 			public void get(StringBuilder __BUILDER__){" ImportList"
 			}
-		}, " Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "}));
-	}
+		}, " Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ");	
+       /* Variables */" Variables " 
+	   /* Methods */" Methods " 
+	   /* Classes */" Classes "
+	}" Variable Add Methods "
+	" Method Add Methods "
+	" Class Add Methods "
 }"
 
 declareOutputClass
@@ -198,19 +217,35 @@ public class " Name " extends ExternalClassEntry {" Variables "\n" Methods "\n" 
 			" isInterface ", 
 			" Parent Class ", 
 			" Interfaces ",
-			" Header ",
-			Arrays.asList(new ExternalVariableEntry[]{" Variables "}), 
-			Arrays.asList(new ExternalMethodEntry[]{" Methods "}), 
-			Arrays.asList(new ExternalClassEntry[]{" Classes "}));
-	}
+			" Header ");
+       /* Variables */" Variables " 
+	   /* Methods */" Methods " 
+	   /* Classes */" Classes "
+	}" Variable Add Methods "
+	" Method Add Methods "
+	" Class Add Methods "
 }"
-
+callSubClassAddMethod
+	"
+		add_subclass_" SubClass Index "();"
+declareSubClassAddMethod
+	"
+		private void add_subclass_" SubClass Index "() {
+	 		addSubClass(" SubClass Constructor ");
+	 	}"
 declareClassAsArgument
 	"new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(" Package Name", 
 		new Entry(){
 			public void get(StringBuilder __BUILDER__){" ImportList"
 			}
-		}," Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ", Arrays.asList(new ExternalVariableEntry[]{" Variables "}), Arrays.asList(new ExternalMethodEntry[]{" Methods "}), Arrays.asList(new ExternalClassEntry[]{" Classes "})) ;}}"
+		}," Name ", " isInterface ", " Parent Class ", " Interfaces ", " Header ");
+       /* Variables */" Variables " 
+	   /* Methods */" Methods " 
+	   /* Classes */" Classes "
+	}" Variable Add Methods "
+	" Method Add Methods "
+	" Class Add Methods "
+}"
 
 
 

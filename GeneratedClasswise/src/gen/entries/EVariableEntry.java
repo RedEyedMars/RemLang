@@ -26,8 +26,10 @@ public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 	private ListEntry arrayType = (ListEntry)new ListEntry();
 	private Entry type = null;
 	private Entry assignment = null;
+	private String variableIndex = null;
 
-	public EVariableEntry(Entry iType,Entry iName,Entry iAssignment){
+	public EVariableEntry(Entry iType,Entry iName,Entry iAssignment,Integer iIndex){
+		variableIndex = iIndex.toString();
 		name = iName;
 		type = iType;
 		IImportable typeAsImportable = (IImportable)iType;
@@ -89,6 +91,9 @@ public class EVariableEntry implements Entry,IInnerable,IImportable,INameable,IF
 		return type;
 	}	public Entry getAssignment(){
 		return assignment;
+	}
+	public String getVariableIndex(){
+		return variableIndex;
 	}
 	public void setAssignment(Entry newAssignment){
 		assignment = newAssignment;

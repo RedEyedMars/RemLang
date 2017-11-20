@@ -341,6 +341,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				tabs = trueTab;
 			}
 		}
+		
 		public void add(ExternalStatement.Body otherBody){
 			otherBody.prefix = null;
 			otherBody.suffix = null;
@@ -416,10 +417,17 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				super.add(body);
 				//super.add(new ExternalStatement(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",body));
 			}
+			if(header != null){
+				for(ExternalVariableEntry variable:header.getContext().getVariables()){
+					body.getContext().add(variable);
+				}
+			}
 		}
 		@Override
 		public boolean add(ExternalStatement element){
-			return __BODY__.add(element);
+			boolean result = __BODY__.add(element);
+			element.setParentContext(context);
+			return result;
 		}
 
 		public ExternalStatement setBraces(String left, String right){

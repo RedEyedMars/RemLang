@@ -79,6 +79,9 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public static void main(String[] args0){}
 	public void __INIT__(){}
+	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader){
+		__SETUP__(initialPackageName, preImports, initialName, classType, initialParentClass, initialInterfaces,initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
+	}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
 
 		isInterface = classType.contains("interface");
@@ -227,15 +230,20 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void addSubClass(ExternalClassEntry subClass){
 		subClass.__INIT__();
-		ExternalContext.freeClass(subClass.getName());
 		classes.put(subClass.getName(), subClass);
 		classyclasses.put(subClass.getName()+"Class", subClass);
 		addSubImport(subClass);
 		subClass.isSubClass  = true;
 		subClass.enclosingClass = this;
 		//subClass.myContext.setParent(myContext);
-		ExternalClassEntry.classMap.put(subClass.getFullName(),subClass);
-		ExternalContext.getClassContext(subClass.getFullName()).setParent(subClass.myContext);
+		subClass.redoContext();
+	}
+	private void redoContext(){
+		ExternalClassEntry.classMap.put(getFullName(),this);
+		ExternalContext.getClassContext(getFullName()).setParent(myContext);
+		for(String className:classes.keySet()){
+			classes.get(className).redoContext();
+		}
 	}
 	public void addParentClass(ExternalClassEntry newParentClass){
 		bonifideParentClass = null;

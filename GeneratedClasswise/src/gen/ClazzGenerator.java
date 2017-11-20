@@ -14,6 +14,7 @@ import lists.*;
 public class ClazzGenerator extends Generator {
 
 	private HashSet<String> definedClassNames = new HashSet<String>();
+	private Integer classIndex = 0;
 
 
 	public ClazzGenerator(){
@@ -128,7 +129,8 @@ public class ClazzGenerator extends Generator {
 					actualName = declaration.get("className").get("variable_names").getString();
 				}
 			}
-			EClassEntry eret = new EClassEntry(packageName,declaration.get("objectType").getString(),actualName,className,declaration.get("templateTypeName"),parent,interfaces,variableBody,methodBody,context);
+			EClassEntry eret = new EClassEntry(packageName,declaration.get("objectType").getString(),actualName,className,declaration.get("templateTypeName"),parent,interfaces,variableBody,methodBody,context,classIndex);
+			classIndex = classIndex + 1;
 			for(Entry e:subClasses){
 				IInnerable eAsInnerable = (IInnerable)e;
 				if((eAsInnerable.getIsInner())){
@@ -149,6 +151,10 @@ public class ClazzGenerator extends Generator {
 
 	public HashSet<String> getDefinedClassNames(){
 		return definedClassNames;
+	}
+
+	public Integer getClassIndex(){
+		return classIndex;
 	}
 
 	public String getName(){

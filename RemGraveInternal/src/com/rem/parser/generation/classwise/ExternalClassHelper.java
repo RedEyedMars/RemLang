@@ -29,6 +29,9 @@ public class ExternalClassHelper {
 										0, false, new StringEntry("void"), new StringEntry("remove"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("removeAll"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
 										0, false, new StringEntry("Boolean"), new StringEntry("isEmpty"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
@@ -72,6 +75,9 @@ public class ExternalClassHelper {
 										0, false, new StringEntry("void"), new StringEntry("remove"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
+										0, false, new StringEntry("void"), new StringEntry("removeAll"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
 										0, false, new StringEntry("Boolean"), new StringEntry("isEmpty"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
@@ -82,6 +88,9 @@ public class ExternalClassHelper {
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
 								new ExternalMethodEntry(
 										0, false, new StringEntry("Integer"), new StringEntry("size"),
+										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body()),
+								new ExternalMethodEntry(
+										0, false, new StringEntry("T1"), new StringEntry("get"),
 										new ArrayList<ExternalVariableEntry>(),new ExternalStatement.Body())
 								)
 								),new ArrayList<ExternalClassEntry>()				

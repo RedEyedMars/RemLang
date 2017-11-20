@@ -454,8 +454,9 @@ entry e_body uses innerable importable
 entry e_variable uses innerable importable nameable finalizable statickable inlinelistable arraytypeable
 	entry type = null
 	entry assignment  = null
-	constructor takes iType as Entry, iName as Entry, iAssignment as Entry
-		
+	var variableIndex = null
+	constructor takes iType as Entry, iName as Entry, iAssignment as Entry, iIndex as Integer
+		set variableIndex = 'iIndex
 		set name = iName
 		set type = iType
 		var typeAsImportable as importable = iType
@@ -485,7 +486,9 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 	entry methodBody = null
 	entry sThrows = null
 	var pas = false
-	constructor takes iType as Entry, iName as Entry, iParametersAreStatement as Boolean, iParameters as ListEntry, iThrows as ListEntry, iMethodBody as ListEntry, iContext as context
+	var methodIndex = null
+	constructor takes iType as Entry, iName as Entry, iParametersAreStatement as Boolean, iParameters as ListEntry, iThrows as ListEntry, iMethodBody as ListEntry, iContext as context, iIndex as Integer
+		set methodIndex = 'iIndex
 		set pas = iParametersAreStatement
 		set name = iName
 		set type = iType
@@ -528,6 +531,7 @@ entry e_method uses innerable importable contextualizable nameable interfaceable
 				context getTab
 		e_tabs set :'tabs;
 entry e_class uses innerable nameable importable contextualizable fileable interfaceable globalizable
+	var classIndex = null
 	var packageName as Entry = null
 	var externalPackageName as Entry = null
 	entry asStatic = \""
@@ -549,6 +553,9 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 	entry externalMethods = {}
 	entry internalSubClasses = {}
 	entry externalSubClasses = {}
+	entry externalConstructorVariableAddMethodCalls = {}
+	entry externalConstructorMethodAddMethodCalls = {}
+	entry externalConstructorSubClassAddMethodCalls = {}
 	entry externalConstructorVariables = {}
 	entry externalConstructorMethods = {}
 	entry externalConstructorSubClass = {}
@@ -558,7 +565,8 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 	var isWeak      = false
 	var hasOutput   = false
 	var completeUnsulliedName as ListEntry = {}
-	constructor takes iPackageName as Entry, iType, sName, iName as Entry, templateTypeName as IToken, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context
+	constructor takes iPackageName as Entry, iType, sName, iName as Entry, templateTypeName as IToken, iParent as Entry, iInterfaces as ListEntry, iVariables as ListEntry, iMethods as ListEntry, iContext as context, iIndex as Integer
+		set classIndex = 'iIndex
 		set isInner = false
 		set packageName = iPackageName
 		set name = \sName
@@ -636,24 +644,29 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 				this addMethod
 					nev
 		set context = iContext
+		var addMethodDelimiter
+			""
 		internalVariables setDelimiter :"";
 		externalVariables setDelimiter :"";
 		internalMethods setDelimiter :"";
 		externalMethods setDelimiter :"";
 		internalSubClasses setDelimiter :"";
 		externalSubClasses setDelimiter :"";
-		externalConstructorVariables setDelimiter :",";
-		externalConstructorMethods setDelimiter :",";
-		externalConstructorSubClass setDelimiter :",";
+		externalConstructorVariableAddMethodCalls setDelimiter :addMethodDelimiter;
+		externalConstructorMethodAddMethodCalls setDelimiter :addMethodDelimiter;
+		externalConstructorSubClassAddMethodCalls setDelimiter :addMethodDelimiter;
+		externalConstructorVariables setDelimiter :"";
+		externalConstructorMethods setDelimiter :"";
+		externalConstructorSubClass setDelimiter :"";
 		
 		set getHeader = i_exact:(2 external getCompleteHeader{asStatic classType externalName externalTemplateTypeName});
 		
-		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		set asFile = i_exact:external declareClass{name name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariableAddMethodCalls externalConstructorMethodAddMethodCalls externalConstructorSubClassAddMethodCalls externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
 		var classwizeImports as Entry
 			classwise getInternalImports
-		set asInternalFile = i_exact:external declareOutputClass{classwizeImports name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
+		set asInternalFile = i_exact:external declareOutputClass{classwizeImports name internalVariables internalMethods internalSubClasses externalSubClasses externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariableAddMethodCalls externalConstructorMethodAddMethodCalls externalConstructorSubClassAddMethodCalls externalConstructorVariables externalConstructorMethods externalConstructorSubClass };
 		set asFileVariable = i_exact: external declareNewClass { name } ;
-		set asArgument = i_exact:external declareClassAsArgument{externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
+		set asArgument = i_exact:external declareClassAsArgument{externalPackageName importPackage->EXTERNAL externalName ``iType`` externalParentEntry externalInterfacesEntry getHeader externalConstructorVariableAddMethodCalls externalConstructorMethodAddMethodCalls externalConstructorSubClassAddMethodCalls externalConstructorVariables externalConstructorMethods externalConstructorSubClass};
 	addVariable takes i as i_variable
 		internalVariables+=(2 internal declareMemberComplete{i})
 		var iAssignment as Entry
@@ -674,7 +687,11 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 			e setAssignment
 				e_new_obj:eType {};
 		externalVariables+=(2 internal declareMemberClass{eName eName external declareMember{e_tabs e}})
-		externalConstructorVariables+= e
+		
+		var eId as String
+			e getVariableIndex
+		externalConstructorVariableAddMethodCalls += external callVariableAddMethod {\eId}
+		externalConstructorVariables += external declareVariableAddMethod {\eId e}
 		this addImports
 			e getImportPackage
 	addMethod takes i as i_method
@@ -684,7 +701,10 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 			e getName
 		e setIsInterface :isInterface;
 		externalMethods += (1 internal declareMemberMethod{eName e})
-		externalConstructorMethods+= e
+		var eId as String
+			e getMethodIndex
+		externalConstructorMethodAddMethodCalls += external callMethodAddMethod {\eId}
+		externalConstructorMethods += external declareMethodAddMethod {\eId e}
 		this addImports
 			e getImportPackage
 	addSubClass takes i as i_class
@@ -705,7 +725,10 @@ entry e_class uses innerable nameable importable contextualizable fileable inter
 		var eAsFile as Entry
 			e getAsFile
 		externalSubClasses+=(1 internal declareMemberClass{ePlainName ePlainName eAsFile})
-		externalConstructorSubClass+= e
+		var eId as String
+			e getClassIndex
+		externalConstructorSubClassAddMethodCalls += external callSubClassAddMethod {\eId}
+		externalConstructorSubClass += external declareSubClassAddMethod {\eId e}
 		this addImports
 			e getImportPackage
 		e setIsSubClass : completeName completeUnsulliedName true;

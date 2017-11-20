@@ -754,6 +754,8 @@ clazz
 		new HashSet<String>
 	aux addDefinedClassName takes className
 		definedClassNames += className
+	var classIndex
+		0
 	generate declaration takes mustInner as Boolean, parentContext as context
 		var isInner = false
 		if mustInner is true
@@ -825,7 +827,9 @@ clazz
 				else
 					set className = \'declaration->className->variable_names
 					set actualName = 'declaration->className->variable_names
-			var eret = e_class: packageName 'declaration->objectType actualName className declaration->templateTypeName parent interfaces variableBody methodBody context; 
+			var eret = e_class: packageName 'declaration->objectType actualName className declaration->templateTypeName parent interfaces variableBody methodBody context classIndex;
+			set classIndex
+				classIndex + 1
 			each e as Entry in subClasses
 				var eAsInnerable as innerable = e
 				if eAsInnerable does getIsInner
@@ -1371,7 +1375,9 @@ method
 		methodEntry get
 			methodName
 		definedMethodNames add
-			'methodName	
+			'methodName
+	var methodIndex
+		0
 	generate declaration takes isInner as Boolean, parentContext as context
 		declaration methodDefinition to element
 			return
@@ -1417,7 +1423,9 @@ method
 			if isInner is true
 				set ret = i_method: typeName i_exact:\'definition->methodName; parameters methodThrowsStatement methodBody  parentContext;
 			else
-				var eMethod = e_method: typeName e_exact:\'definition->methodName; parametersAreStatement parameters methodThrowsStatement methodBody parentContext;
+				var eMethod = e_method: typeName e_exact:\'definition->methodName; parametersAreStatement parameters methodThrowsStatement methodBody parentContext methodIndex;
+				set methodIndex
+					methodIndex + 1
 				if definition->static is not null
 					eMethod setIsStatic : true;
 				set ret = eMethod
@@ -1429,7 +1437,9 @@ method
 			if isInner is true
 				set ret = i_method: typeName vName parameters  methodThrowsStatement methodBody  parentContext;
 			else
-				var eMethod = e_method: typeName vName parametersAreStatement parameters methodThrowsStatement methodBody parentContext;
+				var eMethod = e_method: typeName vName parametersAreStatement parameters methodThrowsStatement methodBody parentContext methodIndex;
+				set methodIndex
+					methodIndex + 1
 				if definition->static is not null
 					eMethod setIsStatic : true;
 				set ret = eMethod
@@ -1444,6 +1454,7 @@ method
 variable
 	var definedVariableNames
 		new HashSet<String>
+	var variableIndex = 0
 	aux addDefinedVariableName takes variableEntry as Entry
 		var variableName
 			new StringBuilder
@@ -1471,7 +1482,9 @@ variable
 			if isInner is true
 				set ret = i_variable: typeName i_exact:\'declaration->variableName; assignment;
 			else
-				set ret = e_variable: typeName e_exact:``'declaration->variableName``; assignment;
+				set ret = e_variable: typeName e_exact:``'declaration->variableName``; assignment variableIndex;
+				set variableIndex
+					variableIndex + 1
 		else
 			var vName as Entry
 				classwise generateNameVar
@@ -1480,7 +1493,9 @@ variable
 			if isInner is true
 				set ret = i_variable: typeName vName assignment;
 			else
-				set ret = e_variable: typeName vName assignment;
+				set ret = e_variable: typeName vName assignment variableIndex;
+				set variableIndex
+					variableIndex + 1
 		if declaration->WEAK is not null
 			var retAsFinalizable as finalizable = ret
 			retAsFinalizable setIsFinal :false;

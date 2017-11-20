@@ -15,4 +15,5 @@ class "test" X {
   String x = new String[10];
   String[] getArray(){
   }
+  class Y //{}
 }

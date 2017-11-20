@@ -35,6 +35,7 @@ public class ExternalContext {
 
 	protected ExternalContext   parentContext = null;
 	protected boolean isBody = false;
+	protected List<ExternalVariableEntry> variables = new ArrayList<ExternalVariableEntry>();
 	protected Map<String, ExternalContext > links = new HashMap<String, ExternalContext>();
 	protected Map<String, String > linkedTypes = new HashMap<String, String>();
 	protected ExternalStatement ender;
@@ -76,6 +77,7 @@ public class ExternalContext {
 	}
 	public void add(ExternalVariableEntry entry){
 		add(entry.getName(),entry.getTypeName(), entry.getClassContext());
+		variables.add(entry);
 	}
 	public void add(ExternalMethodEntry entry){
 		entry.getHeaderContext().setParent(this);
@@ -97,6 +99,9 @@ public class ExternalContext {
 	}
 	public Boolean hasEnder(){
 		return this.ender != null;
+	}
+	public List<ExternalVariableEntry> getVariables(){
+		return variables;
 	}
 	public ExternalStatement getEnder(){
 		return ender;
@@ -190,4 +195,5 @@ public class ExternalContext {
 			System.out.println(this);
 		}
 	}
+
 }
