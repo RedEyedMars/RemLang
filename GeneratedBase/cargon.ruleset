@@ -40,6 +40,7 @@ cargon_token-s
 	"\\\"" as REGEX_QUOTE
 	"\\\'" as REGEX_APOS
 	"@" as PASS_SYMBOL
+	"global" as GLOBAL
 
 uote is silent
 	CHAR_QUOTE quote CHAR_QUOTE 
@@ -80,7 +81,7 @@ rule is silent
 	NAME as ruleName ( RULE_PARAMETERS | EQUALS_RULE_PARAMETERS )? ( NEWTAB | EQUALSIGN ) definition
 
 list is silent
-	NAME as listName in list_names LIST ( NEWTAB uote )*
+	NAME as listName in list_names GLOBAL? LIST (WITH NAME as listRuleName)? ( NEWTAB uote )*
 
 
 definition

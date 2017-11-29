@@ -102,6 +102,8 @@ class 'packageName'."parser" Parser {
 > Map<String, Body > ruleForeBodies = new HashMap<String, Body >();
 > Set<String > silentRules = new HashSet<String>();
 > Set<String > listNames = new HashSet<String>();
+> Set<String > globalListNames = new HashSet<String>();
+> Map<String, String> listFirstPassRules = new HashMap<String, String>();
 > Map<String, Set<String>> listNamesInRule = new HashMap<String, Set<String>>();
 > Map<String, String> handleListAdditions = new HashMap<String, String>();
 > Map<String, Body > handleListAdditionAftBodies = new HashMap<String, Body >();
@@ -163,6 +165,8 @@ class 'packageName'."parser" Parser {
       \int _fileId = fileNames.size();
       fileNames.add(_fileName);
       "this._fileName" = _fileName;
+      _furthestPosition = 0;
+      _result = null;
       _position = 0;
       _state = SUCCESS;
       
@@ -250,18 +254,6 @@ class 'packageName'."parser" Parser {
     else {
       max = maxClose;
     }
-    ~Integer i = max\-1;
-    while i > 1 {
-      Integer index = i;
-      Integer jndex = i\-1;
-      Parser->Context += ~\int "_readInput_"+'index' = "0"
-      readInputBody.add(|"_readInput_"+'index' = "_readInput_"+'jndex';|);
-      i \-= 1;
-    }
-    if max > 0 {
-      Parser->Context += ~\int "_readInput_1" = "0"
-      readInputBody.add(|"_readInput_1" = "_readInput";|);
-    }
     Body readBracesBody = new Body ();
     readInputBody.add(|
       "_inputBuffer".append("(char)_readInput");
@@ -284,8 +276,53 @@ class 'packageName'."parser" Parser {
       }
       else if 'notQuoting' && 'notEscaping' `readBracesBody`
       "_position" = "_position" \+ 1;|);
-    i = maxOpen;
+    ~Integer i = maxOpen;
     while i > 0 {
+    if declaredBraceCloseValues.containsKey(i) {
+        Map<String,List<Integer>> closeMap = declaredBraceCloseValues.get(i);
+        for String key : closeMap.keySet() {
+          Body closeBody = new Body ();
+          Statement closeHeader = new Statement ();
+          ~Integer j = i;
+          closeHeader.set("&&");
+          Integer jndexFirst = j;
+          if new Character(key.charAt(jndexFirst\-1)).toString().equals("\'") {
+            closeHeader.add(|"_readInput" == "'\\"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          else {
+            closeHeader.add(|"_readInput" == "'"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          j \-= 1;
+          while j > 0 {
+            Integer jndex = j;
+            if new Character(key.charAt(j\-1)).toString().equals("\'") {
+              closeHeader.add(|"_readInput_"+'jndex' == "'\\"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            else {
+              closeHeader.add(|"_readInput_"+'jndex' == "'"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            j \-= 1;
+          }
+          readBracesBody.add(|if `closeHeader` `closeBody`|);
+          if key.length() == 1 {
+            for Integer id : closeMap.get(key) {
+              closeBody.add(|
+                if "!brace_open_"+'id'.isEmpty() {
+                  "brace_"+'id'.put("brace_open_"+'id'.pop(),"_position");
+                }|);
+            }
+          }
+          else {
+            Integer keyOffset = key.length()\-1;
+            for Integer id : closeMap.get(key) {
+              closeBody.add(|
+                if "!brace_open_"+'id'.isEmpty() {
+                  "brace_"+'id'.put("brace_open_"+'id'.pop(),"_position"\-'keyOffset');
+                }|);
+            }
+          }
+        }
+      }
       if declaredBraceOpenValues.containsKey(i) {
         Map<String,List<Integer>> openMap = declaredBraceOpenValues.get(i);
         for String key : openMap.keySet() {
@@ -313,46 +350,22 @@ class 'packageName'."parser" Parser {
           }
           readBracesBody.add(|
             if `openHeader` `openBody`|);
-          for Integer id : openMap.get(key) {
-            openBody.add(|
-              "brace_open_"+'id'.push("_position");|);
-          }
-        }
-      }
-      if declaredBraceCloseValues.containsKey(i) {
-        Map<String,List<Integer>> closeMap = declaredBraceCloseValues.get(i);
-        for String key : closeMap.keySet() {
-          Body closeBody = new Body ();
-          Statement closeHeader = new Statement ();
-          ~Integer j = i;
-          closeHeader.set("&&");
-          Integer jndexFirst = j;
-          if new Character(key.charAt(jndexFirst\-1)).toString().equals("\'") {
-            closeHeader.add(|"_readInput" == "'\\"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          if key.length() == 1 {
+            for Integer id : openMap.get(key) {
+              openBody.add(|
+                "brace_open_"+'id'.push("_position");|);
+            }
           }
           else {
-            closeHeader.add(|"_readInput" == "'"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
-          }
-          j \-= 1;
-          while j > 0 {
-            Integer jndex = j;
-            if new Character(key.charAt(j\-1)).toString().equals("\'") {
-              closeHeader.add(|"_readInput_"+'jndex' == "'\\"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            Integer keyOffset = key.length()\-1;
+            for Integer id : openMap.get(key) {
+              openBody.add(|
+                "brace_open_"+'id'.push("_position"\-'keyOffset');|);
             }
-            else {
-              closeHeader.add(|"_readInput_"+'jndex' == "'"+'new Character(key.charAt(jndex\-1))'+"'"|);
-            }
-            j \-= 1;
-          }
-          readBracesBody.add(|if `closeHeader` `closeBody`|);
-          for Integer id : closeMap.get(key) {
-            closeBody.add(|
-              if "!brace_open_"+'id'.isEmpty() {
-                "brace_"+'id'.put("brace_open_"+'id'.pop(),"_position");
-              }|);
           }
         }
       }
+      
       i \-= 1;
     }
     i = max\-1;
@@ -384,40 +397,48 @@ class 'packageName'."parser" Parser {
     Parser->Context += Parser->NameList 'input->"listName"'+"_additions" = null
     Parser->Context += Map<Integer, Parser\>NameList > 'input->"listName"'+"_first_passes" = new HashMap<Integer, Parser\>NameList>() 
     listNames.add('input->"listName"');
+    if input->"GLOBAL" != null {
+      globalListNames.add('input->"listName"');
+    }
+    if input->"listRuleName" != null {
+      listFirstPassRules.put('listName','input->"listRuleName"');
+    }
     input : element : quote {
       Parser->*"parseFile".appendToBody({
        'listName'+"_root".add('' 'element' '');
       });
     }
   }
-> Body getListDeclarations(String ruleName){
+> Body getListDeclarations(String ruleName, boolean hasSecondPass){
     Body listDeclarations = new Body ();
       for String listName: listNames {
-        String subListName = 'listName'+"_"+'ruleName' ;
-        if variableDeclarationNames.add(subListName){
-          Parser->Context += Parser->NameList 'subListName' = null
-        }
-        
-        listDeclarations.add(|'subListName' = 'listName';|);
-        listDeclarations.add(|
-          if "_pass" == "FIRST_PASS" {
-            'listName' = new Parser->NameList->Child('listName');
+        if globalListNames.contains(listName) == false{
+          String subListName = 'listName'+"_"+'ruleName' ;
+          if variableDeclarationNames.add(subListName){
+            Parser->Context += Parser->NameList 'subListName' = null
           }
-          else if "_pass" == "SECOND_PASS" {
-            'listName' = 'listName'+"_first_passes".get("_position");
-          }|);
+          listDeclarations.add(|'subListName' = 'listName';|);
+          if hasSecondPass {
+            listDeclarations.add(|
+              if "_pass" == "SECOND_PASS" {
+                'listName' = new Parser->NameList->Child('listName');
+              }|);
+          }
+          else {
+            listDeclarations.add(|
+              'listName' = new Parser->NameList->Child('listName');|);
+          }
+        }
       }
     return listDeclarations;
   }
 > Body getListReallocations(String ruleName){
     Body listReallocations = new Body ();
       for String listName: listNames {
-        String subListName = 'listName'+"_"+'ruleName' ;
-        listReallocations.add(|
-          if "_pass" == "FIRST_PASS" {
-            'listName'+"_first_passes".put("_position_" + 'ruleName' + "_brace", 'listName');
-          }
-          'listName' = 'subListName';|);
+        if globalListNames.contains(listName) == false {
+          String subListName = 'listName'+"_"+'ruleName' ;
+          listReallocations.add(|'listName' = 'subListName';|);
+        }
       }
     return listReallocations;
   }
@@ -451,27 +472,31 @@ class 'packageName'."parser" Parser {
       if declaredBracePasses.containsKey(ruleName) {
       	if declaredBracePasses.get(ruleName) == 1 {
           withinBraces.add(|if "_pass" == "FIRST_PASS" `withinBraces`|);
+          withinBraces.add(\getListDeclarations(ruleName,false));
         }
         else if declaredBracePasses.get(ruleName) == 2 {
-          currentOption.add(|
-            if "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.containsKey("_position") {
+          Body completeBraceBody = new Body ();
+          completeBraceBody.add(\getListDeclarations(ruleName,true));
+          completeBraceBody.add(|
               if "_pass" == "SECOND_PASS" `withinBraces`
               else {
                 "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position") \+ 'declaredBraceCloseLengths.get(ruleName)';
                 while `optionWhile` {
                   "++_position";
                 }
-              }
-            }|);
+              }|);
+          
+          currentOption.add(|
+            if "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.containsKey("_position") `completeBraceBody`|);
         }
       }
       else {
         currentOption.add(|if "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.containsKey("_position") `withinBraces`|);
+        withinBraces.add(\getListDeclarations(ruleName,false));
       }
       currentOption = withinBraces;
       String currentPositionValue = "_position_" \+ 'ruleName' \+ "_brace";
       
-      currentOption.add(\getListDeclarations(ruleName));
       currentOption.add(|"_inputLength" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position");|);
       currentOption.add(|\int 'currentPositionValue' = "_position";|);
       currentOption.add(|"_position" \+= 'declaredBraceOpenLengths.get(ruleName)';|);
@@ -550,7 +575,8 @@ class 'packageName'."parser" Parser {
       }
       else {
         "_state" = "SUCCESS";
-        "_result_acceptor".add(new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'ruleName' ''));
+        "_result_acceptor".add("_result");
+        "_result_acceptor".add(new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' "Did not reach end of braces" ''));
         "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position_"+'ruleName'+"_brace")\+'declaredBraceCloseLengths.get(ruleName)';
         "_succeedOnEnd" = false;
         while `optionWhile` {
@@ -571,7 +597,6 @@ class 'packageName'."parser" Parser {
           previousOption.add(\getListReallocations(ruleName));
         }
         for String listName: listNamesInRule.get(forRuleName) {
-          String subListName = 'listName'\+"_additions_"\+'ruleName';
           removeAdditionsBody.add(|if 'listName'+"_additions" != null {
             'listName'.removeAll('listName'+"_additions");
             'listName'+"_additions".clear();
@@ -580,6 +605,8 @@ class 'packageName'."parser" Parser {
             'listName'.addAll('listName'+"_additions");
             'listName'+"_additions".clear();
             }|);
+          
+          String subListName = 'listName'\+"_additions_"\+'ruleName';
           previousOption.add(|'listName'+"_additions" = 'subListName';|);
         }
       }
@@ -820,6 +847,22 @@ class 'packageName'."parser" Parser {
     : braced {
       String subRuleName = \define(query, parentRuleName);
       rule.add(|"parse_"+'subRuleName'();|);
+      if element->"listName"!=null {
+        rule.add(|if "_state" == "SUCCESS" {
+          String _value = "_token".getLastValue();
+          if _value!=null && 'element->"listName"'.add(_value) {
+            'element->"listName"'+"_additions".add(_value);
+          }
+        }|);
+        if listNamesInRule.containsKey(parentRuleName) == false {
+          listNamesInRule.put(parentRuleName, new HashSet<String>());
+        }
+        listNamesInRule.get(parentRuleName).add('element->"listName"');
+        handleListAdditions.put(ruleName, parentRuleName);
+        if handleListAdditionAftBodies.containsKey(ruleName) == false {
+          handleListAdditionAftBodies.put(ruleName,new Body ());
+        }
+      }
     } 
     : quoteToken {
       String quote = 'element->"quoteToken"->"quote"';
@@ -1006,17 +1049,37 @@ class 'packageName'."parser" Parser {
             }
           }
         }
-        rule.add(|
+        Body listRuleBody;
+        if listFirstPassRules.containsKey('listName') {
+          listRuleBody = new Body ();
+          rule.add(|if "_pass" == "FIRST_PASS" { "parse_"+'listFirstPassRules.get(listName)'(); }|);
+          rule.add(|else if "_pass" == "SECOND_PASS" `listRuleBody`|);
+        }
+        else {
+          listRuleBody = rule;
+        }
+        String isNameableCharacter = "_next_char == 95 || (_next_char >= 48 && _next_char <= 57 ) || (_next_char >= 65 && _next_char <= 90 ) || (_next_char >= 97 && _next_char <= 122 )"; 
+        listRuleBody.add(|
           "_list_name_result" = 'listName'.get("_position","_inputLength","_inputArray");
           if "_list_name_result" != null {
-            "_token".add("_position",new Tokens->Name->'newTokenClassName'("_list_name_result"));
-            "_position" \+= "_list_name_result".length();
-            while `optionWhile` {
-              "++_position";
+            if "_position"\+"_list_name_result".length() < "_inputLength" {
+              int _next_char = "_inputArray"["_position"\+"_list_name_result".length()];
+              if 'isNameableCharacter' {
+                "_state" = "FAILED";
+              }
+            }
+            if "_state" == "SUCCESS" {
+              "_token".add("_position",new Tokens->Name->'newTokenClassName'("_list_name_result"));
+              "_position" \+= "_list_name_result".length();
+              while `optionWhile` {
+                "++_position";
+              }
             }
           }
           else {
             "_state" = "FAILED";
+          }
+          if "_state" == "FAILED" {
             if "_position" >= "_furthestPosition" {
               "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'listName' '');
               "_furthestPosition" = "_position";
@@ -1575,12 +1638,21 @@ class 'packageName'."parser" Parser {
       NameList parentList = null;
       String get(\int position, \int length, 'charArray' input){
         String result = \super.get(position,length,input);
-        if result != null {
-          return result;
-        }
-        else {
-          return parentList.get(position,length,input);
-        }
+        String parentResult = parentList.get(position,length,input); 
+		if result!=null {
+		  if parentResult == null {
+			return result;
+		  }
+		  else if parentResult.length()<result.length() {
+			return result;
+		  }
+		  else {
+			return parentResult;
+		  }
+		}
+		else {
+		  return parentResult;
+		}
       }
       Set<String> list(){
         Set<String> set = new HashSet<String>();
@@ -1688,7 +1760,12 @@ class 'packageName'."parser" Parser {
         }
       }
       String toString(){
-        return '' "Passed:\\n\\t" '' \+\super.toString() ;
+        if fileName != null {
+          return '' "Passed:\\n\\t" '' \+\super.toString() ;
+        }
+        else {
+          return null;
+        }
       }
     }
     class Fail / Result / {
@@ -1706,8 +1783,11 @@ class 'packageName'."parser" Parser {
       String toString(){
         StringBuilder builder = new StringBuilder();
         for Parser->Result result: results {
-          builder.append('' "\\n" '');
-          builder.append(result.toString());
+          String resultString = result.toString();
+          if resultString != null {
+            builder.append('' "\\n" '');
+            builder.append(resultString);
+          }
         }
         return \super.toString()\+builder.toString();
       }

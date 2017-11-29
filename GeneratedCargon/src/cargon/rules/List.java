@@ -20,7 +20,15 @@ public class List extends ConcreteRule {
 				new ChainParser(
 					new AddTokenToListParser(
 						CargonTokens.NAME,"listName","list_names"),
+					new OptionalParser(
+							CargonTokens.GLOBAL),
 					CargonTokens.LIST,
+					new OptionalParser(
+							
+								new ChainParser(
+									CargonTokens.WITH,
+									new AddTokenParser(
+										CargonTokens.NAME,"listRuleName"))),
 					new ManyParser(
 							
 								new ChainParser(

@@ -54,8 +54,13 @@ public class Tokens extends ExternalClassEntry {
 			new StringEntry("Plain").get(builder);
 			new StringEntry("").get(builder);
 		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{}), Arrays.asList(new ExternalClassEntry[]{}));
+	});	
+       /* Variables */ 
+	   /* Methods */ 
+	   /* Classes */
 	}
+	
+	
 }
 	public final Name NameClass = new Name();
 	public class Name extends ExternalClassEntry {
@@ -76,8 +81,13 @@ public class Tokens extends ExternalClassEntry {
 			new StringEntry("Name").get(builder);
 			new StringEntry("").get(builder);
 		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{}), Arrays.asList(new ExternalClassEntry[]{}));
+	});	
+       /* Variables */ 
+	   /* Methods */ 
+	   /* Classes */
 	}
+	
+	
 }
 	public final Rule RuleClass = new Rule();
 	public class Rule extends ExternalClassEntry {
@@ -98,8 +108,13 @@ public class Tokens extends ExternalClassEntry {
 			new StringEntry("Rule").get(builder);
 			new StringEntry("").get(builder);
 		}
-	}, Arrays.asList(new ExternalVariableEntry[]{}), Arrays.asList(new ExternalMethodEntry[]{}), Arrays.asList(new ExternalClassEntry[]{}));
+	});	
+       /* Variables */ 
+	   /* Methods */ 
+	   /* Classes */
 	}
+	
+	
 }
 
 	public void __INIT__(){
@@ -124,9 +139,23 @@ public class Tokens extends ExternalClassEntry {
 			new StringEntry("Tokens").get(builder);
 			new StringEntry("").get(builder);
 		}
-	},
-			Arrays.asList(new ExternalVariableEntry[]{}), 
-			Arrays.asList(new ExternalMethodEntry[]{}), 
-			Arrays.asList(new ExternalClassEntry[]{MainFlow.classes.TokensClass.PlainClass,MainFlow.classes.TokensClass.NameClass,MainFlow.classes.TokensClass.RuleClass}));
+	});
+       /* Variables */ 
+	   /* Methods */ 
+	   /* Classes */
+		add_subclass_15();
+		add_subclass_16();
+		add_subclass_17();
 	}
+	
+	
+		private void add_subclass_15() {
+	 		addSubClass(MainFlow.classes.TokensClass.PlainClass);
+	 	}
+		private void add_subclass_16() {
+	 		addSubClass(MainFlow.classes.TokensClass.NameClass);
+	 	}
+		private void add_subclass_17() {
+	 		addSubClass(MainFlow.classes.TokensClass.RuleClass);
+	 	}
 }

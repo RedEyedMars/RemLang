@@ -53,7 +53,7 @@ public class MainFlow extends FlowController  {
 	protected final String __VAR__packageName = "com.rem.crg";
 	protected final String __VAR__charArray = "char[]";
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args)  {
 		if(args.length==1) {
 	new MainFlow().parse(args[0]);
 		}
@@ -61,14 +61,14 @@ public class MainFlow extends FlowController  {
 	System.err.println("No filename provided!");
 		}
 	}
-	public List getRules() {
+	public List getRules()  {
 		return MainFlow.variables.get_parserRules();
 	}
-	public void assignListElementNames(final ParseContext context,final IToken root) {
+	public void assignListElementNames(final ParseContext context,final IToken root)  {
 	}
-	public void setup(final ParseContext data) {
+	public void setup(final ParseContext data)  {
 	}
-	public void generate(final ParseContext data) {
+	public void generate(final ParseContext data)  {
 		String projectName = data.getFileName();
 		final Integer dotIndex = projectName.indexOf(".");
 		if (dotIndex > -1 ) {
@@ -90,55 +90,55 @@ public class MainFlow extends FlowController  {
 		MainFlow.classes.ParserClass.output();
 		output(data);
 	}
-	public IParser getRootParser() {
+	public IParser getRootParser()  {
 		return __VAR__rootParser;
 	}
-	public IParser get_rootParser() {
+	public IParser get_rootParser()  {
 		return __VAR__rootParser;
 	}
-	public List getListnames() {
+	public List getListnames()  {
 		return __VAR__listnames;
 	}
-	public List get_listnames() {
+	public List get_listnames()  {
 		return __VAR__listnames;
 	}
-	public List getParserRules() {
+	public List getParserRules()  {
 		return __VAR__parserRules;
 	}
-	public List get_parserRules() {
+	public List get_parserRules()  {
 		return __VAR__parserRules;
 	}
-	public RegexParser getLazyNameParser() {
+	public RegexParser getLazyNameParser()  {
 		return __VAR__lazyNameParser;
 	}
-	public RegexParser get_lazyNameParser() {
+	public RegexParser get_lazyNameParser()  {
 		return __VAR__lazyNameParser;
 	}
-	public ExternalStatement.Body getVariableDeclarations() {
+	public ExternalStatement.Body getVariableDeclarations()  {
 		return __VAR__variableDeclarations;
 	}
-	public ExternalStatement.Body get_variableDeclarations() {
+	public ExternalStatement.Body get_variableDeclarations()  {
 		return __VAR__variableDeclarations;
 	}
-	public Set<String> getVariableDeclarationNames() {
+	public Set<String> getVariableDeclarationNames()  {
 		return __VAR__variableDeclarationNames;
 	}
-	public Set<String> get_variableDeclarationNames() {
+	public Set<String> get_variableDeclarationNames()  {
 		return __VAR__variableDeclarationNames;
 	}
-	public String getPackageName() {
+	public String getPackageName()  {
 		return __VAR__packageName;
 	}
-	public String get_packageName() {
+	public String get_packageName()  {
 		return __VAR__packageName;
 	}
-	public String getCharArray() {
+	public String getCharArray()  {
 		return __VAR__charArray;
 	}
-	public String get_charArray() {
+	public String get_charArray()  {
 		return __VAR__charArray;
 	}
-	public Generator[] getGenerators() {
+	public Generator[] getGenerators()  {
 		final MainFlow self = this;
 		return new Generator[]{
 		new Generator(){
@@ -177,7 +177,7 @@ public class MainFlow extends FlowController  {
 			}
 		}};
 	}
-	private String __ROOT_DIRECTORY__ = ".";
+	public static String __ROOT_DIRECTORY__ = ".";
 	@Override
 	public void initializeFlowController(){
 	  MainFlow.variables = this;
