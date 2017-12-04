@@ -47,8 +47,9 @@ public class JobCreator extends Thread{
 			if(creator==null){
 				return;
 			}
-			while((creator.jobsStarted==0&&creator!=null)||((creator.jobsFinished<creator.jobsStarted||!creator.readyJobs.isEmpty())&&creator!=null)){
-				synchronized(creator.jobsMonitor){
+
+			synchronized(creator.jobsMonitor){
+				while((creator.jobsStarted==0&&creator!=null)||((creator.jobsFinished<creator.jobsStarted||!creator.readyJobs.isEmpty())&&creator!=null)){
 					creator.jobsMonitor.wait();
 				}
 			}
@@ -92,14 +93,14 @@ public class JobCreator extends Thread{
 			allProcessors.get(0).start();
 			while(creator!=null){
 				status = WAITING_FOR_JOBS;
-				while(readyJobs.isEmpty()&&creator!=null){
-					synchronized(readyJobs){
+				synchronized(readyJobs){
+					while(readyJobs.isEmpty()&&creator!=null){
 						readyJobs.wait();
 					}				
 				}
 				status = WAITING_FOR_PROCESSORS;
-				while(readyProcessors.isEmpty()&&creator!=null){
-					synchronized(readyProcessors){
+				synchronized(readyProcessors){
+					while(readyProcessors.isEmpty()&&creator!=null){
 						readyProcessors.wait();
 					}
 				}
