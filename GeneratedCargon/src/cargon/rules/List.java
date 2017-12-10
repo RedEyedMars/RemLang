@@ -32,7 +32,10 @@ public class List extends ConcreteRule {
 					new ManyParser(
 							
 								new ChainParser(
-									CargonTokens.NEWTAB,
+									
+									new ChoiceParser(
+											CargonTokens.COMMA,
+											CargonTokens.NEWTAB),
 									Rules.uote))));
 
 	}

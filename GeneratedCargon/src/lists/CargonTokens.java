@@ -29,6 +29,7 @@ public class CargonTokens extends ParseList {
 	public static final ExactParser MANY = new ExactParser("MANY","cargon_tokens","*");
 	public static final ExactParser AS = new ExactParser("AS","cargon_tokens","as");
 	public static final ExactParser IN = new ExactParser("IN","cargon_tokens","in");
+	public static final ExactParser WITH = new ExactParser("WITH","cargon_tokens","with");
 	public static final ExactParser ARE = new ExactParser("ARE","cargon_tokens","are");
 	public static final ExactParser COMMA = new ExactParser("COMMA","cargon_tokens",",");
 	public static final ExactParser FROM = new ExactParser("FROM","cargon_tokens","from");
@@ -51,8 +52,7 @@ public class CargonTokens extends ParseList {
 	public static final ExactParser REGEX_APOS = new ExactParser("REGEX_APOS","cargon_tokens","\\\'");
 	public static final ExactParser PASS_SYMBOL = new ExactParser("PASS_SYMBOL","cargon_tokens","@");
 	public static final ExactParser GLOBAL = new ExactParser("GLOBAL","cargon_tokens","global");
-	public static final ExactParser WITH = new ExactParser("WITH","cargon_tokens","with");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS,PASS_SYMBOL,GLOBAL,WITH);
+				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS,PASS_SYMBOL,GLOBAL);
 }

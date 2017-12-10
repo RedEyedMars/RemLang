@@ -75,7 +75,7 @@ class 'packageName'."parser" Parser {
     if firstResult.getState() == SUCCESS {
       System.out.println('' "First-Pass Successful" '' );
       Parser->Result secondResult = \parseFile(fileName, SECOND_PASS);
-      if firstResult.getState() == SUCCESS {
+      if secondResult.getState() == SUCCESS {
         System.out.println('' "Second-Pass Successful" '' );
       }
       else {
@@ -100,6 +100,7 @@ class 'packageName'."parser" Parser {
 > Map<Body , String> ruleHolders = new HashMap<Body , String>();
 > Map<String, Map<Integer, List< Body >>> unsatisfiedRules = new HashMap<String, Map<Integer, List< Body >>>();
 > Map<String, Body > ruleForeBodies = new HashMap<String, Body >();
+> Map<String,String> parentRuleNames = new HashMap<String,String>();
 > Set<String > silentRules = new HashSet<String>();
 > Set<String > listNames = new HashSet<String>();
 > Set<String > globalListNames = new HashSet<String>();
@@ -618,7 +619,7 @@ class 'packageName'."parser" Parser {
       completeBody.add(|else {
         "_state" = "FAILED";
         if "_position" >= "_furthestPosition" {
-          "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'ruleName' '');
+          "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'parentRuleNames.get(ruleName)'+"("+'ruleName'+")" '');
           "_furthestPosition" = "_position";
         }
       }|);
@@ -652,6 +653,7 @@ class 'packageName'."parser" Parser {
       silentRules.add(ruleName);
       parentRuleName = previousParentRuleName;
     }
+    parentRuleNames.put(ruleName,parentRuleName);
     if ROOT_NAME == null {
       ROOT_NAME = ruleName;
     }
@@ -670,7 +672,7 @@ class 'packageName'."parser" Parser {
     String currentPositionValue = "_position_"\+ruleName;
     foreBody.add(|
       if "_position" >= "_furthestPosition" {
-        "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'ruleName' '');
+        "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'parentRuleNames.get(ruleName)'+"("+'ruleName'+")" '');
         "_furthestPosition" = "_position";
       }
       "_position" = 'currentPositionValue';|);
@@ -1716,10 +1718,20 @@ class 'packageName'."parser" Parser {
       }
       else {
         if position == -1 {
-          return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+          if parseTime < 1000 {
+            return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+          }
+          else {
+            return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+          }
         }
         else {
-          return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName\+'' "\\n\\tParse Time: " '' \+ parseTime \+ '' "ms" '';
+          if parseTime < 1000 {
+            return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName\+'' "\\n\\tParse Time: " '' \+ parseTime \+ '' "ms" '';
+          }
+          else {
+            return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName\+'' "\\n\\tParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+          }
         }
       }
       }
@@ -1733,7 +1745,12 @@ class 'packageName'."parser" Parser {
         }
       }
       else {
-        return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+        if parseTime < 1000 {
+          return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+        }
+        else {
+          return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+        }
       }
       }
     }
