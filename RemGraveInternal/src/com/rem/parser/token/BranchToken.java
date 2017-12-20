@@ -17,7 +17,7 @@ public class BranchToken implements IToken {
 	private IToken parent;
 	protected String listName = null;
 	protected String name;
-	
+
 	@Override
 	public ParseContext getContext(ParseContext rootContext){
 		if(parent==null){
@@ -27,7 +27,7 @@ public class BranchToken implements IToken {
 			return parent.getContext(rootContext);
 		}
 	}
-	
+
 	@Override
 	public Object getValue(){
 		return keys.isEmpty()?"empty":get(keys.getFirst()).getValue();
@@ -57,7 +57,7 @@ public class BranchToken implements IToken {
 	public IToken getLast(){
 		return tokens.get(keys.getLast().getName()).get(keys.getLast().getIndex());
 	}
-	
+
 	@Override
 	public IToken getLast(String tokenName){
 		if(tokens.containsKey(tokenName)){
@@ -189,11 +189,18 @@ public class BranchToken implements IToken {
 			IToken.Key id = (IToken.Key)key;
 			if(tokens.get(id.getName()).size()<=id.getIndex()){
 				tokens.get(id.getName()).get(0).print();
-				tokens.get(id.getName()).get(1).print();
+				if(tokens.get(id.getName()).size()>1){
+					tokens.get(id.getName()).get(1).print();
+				}
 				System.err.println(id.getName());
-				
+
 			}
-			return tokens.get(id.getName()).get(id.getIndex());
+			if(tokens.get(id.getName()).size()>=id.getIndex()){
+				return tokens.get(id.getName()).get(id.getIndex());
+			}
+			else {
+				return tokens.get(id.getName()).get(0);
+			}
 		}
 	}
 
@@ -250,8 +257,8 @@ public class BranchToken implements IToken {
 	public int size() {
 		return tokens.size();
 	}
-	
-	
+
+
 
 	@Override
 	public Collection<IToken> values() {

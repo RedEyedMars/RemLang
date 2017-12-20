@@ -251,7 +251,7 @@ classwise
 						context:;
 				if isInner is true
 					return
-						i_exact:\"\"$AS METHOD NOT IMPLEMENTED FOR INNER$\"";
+						i_exact:\'element->body_statement;
 				else
 					return
 						e_inner_call: subject ;
@@ -683,10 +683,14 @@ classwise
 		return
 			null
 	generate all_type takes isInner as Boolean, parentContext as context
+		var ret as canAddSubClass = null
 		all_type to element
 			type_var
-				return
-					generate classwise type_var: isInner 2 parentContext;
+				if ret is null
+					set ret as canAddSubClass = generate classwise type_var: isInner 2 parentContext;
+				else
+					ret addSubClass
+						generate classwise type_var: isInner 2 parentContext;
 			CLASS_TYPE
 				if isInner is true
 					return
@@ -737,7 +741,7 @@ classwise
 					return
 						e_type_var:e_exact:\"ExternalContext"; parentContext;
 		return
-			null
+			ret
 	aux getType takes className
 		if importables->className is null
 			importables put

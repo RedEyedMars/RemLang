@@ -50,6 +50,9 @@ public abstract class ExternalImportEntry implements Entry{
 	public void addImport(ImportEntry importEntry){
 		imports.add(importEntry);
 	}
+	public void removeImport(ImportEntry importEntry){
+		imports.remove(importEntry);
+	}
 	public void addParentImport(Entry parentClass) {
 		imports.add(new ImportClassEntry(parentClass));
 	}

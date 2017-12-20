@@ -20,8 +20,8 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	public void setTabs(int newTabs){
 		tabs = newTabs;
 	}
-	private List<ExternalStatement> subStatements = new ArrayList<ExternalStatement>();
-	private List<String> delimiters = new ArrayList<String>();
+	protected List<ExternalStatement> subStatements = new ArrayList<ExternalStatement>();
+	protected List<String> delimiters = new ArrayList<String>();
 	protected String delimiter = "";
 	protected String onEmptyDelimiter = null;
 	protected Entry prefix = null;
@@ -58,6 +58,27 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 				add(statement);
 			}
 		}
+	}
+	public ExternalStatement(Entry initialPrefix, Entry initialSuffix, String initialDelimiter, List<String> initialDelimiters, ExternalStatement...statements){
+		delimiter = initialDelimiter;
+		if(initialPrefix instanceof ExternalStatement){
+			add((ExternalStatement) initialPrefix);
+		}
+		else {
+			prefix = initialPrefix;
+		}
+		if(initialSuffix instanceof ExternalStatement){
+			add((ExternalStatement) initialSuffix);
+		}
+		else {
+			suffix = initialSuffix;
+		}
+		if(statements!=null){
+			for(ExternalStatement statement:statements){
+				add(statement);
+			}
+		}
+		delimiters = initialDelimiters;
 	}
 	public ExternalStatement(Entry initialPrefix, Entry initialSuffix, ExternalStatement...statements){
 		if(initialPrefix instanceof ExternalStatement){
@@ -390,6 +411,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 	}
 	public static class TypeName extends ExternalStatement {
+		ExternalStatement cleanTypeName = null;
 		public TypeName(Entry name){
 			super(name);
 			this.addImport(new ImportEntry(name));
@@ -397,6 +419,27 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		public TypeName(Entry name, Entry templateParameters){
 			super(name,templateParameters);
 			this.addImport(new ImportEntry(name));
+		}
+		public TypeName(){
+			super();
+		}
+		public void setTypeName(ExternalStatement typeName){
+			cleanTypeName = typeName;
+			add(typeName);
+			addImport(new ImportEntry(typeName));
+		}
+		public void setTemplateType(ExternalStatement templates){
+			add(new ExternalStatement(new StringEntry("<"), new StringEntry(">"),templates));
+			addImport(new ImportEntry(templates));
+		}
+		@Override
+		public void clear(){
+			subStatements.clear();
+			delimiters.clear();
+			imports.clear();
+		}
+		public ExternalStatement getCleanType() {
+			return cleanTypeName;
 		}
 	}
 	public static class Conditional extends ExternalStatement {
@@ -435,5 +478,22 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			rightBrace.set(right);
 			return this;
 		}
+	}
+	public ExternalStatement getAsStatement() {
+		Parameters delimitersAsStatement = new Parameters ();
+		for(String delimit: delimiters){
+			delimitersAsStatement.add(new ExternalStatement(new StringEntry(delimit)));
+		}
+		Parameters subStatementsAsStatement = new Parameters ();
+		for(ExternalStatement subStatement: subStatements){
+			subStatementsAsStatement.add(subStatement.getAsStatement());
+		}
+		return new ExternalStatement(new StringEntry("new ExternalStatement("),new StringEntry(")"),",",
+				 prefix!=null?new ExternalStatement(new StringEntry("new StringEntry("), new StringEntry(")"),ExternalClassHelper.getAsStatementFromEntry(prefix)):new ExternalStatement(new StringEntry("null")),
+				 suffix!=null?new ExternalStatement(new StringEntry("new StringEntry("), new StringEntry(")"),ExternalClassHelper.getAsStatementFromEntry(suffix)):new ExternalStatement(new StringEntry("null")),
+				 new ExternalStatement(new StringEntry("\""+delimiter+"\"")),
+				 new ExternalStatement(new StringEntry("Arrays.asList(new String[]{"), new StringEntry("})"), delimitersAsStatement),
+				 subStatementsAsStatement
+						 );
 	}
 }

@@ -230,7 +230,9 @@ class 'packageName'."parser" Parser {
           return context.parse(fileName, "FIRST_PASS");
         }
         else {
-          return "contexts".get(fileName).parse(fileName, "SECOND_PASS");
+          "contexts".get(fileName)._root = new Token->Parsed(''"$ROOT"'');
+		  "contexts".get(fileName)._token = "contexts".get(fileName)._root; 
+		  return "contexts".get(fileName).parse(fileName,"SECOND_PASS");
         } |);
     }
   }
@@ -850,11 +852,30 @@ class 'packageName'."parser" Parser {
       String subRuleName = \define(query, parentRuleName);
       rule.add(|"parse_"+'subRuleName'();|);
       if element->"listName"!=null {
+        String listTokenName;
+        if element->"newName" != null {
+          listTokenName = ^element->"newName" \+ "Token";
+          String simpleTokenName = 'element->"newName"';
+          if createdNameTokens.add(listTokenName) {
+            Tokens->Name += class listTokenName / Token->Parsed / {
+              String value = null;
+              String getName(){
+                return '' 'simpleTokenName' '';
+              }
+              void setValue(String newValue){
+              }
+            }
+          }
+        }
+        else {
+          listTokenName = ^element->"listName"\+"Token";
+        }
         rule.add(|if "_state" == "SUCCESS" {
-          String _value = "_token".getLastValue();
+          String _value = "_token".getPollLast().getValue();
           if _value!=null && 'element->"listName"'.add(_value) {
             'element->"listName"'+"_additions".add(_value);
           }
+          "_token".add("_position",new Tokens->Name->'listTokenName'(_value));
         }|);
         if listNamesInRule.containsKey(parentRuleName) == false {
           listNamesInRule.put(parentRuleName, new HashSet<String>());
@@ -1093,11 +1114,30 @@ class 'packageName'."parser" Parser {
         handleRecursionProtection.add(subRuleName);
         rule.add(|"parse_"+'subRuleName'();|);
         if element->"listName"!=null {
+          String listTokenName;
+        if element->"newName" != null {
+          listTokenName = ^element->"newName" \+ "Token";
+          String simpleTokenName = 'element->"newName"';
+          if createdNameTokens.add(listTokenName) {
+            Tokens->Name += class listTokenName / Token->Parsed / {
+                String value = null;
+                String getName(){
+                  return '' 'simpleTokenName' '';
+                }
+                void setValue(String newValue){
+                }
+              }
+            }
+          }
+          else {
+            listTokenName = ^element->"listName"\+"Token";
+          }
           rule.add(|if "_state" == "SUCCESS" {
-            String _value = "_token".getLastValue();
+            String _value = "_token".getPollLast().getValue();
             if _value!=null && 'element->"listName"'.add(_value) {
               'element->"listName"'+"_additions".add(_value);
             }
+            "_token".add("_position",new Tokens->Name->'listTokenName'(_value));
           }|);
           if listNamesInRule.containsKey(parentRuleName) == false {
             listNamesInRule.put(parentRuleName, new HashSet<String>());
@@ -1696,6 +1736,9 @@ class 'packageName'."parser" Parser {
       if state == "Parser.FAILED" {
       Integer lineNumber = \getLineNumber();
       Integer rangeIndex = lineNumber \- 1;
+      if rangeIndex < 0 {
+        rangeIndex = 0;
+      }
       Integer upperBound = lineNumberRanges.get(rangeIndex);
       Integer lowerBound = 0;
       if rangeIndex > 0 {
@@ -1754,7 +1797,7 @@ class 'packageName'."parser" Parser {
       }
       }
     }
-    class Pass / Result / {
+    class Pass / Parser->Result / {
       Token\>Parsed  parsedRoot = null;
       ~Token->Branch root = null;
       void setup(){
@@ -1785,7 +1828,7 @@ class 'packageName'."parser" Parser {
         }
       }
     }
-    class Fail / Result / {
+    class Fail / Parser->Result / {
       String ruleName = null;
       String toString(){
         return '' "Failed:\\n\\tRule:" '' \+ruleName\+\super.toString();
@@ -1821,8 +1864,10 @@ class 'packageName'."parser" Tokens {
 }
 interface 'packageName'."parser" Token {
 
+  Token get(String tokenName){}
   Token getLast(){}
   Token getLast(String tokenName){}
+  List<Token> getAll(){}
   List<Token> getAll(String key){}
   List<Token> getAllSafely(String key){}
   void add(Token newToken){}
@@ -1848,6 +1893,14 @@ interface 'packageName'."parser" Token {
       }
       else {
         return children.get(children.size()-1).getValue();
+      }
+    }
+    Token->Parsed getPollLast(){
+      if children.isEmpty() {
+        return null;
+      }
+      else {
+        return children.remove(children.size()-1);
       }
     }
     void add(Integer position, Token->Parsed newToken){
@@ -1876,6 +1929,9 @@ interface 'packageName'."parser" Token {
 	}
 	void add(Token token){
 	}
+	List<Token> getAll(){
+	  return null;
+	}
 	List<Token> getAll(String key){
 	  return null;
 	}
@@ -1898,12 +1954,18 @@ interface 'packageName'."parser" Token {
 	  \System.out.print(value);
 	  \System.out.println('' "]" '');
 	}
+	String toString(){
+	  return value;
+	}
 	String getFileName(){
 	  return context.getFileName();
 	}
 	\int getLineNumber(){
 	  return context.getLineNumber(position);
 	}
+	Token get(String tokenName){
+      return this;
+    }
   }
   class Branch // Token {
     ~Map<String, List<Token>> namedLists = new HashMap<String, List<Token>>();
@@ -1915,6 +1977,18 @@ interface 'packageName'."parser" Token {
     
     String getValue(){
       return children.get(0).getValue();
+    }
+    String toString(){
+      return children.get(0).getValue();
+    }
+    Token get(String tokenName){
+      List<Token> nameList = namedLists.get(tokenName);
+      if nameList == null || nameList.isEmpty() {
+        return null;
+      }
+      else {
+        return nameList.get(0);
+      }
     }
 	Token getLast(){
 	  return children.get(children.size()\-1);
@@ -1928,6 +2002,9 @@ interface 'packageName'."parser" Token {
 	    namedLists.put(token.getName(), new ArrayList<Token>());
 	  }
 	  namedLists.get(token.getName()).add(token);
+	}
+	List<Token> getAll(){
+	  return children;
 	}
 	List<Token> getAll(String key){
 	  return namedLists.get(key);

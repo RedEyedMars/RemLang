@@ -1,7 +1,9 @@
 package com.rem.parser.generation.classwise;
 import com.rem.parser.generation.*;
+
+import java.io.File;
 import java.util.*;
-public abstract class ExternalClassEntry extends ExternalImportEntry {
+public class ExternalClassEntry extends ExternalImportEntry {
 
 	public static final List<ExternalClassEntry> allClasses = new ArrayList<ExternalClassEntry>();
 	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>(){
@@ -80,7 +82,7 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	public static void main(String[] args0){}
 	public void __INIT__(){}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader){
-		__SETUP__(initialPackageName, preImports, initialName, classType, initialParentClass, initialInterfaces,initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
+		        __SETUP__(      initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
 	}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
 
@@ -490,5 +492,121 @@ public abstract class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public Map<String,ExternalVariableEntry> getVariables() {
 		return this.variables;
+	}
+	ExternalStatement nameAsStatement = null;
+	public void setIsInterface(Boolean newIsInterface){
+		this.isInterface = newIsInterface;
+	}
+	public void setIsEnum(Boolean newIsEnum){
+		this.isEnum = newIsEnum;
+	}
+	public void setParentClass(ExternalStatement.TypeName newParentClass){
+		this.parentClass = newParentClass;
+	}
+	public void addImplementingInterface(ExternalStatement.TypeName newInteface){
+		if(interfaces == null){
+			this.interfaces = new ArrayList<Entry >();
+		}
+		interfaces.add(newInteface);
+	}
+	public void setPackageName(String newPackageName){
+		packageName = new StringEntry(newPackageName);
+		if(packageName!=null){
+			ExternalImportEntry.packages.put(name, packageName);
+		}
+	}
+	public void setName(ExternalStatement newName){
+		StringBuilder builder = new StringBuilder();
+		newName.get(builder);
+		name = builder.toString();
+		nameAsStatement = newName;
+		myContext = ExternalContext.getClassContext(getName());
+		
+	}
+	public void setupContext(){		
+		allClasses.add(this);
+		classMap.put(name, this);
+		if(allOffspring.containsKey(name)){
+			for(ExternalClassEntry offspring:allOffspring.get(name)){
+				offspring.myContext.setParent(myContext);
+			}
+		}
+		if(parentClass!=null&&getParentClass() == null){
+			StringBuilder parentNameBuilder = new StringBuilder();
+			parentClass.get(parentNameBuilder);
+			if(!allOffspring.containsKey(parentNameBuilder.toString())){
+				allOffspring.put(parentNameBuilder.toString(),new ArrayList<ExternalClassEntry>());
+			}
+			allOffspring.get(parentNameBuilder.toString()).add(this);
+			addParentImport(parentClass);
+		}
+		else if(bonifideParentClass!=null){
+			myContext.setParent(bonifideParentClass.myContext);
+			addParentImport(parentClass);
+		}
+		if(interfaces!=null){
+			for(Entry interfaceClass:interfaces){
+				addParentImport(interfaceClass);
+			}
+		}
+
+		ExternalStatement.Body constructorBody = new ExternalStatement.Body();
+		constructorMethod = new ExternalMethodEntry(
+				0, false, new Entry(){public void get(StringBuilder builder){new StringEntry(name).get(builder);}},
+				new Entry(){public void get(StringBuilder builder){new StringEntry("*").get(builder);}},
+				new ArrayList<ExternalVariableEntry>(),
+				constructorBody);
+		methods.put("*", constructorMethod);
+		myContext.add(constructorMethod);
+		myContext.add(new ExternalVariableEntry(false,new StringEntry(name),"",new StringEntry("this"),null));
+		addSubImport(constructorBody);
+	}
+	public ExternalStatement getAsStatement(){
+		ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
+		parameters.add(ExternalClassHelper.getAsStatementFromEntry(packageName));
+		parameters.add(new ExternalStatement(new StringEntry("new Entry(){public void get(StringBuilder builder){}}")));
+		parameters.add(ExternalClassHelper.getAsStatementFromEntry(nameAsStatement));
+		parameters.add(new ExternalStatement(new StringEntry(!isInterface?!isEnum?"class ":"enum ":"inteface ")));
+		parameters.add(ExternalClassHelper.getAsStatementFromEntry(parentClass));
+		ExternalStatement.Parameters interfaceParameters = new ExternalStatement.Parameters();
+		for(Entry i: interfaces){
+			interfaceParameters.add(ExternalClassHelper.getAsStatementFromEntry(i));
+		}
+		parameters.add(new ExternalStatement(new StringEntry("Arrays.asList("),new StringEntry(")"),interfaceParameters));
+		parameters.add(ExternalClassHelper.getAsStatementFromEntry(header));
+		
+		ExternalStatement externalInitCalls = new ExternalStatement(";");
+		ExternalStatement externalMethods = new ExternalStatement("\n\t\t\t");
+		int variableIndex = 0;
+		for(String variableName: variables.keySet()){
+		  String addVariableMethodName = "__add_variable_"+variableIndex+"__";
+	      externalInitCalls.add(new ExternalStatement(new StringEntry(addVariableMethodName),new StringEntry("();")));
+	      externalMethods.add(new ExternalStatement(new StringEntry("public void "+addVariableMethodName+"(){\n\t\t\t\taddVariable("),new StringEntry(");}"),variables.get(variableName).getAsStatement()));
+	      ++variableIndex;
+		}
+		int methodIndex = 0;
+		for(String methodName: methods.keySet()){
+		  String addMethodMethodName = "__add_method_"+methodIndex+"__";
+	      externalInitCalls.add(new ExternalStatement(new StringEntry(addMethodMethodName),new StringEntry("();")));
+	      externalMethods.add(new ExternalStatement(new StringEntry("public void "+addMethodMethodName+"(){\n\t\t\t\taddMethod("),new StringEntry(");}"),methods.get(methodName).getAsStatement()));
+	      ++methodIndex;
+		}
+		int subClassIndex = 0;
+		for(String subClassName: classes.keySet()){
+		  String addSubClassMethodName = "__add_sub_class_"+subClassIndex+"__";
+	      externalInitCalls.add(new ExternalStatement(new StringEntry(addSubClassMethodName),new StringEntry("();")));
+	      externalMethods.add(new ExternalStatement(new StringEntry("public void "+addSubClassMethodName+"(){\n\t\t\t\taddSubClass("),new StringEntry(");}"),classes.get(subClassName).getAsStatement()));
+	      ++subClassIndex;
+		}
+		return new ExternalStatement(new StringEntry("new ExternalClassEntry(){"),"",
+				new ExternalStatement(new StringEntry( "public void __INIT__(){"),new StringEntry("}"),
+				  new ExternalStatement(new StringEntry("super.__SETUP__("),new StringEntry(");"),parameters),
+				  externalInitCalls),externalMethods);
+	}
+	
+	public void outputToFile(FlowController controller,File outputDirectory){
+		StringBuilder packageNameBuilder = new StringBuilder();
+		packageName.get(packageNameBuilder);
+		controller.addFile(new File(outputDirectory,packageNameBuilder.toString()), getName()+".java", this);
 	}
 }

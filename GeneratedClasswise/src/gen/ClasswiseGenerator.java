@@ -328,7 +328,7 @@ public class ClasswiseGenerator extends Generator {
 				IToken element = name_var.get(elementKey);
 				Entry subject = (Entry)Generators.body.generateStatement(element.get("body_statement"),true,new ContextEntry());
 				if((isInner == true)){
-					return new IExactEntry(new StringEntry("\"$AS METHOD NOT IMPLEMENTED FOR INNER$\""));
+					return new IExactEntry(new StringEntry(element.get("body_statement").getString()));
 				}
 				else {
 					return new EInnerCallEntry(subject);
@@ -909,10 +909,16 @@ public class ClasswiseGenerator extends Generator {
 		return null;
 	}
 	public Entry generateAllType(IToken all_type,Boolean isInner,ContextEntry parentContext){
+		ICanAddSubClass ret = (ICanAddSubClass)null;
 		for(IToken.Key elementKey:all_type.keySet()){
 			if("type_var".equals(elementKey.getName())){
 				IToken element = all_type.get(elementKey);
-				return Generators.classwise.generateTypeVar(element,isInner,2,parentContext);
+				if((ret == null)){
+					ret = (ICanAddSubClass)Generators.classwise.generateTypeVar(element,isInner,2,parentContext);
+				}
+				else {
+					ret.addSubClass(Generators.classwise.generateTypeVar(element,isInner,2,parentContext));
+				}
 			}
 			else if("CLASS_TYPE".equals(elementKey.getName())){
 				IToken element = all_type.get(elementKey);
@@ -978,7 +984,7 @@ public class ClasswiseGenerator extends Generator {
 				}
 			}
 		}
-		return null;
+		return ret;
 	}
 	public IImportable getType(String className){
 		if((importables.get(className) == null)){

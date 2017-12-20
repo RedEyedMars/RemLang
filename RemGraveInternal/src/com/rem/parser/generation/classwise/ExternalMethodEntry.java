@@ -8,13 +8,16 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	private Entry type;
 	private Entry name;
 	private List<ExternalVariableEntry> parameters;
-	private ExternalStatement.Body body;
 	private ExternalContext classContext;
 	private ExternalContext headerContext;
+	private ExternalStatement.Body body;
 	private boolean isInterface = false;
 	private boolean isStatic = false;
 	private String typeSuffix = null;
 	private String throwsStatement = null;
+	public ExternalMethodEntry(){
+		
+	}
 	public ExternalMethodEntry(String newType, ExternalMethodEntry otherMethod){
 		this(otherMethod.tabs, otherMethod.isStatic, new StringEntry(newType),
 				otherMethod.typeSuffix, otherMethod.name, otherMethod.parameters , otherMethod.throwsStatement, otherMethod.body);
@@ -200,5 +203,86 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			typeBuilder.append(typeSuffix);
 		}
 		return typeBuilder.toString();
+	}
+	public void setType(ExternalStatement.TypeName type){
+		StringBuilder typeBuilder = new StringBuilder();
+		type.getCleanType().get(typeBuilder);
+		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+		this.type = type;
+	}
+
+	public void setName(ExternalStatement newName){
+		name = newName;
+		if(!getSimpleName().contains("*")){
+			addImport(new ImportEntry(type));
+		}
+	}
+	public void setParameters(List<ExternalVariableEntry> parameters){
+		this.parameters = parameters;
+		headerContext = new ExternalContext(true,null,parameters);
+		for(ExternalVariableEntry variable:parameters){
+			addSubImport(variable);
+		}
+
+	}
+	ExternalStatement parametersAsStatement = null;
+	public void setParametersAsStatement(ExternalStatement parameters){
+		this.parametersAsStatement = parameters;
+
+	}
+	public void setThrowsStatement(String newThrowsStatement){
+		throwsStatement = newThrowsStatement;
+	}
+	public void setBody(ExternalStatement.Body body){
+		this.body = body;
+		if(body!=null){
+			body.setParentContext(headerContext);
+			addSubImport(body);
+		}
+		else {
+			this.isInterface = true;
+		}
+	}
+	
+	public void setIsStatic(Boolean newIsStatic){
+		this.isStatic = newIsStatic;
+	}
+	//public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters , String throwStatement, ExternalStatement.Body body){
+	
+	public ExternalStatement getAsStatement(){
+		
+		
+		ExternalStatement completeStatement = new ExternalStatement(new StringEntry("new ExternalMethodEntry("),new StringEntry(")"),",",
+				new ExternalStatement(new StringEntry("0")),
+				new ExternalStatement(new StringEntry(isStatic+"")),
+				ExternalClassHelper.getAsStatementFromEntry(type),
+				new ExternalStatement(new StringEntry(typeSuffix)),
+				ExternalClassHelper.getAsStatementFromEntry(name));
+		if(parametersAsStatement != null){
+			completeStatement.add(ExternalClassHelper.getAsStatementFromEntry(parametersAsStatement));
+		}
+		else {
+			ExternalStatement.Parameters variableAsParameters = new ExternalStatement.Parameters();
+			for(ExternalVariableEntry variable:parameters){
+				variableAsParameters.add(variable.getAsStatement());
+			}
+			completeStatement.add(
+				new ExternalStatement(new StringEntry("Arrays.asList("),new StringEntry(")"),variableAsParameters));
+		}
+		completeStatement.add(throwsStatement == null?new ExternalStatement(new StringEntry("null")):new ExternalStatement(new StringEntry(throwsStatement)));
+		if(body!=null){
+			ExternalStatement bodyAsParameters = new ExternalStatement();
+			for(ExternalStatement statement:body){
+				bodyAsParameters.add(statement.getAsStatement());
+			}
+			completeStatement.add(
+				new ExternalStatement(new StringEntry("new ExternalStatement.Body("),new StringEntry(")"),bodyAsParameters)
+				);
+		}
+		else {
+			completeStatement.add(new ExternalStatement(new StringEntry("null")));
+		}
+		return completeStatement;
+				
 	}
 }

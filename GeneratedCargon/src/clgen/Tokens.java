@@ -143,19 +143,19 @@ public class Tokens extends ExternalClassEntry {
        /* Variables */ 
 	   /* Methods */ 
 	   /* Classes */
-		add_subclass_15();
-		add_subclass_16();
 		add_subclass_17();
+		add_subclass_18();
+		add_subclass_19();
 	}
 	
 	
-		private void add_subclass_15() {
+		private void add_subclass_17() {
 	 		addSubClass(MainFlow.classes.TokensClass.PlainClass);
 	 	}
-		private void add_subclass_16() {
+		private void add_subclass_18() {
 	 		addSubClass(MainFlow.classes.TokensClass.NameClass);
 	 	}
-		private void add_subclass_17() {
+		private void add_subclass_19() {
 	 		addSubClass(MainFlow.classes.TokensClass.RuleClass);
 	 	}
 }

@@ -10,6 +10,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private boolean isWeak = false;
 	private String typeSuffix = "";
 	
+	public ExternalVariableEntry(){
+	}
+	
 	public ExternalVariableEntry(Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 		this(isStatic,false,type,typeSuffix,name,assignment);
 	}
@@ -213,5 +216,42 @@ public class ExternalVariableEntry extends ExternalStatement {
 		}
 		return typeBuilder.toString();
 	}
-	
+	//public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
+	@Override
+	public ExternalStatement getAsStatement(){
+		return new ExternalStatement(new StringEntry("new ExternalVariableEntry("),new StringEntry(")"),",",
+				new ExternalStatement(new StringEntry(isStatic+"")),
+				new ExternalStatement(new StringEntry(isWeak+"")),
+				ExternalClassHelper.getAsStatementFromEntry(type),
+				new ExternalStatement(new StringEntry(typeSuffix)),
+				ExternalClassHelper.getAsStatementFromEntry(name),
+				assignment==null?
+						new ExternalStatement(new StringEntry("null")):
+						ExternalClassHelper.getAsStatementFromEntry(assignment)
+				);
+	}
+	public ExternalStatement getNameAsStatement(){
+	   return ExternalClassHelper.getAsStatementFromEntry(name);
+	}
+	public void setType(Entry newType){
+		type = newType;
+		StringBuilder typeBuilder = new StringBuilder();
+		type.get(typeBuilder);
+		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+	}
+	public void setName(Entry newName){
+		name = newName;
+	}
+	public void setAssignment(Entry newAssignment){
+		assignment = newAssignment;
+	}
+	public void setIsStatic(Boolean newStatic){
+		isStatic = newStatic;
+	}
+	public void setIsFinal(Boolean newIsFinal){
+		isWeak = !newIsFinal;
+	}
+	public void addArraySymbol(){
+		typeSuffix = typeSuffix + "[]";
+	}
 }

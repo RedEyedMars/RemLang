@@ -203,4 +203,25 @@ public class ExternalClassHelper {
 		}
 		return ExternalClassEntry.classMap.get(fullName).getContext();
 	}
+
+	public static ExternalStatement getAsStatementFromEntry(Entry newEntry) {
+		if(newEntry instanceof StringEntry){
+			return new ExternalStatement(new StringEntry("new StringEntry("+((StringEntry)newEntry).getString())+")");
+		}
+		else if(newEntry instanceof ExternalStatement){
+		    return ((ExternalStatement)newEntry).getAsStatement();
+		}
+		else if(newEntry instanceof ExternalClassEntry){
+			return ((ExternalClassEntry)newEntry).getAsStatement();
+		}
+		else if(newEntry instanceof ExternalMethodEntry){
+			return ((ExternalMethodEntry)newEntry).getAsStatement();
+		}
+		else if(newEntry instanceof ExternalVariableEntry){
+			return ((ExternalVariableEntry)newEntry).getAsStatement();
+		}
+		else {
+			return null;
+		}
+	}
 }

@@ -1,0 +1,72 @@
+
+< Token  : \com.\rem.\crg.\parser;
+> MethodGenerator method = new MethodGenerator();
+> class MethodGenerator // {
+> Set<String> definedMethodNames = new HashSet<String>();
+> void addDefinedMethodName(Method newMethod){
+    definedMethodNames.add(newMethod.getName());
+  }
+  
+> Method declaration(Token declaration,Boolean isInner, Context parentContext){
+	return \definition(declaration->"methodDefinition",isInner, parentContext);
+  }
+
+> Method definition(Token input, Boolean mustInner, Context parentContext){
+	Boolean isInner = mustInner || input->"inner" != null ;
+	Method newMethod = new Method ();
+	
+	Type methodType = new Type();
+	for Token element: input.getAllSafely("typeName") {
+	  classwise.all_type(element,methodType,isInner,parentContext);
+	}
+	if input->"ARRAY_TYPE" != null {
+	  for Token element: input.getAllSafely("ARRAY_TYPE") {
+        methodType.addArraySymbol();
+	  }
+	}
+	newMethod.setType(methodType.getAsStatement());
+	Body methodBody = new Body ();
+	methodBody.setParentContext(parentContext);
+	Context context = methodBody.getContext();
+	
+	if input.get("inline") != null{
+	  List<Variable > parameters = new ArrayList<Variable >();
+	  for Token element: input->"inline".getAllSafely("variable_declaration") {
+	    parameters.add(variable.declaration(element,isInner,parentContext));
+	  }
+	  newMethod.setParameters(parameters);
+	}
+	else if input.get("variableParameters") != null{
+	  newMethod.setParametersAsStatement(body.statement(input->"variableParameters"->"body_statement",true,parentContext));
+	}
+	if input->"throwException" != null {
+	  StringBuilder exceptionBuilder = new StringBuilder();
+	  ~String comma = "";
+	  for Token element: input.getAllSafely("throwException"){
+	    exceptionBuilder.append(comma);
+	    exceptionBuilder.append('element');
+	    exceptionBuilder.append("Exception");
+	    comma = ",";
+	  }
+	  newMethod.setThrowsStatement(exceptionBuilder.toString());
+	}
+	
+	for Token element: input.getAllSafely("body_element"){
+	  methodBody.add(body.element(element,isInner,context));
+	}
+	
+	if input->"methodName"->"NAME" != null {
+	  newMethod.setName(|'input->"methodName"->"NAME"'|);
+	}
+	else {
+	  NameVar nameVar = new NameVar();
+	  classwise.name_var(input->"methodName"->"name_var",nameVar,isInner,parentContext);
+	  newMethod.setName(nameVar.getAsStatement());
+	}
+	newMethod.setBody(methodBody);
+	if input->"static" != null {
+	  newMethod.setIsStatic(true);
+	}
+	return newMethod;
+  }
+}
