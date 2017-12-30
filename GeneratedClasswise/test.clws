@@ -1,18 +1,5 @@
-> String[] getMyArray(){
-    int i = 0;
-    int j = 21;
-    int[] pixels = new int[128];
-    String[] newX = "23";
-    X regions = new X();
-    \blah(X);
-	regions.get(i).put(j, new X(i,j, pixels[i*32+j]));
-	X += int y = "0";
+> void getMyArray(){
+    String rule1 = "String";
+    String rule2 = "Object";
+    String rule3 = 'rule1'+"_"+'rule2';
   }
-> void blah(Class newClass){
-  }
-class "test" X {
-  String x = new String[10];
-  String[] getArray(){
-  }
-  class Y //{}
-}

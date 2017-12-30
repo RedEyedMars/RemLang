@@ -14,13 +14,13 @@ import clent.*;
 import java.util.*;
 import java.io.*;
 import java.nio.*;
-import com.rem.crg.parser.Token;
-import com.rem.parser.generation.classwise.ExternalStatement;
+import com.rem.gen.parser.Token;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.lang.StringBuilder;
+import com.rem.parser.generation.classwise.ExternalStatement;
 import clgen.TypeStatement;
+import java.lang.StringBuilder;
 public class  ClassGenerator   {
 	public static class classes {
 	}
@@ -69,44 +69,116 @@ protected Integer addSubClassIndex = 0;
 public void addDefinedClassName(final String className)  {
 	definedClassNames.add(className);
 }
-public ExternalClassEntry declaration(final Token declaration,final Boolean mustInner,final ExternalContext parentContext)  {
+public Boolean hasDefinedClassName(final String className)  {
+	return definedClassNames.contains(className);
+}
+public void declaration(final Token declaration,final ExternalClassEntry innerClass,final ExternalClassEntry outerClass,final Boolean mustInner,final ExternalContext parentContext)  {
 	final Boolean isInner = declaration.get("inner") != null || mustInner;
 	final ExternalStatement classPackageName = new ExternalStatement();
 	classPackageName.set(".");
-	final ExternalClassEntry newClass = new ExternalClassEntry();
 	if (declaration.get("className").get("NAME") != null) {
-		newClass.setName(new ExternalStatement(new StringEntry("\"" + declaration.get("className").toString() + "\"")));
+		innerClass.setNameAsStatement(new ExternalStatement(new StringEntry("\"" + declaration.get("className").toString() + "\"")));
+		innerClass.setName(declaration.get("className").toString());
+		outerClass.setNameAsStatement(new ExternalStatement(new StringEntry("\"" + declaration.get("className").toString() + "\"")));
+		outerClass.setName(declaration.get("className").toString());
 	}
 	else  {
-		newClass.setName(new ExternalStatement(new StringEntry(declaration.get("className").toString())));
+		innerClass.setNameAsStatement(new ExternalStatement(new StringEntry("\"+" + declaration.get("className").toString() + "+\"")));
+		innerClass.setNameAsStatement(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(declaration.get("className").toString())))));
+		innerClass.setName(declaration.get("className").toString());
+		outerClass.setNameAsStatement(new ExternalStatement(new StringEntry("\"+" + declaration.get("className").toString() + "+\"")));
+		outerClass.setNameAsStatement(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(declaration.get("className").toString())))));
+		outerClass.setName(declaration.get("className").toString());
 	}
 	for (final Token element :  declaration.getAllSafely("packageName")) {
-		final NameVar nameVar = new NameVar();
-		MainFlow.variables.get_classwise().name_var(element,nameVar,isInner,parentContext);
-		classPackageName.add(nameVar.getAsStatement());
+		if (element.get("NAME") != null) {
+			classPackageName.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("NAME").toString())))));
+		}
+		else if (element.get("quote") != null) {
+			classPackageName.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("quote").toString())))));
+		}
+		else if (element.get("statement_as_string") != null) {
+			classPackageName.add(MainFlow.variables.get_body().statement(element.get("statement_as_string").get("body_statement"),true,parentContext));
+		}
 	}
-	newClass.setPackageName("");
+	innerClass.setPackageName(classPackageName);
+	outerClass.setPackageName(classPackageName);
 	for (final Token element :  declaration.getAllSafely("parentName")) {
 		final Type parentType = new Type();
 		MainFlow.variables.get_classwise().type_var(element.get("type_var"),parentType,isInner,parentContext);
-		newClass.setParentClass(parentType.getAsStatement());
+		innerClass.setParentClass(parentType.getAsStatement());
+		outerClass.setParentClass(parentType.getAsStatement());
 	}
 	for (final Token element :  declaration.getAllSafely("interfaceName")) {
 		final Type interfaceType = new Type();
 		MainFlow.variables.get_classwise().type_var(element.get("type_var"),interfaceType,isInner,parentContext);
-		newClass.addImplementingInterface(interfaceType.getAsStatement());
+		innerClass.addImplementingInterface(interfaceType.getAsStatement());
+		outerClass.addImplementingInterface(interfaceType.getAsStatement());
 	}
+	innerClass.setupContext();
+	outerClass.setupContext();
 	for (final Token element :  declaration.getAllSafely("variable_declaration")) {
-		newClass.addVariable(MainFlow.variables.get_variable().declaration(element,isInner,parentContext));
+		if (isInner || element.get("inner") != null) {
+			final ExternalVariableEntry newVariable = MainFlow.variables.get_variable().declaration(element,isInner,parentContext);
+			if (newVariable.isFinal() && element.get("IS_FINAL") == null) {
+				newVariable.setIsFinal(false);
+			}
+			innerClass.addVariable(newVariable);
+		}
+		else  {
+			outerClass.addVariable(MainFlow.variables.get_variable().declaration(element,isInner,parentContext));
+		}
 	}
 	for (final Token element :  declaration.getAllSafely("method_declaration")) {
-		newClass.addMethod(MainFlow.variables.get_method().declaration(element,isInner,parentContext));
+		if (isInner || element.get("inner") != null) {
+			innerClass.addMethod(MainFlow.variables.get_method().declaration(element,isInner,parentContext));
+		}
+		else  {
+			outerClass.addMethod(MainFlow.variables.get_method().declaration(element,isInner,parentContext));
+		}
 	}
 	for (final Token element :  declaration.getAllSafely("class_declaration")) {
-		newClass.addSubClass(MainFlow.variables.get_classGenerator().declaration(element,isInner,parentContext));
+		final ExternalClassEntry subInnerClass = new ExternalClassEntry();
+		final ExternalClassEntry subOuterClass = new ExternalClassEntry();
+		MainFlow.variables.get_classGenerator().declaration(element,subInnerClass,subOuterClass,isInner,parentContext);
+		if (element.get("inner") == null) {
+			subInnerClass.addVariable(new ExternalVariableEntry(true,true, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(subOuterClass.getName().toString())))),"", /*Name*/new ExternalStatement(new StringEntry("_")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("new ")), /*Enty*/new ExternalStatement(new StringEntry(subOuterClass.getName().toString())))), /*Name*/new ExternalStatement(new StringEntry("()"))))))));
+			subInnerClass.addInitMethodFromClass(subOuterClass);
+			subInnerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
+			subInnerClass.removeConstructors();
+			subInnerClass.removeInterfaces();
+			outerClass.addSubClass(subOuterClass);
+		}
+		innerClass.addSubClass(subInnerClass);
 	}
-	newClass.setupContext();
-	return newClass;
+	if (declaration.get("objectType").toString().contains("interface")) {
+		if (isInner) {
+			innerClass.setIsInterface(true);
+		}
+		else  {
+			outerClass.setIsInterface(true);
+		}
+	}
+	else if (declaration.get("objectType").toString().contains("enum")) {
+		if (isInner) {
+			innerClass.setIsEnum(true);
+		}
+		else  {
+			outerClass.setIsEnum(true);
+		}
+	}
+	if (isInner == false) {
+		outerClass.setIsStatic(declaration.get("weak") == null);
+		innerClass.setIsStatic(true);
+	}
+}
+public void collectClassNames(final Token classToken)  {
+	if (classToken.get("className").get("NAME") != null) {
+		addDefinedClassName(FlowController.camelize(classToken.get("className").get("NAME").toString()));
+	}
+	for (final Token element :  classToken.getAllSafely("class_declaration")) {
+		collectClassNames(element);
+	}
 }
 
 }

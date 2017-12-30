@@ -1,12 +1,25 @@
-< Parser : \com.\rem.\crg.\parser;
-< Token  : \com.\rem.\crg.\parser;
+< Parser : \com.\rem.\gen.\parser;
+< Token  : \com.\rem.\gen.\parser;
 > class Result //{}
 
 <IParser : \com.\rem.\parser.\parser;
 <RegexParser : \com.\rem.\parser.\parser;
 <IToken : \com.\rem.\parser.\token;
+<Generator : \com.\rem.\parser.\generation;
+<GeneralFlowController : \com.\rem.\parser.\generation;
 <FlowController : \com.\rem.\parser.\generation;
+<ExternalClassHelper : \com.\rem.\parser.\generation.`classwise`;
+<ExternalClassEntry : \com.\rem.\parser.\generation.`classwise`;
+<ExternalMethodEntry : \com.\rem.\parser.\generation.`classwise`;
+<ExternalVariableEntry : \com.\rem.\parser.\generation.`classwise`;
+<ExternalContext : \com.\rem.\parser.\generation.`classwise`;
+<ExternalImportEntry : \com.\rem.\parser.\generation.`classwise`;
+
+<TabEntry : \com.\rem.\parser.\generation;
 <StringEntry : \com.\rem.\parser.\generation;
+<VariableNameEntry : \com.\rem.\parser.\generation;
+<QuoteEntry : \com.\rem.\parser.\generation;
+<Entry : \com.\rem.\parser.\generation;
 <ParseContext : \com.\rem.\parser; 
 
 < File : \java.\io;
@@ -21,7 +34,7 @@
 > String packageName = "com.rem.crg.generator";
 
 > String outerPackageName = "com.rem.cls";
-> String innerPackageName = "com.rem.cli";
+> String innerPackageName = "com.rem.gen";
 > Map<String, Class > innerClasses = new HashMap<String, Class >();
 > Map<String, Class > outerClasses = new HashMap<String, Class > ();
 > List< Class > outerClassList = new ArrayList< Class >();
@@ -36,17 +49,27 @@
 > ~Class mainClass = null;
 > Parser pulsar = null;
 
+> ~String sourceDirectory = null;
 > void setup(Parser.Result result){
     ~String fileName = result.getFileName();
 	Integer indexOfDot = fileName.lastIndexOf(".");
 	if indexOfDot > -1 {
 	  fileName = fileName.substring(0,indexOfDot);
 	}
+	~int indexOfSlash = fileName.lastIndexOf("/");
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash\+1);
+	}
+	indexOfSlash = fileName.lastIndexOf("\\");
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash\+1);
+	}
 	fileName = ^fileName;
-	innerDirectory = new File("../"\+fileName\+"/src",innerPackageName);
+	innerDirectory = new File("../"\+fileName\+"/src");
 	innerDirectory.mkdirs();
-	outerDirectory = new File("../"\+fileName\+"/src",outerPackageName);
+	outerDirectory = new File("../"\+fileName\+"/src",innerPackageName.replace(".","/"));
 	outerDirectory.mkdirs();
+	sourceDirectory = "../"\+fileName\+"/src/";
   }
 >  void generateAll(Token input){
     for Token element: input.getAllSafely("imports") {
@@ -70,77 +93,102 @@
       }
 	  setupClassList.add(|\ExternalClassEntry.suppliment('' 'className' '', '' 'anonymousPackageName' '');|);
     }
+    String packageFileName = packageName.replace(".",File.separator);
     
     for Token element: input.getAllSafely("class_declaration") {
-	  Class newClass = classGenerator.declaration(element,false,null);
-      String className = ^element->"className";
-	  Boolean isInner = element->"inner" != null;
-	  if isInner {
-		innerClasses.put(newClass.getFullName(),newClass);
-		newClass.outputToFile(\MainFlow.methods,new File(innerDirectory,packageName));
-	  }
-	  else {
-		outerClasses.put(newClass.getFullName(),newClass);
-		newClass.outputToFile(\MainFlow.methods,new File(outerDirectory,packageName));
-		newClass += @'newClass.getName()' "_" = new 'newClass.getName()'()
-		setupClassList.add(|'className'."_".__INIT__();
-		  \MainFlow.outputClasses.add('className'."_");|);
-      }
+      classGenerator.collectClassNames(element);
     }
-    for Token element: input.getAllSafely("method_declaration") {
-	  Method newMethod = method.declaration(element,true,mainClass.getContext());
-	  mainClass.addMethod(newMethod);
-	}
-	for Token element: input.getAllSafely("variable_declaration") {
+    for Token element: input.getAllSafely("variable_declaration") {
 	  Variable newVariable = variable.declaration(element,true,mainClass.getContext());
 	  mainClass.addVariable(newVariable);
 	  variable.addDefinedVariableName(newVariable);
 	}
+    for Token element: input.getAllSafely("method_declaration") {
+	  Method newMethod = method.declaration(element,true,mainClass.getContext());
+	  mainClass.addMethod(newMethod);
+	}
+    for Token element: input.getAllSafely("class_declaration") {
+	  Class innerClass = new Class ();
+	  Class outerClass = new Class ();
+	  classGenerator.declaration(element,innerClass,outerClass,false,null);
+      String className = ^element->"className";
+	  if element->"inner" == null {
+	    innerClass.setIsStatic(false);
+	    outerClass.setIsStatic(false);
+	    innerClass.addVariable(@'outerClass.getName()' "_" = "new "+'outerClass.getName()'+"()";);
+	    innerClass.addInitMethodFromClass(outerClass);
+	    innerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
+		outerClasses.put(outerClass.getFullName(),outerClass);
+		innerClass.removeConstructors();
+		setupClassList.add(|'className'."_".__INIT__();
+		  \MainFlow.outputClasses.add('className'."_");|);
+      }
+	  innerClasses.put(innerClass.getFullName(),innerClass);
+	  innerClass.setPackageName(innerPackageName);
+      innerClass.outputToFile(\MainFlow.methods,innerDirectory);
+    }
+	
   }
 > String parserResult = "Parser.Result";
 > void generate(Parser.Result result){
+    String mainPackageName = sourceDirectory;
     String mainFlow = "MainFlow";
-	class 'packageName' mainFlow FlowController {
+	class 'innerPackageName' mainFlow GeneralFlowController {
 	    @'mainFlow' self = new 'mainFlow'(); 
 	    @Set<Class > outputClasses = new HashSet<Class >();
-	    @File __ROOTDIRECTORY__ = new File(''"."'');
+	    File __ROOTDIRECTORY__ = new File(''"."'');
 	    @void main(String[] args){
 	      if args.length == 1 {
 	        Parser parser = new Parser();
 		    'parserResult' result = parser.parse(args[0]);
-		    self.setupRootDirectory(args[0]);
-		    self.setupGenerators();
-		    self.setup(result);
-		    self.generate(result);
-		    \ExternalImportEntry.solidify();
-		    self.output();
+		    System.out.println(result);
+		    if result.getState() == Parser.SUCCESS {
+		      self.setupRootDirectory(args[0]);
+		      self.setupGenerators();
+		      self.setup(('parserResult'.Pass)result);
+		      self.generate(('parserResult'.Pass)result);
+		      self.output();
+		    }
 	      }
 	      else {
-	        System.err.println(System.err.println('' "No Filename Provided!" ''));
+	        System.err.println('' "No Filename Provided!" '');
 	      }
 	    }
 	    void setupRootDirectory(String fileName){
-	      String fileName = \camelize(fileName);
-	      int indexOfDot = fileName.indexOf(''"."'');
+	      int indexOfDot = fileName.lastIndexOf(''"."'');
 		  if indexOfDot >= 0 {
-		    __ROOTDIRECTORY__ = new File("../"\+fileName.substring(0,indexOfDot)\+"/src");
+		    int indexOfSlash = fileName.lastIndexOf(''"/"'');
+		    if indexOfSlash >= 0 {
+		      __ROOTDIRECTORY__ = new File(''"../"''\+\camelize(fileName.substring(indexOfSlash,indexOfDot))\+''"/src"'');
+		    }
+		    else {
+		      __ROOTDIRECTORY__ = new File(''"../"''\+\camelize(fileName.substring(0,indexOfDot))\+''"/src"'');
+		    }
 		  }
 		  else {
-		    __ROOTDIRECTORY__ = new File("../"\+fileName\+"/src");
+		    __ROOTDIRECTORY__ = new File(''"../"''\+\camelize(fileName)\+''"/src"'');
 		  }
 		  __ROOTDIRECTORY__.mkdirs();
 	    }
 	    void setupGenerators(){
+	      ExternalClassHelper.setup();
 	      `setupClassList`;
 	    }
 	    void output(){
+		  ExternalImportEntry.solidify();
 	      for Class "outputClass": outputClasses {
 	        "outputClass".outputToFile(this,__ROOTDIRECTORY__);
 	      }
+	      for Generator gen:"privateFiles" {
+			gen.outputAll();
+		  }
+		  System.out.println(''"Output Complete"'');
 	    }
 	  }
 	\mainClass = \mainFlowClass; 
+	\mainClass.removeConstructors();
 	\generateAll(((Parser\.\Result\.\Pass)result).\getRoot());
+	\mainClass.outputToFile(\MainFlow.methods,innerDirectory);
   }
 > void name_var(Token input, NameVar nameVar, boolean isInner, Context context){
     if isInner {
@@ -162,50 +210,118 @@
       }
       else if element.getName().equals("concat") {
         ~NameVar right = null;
+        
         for Token atom: element.getAllSafely("name_var") {
 		  if right == null {
 			\name_var(atom,nameVar,isInner,context);
 			right = new NameVar();
 		  }
 		  else {
+		    right = new NameVar();
 			\name_var(atom,right,isInner,context);
+			nameVar.concatenateWith(right);
 		  }
 		}
-		nameVar.concatenateWith(right);
 		if element->"CAMEL" != null {
 		  nameVar.camelize();
 		}
       }
-      else if element.getName().equals("as_method") {
-		nameVar.add(|`body.statement(element->"body_statement",true,context)`|);
+      else if element.getName().equals("statement_as_char") {
+	    nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry('element->"value"'.replace("\\","\\\\")))));
 	  }
-	  else if element.getName().equals("as_quote") {
+      else if element.getName().equals("statement_as_method") {
+		nameVar.add(body.statement(element->"body_statement",true,context));
+	  }
+	  else if element.getName().equals("statement_as_quote") {
 	    Statement asQuoteStatement = body.statement(element->"body_statement",true,context);
-		nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
+	    if isInner {
+		  nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
+		}
+		else {
+		  StringBuilder checkBuilder = new StringBuilder();
+		  asQuoteStatement.get(checkBuilder);
+		  if 'checkBuilder'.startsWith("\"") {
+		    nameVar.add(asQuoteStatement);
+		  }
+		  else {
+		    nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
+		  }
+		}
 	  }
-	  else if element.getName().equals("as_string") {
-		nameVar.add(| `body.statement(element->"body_statement",true,context)`.toString()|);
+	  else if element.getName().equals("statement_as_string") {
+	    
+	    nameVar.add(new Statement (new VariableNameEntry(body.statement(element->"body_statement",true,context)).asString()));
 	  }
 	  else if element.getName().equals("exact") {
-		if element->"WILD" != null {
-		  nameVar.add('element->"WILD"');
+		if element->"quote" != null {
+		  if isInner {
+		    nameVar.add("\""+'element->"quote"'\+"\"");
+		  }
+		  else {
+		    nameVar.add('element->"quote"');
+		  }
 	    }
  		else if element->"variable_names" != null {
  		  nameVar.add('element->"variable_names"');
  		}
  		else {
- 		  nameVar.add('element->"NAME"');
+ 		  ~String value = 'element->"NAME"';
+ 		  if isInner {
+ 		    if nameVar.getParts().size() == 0 && mainClass.getVariables().containsKey(value) {
+ 		      if context == null || context.hasLink(value) == false {
+ 		        value = "MainFlow.self."\+value;
+ 		      }
+ 		    }
+ 		    else if nameVar.getParts().size() == 0 && mainClass.getMethod(value)!=null {
+ 		      if context == null || context.hasLink(value) == false {
+ 		        value = "MainFlow.self."\+value;
+ 		      }
+ 		    }
+ 		  }
+ 		  nameVar.add(value);
  		}
  		if element->"CAMEL" != null {
 		  nameVar.camelize();
 		}
 	  }
 	  else if element.getName().equals("variable") {
-		if element->"WILD" != null {
-		  nameVar.add(|'element->"class_variable_names"'|);
+		if element->"class_variable_names" != null {
+		  ~String value = 'element->"class_variable_names"';
+ 		  if nameVar.getParts().size() == 0 && mainClass.getVariables().containsKey(value) {
+ 		    if context == null || context.hasLink(value) == false {
+ 		      value = "MainFlow.self."\+value;
+ 		    }
+ 		  }
+ 		  else if nameVar.getParts().size() == 0 && mainClass.getMethod(value)!=null {
+ 		    if context == null || context.hasLink(value) == false {
+ 		      value = "MainFlow.self."\+value;
+ 		    }
+ 		  }
+ 		  if isInner {
+ 		    nameVar.add(new ExternalStatement(new StringEntry(value)));
+ 		  }
+ 		  else {
+ 		    nameVar.add(new ExternalStatement(new VariableNameEntry(value)));
+ 		  }
 	    }
  		else if element->"variable_names" != null {
- 		  nameVar.add(|'element->"variable_names"'|);
+ 		  ~String value = 'element->"variable_names"';
+ 		  if nameVar.getParts().size() == 0 && mainClass.getVariables().containsKey(value) {
+ 		    if context == null || context.hasLink(value) == false {
+ 		      value = "MainFlow.self."\+value;
+ 		    }
+ 		  }
+ 		  else if nameVar.getParts().size() == 0 && mainClass.getMethod(value)!=null {
+ 		    if context == null || context.hasLink(value) == false {
+ 		      value = "MainFlow.self."\+value;
+ 		    }
+ 		  }
+ 		  if isInner {
+ 		    nameVar.add(new ExternalStatement(new VariableNameEntry(value)));
+ 		  }
+ 		  else {
+ 		    nameVar.add(new ExternalStatement(new StringEntry(value)));
+ 		  }
  		}
  		if element->"CAMEL" != null {
 		  nameVar.camelize();
@@ -257,29 +373,38 @@
       }
       else if element.getName().equals("concat") {
         ~Type right = null;
+        ~Boolean isFirst = true;
         for Token atom: element.getAllSafely("type_var") {
-          if right == null {
+          if isFirst {
             \type_var(atom,output,isInner,parentContext);
-            right = new Type();
+            isFirst = false;
           }
           else {
+            right = new Type();
             \type_var(atom,right,isInner,parentContext);
           }
         }
-        output.concatenateWith(right);
+        if right != null {
+          output.concatenateWith(right);
+        }
         if element->"CAMEL" != null {
           output.camelize();
         }
       }
-      else if element.getName().equals("as_method") {
+      else if element.getName().equals("statement_as_method") {
         output.addSubClass(|`body.statement(element->"body_statement",true,parentContext)`|);
       }
-      else if element.getName().equals("as_quote") {
+      else if element.getName().equals("statement_as_quote") {
         Statement quoteAsStatement = body.statement(element->"body_statement",true,parentContext);
         output.addSubClass(new Statement (new StringEntry("\""), new StringEntry("\""), quoteAsStatement));
       }
-      else if element.getName().equals("as_string") {
-        output.addSubClass(|`body.statement(element->"body_statement",true,parentContext)`.toString()|);
+      else if element.getName().equals("statement_as_string") {
+        if isInner {
+          output.addSubClass(|`body.statement(element->"body_statement",true,parentContext)`.toString()|);
+        }
+        else {
+          output.addSubClass(body.statement(element->"body_statement",true,parentContext));
+        }
       }
       else if element.getName().equals("exact") {
         if element->"NAME" != null {
@@ -323,29 +448,39 @@
     }
   }
 > void all_type(Token input, Type output, Boolean isInner, Context parentContext){
-	for Token element: input.getAll() {
-	  if element.getName().equals("type_var"){
-		\type_var(element,output,isInner,parentContext);
+    if input.getAll() != null {
+      if input->"type_var" != null {
+        for Token element: input.getAllSafely("type_var") {
+          \type_var(element,output,isInner,parentContext);
+	    }
 	  }
-	  else if element.getName().equals("CLASS_TYPE") {
+	  else {
+	    for Token element: input.getAll() {
+          \all_type(element,output,isInner,parentContext);
+	    }
+	  }
+    }
+    else {
+	  if input.getValue().equals("Class") {
 		output.addSubClass("ExternalClassEntry");
 	  }
-	  else if element.getName().equals("METHOD_TYPE") {
+	  else if input.getValue().equals("Variable") {
 		output.addSubClass("ExternalMethodEntry");
 	  }
-	  else if element.getName().equals("VARIABLE_TYPE") {
+	  else if input.getValue().equals("Variable") {
 		output.addSubClass("ExternalVariableEntry");
 	  }
-	  else if element.getName().equals("BODY_TYPE") {
-		output.addSubClass("ExternalStatmeent.Body");
+	  else if input.getValue().equals("Body") {
+		output.addSubClass(new ExternalStatement.TypeName(|"ExternalStatement"|));
+		output.addSubClass(|"Body"|);
 	  }
-	  else if element.getName().equals("STATEMENT_TYPE") {
+	  else if input.getValue().equals("Statement") {
 		output.addSubClass("ExternalStatement");
 	  }
-	  else if element.getName().equals("PARAMETERS_TYPE") {
+	  else if input.getValue().equals("Parameters") {
 		output.addSubClass("ExternalStatement.Parameters");
 	  }
-	  else if element.getName().equals("CONTEXT_TYPE") {
+	  else if input.getValue().equals("Context") {
 		output.addSubClass("ExternalContext");
 	  }
 	}
@@ -376,6 +511,8 @@ import variables.clws
     ~List<Statement > templateTypes = new ArrayList<Statement >();
     ~Boolean isInlineList = false;
     ~Boolean isInner = true;
+    ~Boolean isPlain = true;
+    ~Boolean isAsVariable = false;
     ~int numberOfArraySymbols = 0;
     ~Boolean hasChanged = false;
     HashSet<Integer> camelizedParts = new HashSet<Integer>();
@@ -399,6 +536,15 @@ import variables.clws
     void outer(){
       isInner = false;
       hasChanged = true;
+    }
+    void as_variable(){
+      isAsVariable = true;
+    }
+    void plain(){
+      isPlain = true;
+    }
+    void as_entry(){
+      isPlain = false;
     }
     TypeStatement statement(Statement statement){
       TypeStatement typeStatement = new TypeStatement();
@@ -463,6 +609,7 @@ import variables.clws
     }
     void addFindMethod(Statement newFindMethod){
       findMethod = newFindMethod;
+      isPlain = false;
     }
     
     void update(){
@@ -470,24 +617,40 @@ import variables.clws
       Statement partStatement = new Statement (".");
       for Integer i < parts.size(){
         List<TypeStatement > part = parts.get(i);
-        Statement concatPart = new Statement("+");
-        for TypeStatement p: part {
-          concatPart.add(p.getAsStatement());
+        Statement concatPart;
+        if part.size() > 1 {
+          concatPart = new Statement("+");
+          for TypeStatement p: part {
+            concatPart.add(p.getAsStatement());
+          }
+        }
+        else {
+          concatPart = part.get(0).getAsStatement();
         }
         if isInner {          
           if i == 0 {
             if camelizedParts.contains(i) {
               if part.size() > 1 || part.get(0).getAsString() == null {
-                partStatement.add(|\ExternalClassEntry.classMap.get(\camelize(`concatPart`))|);
+                if isPlain {
+                  partStatement.add(|`concatPart`|);
+                }
+                else {
+                  partStatement.add(|\ExternalClassEntry.classMap.get(\camelize("\""+`concatPart`+"\""))|);
+                }
               }
               else {
                 String zerothPartAsString = part.get(0).getAsString();
-                partStatement.add(|^zerothPartAsString|);
+                partStatement.add(|'^zerothPartAsString'|);
               }
             }
             else {
               if part.size() > 1 || part.get(0).getAsString() == null {
-                partStatement.add(|\ExternalClassEntry.classMap.get(`concatPart`)|);
+                if isPlain {
+                  partStatement.add(|`concatPart`|);
+                }
+                else {
+                  partStatement.add(|\ExternalClassEntry.classMap.get("\""+`concatPart`+"\"")|);
+                }
               }
               else {
                 partStatement.add(|'part.get(0).getAsString()'|);
@@ -497,7 +660,12 @@ import variables.clws
           else {
             if camelizedParts.contains(i) {
               if part.size() > 1 || part.get(0).getAsString() == null {
-                partStatement.add(|\getSubClass(\camelize(`concatPart`))|);
+                if isPlain {
+                  partStatement.add(|`concatPart`|);
+                }
+                else {
+                  partStatement.add(|\getSubClass(\camelize("\""+`concatPart`+"\""))|);
+                }
               }
               else {
                 String zerothPartAsString = part.get(0).getAsString();
@@ -506,7 +674,12 @@ import variables.clws
             }
             else {
               if part.size() > 1 || part.get(0).getAsString() == null {
-                partStatement.add(|\getSubClass(`concatPart`)|);
+                if isPlain {
+                  partStatement.add(|`concatPart`|);
+                }
+                else {
+                  partStatement.add(|\getSubClass("\""+`concatPart`+"\"")|);
+                }
               }
               else {
                 partStatement.add(|'part.get(0).getAsString()'|);
@@ -520,8 +693,8 @@ import variables.clws
               partStatement.add(|\camelize(`concatPart`)|);
             }
             else {
-              String zerothPartAsString = part.get(0).getAsString();
-              partStatement.add(|^zerothPartAsString|);
+              String zerothPartAsString = \MainFlow.camelize(part.get(0).getAsString());
+              partStatement.add(|'zerothPartAsString'|);
             }
           }
           else {
@@ -534,7 +707,12 @@ import variables.clws
           }
         }
       }
-      asPublicStatement.setTypeName(partStatement);
+      if parts.size() == 1 {
+        asPublicStatement.setTypeName(partStatement.get(0));
+      }
+      else {
+        asPublicStatement.setTypeName(partStatement);
+      }
       if templateTypes.isEmpty() == false {
         Statement templateStatement = new Statement (",");
         for Statement type: templateTypes {
@@ -549,7 +727,21 @@ import variables.clws
         asPublicStatement.add(|"..."|);
       }
       if findMethod != null {
-        asPublicStatement.add(|\getMethod(`findMethod`)|);
+        asPublicStatement.add(|".getMethod"(`findMethod`)|);
+      }
+      if isPlain && isInner && isAsVariable {
+        String lastAsString;
+        if parts.get(parts.size()-1).get(0).getAsString() != null {
+          lastAsString  = parts.get(parts.size()-1).get(0).getAsString(); 
+        }
+        else {
+          StringBuilder lastBuilder = new StringBuilder();
+          parts.get(parts.size()-1).get(0).getAsStatement().get(lastBuilder);
+          lastAsString = lastBuilder.toString();
+        }
+        if classGenerator.hasDefinedClassName('lastAsString') {
+          asPublicStatement.add(|"._"|);
+        }
       }
     }
   }
@@ -561,7 +753,9 @@ import variables.clws
     ~List<String> strings = new ArrayList<String    >();
     ~Boolean hasChanged = false;
     ~Boolean isInner = true;
+    ~Boolean isCamelized = false;
     HashSet<Integer> camelizedParts = new HashSet<Integer>();
+    HashSet<Integer> asStatementParts = new HashSet<Integer>();
     
     
     ExternalStatement getAsStatement(){
@@ -581,6 +775,7 @@ import variables.clws
     
     void camelize(){
       camelizedParts.add(parts.size()\-1);
+      isCamelized = true;
     }
     void inner(){
       isInner = true;
@@ -601,7 +796,7 @@ import variables.clws
     }
     void add(String subStatement){
       List< Statement > part = new ArrayList< Statement > ();
-      part.add(|'' 'subStatement' ''|);
+      part.add(|'subStatement'|);
       parts.add(part);
       strings.add(subStatement);
       hasChanged = true;
@@ -609,47 +804,71 @@ import variables.clws
     void add(NameVar otherNameVar){
       parts.addAll(otherNameVar.parts);
       strings.addAll(otherNameVar.strings);
+      if otherNameVar.isCamelized {
+        isCamelized = true;
+      }
       hasChanged = true;
     }
     void concatenateWith(NameVar otherNameVar){
       parts.get(parts.size()-1).addAll(otherNameVar.parts.get(0));
-      ~int i = 0;
+      ~int i = 1;
       while i < otherNameVar.parts.size() {
         parts.add(otherNameVar.parts.get(i));
         i \+= 1;
       }
       strings.addAll(otherNameVar.strings);
+      if otherNameVar.isCamelized {
+        isCamelized = true;
+      }
       hasChanged = true;
     }
     void update(){
       asPublicStatement.clear();
-      Statement newStatement = new Statement ();
+      Statement newStatement = new Statement (".");
       ~int i = 0;
       for List<Statement > partList: parts {
-        Statement concatStatement = new Statement ("+");
+        Statement concatStatement;
+        if partList.size() > 1 {
+           if isInner {
+             concatStatement = new Statement ("+");
+           }
+           else {
+             concatStatement = new Statement ();
+           }
+        }
+        else {
+           concatStatement = newStatement;
+        }
         for Statement part: partList {
           if isInner {
-            if camelizedParts.contains(i) {
-              String string = strings.get(i);
-              concatStatement.add(|^string|);
+            String string = \MainFlow.camelize(strings.get(i));
+            if i == 0 || partList.size() > 1 {
+              concatStatement.add(part);
             }
             else {
-              concatStatement.add(part);
+              concatStatement.add(|\get(`part`)|);
             }
           }
           else {
-            if camelizedParts.contains(i) {
-              concatStatement.add(|\camelize(`part`)|);
-            }
-            else {
-              concatStatement.add(part);
-            }
+            concatStatement.add(part);
           }
         }
-        newStatement.add(concatStatement);
+        if partList.size() > 1 {
+          if i == 0 || isInner == false {
+            newStatement.add(concatStatement);
+          }
+          else {
+            newStatement.add(|\get(`concatStatement`)|);
+          }
+        }
         i \+= 1;
       }
-      asPublicStatement.add(newStatement);
+      if isCamelized {
+        asPublicStatement.add(|\MainFlow.camelize((`newStatement`).\toString())|);
+      }
+      else {
+        asPublicStatement.add(newStatement);
+      }
       StringBuilder stringBuilder = new StringBuilder();
       i = 0;
       for String string: strings {

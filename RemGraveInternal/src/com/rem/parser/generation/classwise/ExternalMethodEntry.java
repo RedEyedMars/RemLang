@@ -1,5 +1,6 @@
 package com.rem.parser.generation.classwise;
 import com.rem.parser.generation.*;
+import com.rem.parser.generation.classwise.ExternalStatement.NewObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -182,12 +183,17 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		}
 		if(isInterface){
 			builder.append(")");
-			builder.append(throwsStatement);
+			if(throwsStatement!=null){
+				builder.append(throwsStatement);	
+			}
+			
 			builder.append(";");
 		}
 		else {
 			builder.append(")");
-			builder.append(throwsStatement);
+			if(throwsStatement!=null){
+				builder.append(throwsStatement);	
+			}
 			builder.append("{");
 			for(int i=0;i<body.size();++i){
 				body.get(i).setTabs(tabs+1);
@@ -250,14 +256,13 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	//public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters , String throwStatement, ExternalStatement.Body body){
 	
 	public ExternalStatement getAsStatement(){
-		
-		
-		ExternalStatement completeStatement = new ExternalStatement(new StringEntry("new ExternalMethodEntry("),new StringEntry(")"),",",
+		ExternalStatement.Parameters completeStatement = new ExternalStatement.Parameters(
 				new ExternalStatement(new StringEntry("0")),
 				new ExternalStatement(new StringEntry(isStatic+"")),
-				ExternalClassHelper.getAsStatementFromEntry(type),
-				new ExternalStatement(new StringEntry(typeSuffix)),
-				ExternalClassHelper.getAsStatementFromEntry(name));
+				type!=null?ExternalClassHelper.getAsStatementFromEntry(type):new ExternalStatement(new StringEntry("null")),
+				typeSuffix!=null?ExternalClassHelper.getAsStatementFromEntry(typeSuffix):new ExternalStatement(new StringEntry("null")),
+				name!=null?ExternalClassHelper.getAsStatementFromEntry(name):new ExternalStatement(new StringEntry("null"))
+				);
 		if(parametersAsStatement != null){
 			completeStatement.add(ExternalClassHelper.getAsStatementFromEntry(parametersAsStatement));
 		}
@@ -267,22 +272,16 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 				variableAsParameters.add(variable.getAsStatement());
 			}
 			completeStatement.add(
-				new ExternalStatement(new StringEntry("Arrays.asList("),new StringEntry(")"),variableAsParameters));
+				new ExternalStatement(new StringEntry("Arrays.asList("),new StringEntry(")"),new NewObject(new ExternalStatement.TypeName("ExternalVariableEntry"),variableAsParameters,new ExternalStatement.ArrayParameters())));
 		}
-		completeStatement.add(throwsStatement == null?new ExternalStatement(new StringEntry("null")):new ExternalStatement(new StringEntry(throwsStatement)));
+		completeStatement.add(throwsStatement == null?new ExternalStatement(new StringEntry("null")):ExternalClassHelper.getAsStatementFromEntry(throwsStatement));
 		if(body!=null){
-			ExternalStatement bodyAsParameters = new ExternalStatement();
-			for(ExternalStatement statement:body){
-				bodyAsParameters.add(statement.getAsStatement());
-			}
-			completeStatement.add(
-				new ExternalStatement(new StringEntry("new ExternalStatement.Body("),new StringEntry(")"),bodyAsParameters)
-				);
+			completeStatement.add(body.getAsStatement());
 		}
 		else {
 			completeStatement.add(new ExternalStatement(new StringEntry("null")));
 		}
-		return completeStatement;
+		return new ExternalStatement.NewObject(new ExternalStatement.TypeName("ExternalMethodEntry"),completeStatement);
 				
 	}
 }

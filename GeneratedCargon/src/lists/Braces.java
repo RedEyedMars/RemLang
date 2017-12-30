@@ -28,7 +28,9 @@ public class Braces extends ParseList {
 									Rules.regex_option)),"REGEX_OPTION","braces","[,]");
 	public static final BracedParser REGEX_GROUP = new BracedParser(
 							Rules.regex,"REGEX_GROUP","braces","(,)");
+	public static final BracedParser SINGLE_CHAR_CAPTURE = new BracedParser(
+							CargonTokens.WILD,"SINGLE_CHAR_CAPTURE","braces","[,]");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				BRACE,REGEX,REGEX_OPTION,REGEX_GROUP);
+				BRACE,REGEX,REGEX_OPTION,REGEX_GROUP,SINGLE_CHAR_CAPTURE);
 }

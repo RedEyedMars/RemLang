@@ -14,7 +14,7 @@ import clent.*;
 import java.util.*;
 import java.io.*;
 import java.nio.*;
-import com.rem.crg.parser.Token;
+import com.rem.gen.parser.Token;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,8 +60,14 @@ public ExternalVariableEntry declaration(final Token declaration,final Boolean m
 	if (declaration.get("method_argument") != null) {
 		newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
 	}
-	if (declaration.get("WEAK") != null) {
+	if (isInner) {
+		newVariable.setIsFinal(true);
+	}
+	if (declaration.get("weak") != null) {
 		newVariable.setIsFinal(false);
+	}
+	else  {
+		newVariable.setHasSetMethod(false);
 	}
 	if (declaration.get("static") != null) {
 		newVariable.setIsStatic(true);

@@ -7,22 +7,27 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private Entry assignment = null;
 	private ExternalContext classContext;
 	private boolean isStatic;
-	private boolean isWeak = false;
+	private boolean isFinal = false;
 	private String typeSuffix = "";
+	private boolean hasSetMethod = true;
 	
 	public ExternalVariableEntry(){
 	}
 	
+	public ExternalVariableEntry(boolean hasSetMethod, boolean isStatic, boolean isFinal, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
+		this(isStatic,isFinal,type,typeSuffix,name,assignment);
+		this.hasSetMethod  = hasSetMethod;
+	}
 	public ExternalVariableEntry(Boolean isStatic, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 		this(isStatic,false,type,typeSuffix,name,assignment);
 	}
-	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
+	public ExternalVariableEntry(Boolean isStatic, Boolean isFinal, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 		this.isStatic = isStatic;
 		this.type = type;
 		this.typeSuffix = typeSuffix;
 		this.name = name;
 		this.assignment = assignment;
-		this.isWeak = isWeak;
+		this.isFinal = isFinal;
 		addImport(new ImportEntry(type));
 		if(assignment!=null){
 			addSubImport(assignment);
@@ -52,12 +57,16 @@ public class ExternalVariableEntry extends ExternalStatement {
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
 	}
-	public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name){
+	public ExternalVariableEntry(boolean hasSetMethod, boolean isStatic, boolean isFinal, Entry type, String typeSuffix, Entry name){
+		this(isStatic,isFinal,type,typeSuffix,name);
+		this.hasSetMethod  = hasSetMethod;
+	}
+	public ExternalVariableEntry(Boolean isStatic, Boolean isFinal, Entry type, String typeSuffix, Entry name){
 		this.isStatic = isStatic;
 		this.type = type;
 		this.typeSuffix = typeSuffix;
 		this.name = name;
-		this.isWeak = isWeak;
+		this.isFinal = isFinal;
 		addImport(new ImportEntry(type));
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
@@ -67,12 +76,6 @@ public class ExternalVariableEntry extends ExternalStatement {
 		StringBuilder builder = new StringBuilder();
 		name.get(builder);
 		return builder.toString();
-	}
-	public boolean isWeak(){
-		return isWeak;
-	}
-	public void setIsWeak(Boolean newIsWeak){
-		isWeak = newIsWeak;
 	}
 	public Entry getType(){
 		return type;
@@ -116,7 +119,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsParameter(){
-		if(isWeak){
+		if(hasSetMethod){
 			return null;
 		}
 		return new Entry(){
@@ -132,7 +135,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsConstructorElement(){
-		if(isWeak){
+		if(hasSetMethod){
 			return null;
 		}
 		//final ExternalVariableEntry self = this;
@@ -153,7 +156,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsSuperParameter(){
-		if(isWeak){
+		if(hasSetMethod){
 			return null;
 		}
 		return new Entry(){
@@ -170,7 +173,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		};
 	}
 	public Entry getAsSuperArgument(){
-		if(isWeak){
+		if(hasSetMethod){
 			return null;
 		}
 		return new Entry(){
@@ -197,6 +200,9 @@ public class ExternalVariableEntry extends ExternalStatement {
 		if(isStatic){
 			builder.append("static ");
 		}
+		if(isFinal){
+			builder.append("final ");
+		}
 		if(type != null){
 			type.get(builder);
 			builder.append(typeSuffix);
@@ -216,22 +222,23 @@ public class ExternalVariableEntry extends ExternalStatement {
 		}
 		return typeBuilder.toString();
 	}
-	//public ExternalVariableEntry(Boolean isStatic, Boolean isWeak, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
+	//public ExternalVariableEntry(Boolean isStatic, Boolean isFinal, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 	@Override
 	public ExternalStatement getAsStatement(){
-		return new ExternalStatement(new StringEntry("new ExternalVariableEntry("),new StringEntry(")"),",",
+		return new ExternalStatement.NewObject(new ExternalStatement.TypeName("ExternalVariableEntry"),new ExternalStatement.Parameters(
+				new ExternalStatement(new StringEntry(hasSetMethod+"")),
 				new ExternalStatement(new StringEntry(isStatic+"")),
-				new ExternalStatement(new StringEntry(isWeak+"")),
+				new ExternalStatement(new StringEntry(isFinal+"")),
 				ExternalClassHelper.getAsStatementFromEntry(type),
-				new ExternalStatement(new StringEntry(typeSuffix)),
+				ExternalClassHelper.getAsStatementFromEntry(typeSuffix),
 				ExternalClassHelper.getAsStatementFromEntry(name),
 				assignment==null?
 						new ExternalStatement(new StringEntry("null")):
 						ExternalClassHelper.getAsStatementFromEntry(assignment)
-				);
+				));
 	}
 	public ExternalStatement getNameAsStatement(){
-	   return ExternalClassHelper.getAsStatementFromEntry(name);
+	   return new ExternalStatement(name);
 	}
 	public void setType(Entry newType){
 		type = newType;
@@ -249,9 +256,19 @@ public class ExternalVariableEntry extends ExternalStatement {
 		isStatic = newStatic;
 	}
 	public void setIsFinal(Boolean newIsFinal){
-		isWeak = !newIsFinal;
+		isFinal = newIsFinal;
 	}
 	public void addArraySymbol(){
 		typeSuffix = typeSuffix + "[]";
+	}
+
+	public boolean isFinal() {
+		return isFinal;
+	}
+	public boolean hasSetMethod(){
+		return hasSetMethod;
+	}
+	public void setHasSetMethod(boolean newHasSetMethod){
+		hasSetMethod = newHasSetMethod;
 	}
 }

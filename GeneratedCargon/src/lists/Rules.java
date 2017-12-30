@@ -24,6 +24,8 @@ public class Rules extends ParseList {
 	public static final IRule base = Base.parser;
 	public static final IRule rule = Rule.parser;
 	public static final IRule list = List.parser;
+	public static final IRule ignores = Ignores.parser;
+	public static final IRule ignores_element = IgnoresElement.parser;
 	public static final IRule definition = Definition.parser;
 	public static final IRule element = Element.parser;
 	public static final IRule atom = Atom.parser;
@@ -32,5 +34,5 @@ public class Rules extends ParseList {
 	public static final IRule regex_special = RegexSpecial.parser;
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				uote,regex_option,rule_params,braced_parameters,import_parameters,base,rule,list,definition,element,atom,regex,regex_element,regex_special);
+				uote,regex_option,rule_params,braced_parameters,import_parameters,base,rule,list,ignores,ignores_element,definition,element,atom,regex,regex_element,regex_special);
 }

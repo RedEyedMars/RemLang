@@ -22,5 +22,8 @@ public class TabEntry implements Entry {
 	public void setTab(int tabs) {
 		this.numberOfTabs = tabs;
 	}
+	public Entry getEntry(){
+		return subEntry;
+	}
 }
 

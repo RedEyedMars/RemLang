@@ -14,7 +14,7 @@ import clent.*;
 import java.util.*;
 import java.io.*;
 import java.nio.*;
-import com.rem.crg.parser.Token;
+import com.rem.gen.parser.Token;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -42,7 +42,7 @@ public void addDefinedMethodName(final ExternalMethodEntry newMethod)  {
 	definedMethodNames.add(newMethod.getName());
 }
 public ExternalMethodEntry declaration(final Token declaration,final Boolean isInner,final ExternalContext parentContext)  {
-	return definition(declaration.get("methodDefinition"),isInner,parentContext);
+	return definition(declaration,isInner,parentContext);
 }
 public ExternalMethodEntry definition(final Token input,final Boolean mustInner,final ExternalContext parentContext)  {
 	final Boolean isInner = mustInner || input.get("inner") != null;
@@ -60,15 +60,20 @@ public ExternalMethodEntry definition(final Token input,final Boolean mustInner,
 	final ExternalStatement.Body methodBody = new ExternalStatement.Body();
 	methodBody.setParentContext(parentContext);
 	final ExternalContext context = methodBody.getContext();
-	if (input.get("inline") != null) {
-		final List<ExternalVariableEntry> parameters = new ArrayList<ExternalVariableEntry>();
-		for (final Token element :  input.get("inline").getAllSafely("variable_declaration")) {
-			parameters.add(MainFlow.variables.get_variable().declaration(element,isInner,parentContext));
+	if ((input.get("inline") != null)) {
+		if (input.get("inline").get("method_parameters") != null) {
+			final List<ExternalVariableEntry> parameters = new ArrayList<ExternalVariableEntry>();
+			for (final Token element :  input.get("inline").get("method_parameters").getAllSafely("variable_declaration")) {
+				parameters.add(MainFlow.variables.get_variable().declaration(element,isInner,parentContext));
+			}
+			newMethod.setParameters(parameters);
 		}
-		newMethod.setParameters(parameters);
 	}
 	else if (input.get("variableParameters") != null) {
 		newMethod.setParametersAsStatement(MainFlow.variables.get_body().statement(input.get("variableParameters").get("body_statement"),true,parentContext));
+	}
+	else  {
+		newMethod.setParameters(new ArrayList<ExternalVariableEntry>());
 	}
 	if (input.get("throwException") != null) {
 		final StringBuilder exceptionBuilder = new StringBuilder();

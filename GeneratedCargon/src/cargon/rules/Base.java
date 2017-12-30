@@ -22,6 +22,7 @@ public class Base extends ConcreteRule {
 							new ChoiceParser(
 									CargonTokens.NEWLINE,
 									Comments.parser,
+									Rules.ignores,
 									new AddTokenToListParser(
 										Rules.list,"list","lists"),
 									new AddTokenToListParser(

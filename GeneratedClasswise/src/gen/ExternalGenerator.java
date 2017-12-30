@@ -97,14 +97,14 @@ public class ExternalGenerator extends Generator {
 			"\n		private void add_variable_",/*Variable Index*/"() {"+
 			"\n	 		addVariable(",/*Variable Constructor*/");"+
 			"\n	 	}"});
-	public static final Element declareVariableAsInlineListElement = new Element("declareVariableAsInlineList",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", new ExternalStatement(new StringEntry(\"...\"), ",/*Name*/"))"});
-	public static final Element declareVariableWithAssignmentFinalElement = new Element("declareVariableWithAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareVariableWithAssignmentNonFinalElement = new Element("declareVariableWithAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareVariableWithoutAssignmentNonFinalElement = new Element("declareVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(false, true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
-	public static final Element declareVariableWithoutAssignmentFinalElement = new Element("declareVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
-	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
-	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
-	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareVariableAsInlineListElement = new Element("declareVariableAsInlineList",new String[]{"new ExternalVariableEntry(false,false, ",/*Type*/",\"",/*Array*/"\", new ExternalStatement(new StringEntry(\"...\"), ",/*Name*/"))"});
+	public static final Element declareVariableWithAssignmentFinalElement = new Element("declareVariableWithAssignmentFinal",new String[]{"new ExternalVariableEntry(false,false, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareVariableWithAssignmentNonFinalElement = new Element("declareVariableWithAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true,false, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareVariableWithoutAssignmentNonFinalElement = new Element("declareVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true,false, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareVariableWithoutAssignmentFinalElement = new Element("declareVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(false,false, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareStaticVariableWithAssignmentElement = new Element("declareStaticVariableWithAssignment",new String[]{"new ExternalVariableEntry(true,true, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/", ",/*Assignment*/")"});
+	public static final Element declareStaticVariableWithoutAssignmentNonFinalElement = new Element("declareStaticVariableWithoutAssignmentNonFinal",new String[]{"new ExternalVariableEntry(true,true, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
+	public static final Element declareStaticVariableWithoutAssignmentFinalElement = new Element("declareStaticVariableWithoutAssignmentFinal",new String[]{"new ExternalVariableEntry(false,true, false, ",/*Type*/",\"",/*Array*/"\", ",/*Name*/")"});
 	public static final Element callMethodAddMethodElement = new Element("callMethodAddMethod",new String[]{""+
 			"\n		add_method_",/*Variable Index*/"();"});
 	public static final Element declareMethodAddMethodElement = new Element("declareMethodAddMethod",new String[]{""+

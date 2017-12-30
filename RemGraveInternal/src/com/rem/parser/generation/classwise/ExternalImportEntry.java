@@ -72,7 +72,6 @@ public abstract class ExternalImportEntry implements Entry{
 	private static class ImportSet extends HashMap<String,Set<String>> implements Entry{
 
 		private static final long serialVersionUID = 372051253943029641L;
-		private static String lul = "[]";
 		public void add(String packageName, String className){
 			if(!containsKey(packageName)){
 				put(packageName, new HashSet<String>());
@@ -88,7 +87,7 @@ public abstract class ExternalImportEntry implements Entry{
 				ExternalClassEntry parentClass = ExternalClassEntry.classMap.get(classFinder.toString());
 				if(parentClass!=null){
 					for(String key: parentClass.getVariables().keySet()){
-						if(!parentClass.getVariables().get(key).isWeak()){
+						if(!parentClass.getVariables().get(key).isFinal()){
 							StringBuilder typeFinder = new StringBuilder();
 							parentClass.getVariables().get(key).getType().get(typeFinder);
 
@@ -109,7 +108,6 @@ public abstract class ExternalImportEntry implements Entry{
 			StringBuilder classFinder = new StringBuilder();
 			entry.getName().get(classFinder);
 			String firstName = classFinder.toString();
-			lul = firstName;
 			int indexOfAngle = firstName.indexOf('<');
 			if(indexOfAngle>-1){
 				firstName = firstName.substring(0, indexOfAngle);

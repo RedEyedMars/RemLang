@@ -37,6 +37,7 @@ public class CargonTokens extends ParseList {
 	public static final ExactParser TAB = new ExactParser("TAB","cargon_tokens","\t");
 	public static final ExactParser NEWTAB = new ExactParser("NEWTAB","cargon_tokens","\n\t");
 	public static final ExactParser COLON = new ExactParser("COLON","cargon_tokens",":");
+	public static final ExactParser SEMICOLON = new ExactParser("SEMICOLON","cargon_tokens",";");
 	public static final ExactParser SILENT = new ExactParser("SILENT","cargon_tokens","silent");
 	public static final ExactParser BRACED = new ExactParser("BRACED","cargon_tokens","Braced");
 	public static final ExactParser IMPORTS = new ExactParser("IMPORTS","cargon_tokens","Imports");
@@ -49,10 +50,12 @@ public class CargonTokens extends ParseList {
 	public static final ExactParser REGEX_WHITESPACE = new ExactParser("REGEX_WHITESPACE","cargon_tokens","\\s");
 	public static final ExactParser REGEX_DOT = new ExactParser("REGEX_DOT","cargon_tokens","\\.");
 	public static final ExactParser REGEX_QUOTE = new ExactParser("REGEX_QUOTE","cargon_tokens","\\\"");
-	public static final ExactParser REGEX_APOS = new ExactParser("REGEX_APOS","cargon_tokens","\\\'");
+	public static final ExactParser REGEX_APOS = new ExactParser("REGEX_APOS","cargon_tokens","\\'");
 	public static final ExactParser PASS_SYMBOL = new ExactParser("PASS_SYMBOL","cargon_tokens","@");
 	public static final ExactParser GLOBAL = new ExactParser("GLOBAL","cargon_tokens","global");
+	public static final ExactParser IGNORE = new ExactParser("IGNORE","cargon_tokens","ignore");
+	public static final ExactParser BACKSLASH = new ExactParser("BACKSLASH","cargon_tokens","\\");
 
 	public static final ChoiceParser parser = new ChoiceParser(
-				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS,PASS_SYMBOL,GLOBAL);
+				NAME,NEWLINE,WILD,ANYCHAR,NUMBER,NONSPACE,CHAR_QUOTE,quote,PIPE,PLUS,OPTIONAL,MANY,AS,IN,WITH,ARE,COMMA,FROM,DOT,TAB,NEWTAB,COLON,SEMICOLON,SILENT,BRACED,IMPORTS,ACCESS,LIST,EQUALSIGN,CARROT,DASH,REGEX_NUMBER,REGEX_WHITESPACE,REGEX_DOT,REGEX_QUOTE,REGEX_APOS,PASS_SYMBOL,GLOBAL,IGNORE,BACKSLASH);
 }

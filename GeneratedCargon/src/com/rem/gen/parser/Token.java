@@ -1,12 +1,12 @@
-package com.rem.crg.parser;
+package com.rem.gen.parser;
 import java.util.*;
 import java.io.*;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import com.rem.crg.parser.Token;
-import com.rem.crg.parser.Parser;
+import com.rem.gen.parser.Token;
+import com.rem.gen.parser.Parser;
 
 public  interface Token{
 	public Token get(String tokenName);
@@ -48,6 +48,9 @@ public  interface Token{
 		}
 		public String getName(){
 			return name;
+		}
+		public void setName(String newName){
+			name = newName;
 		}
 		public String getValue(){
 			return null;
@@ -109,17 +112,32 @@ public  interface Token{
 		public String getName(){
 			return name;
 		}
+		public void setName(String newName){
+			name = newName;
+		}
 		public String getValue(){
 			return value;
+		}
+		public void setValue(String newValue){
+			value = newValue;
 		}
 		public Integer getPosition(){
 			return position;
 		}
+		public void setPosition(Integer newPosition){
+			position = newPosition;
+		}
 		public Integer getParentPosition(){
 			return parentPosition;
 		}
+		public void setParentPosition(Integer newParentPosition){
+			parentPosition = newParentPosition;
+		}
 		public Parser.Result.Pass getContext(){
 			return context;
+		}
+		public void setContext(Parser.Result.Pass newContext){
+			context = newContext;
 		}
 		public Token getLast(){
 			return null;
@@ -205,14 +223,26 @@ public  interface Token{
 		public String getName(){
 			return name;
 		}
+		public void setName(String newName){
+			name = newName;
+		}
 		public Integer getPosition(){
 			return position;
+		}
+		public void setPosition(Integer newPosition){
+			position = newPosition;
 		}
 		public Integer getParentPosition(){
 			return parentPosition;
 		}
+		public void setParentPosition(Integer newParentPosition){
+			parentPosition = newParentPosition;
+		}
 		public Parser.Result.Pass getContext(){
 			return context;
+		}
+		public void setContext(Parser.Result.Pass newContext){
+			context = newContext;
 		}
 		public String getValue(){
 			return children.get(0).getValue();

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import com.rem.parser.generation.classwise.ExternalStatement;
 import clgen.TypeStatement;
+import java.lang.StringBuilder;
 public class  Type   {
 	public static class classes {
 	}
@@ -33,6 +34,8 @@ protected List<List<TypeStatement>> parts = new ArrayList<List<TypeStatement>>()
 protected List<ExternalStatement> templateTypes = new ArrayList<ExternalStatement>();
 protected Boolean isInlineList = false;
 protected Boolean isInner = true;
+protected Boolean isPlain = true;
+protected Boolean isAsVariable = false;
 protected int numberOfArraySymbols = 0;
 protected Boolean hasChanged = false;
 protected final HashSet<Integer> camelizedParts = new HashSet<Integer>();
@@ -67,6 +70,18 @@ protected ExternalStatement findMethod = null;
 	}
 	public Boolean get_isInner()  {
 		return isInner;
+	}
+	public Boolean getIsPlain()  {
+		return isPlain;
+	}
+	public Boolean get_isPlain()  {
+		return isPlain;
+	}
+	public Boolean getIsAsVariable()  {
+		return isAsVariable;
+	}
+	public Boolean get_isAsVariable()  {
+		return isAsVariable;
 	}
 	public int getNumberOfArraySymbols()  {
 		return numberOfArraySymbols;
@@ -109,6 +124,15 @@ public void inner()  {
 public void outer()  {
 	isInner = false;
 	hasChanged = true;
+}
+public void as_variable()  {
+	isAsVariable = true;
+}
+public void plain()  {
+	isPlain = true;
+}
+public void as_entry()  {
+	isPlain = false;
 }
 public TypeStatement statement(final ExternalStatement statement)  {
 	final TypeStatement typeStatement = new TypeStatement();
@@ -173,36 +197,53 @@ public void concatenateWith(final Type otherType)  {
 }
 public void addFindMethod(final ExternalStatement newFindMethod)  {
 	findMethod = newFindMethod;
+	isPlain = false;
 }
 public void update()  {
 	asPublicStatement.clear();
 	final ExternalStatement partStatement = new ExternalStatement(".");
 	for (Integer i = 0; i <  parts.size(); ++i) {
 		final List<TypeStatement> part = parts.get(i);
-		final ExternalStatement concatPart = new ExternalStatement("+");
-		for (final TypeStatement p :  part) {
-			concatPart.add(p.getAsStatement());
+		final ExternalStatement concatPart;
+		if (part.size() > 1 ) {
+			concatPart = new ExternalStatement("+");
+			for (final TypeStatement p :  part) {
+				concatPart.add(p.getAsStatement());
+			}
+		}
+		else  {
+			concatPart = part.get(0).getAsStatement();
 		}
 		if (isInner) {
 			if (i == 0 ) {
 				if (camelizedParts.contains(i)) {
 					if (part.size() > 1  || part.get(0).getAsString() == null) {
-						partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+						if (isPlain) {
+							partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
+						}
+						else  {
+							partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("ExternalClassEntry"))), /*Enty*/new ExternalStatement(new StringEntry("classMap"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart)))))))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"")), /*InCl*/new ExternalStatement(concatPart))), /*Name*/new ExternalStatement(new StringEntry("\""))))))))))))));
+						}
 					}
 					else  {
 						final String zerothPartAsString = part.get(0).getAsString();
-						partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry(FlowController.camelize("zerothPartAsString"))))));
+						partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(FlowController.camelize(zerothPartAsString.toString()).toString())))));
 					}
 				}
 				else  {
 					if (part.size() > 1  || part.get(0).getAsString() == null) {
-						partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+						if (isPlain) {
+							partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
+						}
+						else  {
+							partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("ExternalClassEntry"))), /*Enty*/new ExternalStatement(new StringEntry("classMap"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"")), /*InCl*/new ExternalStatement(concatPart))), /*Name*/new ExternalStatement(new StringEntry("\"")))))))))));
+						}
 					}
 					else  {
 						partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(part.get(0).getAsString().toString())))));
@@ -212,7 +253,12 @@ public void update()  {
 			else  {
 				if (camelizedParts.contains(i)) {
 					if (part.size() > 1  || part.get(0).getAsString() == null) {
-						partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("getSubClass")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))))))))));
+						if (isPlain) {
+							partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
+						}
+						else  {
+							partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("getSubClass")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"")), /*InCl*/new ExternalStatement(concatPart))), /*Name*/new ExternalStatement(new StringEntry("\"")))))))))))));
+						}
 					}
 					else  {
 						final String zerothPartAsString = part.get(0).getAsString();
@@ -221,7 +267,12 @@ public void update()  {
 				}
 				else  {
 					if (part.size() > 1  || part.get(0).getAsString() == null) {
-						partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("getSubClass")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart)))))));
+						if (isPlain) {
+							partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
+						}
+						else  {
+							partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("getSubClass")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"")), /*InCl*/new ExternalStatement(concatPart))), /*Name*/new ExternalStatement(new StringEntry("\""))))))))));
+						}
 					}
 					else  {
 						partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(part.get(0).getAsString().toString())))));
@@ -235,8 +286,8 @@ public void update()  {
 					partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart)))))));
 				}
 				else  {
-					final String zerothPartAsString = part.get(0).getAsString();
-					partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry(FlowController.camelize("zerothPartAsString"))))));
+					final String zerothPartAsString = MainFlow.camelize(part.get(0).getAsString());
+					partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(zerothPartAsString.toString())))));
 				}
 			}
 			else  {
@@ -249,7 +300,12 @@ public void update()  {
 			}
 		}
 	}
-	asPublicStatement.setTypeName(partStatement);
+	if (parts.size() == 1 ) {
+		asPublicStatement.setTypeName(partStatement.get(0));
+	}
+	else  {
+		asPublicStatement.setTypeName(partStatement);
+	}
 	if (templateTypes.isEmpty() == false) {
 		final ExternalStatement templateStatement = new ExternalStatement(",");
 		for (final ExternalStatement type :  templateTypes) {
@@ -264,7 +320,21 @@ public void update()  {
 		asPublicStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("...")))));
 	}
 	if (findMethod != null) {
-		asPublicStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("getMethod")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(findMethod)))))));
+		asPublicStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry(".getMethod")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(findMethod)))))));
+	}
+	if (isPlain && isInner && isAsVariable) {
+		final String lastAsString;
+		if (parts.get(parts.size() - 1).get(0).getAsString() != null) {
+			lastAsString = parts.get(parts.size() - 1).get(0).getAsString();
+		}
+		else  {
+			final StringBuilder lastBuilder = new StringBuilder();
+			parts.get(parts.size() - 1).get(0).getAsStatement().get(lastBuilder);
+			lastAsString = lastBuilder.toString();
+		}
+		if (MainFlow.variables.get_classGenerator().hasDefinedClassName(lastAsString.toString())) {
+			asPublicStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("._")))));
+		}
 	}
 }
 

@@ -26,6 +26,7 @@ cargon_token-s
 	"\t" as TAB
 	"\n\t" as NEWTAB
 	":" as COLON
+	";" as SEMICOLON
 	"silent" as SILENT
 	"Braced" as BRACED
 	"Imports" as IMPORTS
@@ -38,9 +39,11 @@ cargon_token-s
 	"\\s" as REGEX_WHITESPACE
 	"\\." as REGEX_DOT
 	"\\\"" as REGEX_QUOTE
-	"\\\'" as REGEX_APOS
+	"\\'" as REGEX_APOS
 	"@" as PASS_SYMBOL
 	"global" as GLOBAL
+	"ignore" as IGNORE
+	"\\" as BACKSLASH
 
 uote is silent
 	CHAR_QUOTE quote CHAR_QUOTE 
@@ -51,6 +54,7 @@ brace-s are Braced
 	[[,]] as REGEX with regex
 	[[,]] as REGEX_OPTION with CARROT as negate? regex_option*
 	[(,)] as REGEX_GROUP with regex
+	[[,]] as SINGLE_CHAR_CAPTURE with WILD
 regex_option is silent
 	( ANYCHAR as left DASH ANYCHAR as right ) as range
 	regex_special
@@ -75,7 +79,7 @@ list_name-s are empty
 
 #Rules
 base is silent
-	( NEWLINE | comments | list as list in lists | rule as rule in rules )+
+	( NEWLINE | comments | ignores | list as list in lists | rule as rule in rules )+
 
 rule is silent
 	NAME as ruleName ( RULE_PARAMETERS | EQUALS_RULE_PARAMETERS )? ( NEWTAB | EQUALSIGN ) definition
@@ -83,6 +87,10 @@ rule is silent
 list is silent
 	NAME as listName in list_names GLOBAL? LIST (WITH NAME as listRuleName)? ( (COMMA| NEWTAB) uote )*
 
+ignores
+	IGNORE COLON ignores_element
+ignores_element is silent
+	(  SINGLE_CHAR_CAPTURE ) as ignoreCharacter ( ignores_element |  NEWLINE )
 
 definition
 	element as chain+ ( ( PIPE | NEWTAB ) definition ) as choice?

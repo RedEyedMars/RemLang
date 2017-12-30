@@ -62,6 +62,33 @@ public class Tokens extends ExternalClassEntry {
 	
 	
 }
+	public final Syntax SyntaxClass = new Syntax();
+	public class Syntax extends ExternalClassEntry {
+
+
+
+
+	public void __INIT__(){
+		super.__SETUP__(
+		null, 
+		new Entry(){
+			public void get(StringBuilder __BUILDER__){
+			}
+		}, new StringEntry("Syntax"), "class ", null, new ArrayList<Entry>(Arrays.asList(new Entry[]{})), 
+		new Entry(){
+		public void get(StringBuilder builder){
+			builder.append("static class ");
+			new StringEntry("Syntax").get(builder);
+			new StringEntry("").get(builder);
+		}
+	});	
+       /* Variables */ 
+	   /* Methods */ 
+	   /* Classes */
+	}
+	
+	
+}
 	public final Name NameClass = new Name();
 	public class Name extends ExternalClassEntry {
 
@@ -143,19 +170,23 @@ public class Tokens extends ExternalClassEntry {
        /* Variables */ 
 	   /* Methods */ 
 	   /* Classes */
+		add_subclass_15();
+		add_subclass_16();
 		add_subclass_17();
 		add_subclass_18();
-		add_subclass_19();
 	}
 	
 	
-		private void add_subclass_17() {
+		private void add_subclass_15() {
 	 		addSubClass(MainFlow.classes.TokensClass.PlainClass);
 	 	}
-		private void add_subclass_18() {
+		private void add_subclass_16() {
+	 		addSubClass(MainFlow.classes.TokensClass.SyntaxClass);
+	 	}
+		private void add_subclass_17() {
 	 		addSubClass(MainFlow.classes.TokensClass.NameClass);
 	 	}
-		private void add_subclass_19() {
+		private void add_subclass_18() {
 	 		addSubClass(MainFlow.classes.TokensClass.RuleClass);
 	 	}
 }

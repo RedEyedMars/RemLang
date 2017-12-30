@@ -34,7 +34,9 @@ protected List<List<ExternalStatement>> parts = new ArrayList<List<ExternalState
 protected List<String> strings = new ArrayList<String>();
 protected Boolean hasChanged = false;
 protected Boolean isInner = true;
+protected Boolean isCamelized = false;
 protected final HashSet<Integer> camelizedParts = new HashSet<Integer>();
+protected final HashSet<Integer> asStatementParts = new HashSet<Integer>();
 
 	public ExternalStatement getAsPublicStatement()  {
 		return asPublicStatement;
@@ -72,11 +74,23 @@ protected final HashSet<Integer> camelizedParts = new HashSet<Integer>();
 	public Boolean get_isInner()  {
 		return isInner;
 	}
+	public Boolean getIsCamelized()  {
+		return isCamelized;
+	}
+	public Boolean get_isCamelized()  {
+		return isCamelized;
+	}
 	public HashSet<Integer> getCamelizedParts()  {
 		return camelizedParts;
 	}
 	public HashSet<Integer> get_camelizedParts()  {
 		return camelizedParts;
+	}
+	public HashSet<Integer> getAsStatementParts()  {
+		return asStatementParts;
+	}
+	public HashSet<Integer> get_asStatementParts()  {
+		return asStatementParts;
 	}
 public ExternalStatement getAsStatement()  {
 	if (hasChanged) {
@@ -94,6 +108,7 @@ public String getAsString()  {
 }
 public void camelize()  {
 	camelizedParts.add(parts.size() - 1);
+	isCamelized = true;
 }
 public void inner()  {
 	isInner = true;
@@ -114,7 +129,7 @@ public void add(final ExternalStatement subStatement)  {
 }
 public void add(final String subStatement)  {
 	final List<ExternalStatement> part = new ArrayList<ExternalStatement>();
-	part.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Quot*/new ExternalStatement(new QuoteEntry(subStatement.toString().toString())))));
+	part.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(subStatement.toString())))));
 	parts.add(part);
 	strings.add(subStatement);
 	hasChanged = true;
@@ -122,47 +137,74 @@ public void add(final String subStatement)  {
 public void add(final NameVar otherNameVar)  {
 	parts.addAll(otherNameVar.parts);
 	strings.addAll(otherNameVar.strings);
+	if (otherNameVar.isCamelized) {
+		isCamelized = true;
+	}
 	hasChanged = true;
 }
 public void concatenateWith(final NameVar otherNameVar)  {
 	parts.get(parts.size() - 1).addAll(otherNameVar.parts.get(0));
-	int i = 0;
+	int i = 1;
 	while (i < otherNameVar.parts.size()) {
 		parts.add(otherNameVar.parts.get(i));
 		i += 1;
 	}
 	strings.addAll(otherNameVar.strings);
+	if (otherNameVar.isCamelized) {
+		isCamelized = true;
+	}
 	hasChanged = true;
 }
 public void update()  {
 	asPublicStatement.clear();
-	final ExternalStatement newStatement = new ExternalStatement();
+	final ExternalStatement newStatement = new ExternalStatement(".");
 	int i = 0;
 	for (final List<ExternalStatement> partList :  parts) {
-		final ExternalStatement concatStatement = new ExternalStatement("+");
+		final ExternalStatement concatStatement;
+		if (partList.size() > 1 ) {
+			if (isInner) {
+				concatStatement = new ExternalStatement("+");
+			}
+			else  {
+				concatStatement = new ExternalStatement();
+			}
+		}
+		else  {
+			concatStatement = newStatement;
+		}
 		for (final ExternalStatement part :  partList) {
 			if (isInner) {
-				if (camelizedParts.contains(i)) {
-					final String string = strings.get(i);
-					concatStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry(FlowController.camelize("string"))))));
+				final String string = MainFlow.camelize(strings.get(i));
+				if (i == 0  || partList.size() > 1 ) {
+					concatStatement.add(part);
 				}
 				else  {
-					concatStatement.add(part);
+					concatStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("get")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(part)))))));
 				}
 			}
 			else  {
-				if (camelizedParts.contains(i)) {
-					concatStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("camelize")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(part)))))));
-				}
-				else  {
-					concatStatement.add(part);
-				}
+				concatStatement.add(part);
 			}
 		}
-		newStatement.add(concatStatement);
+		if (partList.size() > 1 ) {
+			if (i == 0  || isInner == false) {
+				newStatement.add(concatStatement);
+			}
+			else  {
+				newStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("get")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatStatement)))))));
+			}
+		}
 		i += 1;
 	}
-	asPublicStatement.add(newStatement);
+	if (isCamelized) {
+		asPublicStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("MainFlow"))), /*Enty*/new ExternalStatement(new StringEntry("camelize"))),
+			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*BrOp*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newStatement)))), new ExternalStatement("."), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry("toString")),new ExternalStatement.Parameters())))))))));
+	}
+	else  {
+		asPublicStatement.add(newStatement);
+	}
 	final StringBuilder stringBuilder = new StringBuilder();
 	i = 0;
 	for (final String string :  strings) {

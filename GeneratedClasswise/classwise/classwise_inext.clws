@@ -1,3 +1,18 @@
+public String toString(){
+	StringBuilder builder = new StringBuilder();
+	for(List<ExternalStatement> concats: parts){
+		for(ExternalStatement part: concats){
+			builder.append("\n\t\t");
+			part.get(builder);
+			builder.append("++");
+		}
+		if(concats!=parts.get(parts.size()-1)){
+			builder.append("\n\t.\n");
+		}
+	}
+	return builder.toString();
+}
+
 < Parser : \com.\rem.\crg.\parser;
 < Token  : \com.\rem.\crg.\parser;
 > class Result //{}

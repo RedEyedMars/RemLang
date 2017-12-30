@@ -48,9 +48,29 @@
 	Body vb = new Body ();
 	vb.add(variableDeclarations);
 	Parser->Context->*"parse".appendToBody(vb);
+	\setupIgnoresStatement();
+	if root->"ignores" != null {
+	  root :  element : ignores {
+        element : atom : ignoreCharacter {
+          \addIgnoresCharacter('atom');
+	    }
+	  }
+	}
+	else {
+	  \addIgnoresCharacter(" ");
+	  \addIgnoresCharacter("\\t");
+	  \addIgnoresCharacter("\\n");
+	}
 	root : list : list {
 		Parser.list(list);
 	}
+	root : rule : rule {
+		Parser.findSilentRule(rule);
+	}
+	root : rule : rule {
+		Parser.findRuleHeirachy(rule);
+	}
+	Parser.consolidateRuleHeirachy();
 	root : rule : rule {
 		Parser.define(rule,null);
 	}
@@ -59,7 +79,32 @@
 	\output(data);
 }
 
-> String packageName = "com.rem.crg";
+> Statement ignoresHeaderVariableSection = new Statement ();
+> Statement ignoresHeaderStatement = new Statement ();
+> void setupIgnoresStatement(){
+    ignoresHeaderStatement.set("&&");
+    ignoresHeaderVariableSection.set("||");
+    ignoresHeaderVariableSection.add(|"false"|);
+    ignoresHeaderStatement.add(|"_position" < "_inputLength" |);
+    ignoresHeaderStatement.add(|(`ignoresHeaderVariableSection`)|);
+  }
+> void addIgnoresCharacter(String ignoresCharacter){
+    if ignoresCharacter.equals("") {
+ 	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "' '"|);
+    }
+    else {
+      StringBuilder characterBuilder = new StringBuilder();
+      characterBuilder.append("'");
+      characterBuilder.append(ignoresCharacter);
+      characterBuilder.append("'");
+	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == 'characterBuilder' |);
+	  if ignoresCharacter.equals("\\n") {
+	    ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "'\\r'"|);
+      } 
+    }
+  }
+
+> String packageName = "com.rem.gen";
 > String charArray = "char[]";
 
 class 'packageName'."parser" Parser {
@@ -121,12 +166,15 @@ class 'packageName'."parser" Parser {
 > Map<Integer, Map<String, List<Integer>>> declaredBraceOpenValues = new HashMap<Integer, Map<String, List<Integer>>>();
 > Map<Integer, Map<String, List<Integer>>> declaredBraceCloseValues = new HashMap<Integer, Map<String, List<Integer>>>();
 > Map<String, Integer> declaredBracePasses = new HashMap<String, Integer>();
+> Map<String, Set<String> > ruleHeirachy = new HashMap<String, Set<String>>();
 
 > ~Integer currentPositionIndex = 0;
 > ~Integer anonymousRuleIndex = 0;
 > ~String plainTokenClassName = "_0";
 > ~Integer plainTokenIndex = 0;
 > Set<String> createdPlainTokens = new HashSet<String>();
+> Map<String,String> createdSyntaxTokens = new HashMap<String,String>();
+> Map<String,Set<String>> createdSyntaxNameTokens = new HashMap<String,Set<String>>();
 > Set<String> createdNameTokens = new HashSet<String>();
 
   ~class Context // {
@@ -393,6 +441,68 @@ class 'packageName'."parser" Parser {
     Parser->Context += Map<Integer, Integer> "brace_"+'braceId' = new HashMap<Integer, Integer>()
     Parser->Context->*"parse".prependToBody(|Stack<Integer> "brace_open_"+'braceId' = new Stack<Integer>(); |);
   }
+> void findRuleHeirachy(IToken ruleToken){
+    if ruleToken->"ruleName" != null {
+      String ruleName = 'ruleToken->"ruleName"';
+      ruleHeirachy.put(ruleName,new HashSet<String>());
+      if ROOT_NAME == null {
+        ROOT_NAME = ruleName;
+      }
+      ruleToken : definition : definition {
+        \findRuleHeirachy(ruleName,definition,ruleHeirachy.get(ruleName));
+      }
+    }
+  }
+> void findRuleHeirachy(String ruleName, IToken definition, Set<String> subRuleSet){
+    ~Boolean isFirst = true; 
+    definition : chain : chain {
+      chain : element : element {
+          element : atom : multiple {
+            atom : quark : definition {
+              \findRuleHeirachy(ruleName, quark, subRuleSet);
+            }
+          }
+          : braced {
+            atom : quark : definition {
+              \findRuleHeirachy(ruleName, quark, subRuleSet);
+            }
+          }
+          : ruleToken {
+            subRuleSet.add('element');
+          }
+      }
+    }
+    definition : choice : choice {
+      choice : element : definition {
+        \findRuleHeirachy(ruleName, element, subRuleSet);
+      }
+    }
+  }
+> void consolidateRuleHeirachy(){
+    Map<String,Set<String>> additions = new HashMap<String,Set<String>>();
+    additions.put(ROOT_NAME, new HashSet<String>());
+    \consolidateRuleHeirachy(ROOT_NAME, additions, new HashSet<String>());
+    for String ruleName: additions.keySet() {
+      if ruleHeirachy.containsKey(ruleName) {
+        ruleHeirachy.get(ruleName).addAll(additions.get(ruleName));
+      }
+    }
+  }
+> void consolidateRuleHeirachy(String ruleName, Map<String,Set<String>> additions, Set<String> consulted){
+    if consulted.add(ruleName) {
+      if ruleHeirachy.containsKey(ruleName) {
+        for String subRuleName: ruleHeirachy.get(ruleName) {
+          if additions.containsKey(subRuleName) {
+            additions.get(subRuleName).add(ruleName);
+          }
+          else {
+            additions.put(subRuleName, new HashSet<String>());
+            \consolidateRuleHeirachy(subRuleName, additions, consulted);
+          }
+        }
+      }
+    }
+  }
 > void list(IToken input){
     String listName = 'input->"listName"';
     Parser += ~Parser->NameList->Root 'listName'+"_root" = new Parser->NameList->Root()
@@ -448,16 +558,7 @@ class 'packageName'."parser" Parser {
 > ~Integer listIndex = 0;
 > void getRuleBody(Body completeBody, String ruleName, Map<String, Set<Integer>> excludeIndicesMap){
     String currentLengthValue = "_length_" \+ 'ruleName' \+ "_brace";
-    Statement optionWhile = new Statement ();
-    String optionNewline = "'\\n')";
-    String optionAmpersand = "&&(";
-    optionWhile.add(|"_position" < 'currentLengthValue'|);
-    optionWhile.set('optionAmpersand');
-    optionWhile.add(|"_inputArray[_position]" == "' '"|);
-    optionWhile.set("||");
-    optionWhile.add(|"_inputArray[_position]" == "'\\t'"|);
-    optionWhile.add(|"_inputArray[_position]" == "'\\r'"|);
-    optionWhile.add(|"_inputArray[_position]" == 'optionNewline'|);
+    
 
     List<Body > rule = rules.get(ruleName);
     ~Body currentOption = completeBody;
@@ -484,7 +585,7 @@ class 'packageName'."parser" Parser {
               if "_pass" == "SECOND_PASS" `withinBraces`
               else {
                 "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position") \+ 'declaredBraceCloseLengths.get(ruleName)';
-                while `optionWhile` {
+                while `ignoresHeaderStatement` {
                   "++_position";
                 }
               }|);
@@ -505,7 +606,7 @@ class 'packageName'."parser" Parser {
       currentOption.add(|"_position" \+= 'declaredBraceOpenLengths.get(ruleName)';|);
       
       currentOption.add(|
-        while `optionWhile` {
+        while `ignoresHeaderStatement` {
           "++_position";
         }|);
     }
@@ -525,27 +626,8 @@ class 'packageName'."parser" Parser {
     }
     ~Body previousOption = null;
     for Integer i < rule.size() {
-      String recursionProtectionVariable;
-      if handleRecursionProtection.contains(ruleName){
-        recursionProtectionVariable = "_recursion_protection_"\+'ruleName'\+"_"\+'i';
-        Parser->Context += Set<Integer> 'recursionProtectionVariable' = new HashSet<Integer>()
-        if previousOption != null {
-          previousOption.add(|
-            if "_state" == "FAILED" && 'recursionProtectionVariable'.contains("_position") == false `currentOption`|);
-          
-        }
-        else {
-          Body innerBody = new Body ();
-          currentOption.add(|if "_state" == "SUCCESS" &&  'recursionProtectionVariable'.contains("_position") == false `innerBody`|);
-          currentOption = innerBody;
-        }
-        currentOption.add(|'recursionProtectionVariable'.add("_position");|);
-      }
-      else {
-        recursionProtectionVariable = null;
-        if previousOption != null {
-          previousOption.add(|if "_state" == "FAILED" `currentOption`|);
-        }
+      if previousOption != null {
+        previousOption.add(|if "_state" == "FAILED" `currentOption`|);
       }
       if previousOption != null {
         if handleListAdditions.containsKey(ruleName) {
@@ -562,9 +644,6 @@ class 'packageName'."parser" Parser {
       
       previousOption = currentOption;
       currentOption.add(rule.get(i));
-      if handleRecursionProtection.contains(ruleName){
-        currentOption.add(|'recursionProtectionVariable'.remove('currentRulePositionValue');|);
-      }
       currentOption = new Body ();
     }
     if declaredBraceRules.containsKey(ruleName) {
@@ -572,9 +651,6 @@ class 'packageName'."parser" Parser {
       
       withinBraces.add(|if "_state" == "SUCCESS" && "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position_"+'ruleName'+"_brace") == "_position" {
         "_position" \+= 'declaredBraceCloseLengths.get(ruleName)';
-        while `optionWhile` {
-          "++_position";
-        }
       }
       else {
         "_state" = "SUCCESS";
@@ -582,11 +658,11 @@ class 'packageName'."parser" Parser {
         "_result_acceptor".add(new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' "Did not reach end of braces" ''));
         "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position_"+'ruleName'+"_brace")\+'declaredBraceCloseLengths.get(ruleName)';
         "_succeedOnEnd" = false;
-        while `optionWhile` {
-          "++_position";
-        }
       }
-      "_inputLength" = 'currentLengthValue';|);
+      "_inputLength" = 'currentLengthValue';
+      while `ignoresHeaderStatement` {
+        "++_position";
+      }|);
     }
     if handleListAdditions.containsKey(ruleName) {
       String forRuleName = handleListAdditions.get(ruleName);
@@ -630,7 +706,21 @@ class 'packageName'."parser" Parser {
     }
     Parser->Context->*"parse_"+'ruleName'.appendToBody(completeBody);
   }
+> void findSilentRule(IToken input) {
+    if input->"ruleName" != null {
+      String ruleName = 'input->"ruleName"';
+      if input->"SILENT" != null {
+        silentRules.add(ruleName);
+      }
+      if ROOT_NAME == null {
+        ROOT_NAME = ruleName;
+      }
+    }
+  }
 > String define(IToken input, String previousParentRuleName){
+    return \define(input,previousParentRuleName,null);
+  }
+> String define(IToken input, String previousParentRuleName, String handleBracedTokenName){
     String ruleName;
     String parentRuleName;
     if input->"ruleName" != null {
@@ -656,19 +746,14 @@ class 'packageName'."parser" Parser {
       parentRuleName = previousParentRuleName;
     }
     parentRuleNames.put(ruleName,parentRuleName);
-    if ROOT_NAME == null {
-      ROOT_NAME = ruleName;
-    }
+    
     if rules.containsKey(ruleName) == false {
       completeRules.put(ruleName, new ArrayList<Body >());
       rules.put(ruleName, completeRules.get(ruleName));
       completeRules.get(ruleName).add(new Body ());
     }
     List<Body > rule = completeRules.get(ruleName);
-    Boolean isSilent = input->"SILENT" != null;
-    if isSilent {
-      silentRules.add(ruleName);
-    }
+    
     
     Body foreBody = new Body ();
     String currentPositionValue = "_position_"\+ruleName;
@@ -717,11 +802,11 @@ class 'packageName'."parser" Parser {
       }
     }
     input : definition : definition {
-      \define(definition,ruleName,parentRuleName, rule);
+      \define(definition,ruleName,parentRuleName,handleBracedTokenName, rule);
     }
     return ruleName;
   }
-> void define(IToken definition,String ruleName, String parentRuleName, List<Body > inputRule){
+> void define(IToken definition,String ruleName, String parentRuleName, String handleBracedTokenName, List<Body > inputRule){
     ~Boolean isFirst = true;
     String ruleAsClass = ^ruleName\+"Token"; 
     Integer choiceIndex = inputRule.size() \- 1;
@@ -735,7 +820,12 @@ class 'packageName'."parser" Parser {
       rule.add(|"_token" = new Tokens->Rule->'ruleAsClass'();|);
     }
     else {
-      rule.add(|"_token" = new Token->Parsed('' "$ANON" '');|);
+      if handleBracedTokenName != null {
+        rule.add(|"_token" = new Tokens->Name->'handleBracedTokenName'();|);
+      }
+      else {
+        rule.add(|"_token" = new Token->Parsed('' "$ANON" '');|);
+      }
     }
     Body foreBody = ruleForeBodies.get(ruleName);
     definition : chain : chain {
@@ -748,12 +838,13 @@ class 'packageName'."parser" Parser {
         rule = nextBody;
       }
     }
-    if silentRules.contains(ruleName) == false {
+    if silentRules.contains(ruleName) == false ||  handleBracedTokenName != null {
       inputRule.get(inputRule.size() \- 1).add(|
         if "_state" == "SUCCESS" {
           'currentTokenValue'.add('currentPositionValue',"_token");
         }
         "_token" = 'currentTokenValue';|);
+      
     }
     else {
       inputRule.get(inputRule.size() \- 1).add(|
@@ -764,9 +855,10 @@ class 'packageName'."parser" Parser {
     }
     if definition->"choice" != null {
       inputRule.add(new Body ());
-      \define(definition->"choice"->"definition",ruleName,parentRuleName,inputRule);
+      \define(definition->"choice"->"definition",ruleName,parentRuleName,handleBracedTokenName,inputRule);
     }
   }
+> ~Integer recursionIndex = 0;
 > void parseElement(IToken element, String ruleName, String parentRuleName, Body rule, Integer choiceIndex, Boolean isFirst){
     element : query : multiple {
       String subRuleName = \define(query, parentRuleName);
@@ -849,33 +941,27 @@ class 'packageName'."parser" Parser {
       }
     }
     : braced {
-      String subRuleName = \define(query, parentRuleName);
+      String handleBracedTokenName;
+      if element->"newName" != null {
+        String newTokenName = ^element->"newName" \+ "Token";
+        String simpleTokenName = 'element->"newName"';
+        \declareNamedToken(newTokenName,simpleTokenName);
+        handleBracedTokenName = newTokenName;
+      }
+      else if element->"listName"!=null {
+        handleBracedTokenName = ^element->"listName"\+"Token";
+      }
+      else {
+        handleBracedTokenName = null;
+      }
+      String subRuleName = \define(query, parentRuleName, handleBracedTokenName);
       rule.add(|"parse_"+'subRuleName'();|);
       if element->"listName"!=null {
-        String listTokenName;
-        if element->"newName" != null {
-          listTokenName = ^element->"newName" \+ "Token";
-          String simpleTokenName = 'element->"newName"';
-          if createdNameTokens.add(listTokenName) {
-            Tokens->Name += class listTokenName / Token->Parsed / {
-              String value = null;
-              String getName(){
-                return '' 'simpleTokenName' '';
-              }
-              void setValue(String newValue){
-              }
-            }
-          }
-        }
-        else {
-          listTokenName = ^element->"listName"\+"Token";
-        }
         rule.add(|if "_state" == "SUCCESS" {
-          String _value = "_token".getPollLast().getValue();
+          String _value = "_token".getLastValue();
           if _value!=null && 'element->"listName"'.add(_value) {
             'element->"listName"'+"_additions".add(_value);
           }
-          "_token".add("_position",new Tokens->Name->'listTokenName'(_value));
         }|);
         if listNamesInRule.containsKey(parentRuleName) == false {
           listNamesInRule.put(parentRuleName, new HashSet<String>());
@@ -889,24 +975,64 @@ class 'packageName'."parser" Parser {
     } 
     : quoteToken {
       String quote = 'element->"quoteToken"->"quote"';
-      String quoteLength = "" \+ quote.length();
+      ~Integer quoteLength = quote.length();
       Body subrule = new Body ();
       StringBuilder quoteValue = new StringBuilder();
+      ~Integer ip = 0; 
       for Integer i < quote.length() {
         String ch;
         String quoteChar = quote.charAt(i)\+""; 
         if quoteChar.equals("\\") {
-          ch = "\'\\\\\'"; 
-          quoteValue.append("\\\\");
+          if i\+1 < quote.length() {
+            String nextChar = quote.charAt(i\+1)\+"";
+            if nextChar.equals("t") {
+              ch = "\'\\t'"; 
+              quoteValue.append("\\t");
+              quoteLength \-= 1;
+              i\+=1;
+            }
+            else if nextChar.equals("n") {
+              ch = "\'\\n'"; 
+              quoteValue.append("\\n");
+              quoteLength \-= 1;
+              i\+=1;
+            }
+            else if nextChar.equals("r") {
+              ch = "\'\\r'"; 
+              quoteValue.append("\\r");
+              quoteLength \-= 1;
+              i\+=1;
+            }
+            else {
+              ch = "\'\\\\\'"; 
+              quoteValue.append("\\\\");
+            }
+          }
+          else {
+            ch = "\'\\\\\'"; 
+            quoteValue.append("\\\\");
+          }
+        }
+        else if quoteChar.equals("'") {
+          ch = "\'\\\'\'"; 
+          quoteValue.append("\\'");
         }
         else {
           ch = "\'"\+quote.charAt(i)\+"\'";
           quoteValue.append(quote.charAt(i));
         }
-        String charArrayValue = "_inputArray[_position+"\+i\+"]";
-        subrule.add(|if 'charArrayValue' != 'ch'{
-          "_state" = "FAILED";
-        }|);
+        String ipValue = 'ip';
+        if ch.equals("\'\\n'") {
+          subrule.add(|if "_inputArray"[ "_position+"+'ipValue' ] != 'ch' && "_inputArray"[ "_position+"+'ipValue' ] != "\'\\r'" {
+            "_state" = "FAILED";
+          }|);
+        }
+        else {
+          subrule.add(|if "_inputArray"[ "_position+"+'ipValue' ] != 'ch' {
+            "_state" = "FAILED";
+          }|);
+        }
+        ip \+= 1;
       }
       rule.add(|if "_position" \+ 'quoteLength' \- 1 >= "_inputLength"  {
           "_state" = "FAILED";
@@ -914,48 +1040,40 @@ class 'packageName'."parser" Parser {
         else `subrule`
         |);
       
-      Statement optionWhile = new Statement ();
-      String optionNewline = "'\\n')";
-      String optionAmpersand = "&&(";
-      optionWhile.add(|"_position" < "_inputLength"|);
-      optionWhile.set('optionAmpersand');
-      optionWhile.add(|"_inputArray[_position]" == "' '"|);
-      optionWhile.set("||");
-      optionWhile.add(|"_inputArray[_position]" == "'\\t'"|);
-      optionWhile.add(|"_inputArray[_position]" == "'\\r'"|);
-      optionWhile.add(|"_inputArray[_position]" == 'optionNewline'|);
-      if element->"newName" != null {
-        String newTokenName = ^element->"newName"\+"Token";
-        if createdPlainTokens.add(newTokenName) {
-          Tokens->Plain += class newTokenName / Token->Parsed / {
-            String value = null;
-            String getName(){
-              return '' 'element->"newName"' '';
-            }
-            void setValue(String newValue){
-            }
+      Integer quoteLengthValue = quoteLength;
+      if createdSyntaxTokens.containsKey(quote) == false {
+        String quoteName = "syntax_"\+plainTokenIndex;
+        plainTokenIndex \+= 1;
+        createdSyntaxTokens.put(quote,quoteName);
+        createdSyntaxNameTokens.put(quote,new HashSet<String>());
+        Tokens->Syntax += class quoteName / Token->Parsed / {
+          @Tokens->Syntax->'quoteName' "__SYNTAX__" = new Tokens->Syntax->'quoteName'(''"SYNTAX"'');
+          String getValue(){
+            return '' 'quote.replace("\\","\\\\")' '';
+          }
+          void setValue(String newValue){
           }
         }
-        String quoteName = "plain_"\+plainTokenIndex;
-        plainTokenIndex \+= 1;
-        Tokens->Plain->'newTokenName' += @Token->Parsed 'quoteName' = new Tokens->Plain->'newTokenName'('' 'quote' '')
-        rule.add(|if "_state" == "SUCCESS" {
-          "_token".add("_position",\Tokens.\Plain.'newTokenName'.'quoteName');
-          "_position" = "_position" \+ 'quoteLength';
-          while `optionWhile` {
-            "++_position";
-          }
-        }|);
+      }
+      String quoteName = createdSyntaxTokens.get(quote);
+      String newTokenName;
+      if element->"newName" != null {
+        newTokenName = 'element->"newName"';
+        if createdSyntaxNameTokens.get(quote).add(newTokenName) {
+          Tokens->Syntax->'quoteName' += @Token->Parsed 'newTokenName' = new Tokens->Syntax->'quoteName'('' 'newTokenName' '')
+        }
       }
       else {
-        rule.add(|if "_state" == "SUCCESS" {
-          "_position" = "_position" \+ 'quoteLength';
-          while `optionWhile` {
-            "++_position";
-          }
-        }|);
+        newTokenName = "__SYNTAX__";
       }
       rule.add(|
+        if "_state" == "SUCCESS" {
+          "_token".add("_position",Tokens->Syntax->'quoteName'->'newTokenName');
+          "_position" = "_position" \+ 'quoteLengthValue';
+          while `ignoresHeaderStatement` {
+            "++_position";
+          }
+        }
         else if "_state" == "FAILED" {
           if "_position" >= "_furthestPosition" {
             "_result" = new Parser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' "unexpected plain \\\""+'quoteValue'+"\\\"" '');
@@ -973,16 +1091,6 @@ class 'packageName'."parser" Parser {
       }
       currentPositionIndex \+= 1;
       
-      Statement optionWhile = new Statement ();
-      String optionNewline = "'\\n')";
-      String optionAmpersand = "&&(";
-      optionWhile.add(|"_position" < "_inputLength"|);
-      optionWhile.set('optionAmpersand');
-      optionWhile.add(|"_inputArray[_position]" == "' '"|);
-      optionWhile.set("||");
-      optionWhile.add(|"_inputArray[_position]" == "'\\t'"|);
-      optionWhile.add(|"_inputArray[_position]" == "'\\r'"|);
-      optionWhile.add(|"_inputArray[_position]" == 'optionNewline'|);
       if element->"newName" != null {
         String newTokenName = ^element->"newName";
         if createdPlainTokens.add(newTokenName) {
@@ -999,7 +1107,7 @@ class 'packageName'."parser" Parser {
             if 'element->"listName"'.add("_input".substring('currentPositionValue',"_position")) {
               'element->"listName"'+"_additions".add("_input".substring('currentPositionValue',"_position"));
             }
-            while `optionWhile` {
+            while `ignoresHeaderStatement` {
               "++_position";
             }
           }|);
@@ -1015,7 +1123,7 @@ class 'packageName'."parser" Parser {
         else {        
           rule.add(|if "_state" == "SUCCESS" {
             "_token".add('currentPositionValue',new Tokens->Plain->'newTokenName'("_input".substring('currentPositionValue',"_position")));
-            while `optionWhile` {
+            while `ignoresHeaderStatement` {
               "++_position";
             }
           }|);
@@ -1024,7 +1132,7 @@ class 'packageName'."parser" Parser {
       else {
         rule.add(|if "_state" == "SUCCESS" {
             "_token".setValue("_input".substring('currentPositionValue',"_position"));
-            while `optionWhile` {
+            while `ignoresHeaderStatement` {
               "++_position";
             }
           }|);
@@ -1039,16 +1147,6 @@ class 'packageName'."parser" Parser {
         }|);
     }
     : ruleToken {
-      Statement optionWhile = new Statement ();
-      String optionNewline = "'\\n')";
-      String optionAmpersand = "&&(";
-      optionWhile.add(|"_position" < "_inputLength"|);
-      optionWhile.set('optionAmpersand');
-      optionWhile.add(|"_inputArray[_position]" == "' '"|);
-      optionWhile.set("||");
-      optionWhile.add(|"_inputArray[_position]" == "'\\t'"|);
-      optionWhile.add(|"_inputArray[_position]" == "'\\r'"|);
-      optionWhile.add(|"_inputArray[_position]" == 'optionNewline'|);
       if listNames.contains('query'){
         String listName = 'query';
         String newTokenClassName;
@@ -1062,16 +1160,7 @@ class 'packageName'."parser" Parser {
           newTokenClassName = ^query\+"Token";
           newTokenName = 'query';
         }
-        if createdNameTokens.add(newTokenClassName) {
-          Tokens->Name += class newTokenClassName / Token->Parsed / {
-            String value = null;
-            String getName(){
-              return '' 'newTokenName' '';
-            }
-            void setValue(String newValue){
-            }
-          }
-        }
+        \declareNamedToken(newTokenClassName, newTokenName);
         Body listRuleBody;
         if listFirstPassRules.containsKey('listName') {
           listRuleBody = new Body ();
@@ -1094,7 +1183,7 @@ class 'packageName'."parser" Parser {
             if "_state" == "SUCCESS" {
               "_token".add("_position",new Tokens->Name->'newTokenClassName'("_list_name_result"));
               "_position" \+= "_list_name_result".length();
-              while `optionWhile` {
+              while `ignoresHeaderStatement` {
                 "++_position";
               }
             }
@@ -1111,29 +1200,60 @@ class 'packageName'."parser" Parser {
       }
       else {
         String subRuleName = 'query';
-        handleRecursionProtection.add(subRuleName);
-        rule.add(|"parse_"+'subRuleName'();|);
+        ~Boolean protectAgainstRecursion = false;
+        if isFirst {
+          protectAgainstRecursion = ruleHeirachy.get(subRuleName).contains(parentRuleName);
+        }
+        if element->"newName" != null && element->"listName" == null{
+          String newTokenName = 'element->"newName"';
+          String newTokenClassName = ^newTokenName \+ "Token";
+          \declareNamedToken(newTokenClassName, newTokenName);
+          rule.add(|
+            Token->Parsed "_token"+'subRuleName' = "_token";
+            "_token" = new Tokens->Name->'newTokenClassName'();
+            int "_position_"+'subRuleName' = "_position";|);
+        }
+        else if protectAgainstRecursion {
+          rule.add(|
+            int "_position_"+'subRuleName' = "_position";|);
+        }
+        if protectAgainstRecursion {
+          Integer recursionIndexValue = recursionIndex;
+          recursionIndex \+= 1;
+          String recursionVariableName = "_recursion_protection_"\+'subRuleName'\+"_"\+'recursionIndexValue';
+          Parser->Context += Set<Integer> 'recursionVariableName' = new HashSet<Integer>()
+          rule.add(|
+            if "_state" == "SUCCESS" &&! 'recursionVariableName'.contains("_position") {
+              'recursionVariableName'.add("_position");
+              "parse_"+'subRuleName'();
+              'recursionVariableName'.remove("_position_"+'subRuleName');
+            }
+            else {
+              "_state" = "FAILED";
+            }|);
+        }
+        else {
+          rule.add(|"parse_"+'subRuleName'();|);
+        }
+        if element->"newName" != null && element->"listName" == null{
+          rule.add(|
+            if "_state" == "SUCCESS" {
+              "_token"+'subRuleName'.add("_position_"+'subRuleName',"_token");
+            }
+            "_token" = "_token"+'subRuleName';|);
+        }
         if element->"listName"!=null {
           String listTokenName;
-        if element->"newName" != null {
-          listTokenName = ^element->"newName" \+ "Token";
-          String simpleTokenName = 'element->"newName"';
-          if createdNameTokens.add(listTokenName) {
-            Tokens->Name += class listTokenName / Token->Parsed / {
-                String value = null;
-                String getName(){
-                  return '' 'simpleTokenName' '';
-                }
-                void setValue(String newValue){
-                }
-              }
-            }
+          if element->"newName" != null {
+            listTokenName = ^element->"newName" \+ "Token";
+            String simpleTokenName = 'element->"newName"';
+            \declareNamedToken(listTokenName, simpleTokenName);
           }
           else {
             listTokenName = ^element->"listName"\+"Token";
           }
           rule.add(|if "_state" == "SUCCESS" {
-            String _value = "_token".getPollLast().getValue();
+            String _value = "_token".getLastValue();
             if _value!=null && 'element->"listName"'.add(_value) {
               'element->"listName"'+"_additions".add(_value);
             }
@@ -1208,6 +1328,9 @@ class 'packageName'."parser" Parser {
         }
         else if quoteChar.equals("\"") {
           ch = "\\\""; 
+        }
+        else if quoteChar.equals("'") {
+          ch = "\\\'"; 
         }
         else {
           ch = 'atom';
@@ -1544,6 +1667,26 @@ class 'packageName'."parser" Parser {
       return 'regexValue';
     }
   }
+> void declareNamedToken(String newTokenName, String simpleTokenName){
+    if createdNameTokens.add(newTokenName) {
+        Tokens->Name += class newTokenName / Token->Parsed / {
+          String value = null;
+          String getName(){
+            return '' 'simpleTokenName' '';
+          }
+          String getValue(){
+            if children.isEmpty() {
+              return value;
+            }
+            else {
+              return children.get(0).getValue();
+            }
+          }
+          void setValue(String newValue){
+          }
+        }
+    }
+  }
   class NameList // {
     class Node // {
       > String nodeArray = "Node[]";
@@ -1856,6 +1999,8 @@ class 'packageName'."parser" Parser {
 }
 class 'packageName'."parser" Tokens {
   class Plain // {
+  }
+  class Syntax // {
   }
   class Name // {
   }

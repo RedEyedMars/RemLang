@@ -1,7 +1,6 @@
 package com.rem.parser.generation;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.rem.parser.ParseContext;
@@ -11,10 +10,9 @@ import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.RegexParser;
 import com.rem.parser.token.IToken;
 
-public abstract class FlowController {
+public abstract class FlowController extends GeneralFlowController {
 
 	private static FlowController flow;
-	protected List<Generator> privateFiles = new ArrayList<Generator>();
 	public void parse(String... fileNames){
 		flow = this;
 		initializeFlowController();

@@ -1,0 +1,1965 @@
+
+
+
+< CargonTokens : \lists;
+< Rules : \lists;
+< Listnames : \lists;
+
+
+> Body variableDeclarations = new Body ();
+> Set<String> variableDeclarationNames = new HashSet<String>();
+> void setup(Parser.Result data){
+    ExternalParser.setupCompile();
+  }
+> void generate(Parser.Result.Pass data){
+	Token root = data.getRoot();
+	Body vb = new Body ();
+	vb.add(variableDeclarations);
+	ExternalParser->Context->*"parse".appendToBody(vb);
+	\setupIgnoresStatement();
+	if root->"ignores" != null {
+	  root :  element : ignores {
+        element : atom : ignoreCharacter {
+          \addIgnoresCharacter('atom');
+	    }
+	  }
+	}
+	else {
+	  \addIgnoresCharacter(" ");
+	  \addIgnoresCharacter("\\t");
+	  \addIgnoresCharacter("\\n");
+	}
+	root : list : list {
+		ExternalParser.list(list);
+	}
+	root : rule : rule {
+		ExternalParser.define(rule,null);
+	}
+	ExternalParser.outputBraces();
+	ExternalParser.output();  
+  }
+
+> String packageName = "com.rem.gen";
+> String charArray = "char[]";
+> Statement ignoresHeaderVariableSection = new Statement ();
+> Statement ignoresHeaderStatement = new Statement ();
+> void setupIgnoresStatement(){
+    ignoresHeaderStatement.set("&&");
+    ignoresHeaderVariableSection.set("||");
+    ignoresHeaderVariableSection.add(|false|);
+    ignoresHeaderStatement.add(|"_position" < "_inputLength" |);
+    ignoresHeaderStatement.add(|(`ignoresHeaderVariableSection`)|);
+  }
+> void addIgnoresCharacter(String ignoresCharacter){
+    if ignoresCharacter.equals("") {
+ 	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "' '"|);
+    }
+    else {
+      StringBuilder characterBuilder = new StringBuilder();
+      characterBuilder.append("'");
+      characterBuilder.append(ignoresCharacter);
+      characterBuilder.append("'");
+	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == 'characterBuilder' |);
+	  if ignoresCharacter.equals("\\n") {
+	    ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "'\\r'"|);
+      } 
+    }
+  }
+
+class 'packageName'."parser" ExternalParser {
+  @Integer SUCCESS = 0;
+  @Integer FAILED = 1;
+  @Integer FIRST_PASS = 0;
+  @Integer SECOND_PASS = 1;
+  @List<String> fileNames = new ArrayList<String>();
+  @Map<String, ExternalParser\>Context > contexts = new HashMap<String, ExternalParser\>Context >();
+  
+  ExternalParser->Result parse(String fileName){
+    ExternalParser->Result firstResult = \parseFile(fileName, FIRST_PASS);
+    if firstResult.getState() == SUCCESS {
+      System.out.println('' "First-Pass Successful" '' );
+      ExternalParser->Result secondResult = \parseFile(fileName, SECOND_PASS);
+      if secondResult.getState() == SUCCESS {
+        System.out.println('' "Second-Pass Successful" '' );
+      }
+      else {
+        System.out.println('' "Second-Pass Failed" '' );
+      }
+      return secondResult;
+    }
+    else {
+      System.out.println('' "First-Pass Failed" '' );
+      return firstResult;
+    }
+  }
+  ExternalParser->Result parseFile(String fileName, int _pass){
+  }
+  
+  > Body readInputBody = new Body ();
+  > Body braceVariableDeclaration = new Body ();
+  > String notQuoting = "!quoting";
+  > String notEscaping = "!escaping";
+> Map<String,List<Body >> rules = new HashMap<String,List<Body >>();
+> Map<String,List<Body >> completeRules = new HashMap<String,List<Body >>();
+> Map<Body , String> ruleHolders = new HashMap<Body , String>();
+> Map<String, Map<Integer, List< Body >>> unsatisfiedRules = new HashMap<String, Map<Integer, List< Body >>>();
+> Map<String, Body > ruleForeBodies = new HashMap<String, Body >();
+> Map<String,String> parentRuleNames = new HashMap<String,String>();
+> Set<String > silentRules = new HashSet<String>();
+> Set<String > listNames = new HashSet<String>();
+> Set<String > globalListNames = new HashSet<String>();
+> Map<String, String> listFirstPassRules = new HashMap<String, String>();
+> Map<String, Set<String>> listNamesInRule = new HashMap<String, Set<String>>();
+> Map<String, String> handleListAdditions = new HashMap<String, String>();
+> Map<String, Body > handleListAdditionAftBodies = new HashMap<String, Body >();
+> Set<String> handleRecursionProtection = new HashSet<String>();
+> ~Integer tokenId = 1;
+> ~String ROOT_NAME = null;
+> Statement bracedCondition = new Statement ();
+> Set<String> declaredBraces = new HashSet<String>();
+> Map<String, List<String>> declaredBraceValues = new HashMap<String, List<String>>();
+> Map<String, String> declaredBraceRules = new HashMap<String, String>();
+> Map<String, Integer> braceIds = new HashMap<String,Integer>();
+> Map<String, Integer> declaredBraceOpenLengths = new HashMap<String, Integer> ();
+> Map<String, Integer> declaredBraceCloseLengths = new HashMap<String, Integer> ();
+> Map<Integer, Map<String, List<Integer>>> declaredBraceOpenValues = new HashMap<Integer, Map<String, List<Integer>>>();
+> Map<Integer, Map<String, List<Integer>>> declaredBraceCloseValues = new HashMap<Integer, Map<String, List<Integer>>>();
+> Map<String, Integer> declaredBracePasses = new HashMap<String, Integer>();
+
+> ~Integer currentPositionIndex = 0;
+> ~Integer anonymousRuleIndex = 0;
+> ~String plainTokenClassName = "_0";
+> ~Integer plainTokenIndex = 0;
+> Set<String> createdPlainTokens = new HashSet<String>();
+> Set<String> createdNameTokens = new HashSet<String>();
+
+  ~class Context // {
+    ~int _pass = FIRST_PASS;
+    ~\int _position = 0;
+    ~\int _inputLength = -1;
+    ~\int _state = SUCCESS;
+    ~\int _furthestPosition = -1;
+    ~\int _lineNumber = 1;
+    String _input = null;
+    String _fileName = null;
+    'charArray' _inputArray = null;
+    ExternalParser->Result _result = null;
+    ExternalParser->Result->Acceptor _result_acceptor = new ExternalParser->Result->Acceptor();
+    Boolean _succeedOnEnd = true;
+    String _list_name_result = null;
+    List<Integer> _lineNumberRanges = new ArrayList<Integer>();
+    ExternalParserToken->Parsed _root = new ExternalParserToken->Parsed('' "$ROOT" '');
+    ExternalParserToken->Parsed _token = _root;
+    ExternalParser->Result parse(String _fileName, int _pass_index){
+      \long startParseTime = \System.currentTimeMillis();
+      _pass = _pass_index;
+      StringBuilder _inputBuffer = new StringBuilder();
+      try {
+        BufferedReader _inputReader = new BufferedReader(new FileReader(_fileName));
+        \int _readInput = _inputReader.read();
+        \boolean escaping = false;
+        \boolean quoting = false; 
+        while _readInput >= 0 `readInputBody`
+        _lineNumberRanges.add(_position);
+        _inputReader.close();
+      }
+      print catch IO {}
+      _input = _inputBuffer.toString();
+      _inputArray = _input.toCharArray();
+      _inputLength = _inputArray.length;
+      \int _fileId = fileNames.size();
+      fileNames.add(_fileName);
+      "this._fileName" = _fileName;
+      _furthestPosition = 0;
+      _result = null;
+      _position = 0;
+      _state = SUCCESS;
+      
+      while _position < _inputLength && "(_inputArray[_position]" == "' '" || "_inputArray[_position]" == "'\\t'" || "_inputArray[_position]" == "'\\n'" || "_inputArray[_position]" == "'\\r')" {
+        "++_position";
+      }
+    }
+  }
+  @String readLine(String input, int position){
+    int indexOfLine = input.indexOf("'\\n'",position);
+    if indexOfLine == -1 {
+      return input.substring(position);
+    }
+    else {
+      return input.substring(position,indexOfLine);
+    }
+  }
+> void output(){
+    if ROOT_NAME == null {
+	  \System.err.println("No root rule found!");
+	}
+    else {
+      for String ruleName: rules.keySet() { 
+        Body ruleBody = new Body ();
+        \getRuleBody(ruleBody,ruleName,new HashMap<String, Set<Integer>>());
+      }
+      ExternalParser->Context->*"parse".appendToBody(|"parse_"+'ROOT_NAME'();|);
+      ExternalParser->Context->*"parse".appendToBody(|
+        if "_state" == "SUCCESS" && "_position" == "_inputLength" {
+          if "_succeedOnEnd" {
+            ExternalParser->Result->Pass pass = new ExternalParser->Result->Pass("SUCCESS", "_position","_lineNumberRanges","_input", "_fileName", "_root" );
+            pass.setup();
+            "_result" = pass;
+          }
+          else {
+            "_result_acceptor".setFileName("_fileName");
+            "_result" = "_result_acceptor";
+          }
+        }
+        else if "_state" == "SUCCESS" {
+          if "_result" != null {
+		    "_result_acceptor".add("_result");
+		  }
+          "_result_acceptor".add(new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' " tail of file could not be parsed" ''));
+          "_result_acceptor".setFileName("_fileName");
+          "_result" = "_result_acceptor";
+        }
+        else if "_state" == "FAILED" {
+          "_result_acceptor".add("_result");
+          "_result_acceptor".setFileName("_fileName");
+          "_result" = "_result_acceptor";
+        }|);
+      ExternalParser->Context->*"parse".appendToBody(|\long parseTime = \System.currentTimeMillis() - "startParseTime";|);
+      ExternalParser->Context->*"parse".appendToBody(|"_result".setParseTime(parseTime);|);
+      ExternalParser->Context->*"parse".appendToBody(|return "_result";|);
+      ExternalParser->*"parseFile".appendToBody(|
+        if "_pass" == "FIRST_PASS" {
+          ExternalParser->Context context = new ExternalParser->Context();
+          "contexts".put(fileName, context);
+          return context.parse(fileName, "FIRST_PASS");
+        }
+        else {
+          return "contexts".get(fileName).parse(fileName, "SECOND_PASS");
+        } |);
+    }
+  }
+  
+> void outputBraces() {
+    ~Integer maxOpen = 0;
+    for Integer key : declaredBraceOpenValues.keySet() {
+      if key > maxOpen {
+        maxOpen = key;
+      }
+    }
+    ~Integer maxClose = 0;
+    for Integer key : declaredBraceCloseValues.keySet() {
+      if key > maxClose {
+        maxClose = key;
+      }
+    }
+    ~Integer max = 0;
+    if maxOpen > maxClose {
+      max = maxOpen;
+    }
+    else {
+      max = maxClose;
+    }
+    Body readBracesBody = new Body ();
+    readInputBody.add(|
+      "_inputBuffer".append("(char)_readInput");
+      if "_readInput" == "'"+"\\n"+"'" {
+        "_lineNumberRanges".add("_position");
+      }
+      if "escaping" {
+        "escaping" = false;
+      }
+      else if 'notEscaping' && "_readInput" == char\\ {
+        "escaping" = true;
+      }
+      else if 'notQuoting' && "_readInput" == char\"  {
+        "quoting" = true;
+        "brace_open_0".push("_position");
+      }
+      else if "quoting" && "_readInput" == char\" {
+        "quoting" = false;
+        "brace_0".put("brace_open_0".pop(),"_position");
+      }
+      else if 'notQuoting' && 'notEscaping' `readBracesBody`
+      "_position" = "_position" \+ 1;|);
+    ~Integer i = maxOpen;
+    while i > 0 {
+    if declaredBraceCloseValues.containsKey(i) {
+        Map<String,List<Integer>> closeMap = declaredBraceCloseValues.get(i);
+        for String key : closeMap.keySet() {
+          Body closeBody = new Body ();
+          Statement closeHeader = new Statement ();
+          ~Integer j = i;
+          closeHeader.set("&&");
+          Integer jndexFirst = j;
+          if new Character(key.charAt(jndexFirst\-1)).toString().equals("\'") {
+            closeHeader.add(|"_readInput" == "'\\"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          else {
+            closeHeader.add(|"_readInput" == "'"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          j \-= 1;
+          while j > 0 {
+            Integer jndex = j;
+            if new Character(key.charAt(j\-1)).toString().equals("\'") {
+              closeHeader.add(|"_readInput_"+'jndex' == "'\\"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            else {
+              closeHeader.add(|"_readInput_"+'jndex' == "'"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            j \-= 1;
+          }
+          readBracesBody.add(|if `closeHeader` `closeBody`|);
+          if key.length() == 1 {
+            for Integer id : closeMap.get(key) {
+              closeBody.add(|
+                if "!brace_open_"+'id'.isEmpty() {
+                  "brace_"+'id'.put("brace_open_"+'id'.pop(),"_position");
+                }|);
+            }
+          }
+          else {
+            Integer keyOffset = key.length()\-1;
+            for Integer id : closeMap.get(key) {
+              closeBody.add(|
+                if "!brace_open_"+'id'.isEmpty() {
+                  "brace_"+'id'.put("brace_open_"+'id'.pop(),"_position"\-'keyOffset');
+                }|);
+            }
+          }
+        }
+      }
+      if declaredBraceOpenValues.containsKey(i) {
+        Map<String,List<Integer>> openMap = declaredBraceOpenValues.get(i);
+        for String key : openMap.keySet() {
+          Body openBody = new Body ();
+          Statement openHeader = new Statement ();
+          ~Integer j = i;
+          openHeader.set("&&");
+          Integer jndexFirst = j;
+          if new Character(key.charAt(jndexFirst\-1)).toString().equals("\'") {
+            openHeader.add(|"_readInput" == "'\\"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          else {
+            openHeader.add(|"_readInput" == "'"+'new Character(key.charAt(jndexFirst\-1))'+"'"|);
+          }
+          j \-= 1;
+          while j > 0 {
+            Integer jndex = j;
+            if new Character(key.charAt(j\-1)).toString().equals("\'") {
+              openHeader.add(|"_readInput_"+'jndex' == "'\\"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            else {
+              openHeader.add(|"_readInput_"+'jndex' == "'"+'new Character(key.charAt(jndex\-1))'+"'"|);
+            }
+            j \-= 1;
+          }
+          readBracesBody.add(|
+            if `openHeader` `openBody`|);
+          if key.length() == 1 {
+            for Integer id : openMap.get(key) {
+              openBody.add(|
+                "brace_open_"+'id'.push("_position");|);
+            }
+          }
+          else {
+            Integer keyOffset = key.length()\-1;
+            for Integer id : openMap.get(key) {
+              openBody.add(|
+                "brace_open_"+'id'.push("_position"\-'keyOffset');|);
+            }
+          }
+        }
+      }
+      
+      i \-= 1;
+    }
+    i = max\-1;
+    while i > 1 {
+      Integer index = i;
+      Integer jndex = i\-1;
+      ExternalParser->Context += ~\int "_readInput_"+'index' = "0";
+      readInputBody.add(|"_readInput_"+'index' = "_readInput_"+'jndex';|);
+      i \-= 1;
+    }
+    if max > 0 {
+      ExternalParser->Context += ~\int "_readInput_1" = "0";
+      readInputBody.add(|"_readInput_1" = "_readInput";|);
+    }
+    readInputBody.add(|
+      "_readInput" = "_inputReader".read();|);
+  }
+> void setupCompile(){
+    declaredBraces.add("\"\"");
+    Integer braceId = braceIds.size();
+    braceIds.put("\"\"",braceId);
+    ExternalParser->Context += Map<Integer, Integer> "brace_"+'braceId' = new HashMap<Integer, Integer>();
+    ExternalParser->Context->*"parse".prependToBody(|Stack<Integer> "brace_open_"+'braceId' = new Stack<Integer>(); |);
+  }
+> void list(Token input){
+    String listName = 'input->"listName"';
+    ExternalParser += ~ExternalParser->NameList->Root 'listName'+"_root" = new ExternalParser->NameList->Root();
+    ExternalParser->Context += ExternalParser->NameList 'input->"listName"' = 'input->"listName"'+"_root";
+    ExternalParser->Context += ExternalParser->NameList 'input->"listName"'+"_additions" = null;
+    ExternalParser->Context += Map<Integer, ExternalParser\>NameList > 'input->"listName"'+"_first_passes" = new HashMap<Integer, ExternalParser\>NameList>(); 
+    listNames.add('input->"listName"');
+    if input->"GLOBAL" != null {
+      globalListNames.add('input->"listName"');
+    }
+    if input->"listRuleName" != null {
+      listFirstPassRules.put('listName','input->"listRuleName"');
+    }
+    input : element : quote {
+      ExternalParser->*"parseFile".appendToBody({
+       'listName'+"_root".add('' 'element' '');
+      });
+    }
+  }
+> Body getListDeclarations(String ruleName, boolean hasSecondPass){
+    Body listDeclarations = new Body ();
+      for String listName: listNames {
+        if globalListNames.contains(listName) == false{
+          String subListName = 'listName'+"_"+'ruleName' ;
+          if variableDeclarationNames.add(subListName){
+            ExternalParser->Context += ExternalParser->NameList 'subListName' = null;
+          }
+          listDeclarations.add(|'subListName' = 'listName';|);
+          if hasSecondPass {
+            listDeclarations.add(|
+              if "_pass" == "SECOND_PASS" {
+                'listName' = new ExternalParser->NameList->Child('listName');
+              }|);
+          }
+          else {
+            listDeclarations.add(|
+              'listName' = new ExternalParser->NameList->Child('listName');|);
+          }
+        }
+      }
+    return listDeclarations;
+  }
+> Body getListReallocations(String ruleName){
+    Body listReallocations = new Body ();
+      for String listName: listNames {
+        if globalListNames.contains(listName) == false {
+          String subListName = 'listName'+"_"+'ruleName' ;
+          listReallocations.add(|'listName' = 'subListName';|);
+        }
+      }
+    return listReallocations;
+  }
+> ~Integer listIndex = 0;
+> void getRuleBody(Body completeBody, String ruleName, Map<String, Set<Integer>> excludeIndicesMap){
+    String currentLengthValue = "_length_" \+ 'ruleName' \+ "_brace";
+
+    List<Body > rule = rules.get(ruleName);
+    ~Body currentOption = completeBody;
+    Body withinBraces = new Body ();
+    Integer ruleListIndex = listIndex;
+    
+    String currentRulePositionValue = "_position_"\+ruleName;
+    String currentRuleTokenValue = "_token_"\+ruleName;
+    currentOption.add(|\int 'currentRulePositionValue' = -1;|);
+    currentOption.add(|ExternalParserToken->Parsed 'currentRuleTokenValue' = null;|);
+    if declaredBraceRules.containsKey(ruleName) {
+      listIndex \+= 1;
+      
+      currentOption.add(|\int 'currentLengthValue' = "_inputLength";|);
+      if declaredBracePasses.containsKey(ruleName) {
+      	if declaredBracePasses.get(ruleName) == 1 {
+          withinBraces.add(|if "_pass" == "FIRST_PASS" `withinBraces`|);
+          withinBraces.add(\getListDeclarations(ruleName,false));
+        }
+        else if declaredBracePasses.get(ruleName) == 2 {
+          Body completeBraceBody = new Body ();
+          completeBraceBody.add(\getListDeclarations(ruleName,true));
+          completeBraceBody.add(|
+              if "_pass" == "SECOND_PASS" `withinBraces`
+              else {
+                "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position") \+ 'declaredBraceCloseLengths.get(ruleName)';
+                while `ignoresHeaderStatement` {
+                  "++_position";
+                }
+              }|);
+          
+          currentOption.add(|
+            if "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.containsKey("_position") `completeBraceBody`|);
+        }
+      }
+      else {
+        currentOption.add(|if "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.containsKey("_position") `withinBraces`|);
+        withinBraces.add(\getListDeclarations(ruleName,false));
+      }
+      currentOption = withinBraces;
+      String currentPositionValue = "_position_" \+ 'ruleName' \+ "_brace";
+      
+      currentOption.add(|"_inputLength" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position");|);
+      currentOption.add(|\int 'currentPositionValue' = "_position";|);
+      currentOption.add(|"_position" \+= 'declaredBraceOpenLengths.get(ruleName)';|);
+      
+      currentOption.add(|
+        while `ignoresHeaderStatement` {
+          "++_position";
+        }|);
+    }
+    if handleListAdditions.containsKey(ruleName) {
+      String forRuleName = handleListAdditions.get(ruleName);
+      if listNamesInRule.containsKey(forRuleName){
+        for String listName: listNamesInRule.get(forRuleName) {
+          String subListName = 'listName'\+"_additions_"\+'ruleName';
+          if variableDeclarationNames.add(subListName){
+            ExternalParser->Context += ExternalParser->NameList 'subListName' = null;
+          }
+          currentOption.add(|'subListName' = 'listName'+"_additions";|);
+          currentOption.add(|'listName'+"_additions" = new ExternalParser->NameList->Child('listName');|);
+          handleListAdditionAftBodies.get(ruleName).add(|'listName'+"_additions" = 'subListName';|);
+        }
+      }
+    }
+    ~Body previousOption = null;
+    for Integer i < rule.size() {
+      String recursionProtectionVariable;
+      if handleRecursionProtection.contains(ruleName){
+        recursionProtectionVariable = "_recursion_protection_"\+'ruleName'\+"_"\+'i';
+        ExternalParser->Context += Set<Integer> 'recursionProtectionVariable' = new HashSet<Integer>();
+        if previousOption != null {
+          previousOption.add(|
+            if "_state" == "FAILED" && 'recursionProtectionVariable'.contains("_position") == false `currentOption`|);
+          
+        }
+        else {
+          Body innerBody = new Body ();
+          currentOption.add(|if "_state" == "SUCCESS" &&  'recursionProtectionVariable'.contains("_position") == false `innerBody`
+            else {
+              "_state" = "FAILED";
+            }|);
+          currentOption = innerBody;
+        }
+        currentOption.add(|'recursionProtectionVariable'.add("_position");|);
+      }
+      else {
+        recursionProtectionVariable = null;
+        if previousOption != null {
+          previousOption.add(|if "_state" == "FAILED" `currentOption`|);
+        }
+      }
+      if previousOption != null {
+        if handleListAdditions.containsKey(ruleName) {
+          String forRuleName = handleListAdditions.get(ruleName);
+          if listNamesInRule.containsKey(forRuleName){
+            for String listName: listNamesInRule.get(forRuleName) {
+              currentOption.add(|'listName'.removeAll('listName'+"_additions");|);
+              currentOption.add(|'listName'+"_additions".clear();|);
+            }
+          }
+        }
+        currentOption.add(|"_state" = "SUCCESS";|);
+      }
+      
+      previousOption = currentOption;
+      currentOption.add(rule.get(i));
+      if handleRecursionProtection.contains(ruleName){
+        currentOption.add(|'recursionProtectionVariable'.remove('currentRulePositionValue');|);
+      }
+      currentOption = new Body ();
+    }
+    if declaredBraceRules.containsKey(ruleName) {
+      String currentPositionValue = "_position_" \+ 'ruleName' \+ "_brace";
+      
+      withinBraces.add(|if "_state" == "SUCCESS" && "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position_"+'ruleName'+"_brace") == "_position" {
+        "_position" \+= 'declaredBraceCloseLengths.get(ruleName)';
+      }
+      else {
+        "_state" = "SUCCESS";
+        "_result_acceptor".add("_result");
+        "_result_acceptor".add(new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' "Did not reach end of braces" ''));
+        "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position_"+'ruleName'+"_brace")\+'declaredBraceCloseLengths.get(ruleName)';
+        "_succeedOnEnd" = false;
+      }
+      "_inputLength" = 'currentLengthValue';
+      while `ignoresHeaderStatement` {
+        "++_position";
+      }|);
+    }
+    if handleListAdditions.containsKey(ruleName) {
+      String forRuleName = handleListAdditions.get(ruleName);
+      if listNamesInRule.containsKey(forRuleName){
+        Body removeAdditionsBody = new Body ();
+        Body addAdditionBody = new Body ();
+        
+        previousOption.add(|if "_state" == "FAILED" `removeAdditionsBody` |);
+        previousOption.add(|else if "_state" == "SUCCESS" `addAdditionBody` |);
+        if declaredBraceRules.containsKey(ruleName) {
+          previousOption.add(\getListReallocations(ruleName));
+        }
+        for String listName: listNamesInRule.get(forRuleName) {
+          removeAdditionsBody.add(|if 'listName'+"_additions" != null {
+            'listName'.removeAll('listName'+"_additions");
+            'listName'+"_additions".clear();
+            }|);
+          addAdditionBody.add(|if 'listName'+"_additions" != null {
+            'listName'.addAll('listName'+"_additions");
+            'listName'+"_additions".clear();
+            }|);
+          
+          String subListName = 'listName'\+"_additions_"\+'ruleName';
+          previousOption.add(|'listName'+"_additions" = 'subListName';|);
+        }
+      }
+    }
+    else if declaredBraceRules.containsKey(ruleName) {
+      withinBraces.add(\getListReallocations(ruleName));
+    }
+    if declaredBraceRules.containsKey(ruleName) {
+      completeBody.add(|else {
+        "_state" = "FAILED";
+        if "_position" >= "_furthestPosition" {
+          "_result" = new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'parentRuleNames.get(ruleName)'+"("+'ruleName'+")" '');
+          "_furthestPosition" = "_position";
+        }
+      }|);
+    }
+    ExternalParser->Context += void "parse_"+'ruleName'(){
+    }
+    ExternalParser->Context->*"parse_"+'ruleName'.appendToBody(completeBody);
+  }
+> String define(Token input, String previousParentRuleName){
+    String ruleName;
+    String parentRuleName;
+    if input->"ruleName" != null {
+      ruleName = 'input->"ruleName"';
+      String ruleClassName = ^ruleName\+"Token";
+      ExternalParserTokens->Rule += class ruleClassName / ExternalParserToken->Parsed /{
+        ~String value = null;
+        String getName(){
+          return '' 'ruleName' '';
+        }
+        void setString(String newValue){
+          if value == null {
+            value = newValue;
+          }
+        }
+      }
+      parentRuleName = ruleName;
+    }
+    else {
+      ruleName = "_anonymous_" \+ anonymousRuleIndex;
+      anonymousRuleIndex \+= 1;
+      silentRules.add(ruleName);
+      parentRuleName = previousParentRuleName;
+    }
+    parentRuleNames.put(ruleName,parentRuleName);
+    if ROOT_NAME == null {
+      ROOT_NAME = ruleName;
+    }
+    if rules.containsKey(ruleName) == false {
+      completeRules.put(ruleName, new ArrayList<Body >());
+      rules.put(ruleName, completeRules.get(ruleName));
+      completeRules.get(ruleName).add(new Body ());
+    }
+    List<Body > rule = completeRules.get(ruleName);
+    Boolean isSilent = input->"SILENT" != null;
+    if isSilent {
+      silentRules.add(ruleName);
+    }
+    
+    Body foreBody = new Body ();
+    String currentPositionValue = "_position_"\+ruleName;
+    foreBody.add(|
+      if "_position" >= "_furthestPosition" {
+        "_result" = new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'parentRuleNames.get(ruleName)'+"("+'ruleName'+")" '');
+        "_furthestPosition" = "_position";
+      }
+      "_position" = 'currentPositionValue';|);
+    ruleForeBodies.put(ruleName,foreBody);
+    if input->"braced_parameters" != null {
+      String left = 'input->"braced_parameters"->"left"';
+      String right = 'input->"braced_parameters"->"right"';
+      String both = left \+ right;
+      Integer openLength = left.length();
+      Integer closeLength = right.length();
+      if declaredBraceValues.containsKey(both) == false {
+        declaredBraceValues.put(both,new ArrayList<String>());
+      }
+      if input->"passConstraint" != null {
+        declaredBracePasses.put(ruleName,Integer.parseInt('input->"passConstraint"'));
+      }
+      declaredBraceValues.get(both).add(ruleName);
+      declaredBraceRules.put(ruleName,both);
+      declaredBraceOpenLengths.put(ruleName,openLength);
+      declaredBraceCloseLengths.put(ruleName,closeLength);
+      if declaredBraces.add(both) {
+        Integer braceId = braceIds.size();
+        braceIds.put(both,braceId);
+        if declaredBraceOpenValues.containsKey(left.length()) == false {
+          declaredBraceOpenValues.put(left.length(),new HashMap<String,List<Integer>>());
+        }
+        if declaredBraceOpenValues.get(left.length()).containsKey(left) == false {
+          declaredBraceOpenValues.get(left.length()).put(left,new ArrayList<Integer>());
+        }
+        declaredBraceOpenValues.get(left.length()).get(left).add(braceId);
+        if declaredBraceCloseValues.containsKey(right.length()) == false {
+          declaredBraceCloseValues.put(right.length(),new HashMap<String,List<Integer>>());
+        }
+        if declaredBraceCloseValues.get(right.length()).containsKey(right) == false {
+          declaredBraceCloseValues.get(right.length()).put(right,new ArrayList<Integer>());
+        }
+        declaredBraceCloseValues.get(right.length()).get(right).add(braceId);
+        ExternalParser->Context += Map<Integer, Integer> "brace_"+'braceId' = new HashMap<Integer, Integer>();
+        ExternalParser->Context->*"parse".prependToBody(|Stack<Integer> "brace_open_"+'braceId' = new Stack<Integer>(); |);
+      }
+    }
+    input : definition : definition {
+      \define(definition,ruleName,parentRuleName, rule);
+    }
+    return ruleName;
+  }
+> void define(Token definition,String ruleName, String parentRuleName, List<Body > inputRule){
+    ~Boolean isFirst = true;
+    String ruleAsClass = ^ruleName\+"Token"; 
+    Integer choiceIndex = inputRule.size() \- 1;
+    ~Body rule = inputRule.get(choiceIndex);
+    ~Body nextBody = null;
+    String currentPositionValue = "_position_"\+ruleName;
+    String currentTokenValue = "_token_"\+ruleName;
+    rule.add(|'currentPositionValue' = "_position";|);
+    rule.add(|'currentTokenValue' = "_token";|);
+    if silentRules.contains(ruleName) == false {
+      rule.add(|"_token" = new ExternalParserTokens->Rule->'ruleAsClass'();|);
+    }
+    else {
+      rule.add(|"_token" = new ExternalParserToken->Parsed('' "$ANON" '');|);
+    }
+    Body foreBody = ruleForeBodies.get(ruleName);
+    definition : chain : chain {
+      chain : element : element {
+        \parseElement(element, ruleName, parentRuleName, rule, choiceIndex ,isFirst);
+        isFirst = false;
+        nextBody = new Body ();
+        Body realNextBody = nextBody;
+        rule.add(|if "_state" == "FAILED" `foreBody` else `realNextBody` |);
+        rule = nextBody;
+      }
+    }
+    if silentRules.contains(ruleName) == false {
+      inputRule.get(inputRule.size() \- 1).add(|
+        if "_state" == "SUCCESS" {
+          'currentTokenValue'.add('currentPositionValue',"_token");
+        }
+        "_token" = 'currentTokenValue';|);
+    }
+    else {
+      inputRule.get(inputRule.size() \- 1).add(|
+        if "_state" == "SUCCESS" {
+          'currentTokenValue'.addAll("_token");
+        }
+        "_token" = 'currentTokenValue';|);
+    }
+    if definition->"choice" != null {
+      inputRule.add(new Body ());
+      \define(definition->"choice"->"definition",ruleName,parentRuleName,inputRule);
+    }
+  }
+> ~Integer multipleIndex = 0;
+> void parseElement(Token element, String ruleName, String parentRuleName, Body rule, Integer choiceIndex, Boolean isFirst){
+    element : query : multiple {
+      String subRuleName = \define(query, parentRuleName);
+      
+      Body aftBody;
+      if declaredBraceRules.containsKey(parentRuleName){
+        handleListAdditions.put(subRuleName,parentRuleName);
+        aftBody = new Body ();
+        handleListAdditionAftBodies.put(subRuleName,aftBody);
+      }
+      else {
+        aftBody = null;
+      }
+      query->"option" : option : OPTIONAL {
+        String stateName = "_state_"\+multipleIndex;
+        multipleIndex \+= 1;
+        rule.add(|\int 'stateName' = "_state";|);
+        rule.add(|"parse_"+'subRuleName'();|);
+        if aftBody!=null {
+          rule.add(aftBody);
+        }
+        rule.add(|if 'stateName' == "SUCCESS" && "_state" == "FAILED" {
+          "_state" = "SUCCESS";
+        }|);
+      }
+      : MANY {
+        String stateName = "_state_"\+multipleIndex;
+        multipleIndex \+= 1;
+        rule.add(|\int 'stateName' = "_state";|);
+        Body whileRuleBody = new Body ();
+        rule.add(| while"_position" < "_inputLength" `whileRuleBody` |);
+        whileRuleBody.add(|"parse_"+'subRuleName'();|);
+        if aftBody!=null {
+          Body breakAftBody = new Body ();
+          breakAftBody.add(aftBody);
+          breakAftBody.add(|"break";|);
+          whileRuleBody.add(|if "_state" == "FAILED" `breakAftBody` |);
+          rule.add(|
+            if 'stateName' == "SUCCESS" && "_state" == "SUCCESS" `aftBody`|);
+        }
+        else {
+          whileRuleBody.add(|
+            if "_state" == "FAILED" {
+              "break";
+            }|);
+        }
+        rule.add(|
+          if 'stateName' == "SUCCESS" && "_state" == "FAILED" {
+            "_state" = "SUCCESS";
+          }|);
+      }
+      : PLUS {
+        String stateName = "_state_"\+multipleIndex;
+        String multipleValueName = "_multiple_index_"\+multipleIndex;
+        multipleIndex \+= 1;
+        rule.add(|\int 'stateName' = "_state";|);
+        rule.add(|\int 'multipleValueName' = "0";|);
+        Body breakAftBody = new Body ();
+        if aftBody != null {
+          breakAftBody.add(aftBody);
+        }
+        breakAftBody.add(|"break";|);
+        Body whileRuleBody = new Body ();
+        whileRuleBody.add(|"parse_"+'subRuleName'();|);
+        whileRuleBody.add(|if "_state" == "FAILED" `breakAftBody`
+          else {
+            "++"+'multipleValueName';
+          }|);
+        rule.add(| while"_position" < "_inputLength" `whileRuleBody` |);
+        Body noIterationFailBody = new Body ();
+        if aftBody != null {
+          noIterationFailBody.add(aftBody);
+        }
+        noIterationFailBody.add(|"_state" = "FAILED";|);
+        rule.add(|
+          if 'multipleValueName' == 0 `noIterationFailBody`
+          else if 'stateName' == "SUCCESS" && 'multipleValueName' > 0 && "_state" == "FAILED" {
+            "_state" = "SUCCESS";
+          }|);
+      }
+    }
+    : braced {
+      String subRuleName = \define(query, parentRuleName);
+      rule.add(|"parse_"+'subRuleName'();|);
+      if element->"listName"!=null {
+        rule.add(|if "_state" == "SUCCESS" {
+          String _value = "_token".getLastValue();
+          if _value!=null && 'element->"listName"'.add(_value) {
+            'element->"listName"'+"_additions".add(_value);
+          }
+        }|);
+        if listNamesInRule.containsKey(parentRuleName) == false {
+          listNamesInRule.put(parentRuleName, new HashSet<String>());
+        }
+        listNamesInRule.get(parentRuleName).add('element->"listName"');
+        handleListAdditions.put(ruleName, parentRuleName);
+        if handleListAdditionAftBodies.containsKey(ruleName) == false {
+          handleListAdditionAftBodies.put(ruleName,new Body ());
+        }
+      }
+    } 
+    : quoteToken {
+      String quote = 'element->"quoteToken"->"quote"';
+      String quoteLength = "" \+ quote.length();
+      Body subrule = new Body ();
+      StringBuilder quoteValue = new StringBuilder();
+      ~int ip = 0;
+      for Integer i < quote.length() {
+        String ch;
+        String quoteChar = quote.charAt(i)\+""; 
+        if quoteChar.equals("\\") {
+          if i\+1 < quote.length() {
+            String nextChar = quote.charAt(i\+1)\+"";
+            if nextChar.equals("t") {
+              ch = "\'\\t'"; 
+              quoteValue.append("\\t");
+              i\+=1;
+            }
+            else if nextChar.equals("n") {
+              ch = "\'\\n'"; 
+              quoteValue.append("\\n");
+              i\+=1;
+            }
+            else if nextChar.equals("r") {
+              ch = "\'\\r'"; 
+              quoteValue.append("\\r");
+              i\+=1;
+            }
+            else {
+              ch = "\'\\\\\'"; 
+              quoteValue.append("\\\\");
+            }
+          }
+          else {
+            ch = "\'\\\\\'"; 
+            quoteValue.append("\\\\");
+          }
+        }
+        else {
+          ch = "\'"\+quote.charAt(i)\+"\'";
+          quoteValue.append(quote.charAt(i));
+        }
+        String charArrayValue = "_inputArray[_position+"\+ip\+"]";
+        subrule.add(|if 'charArrayValue' != 'ch'{
+          "_state" = "FAILED";
+        }|);
+        ip \+= 1;
+      }
+      rule.add(|if "_position" \+ 'quoteLength' \- 1 >= "_inputLength"  {
+          "_state" = "FAILED";
+        }
+        else `subrule`
+        |);
+      
+      if element->"newName" != null {
+        String newTokenName = ^element->"newName"\+"Token";
+        if createdPlainTokens.add(newTokenName) {
+          Tokens->Plain += class newTokenName / Token->Parsed / {
+            String value = null;
+            String getName(){
+              return '' 'element->"newName"' '';
+            }
+            void setValue(String newValue){
+            }
+          }
+        }
+        String quoteName = "plain_"\+plainTokenIndex;
+        plainTokenIndex \+= 1;
+        ExternalParserTokens->Plain->'newTokenName' += @ExternalParserToken->Parsed 'quoteName' = new ExternalParserTokens->Plain->'newTokenName'('' 'quote' '');
+        rule.add(|if "_state" == "SUCCESS" {
+          "_token".add("_position",ExternalParserTokens->Plain->'newTokenName'->'quoteName');
+          "_position" = "_position" \+ 'quoteLength';
+          while `ignoresHeaderStatement` {
+            "++_position";
+          }
+        }|);
+      }
+      else {
+        rule.add(|if "_state" == "SUCCESS" {
+          "_position" = "_position" \+ 'quoteLength';
+          while `ignoresHeaderStatement` {
+            "++_position";
+          }
+        }|);
+      }
+      rule.add(|
+        else if "_state" == "FAILED" {
+          if "_position" >= "_furthestPosition" {
+            "_result" = new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' "unexpected plain "+ char\" +'quoteValue'+ char\" '');
+            "_furthestPosition" = "_position";
+          }
+        }|);
+    }
+    : regexToken {
+      Token regex = element->"regexToken"->"regex";
+      String currentPositionValue = "_position_regex_"\+currentPositionIndex;
+      StringBuilder regexValue = new StringBuilder();
+      rule.add(|\int 'currentPositionValue' = "_position";|);
+      regex : regexElement : regex_element {
+        regexValue.append(\addRegexElementToRule(regexElement,rule,currentPositionValue));
+      }
+      currentPositionIndex \+= 1;
+      
+      if element->"newName" != null {
+        String newTokenName = ^element->"newName";
+        if createdPlainTokens.add(newTokenName) {
+          ExternalParserTokens->Plain += class newTokenName /  ExternalParserToken->Parsed / {
+            String value = null;
+            String getName(){
+              return '' 'element->"newName"' '';
+            }
+          }
+        }
+        if element->"listName" != null {
+          rule.add(|if "_state" == "SUCCESS" {
+            "_token".add('currentPositionValue',new ExternalParserTokens->Plain->'newTokenName'("_input".substring('currentPositionValue',"_position")));
+            if 'element->"listName"'.add("_input".substring('currentPositionValue',"_position")) {
+              'element->"listName"'+"_additions".add("_input".substring('currentPositionValue',"_position"));
+            }
+            while `ignoresHeaderStatement` {
+              "++_position";
+            }
+          }|);
+          if listNamesInRule.containsKey(parentRuleName) == false {
+            listNamesInRule.put(parentRuleName, new HashSet<String>());
+          }
+          listNamesInRule.get(parentRuleName).add('element->"listName"');
+          handleListAdditions.put(ruleName, parentRuleName);
+          if handleListAdditionAftBodies.containsKey(ruleName) == false {
+            handleListAdditionAftBodies.put(ruleName,new Body ());
+          }
+        }
+        else {        
+          rule.add(|if "_state" == "SUCCESS" {
+            "_token".add('currentPositionValue',new ExternalParserTokens->Plain->'newTokenName'("_input".substring('currentPositionValue',"_position")));
+            while `ignoresHeaderStatement` {
+              "++_position";
+            }
+          }|);
+        }
+      }
+      else {
+        rule.add(|if "_state" == "SUCCESS" {
+            "_token".setValue("_input".substring('currentPositionValue',"_position"));
+            while `ignoresHeaderStatement` {
+              "++_position";
+            }
+          }|);
+      }
+      rule.add(|
+        if "_state" == "FAILED" {
+          if "_position" >= "_furthestPosition" {
+            "_result" = new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'regexValue.toString().replace("\\","\\\\").replace("\"","\\\"").replace("\'","\\\'")' '');
+            "_furthestPosition" = "_position";
+          }
+          "_position" = 'currentPositionValue';
+        }|);
+    }
+    : ruleToken {
+      if listNames.contains('query'){
+        String listName = 'query';
+        String newTokenClassName;
+        String newTokenName;
+        
+        if element->"newName" != null {
+          newTokenClassName = ^element->"newName"\+"Token";
+          newTokenName = 'query';
+        }
+        else {
+          newTokenClassName = ^query\+"Token";
+          newTokenName = 'query';
+        }
+        if createdNameTokens.add(newTokenClassName) {
+          ExternalParserTokens->Name += class newTokenClassName / ExternalParserToken->Parsed / {
+            String value = null;
+            String getName(){
+              return '' 'newTokenName' '';
+            }
+            void setValue(String newValue){
+            }
+          }
+        }
+        Body listRuleBody;
+        if listFirstPassRules.containsKey('listName') {
+          listRuleBody = new Body ();
+          rule.add(|if "_pass" == "FIRST_PASS" { "parse_"+'listFirstPassRules.get(listName)'(); }|);
+          rule.add(|else if "_pass" == "SECOND_PASS" `listRuleBody`|);
+        }
+        else {
+          listRuleBody = rule;
+        }
+        String isNameableCharacter = "_next_char == 95 || (_next_char >= 48 && _next_char <= 57 ) || (_next_char >= 65 && _next_char <= 90 ) || (_next_char >= 97 && _next_char <= 122 )"; 
+        listRuleBody.add(|
+          "_list_name_result" = 'listName'.get("_position","_inputLength","_inputArray");
+          if "_list_name_result" != null {
+            if "_position"\+"_list_name_result".length() < "_inputLength" {
+              int _next_char = "_inputArray"["_position"\+"_list_name_result".length()];
+              if 'isNameableCharacter' {
+                "_state" = "FAILED";
+              }
+            }
+            if "_state" == "SUCCESS" {
+              "_token".add("_position",new ExternalParserTokens->Name->'newTokenClassName'("_list_name_result"));
+              "_position" \+= "_list_name_result".length();
+              while `ignoresHeaderStatement` {
+                "++_position";
+              }
+            }
+          }
+          else {
+            "_state" = "FAILED";
+          }
+          if "_state" == "FAILED" {
+            if "_position" >= "_furthestPosition" {
+              "_result" = new ExternalParser->Result->Fail("FAILED", "_position","_lineNumberRanges","_input", "_fileName", '' 'listName' '');
+              "_furthestPosition" = "_position";
+            }
+          }|);
+      }
+      else {
+        String subRuleName = 'query';
+        handleRecursionProtection.add(subRuleName);
+        rule.add(|"parse_"+'subRuleName'();|);
+        if element->"listName"!=null {
+          rule.add(|if "_state" == "SUCCESS" {
+            String _value = "_token".getLastValue();
+            if _value!=null && 'element->"listName"'.add(_value) {
+              'element->"listName"'+"_additions".add(_value);
+            }
+          }|);
+          if listNamesInRule.containsKey(parentRuleName) == false {
+            listNamesInRule.put(parentRuleName, new HashSet<String>());
+          }
+          listNamesInRule.get(parentRuleName).add('element->"listName"');
+          handleListAdditions.put(ruleName, parentRuleName);
+          if handleListAdditionAftBodies.containsKey(ruleName) == false {
+            handleListAdditionAftBodies.put(ruleName,new Body ());
+          }
+        }
+      }
+    }
+  }
+> ~Integer groupSuccessfulPositionIndex = 0;
+> String addRegexElementToRule(Token element, Body rule, String positionName){
+    String groupSuccessfulPositionName = "_position_of_last_success_" + groupSuccessfulPositionIndex;
+    groupSuccessfulPositionIndex \+= 1;
+    if element->"option" != null {
+      StringBuilder regexValue = new StringBuilder();
+      regexValue.append("[");
+      Statement option = new Statement ();
+      if element->"option"->"negate" == null {
+        option.set("||");
+        Token optionToken = element->"option";
+        optionToken : atom : range {
+          Character ch = 'atom->"left"'.charAt(0);
+          Integer end = 'atom->"right"'.charAt(0) -  ch;
+          for Integer i <= end {
+            String chValue = "'" + ((char)(ch + i)) + "'";
+            option.add(|"_inputArray[_position]" == 'chValue'|);
+          }
+          regexValue.append('atom->"left"');
+          regexValue.append("-");
+          regexValue.append('atom->"right"');
+        }
+        : regex_special {
+          atom : quark : REGEX_NUMBER {
+            Character ch = "0".charAt(0);
+            Integer end = "9".charAt(0) -  ch;
+            for Integer i <= end {
+              String chValue = "'" + (char)(ch + i) + "'";
+              option.add(|"_inputArray[_position]" == 'chValue'|);
+            }
+            regexValue.append("\\\\d");
+          }
+          : REGEX_WHITESPACE {
+            option.add(|"_inputArray[_position]" == "' '"|);
+            option.add(|"_inputArray[_position]" == "'\\t'"|);
+            option.add(|"_inputArray[_position]" == "'\\r'"|);
+            option.add(|"_inputArray[_position]" == "'\\n'"|);
+            regexValue.append("\\\\s");  
+          }
+          : REGEX_QUOTE {
+            option.add(|"_inputArray[_position]" == char\"|);
+            regexValue.append("\\\"");  
+          }
+          : REGEX_DOT {
+            option.add(|"_inputArray[_position]" == "'.'"|);
+            regexValue.append("\\.");  
+          }
+        }
+        : standAlone {
+          String ch;
+          String quoteChar = 'atom'; 
+          if quoteChar.equals("\\") {
+            ch = "\\\\"; 
+          }
+          else if quoteChar.equals("\"") {
+            ch = "\\\""; 
+          }
+          else {
+            ch = 'atom';
+          }
+          option.add(|"_inputArray[_position]" == "'"+'ch'+"'"|);
+          regexValue.append('atom');
+        }
+      }
+      else {
+        option.set("&&");
+        Token optionToken = element->"option";
+        optionToken : atom : range {
+          Character ch = 'atom->"left"'.charAt(0);
+          Integer end = 'atom->"right"'.charAt(0) -  ch;
+          for Integer i <= end {
+            String chValue = "'" + (char)(ch + i) + "'";
+            option.add(|"_inputArray[_position]" != 'chValue'|);
+          }
+          regexValue.append('atom->"left"');
+          regexValue.append("-");
+          regexValue.append('atom->"right"');
+        }
+        : regex_special {
+          atom : quark : REGEX_NUMBER {
+            Character ch = "0".charAt(0);
+            Integer end = "9".charAt(0) -  ch;
+            for Integer i <= end {
+              String chValue = "'" + (char)(ch + i) + "'";
+              option.add(|"_inputArray[_position]" != 'chValue'|);
+            }
+            regexValue.append("\\\\d");
+          }
+          : REGEX_WHITESPACE {
+            option.add(|"_inputArray[_position]" != "' '"|);
+            option.add(|"_inputArray[_position]" != "'\\t'"|);
+            option.add(|"_inputArray[_position]" != "'\\r'"|);
+            option.add(|"_inputArray[_position]" != "'\\n'"|);
+            regexValue.append("\\\\s");  
+          }
+          : REGEX_QUOTE {
+            option.add(|"_inputArray[_position]" != char\" |);
+            regexValue.append("\\\"");  
+          }
+          : REGEX_APOS {
+            option.add(|"_inputArray[_position]" != char\' |);
+            regexValue.append("\\\'");
+          }
+          : REGEX_DOT {
+            option.add(|"_inputArray[_position]" == "'.'"|);
+            regexValue.append("\\.");  
+          }
+        }
+        : standAlone {
+          String ch;
+          String quoteChar = 'atom'; 
+          if quoteChar.equals("\\") {
+            ch = "\\\\"; 
+          }
+          else if quoteChar.equals("\"") {
+            ch = "\\\""; 
+          }
+          else if quoteChar.equals("\'") {
+            ch = "\\\'"; 
+          }
+          else {
+            ch = 'atom';
+          }
+          option.add(|"_inputArray[_position]" != "'"+'ch'+"'"|);
+          regexValue.append('atom');
+        }
+      }
+      if element->"multiple" != null {
+        String multipleValueName = "_multiple_index_"\+multipleIndex;
+        multipleIndex \+= 1;
+        if element->"multiple"->"OPTIONAL" != null {
+          rule.add(|
+            if "_position" < "_inputLength" {
+              if `option` {
+                "++_position";
+              }
+            }
+          |);
+        }
+        else if element->"multiple"->"MANY" != null {
+          rule.add(|
+            while "_position" < "_inputLength" {
+              if `option` {
+                "++_position";
+              }
+              else {
+                "break";
+              }
+            }
+          |);
+        }
+        else if element->"multiple"->"PLUS" != null{
+          rule.add(|
+            \int 'multipleValueName' = 0;
+            while "_position" < "_inputLength" {
+              if `option` {
+                "++_position";
+                "++"+'multipleValueName';
+              }
+              else {
+                "break";
+              }
+            }
+            if 'multipleValueName' == 0 {
+              "_state" = "FAILED";
+            }
+          |);
+        }
+      }
+      else {
+        rule.add(|
+          if "_position" < "_inputLength" {
+            if `option` {
+              "++_position";
+            }
+            else {
+              "_state" = "FAILED";
+            }
+          }
+          else {
+            "_state" = "FAILED";
+          }
+        |);
+      }
+      regexValue.append("]");
+      if element->"multiple" != null {
+      if element->"multiple"->"OPTIONAL" != null {
+        regexValue.append("?");
+      }
+      else if element->"multiple"->"MANY" != null {
+        regexValue.append("*");
+      }
+      else if element->"multiple"->"PLUS" != null {
+        regexValue.append("+");
+      }
+      }
+      return 'regexValue';
+    }
+    else {
+      StringBuilder regexValue = new StringBuilder();
+      Body regexBody;
+      String multipleValueName;
+      String stateName;
+      if element->"multiple" != null {
+        multipleValueName = "_multiple_index_"\+multipleIndex;
+        stateName = "_state_"\+multipleIndex;
+        multipleIndex \+= 1;
+        String multipleValueLimit;
+        if element->"multiple"->"OPTIONAL" != null {
+          multipleValueLimit = "1";
+        }
+        else {
+          multipleValueLimit = "Integer.MAX_VALUE";
+        }
+        regexBody = new Body ();
+        if element->"multiple"->"PLUS" != null{
+          rule.add(|
+            \int 'multipleValueName' = 0;
+            \int 'stateName' = "_state";
+            while "_position" < "_inputLength" `regexBody`
+          |);
+        }
+        else {
+          if element->"multiple"->"OPTIONAL" != null {
+            rule.add(|
+              \int 'stateName' = "_state";
+              if "_position" < "_inputLength" `regexBody`
+            |);
+          }
+          else if element->"multiple"->"MANY" != null {
+            rule.add(|
+              \int 'multipleValueName' = 0;
+              \int 'stateName' = "_state";
+              while "_position" < "_inputLength" `regexBody`
+            |);
+          }
+        }
+      }
+      else {
+        regexBody = rule;
+        multipleValueName = null;
+        stateName = null;
+      }
+      if element->"regex_special" != null {
+        Statement option = new Statement ();
+        option.set("||");
+        element->"regex_special" : quark : REGEX_NUMBER {
+          Character ch = "0".charAt(0);
+          Integer end = "9".charAt(0) -  ch;
+          for Integer i <= end {
+            String chValue = "'" + (char)(ch + i) + "'";
+            option.add(|"_inputArray[_position]" == 'chValue'|);
+          }
+          regexValue.append("\\\\d");
+        }
+        : REGEX_WHITESPACE {
+          option.add(|"_inputArray[_position]" == "' '"|);
+          option.add(|"_inputArray[_position]" == "'\\t'"|);
+          option.add(|"_inputArray[_position]" == "'\\r'"|);
+          option.add(|"_inputArray[_position]" == "'\\n'"|);
+          regexValue.append("\\\\s");  
+        }
+        : REGEX_QUOTE {
+          option.add(|"_inputArray[_position]" == char\" |);
+          regexValue.append("\\\"");  
+        }
+        regexBody.add(|
+          if "_position" < "_inputLength" {
+            if `option` {
+              "++_position";
+            }
+            else {
+              "_state" = "FAILED";
+            }
+          }
+          else {
+            "_state" = "FAILED";
+          }|);
+      }
+      
+      if element->"character" != null {
+        if 'element->"character"'.equals("."){
+          regexBody.add(|
+            if "_position" < "_inputLength" {
+              "++_position";
+            }
+            else {
+              "_state" = "FAILED";
+            }|);
+        }
+        else {
+          regexBody.add(|
+            if "_position" < "_inputLength" {
+              if "_inputArray[_position]" == "'"+'element->"character"'+"'" {
+                "++_position";
+              }
+              else {
+                "_state" = "FAILED";
+              }
+            }
+            else {
+              "_state" = "FAILED";
+            }|);
+        }
+        regexValue.append('element->"character"');
+      }
+      else if element->"group" != null {
+        String op = "(";
+        String cp = ")";
+        regexValue.append(op);
+        Token regexToken = element->"group"->"regex";
+        regexBody.add(|int 'groupSuccessfulPositionName' = "_position"; |);
+        regexToken : regexElement : regex_element {
+          regexValue.append(\addRegexElementToRule(regexElement, regexBody, positionName));
+        }
+      }
+      if element->"multiple" != null {
+        if element->"multiple"->"PLUS" != null{
+          if element->"group" != null {
+            regexBody.add(|
+              if "_state" == "FAILED" {
+                "_position" = 'groupSuccessfulPositionName';
+                "break";
+              }
+              else {
+                "++"+'multipleValueName';
+                'groupSuccessfulPositionName' = "_position";
+              }|);
+          }
+          else {
+            regexBody.add(|
+              if "_state" == "FAILED" {
+                "break";
+              }
+              else {
+                "++"+'multipleValueName';
+              }|);
+          }
+          rule.add(|
+            if 'stateName' == "SUCCESS" && 'multipleValueName' > 0 {
+              "_state" = "SUCCESS";
+            }
+            else {
+              "_state" = "FAILED";
+            }
+          |);
+          regexValue.append("+");
+        }
+        else {
+          if element->"multiple"->"OPTIONAL" != null {
+            regexValue.append("?");
+            if element->"group" != null {
+              regexBody.add(|
+                if "_state" == "FAILED" {
+                  "_position" = 'groupSuccessfulPositionName';
+                }|);
+            }
+          }
+          else if element->"multiple"->"MANY" != null {            
+            if element->"group" != null {
+              regexBody.add(|
+                if "_state" == "FAILED" {
+                  "_position" = 'groupSuccessfulPositionName';
+                  "break";
+                }
+                else {
+                  "++"+'multipleValueName';
+                  'groupSuccessfulPositionName' = "_position";
+                }|);
+            }
+            else {
+              regexBody.add(|
+                if "_state" == "FAILED" {
+                  "break";
+                }
+                else {
+                  "++"+'multipleValueName';
+                }|);
+            }
+            regexValue.append("*");
+          }
+          rule.add(|
+            if 'stateName' == "SUCCESS" {
+              "_state" = "SUCCESS";
+            }|);
+        }
+      }
+      return 'regexValue';
+    }
+  }
+  class NameList // {
+    class Node // {
+      > String nodeArray = "Node[]";
+      > String nodeArrayWith128 = "new Node[128]";
+      > String nodeArrayAtPosition = "children[newEntry.charAt(position)]";
+      > String nodeArrayAtInputPosition = "children[input[position]]";
+      >@ String nodeArrayAtFirstEntry = "children[entry.charAt(0)]";
+      > String nodeArrayAtRemoveIndex = "children[toRemove.charAt(index)]";
+      > String inputAccessPosition = "input[position]";
+      ~'nodeArray' children = 'nodeArrayWith128';
+      ~\int numberOfEntries = 0;
+      ~String value = null;
+      \boolean add(String newEntry, \int position){
+        if position < newEntry.length() {
+          if 'nodeArrayAtPosition' == null {
+            'nodeArrayAtPosition' = new ExternalParser\>NameList\>Node();
+            "++numberOfEntries";
+          }
+          return 'nodeArrayAtPosition'.add(newEntry,position \+ 1);
+        }
+        else {
+          if value == null || "!value".equals(newEntry) {
+            value = newEntry;
+            return true;
+          }
+          else {
+            return false;
+          } 
+        }
+      }
+      String get(\int position, \int length, 'charArray' input){
+        if position>=length{
+			return value;
+		}
+		if 'nodeArrayAtInputPosition' != null {
+			String result = 'nodeArrayAtInputPosition'.get(position\+1,length,input);
+			if result!=null {
+				return result;
+			}
+			else {				
+				return value;			
+			}
+		}
+		return value;
+      }
+      \int remove(String toRemove, \int index){
+        if index >= toRemove.length() {
+          if toRemove.equals(value) {
+            value = null;
+            return 0;
+		  }
+		  else {
+			return 2;
+		  }
+        }
+        else {
+          if 'nodeArrayAtRemoveIndex' != null {
+            \int result = 'nodeArrayAtRemoveIndex'.remove(toRemove,index\+1);
+            if result < 2{
+              if numberOfEntries > 1 {
+                'nodeArrayAtRemoveIndex' = null;
+                "--numberOfEntries";
+              }
+              return numberOfEntries;
+            }
+            else {
+              return result;
+            }
+          }
+          else {
+            return 2;
+          }
+        }
+      }
+      class Root / ExternalParser->NameList->Node / {
+        ~Set<String> allEntries = new HashSet<String>();
+        \boolean add(String newEntry){
+          if allEntries.add(newEntry) {
+            return \super.add(newEntry, 0);
+          }
+          else {
+            return false;
+          }
+        }
+        Set<String> list(){
+          return allEntries;
+        }
+        void clear(){
+          for String entry: allEntries {
+            'nodeArrayAtFirstEntry' = null;
+          }
+        }
+        void removeAll(ExternalParser->NameList->Node->Root fromNode){
+          for String entry: fromNode.allEntries {
+            \remove(entry,0);
+          }
+          allEntries.removeAll(fromNode.allEntries);
+          numberOfEntries = allEntries.size();
+        }
+        void addAll(ExternalParser->NameList->Node->Root fromNode){
+          for String entry: fromNode.allEntries {
+            \add(entry,0);
+          }
+        }
+      }
+    }
+    ~ExternalParser->NameList->Node->Root root = new ExternalParser->NameList->Node->Root();
+    \boolean add(String newEntry){
+      return root.add(newEntry);
+    }
+    String get(\int position, \int length, 'charArray' input){
+      return root.get(position,length,input);
+    }
+    Set<String> list(){
+      return root.list();
+    }
+    void clear(){
+      root.clear();
+    }
+    void removeAll(ExternalParser->NameList fromList){
+      root.removeAll(fromList.getRoot());
+    }
+    void addAll(ExternalParser->NameList fromList){
+      root.addAll(fromList.getRoot());
+    }
+    class Root / ExternalParser->NameList / {
+      \boolean add(String query){
+        synchronized this {
+          return \super.add(query);
+        }
+      }
+    }
+    class Child / ExternalParser->NameList / {
+      NameList parentList = null;
+      String get(\int position, \int length, 'charArray' input){
+        String result = \super.get(position,length,input);
+        String parentResult = parentList.get(position,length,input); 
+		if result!=null {
+		  if parentResult == null {
+			return result;
+		  }
+		  else if parentResult.length()<result.length() {
+			return result;
+		  }
+		  else {
+			return parentResult;
+		  }
+		}
+		else {
+		  return parentResult;
+		}
+      }
+      Set<String> list(){
+        Set<String> set = new HashSet<String>();
+        set.addAll(\super.list());
+        set.addAll(parentList.list());
+        return set;
+      }
+    }
+  }
+  class 'packageName'."parser" Result {
+    Integer state = -1;
+    Integer position = -1;
+    List<Integer> lineNumberRanges = null;
+    String input = null;
+    String fileName = null;
+    ~\long parseTime = -1;
+    void setFileName(String newFileName){
+      "fileName" = newFileName;
+    }
+    Integer getLineNumber(Integer position){
+      Integer upperBound = 0;
+      Integer lineNumber = 0;
+      while lineNumber < lineNumberRanges.size() && upperBound < position {
+        upperBound = lineNumberRanges.get(lineNumber);
+        lineNumber \+= 1;
+      }
+      return lineNumber;
+    }
+    Integer getLineNumber(){
+      Integer upperBound = 0;
+      Integer lineNumber = 0;
+      while lineNumber < lineNumberRanges.size() && upperBound < position {
+        upperBound = lineNumberRanges.get(lineNumber);
+        lineNumber \+= 1;
+      }
+      return lineNumber;
+    }
+    String toString(){
+      if state == "ExternalParser.FAILED" {
+      Integer lineNumber = \getLineNumber();
+      Integer rangeIndex = lineNumber \- 1;
+      Integer upperBound = lineNumberRanges.get(rangeIndex);
+      Integer lowerBound = 0;
+      if rangeIndex > 0 {
+        lowerBound = lineNumberRanges.get(rangeIndex \- 1) \+ 1;
+      }
+      String errorAt;
+      if upperBound < input.length() {
+        errorAt = input.substring(lowerBound,position)\+'' "$>" ''\+input.substring(position,upperBound);
+      }
+      else {
+        errorAt = input.substring(lowerBound,position)\+'' "<$" ''\+input.substring(position);
+      }
+      if parseTime <= 0 {
+        if fileName == null {
+          return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber ;
+        }
+        else {
+          return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName;
+        }
+      }
+      else {
+        if position == -1 {
+          if parseTime < 1000 {
+            return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+          }
+          else {
+            return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+          }
+        }
+        else {
+          if parseTime < 1000 {
+            return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName\+'' "\\n\\tParse Time: " '' \+ parseTime \+ '' "ms" '';
+          }
+          else {
+            return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tLine Number: " '' \+lineNumber\+'' "\\n\\tFile Name: " '' \+fileName\+'' "\\n\\tParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+          }
+        }
+      }
+      }
+      else {
+      if parseTime == 0 {
+        if fileName == null {
+          return '' "" '' ;
+        }
+        else {
+          return '' "File Name: " '' \+fileName;
+        }
+      }
+      else {
+        if parseTime < 1000 {
+          return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
+        }
+        else {
+          return '' "File Name: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
+        }
+      }
+      }
+    }
+    class Pass / Result / {
+      ExternalParserToken\>Parsed  parsedRoot = null;
+      ~ExternalParserToken->Branch root = null;
+      void setup(){
+        root = new ExternalParserToken->Branch();
+		\setup(root,parsedRoot,0);
+      }
+      void setup(ExternalParserToken->Branch current, ExternalParserToken->Parsed currentParsed, Integer currentPosition){
+        List<ExternalParserToken\>Parsed> children = currentParsed.getChildren();
+        List<Integer> positions = currentParsed.getPositions();
+        Integer size = currentParsed.getChildren().size();
+        for Integer i < size {
+          if children.get(i).getChildren().isEmpty() ==  false {
+            ExternalParserToken->Branch newToken = new ExternalParserToken->Branch(children.get(i).getName(),positions.get(i),currentPosition,\this);
+            current.add(newToken);
+            \setup(newToken,children.get(i),positions.get(i));
+          }
+          else {
+            current.add(new ExternalParserToken->Leaf(children.get(i).getName(),children.get(i).getValue(), positions.get(i),currentPosition, \this ));
+          }
+        }
+      }
+      String toString(){
+        if fileName != null {
+          return '' "Passed:\\n\\t" '' \+\super.toString() ;
+        }
+        else {
+          return null;
+        }
+      }
+    }
+    class Fail / Result / {
+      String ruleName = null;
+      String toString(){
+        return '' "Failed:\\n\\tRule:" '' \+ruleName\+\super.toString();
+      }
+    }
+    class Acceptor / ExternalParser->Result / {
+      List<ExternalParser\>Result> results = new ArrayList<ExternalParser\>Result>();
+      void add(ExternalParser->Result result){
+        result.setFileName(null);
+        results.add(result);
+      }
+      String toString(){
+        StringBuilder builder = new StringBuilder();
+        for ExternalParser->Result result: results {
+          String resultString = result.toString();
+          if resultString != null {
+            builder.append('' "\\n" '');
+            builder.append(resultString);
+          }
+        }
+        return \super.toString()\+builder.toString();
+      }
+    }
+  }
+}
+class 'packageName'."parser" ExternalParserTokens {
+  class Plain // {
+  }
+  class Name // {
+  }
+  class Rule // {
+  }
+}
+interface 'packageName'."parser" ExternalParserToken {
+
+  ExternalParserToken getLast(){}
+  ExternalParserToken getLast(String tokenName){}
+  List<ExternalParserToken> getAll(String key){}
+  List<ExternalParserToken> getAllSafely(String key){}
+  void add(ExternalParserToken newToken){}
+  void print(){}
+  void print(\int tab){}
+  void printShort(){}
+  String getFileName(){}
+  \int getLineNumber(){}
+  String getValue(){}
+  String getName(){}
+  class Parsed // {
+    ~List<ExternalParserToken\>Parsed> children = new ArrayList<ExternalParserToken\>Parsed>();
+    ~List<Integer> positions = new ArrayList<Integer>();
+    String name = null;
+    String getValue(){
+      return null;
+    }
+    void setValue(String newValue){
+    }
+    String getLastValue(){
+      if children.isEmpty() {
+        return null;
+      }
+      else {
+        return children.get(children.size()-1).getValue();
+      }
+    }
+    void add(Integer position, ExternalParserToken->Parsed newToken){
+      children.add(newToken);
+      positions.add(position);
+    }
+    void addAll(ExternalParserToken->Parsed inductee){
+      for Integer i < inductee.children.size() {
+        children.add(inductee.children.get(i));
+        positions.add(inductee.positions.get(i));
+      }
+    }
+  }
+  
+  class Leaf // ExternalParserToken {
+    String name = null;
+    String value = null;
+    Integer position = null;
+    Integer parentPosition = null;
+    ExternalParser->Result->Pass context = null;
+	ExternalParserToken getLast(){
+	  return null;
+	}
+	ExternalParserToken getLast(String tokenName){
+	  return null;
+	}
+	void add(ExternalParserToken token){
+	}
+	List<ExternalParserToken> getAll(String key){
+	  return null;
+	}
+	List<ExternalParserToken> getAllSafely(String key){
+	  return new ArrayList<ExternalParserToken>();
+	}
+	void print(){
+	  \printShort();
+	}
+	void print(\int tab){
+	  for Integer i < tab {
+	    \System.out.print('' "  " '');
+	  }
+	  \printShort();
+	}
+	void printShort(){
+	  \System.out.print('' "[" '');
+	  \System.out.print(name);
+	  \System.out.print('' ":" '');
+	  \System.out.print(value);
+	  \System.out.println('' "]" '');
+	}
+	String getFileName(){
+	  return context.getFileName();
+	}
+	\int getLineNumber(){
+	  return context.getLineNumber(position);
+	}
+  }
+  class Branch // ExternalParserToken {
+    ~Map<String, List<ExternalParserToken>> namedLists = new HashMap<String, List<ExternalParserToken>>();
+    ~List<ExternalParserToken> children = new ArrayList<ExternalParserToken>();
+    String name = null;
+    Integer position = null;
+    Integer parentPosition = null;
+    ExternalParser->Result->Pass context = null;
+    
+    String getValue(){
+      return children.get(0).getValue();
+    }
+	ExternalParserToken getLast(){
+	  return children.get(children.size()\-1);
+	}
+	ExternalParserToken getLast(String tokenName){
+	  return namedLists.get(tokenName).get(namedLists.get(tokenName).size()\-1);
+	}
+	void add(ExternalParserToken token){
+	  children.add(token);
+	  if namedLists.containsKey(token.getName()) == false {
+	    namedLists.put(token.getName(), new ArrayList<ExternalParserToken>());
+	  }
+	  namedLists.get(token.getName()).add(token);
+	}
+	List<ExternalParserToken> getAll(String key){
+	  return namedLists.get(key);
+	}
+	List<ExternalParserToken> getAllSafely(String key){
+	  if namedLists.containsKey(key){
+	    return namedLists.get(key);
+	  }
+	  else {
+	    return new ArrayList<ExternalParserToken>();
+	  }
+	}
+	
+	void print(){
+	  \System.out.println('' ":>" '' \+ name);
+	  for ExternalParserToken node : children {
+	    node.print(1);
+	  }
+	}
+	void print(\int tab){
+	  for Integer i < tab {
+	    \System.out.print('' "  " '');
+	  }
+	  \System.out.println(name);
+	  for ExternalParserToken node : children {
+	    node.print(tab\+1);
+	  }
+	}
+	void printShort(){
+	  for ExternalParserToken node : children {
+	    \System.out.print('' "[" '');
+	    \System.out.print(node.getName());
+	    \System.out.print('' ":" '');
+	    \System.out.print(node.getValue());
+	    \System.out.print('' "]" '');
+	  }
+	  \System.out.println();
+	}
+	String getFileName(){
+	  return context.getFileName();
+	}
+	\int getLineNumber(){
+	  return context.getLineNumber(position);
+	}
+  }
+}
+

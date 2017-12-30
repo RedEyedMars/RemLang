@@ -13,4 +13,5 @@ public class QuoteEntry extends StringEntry{
 		builder.append('\"');
 	}
 
+
 }

@@ -1,5 +1,5 @@
 
-< Token  : \com.\rem.\crg.\parser;
+< Token  : \com.\rem.\gen.\parser;
 > MethodGenerator method = new MethodGenerator();
 > class MethodGenerator // {
 > Set<String> definedMethodNames = new HashSet<String>();
@@ -8,7 +8,7 @@
   }
   
 > Method declaration(Token declaration,Boolean isInner, Context parentContext){
-	return \definition(declaration->"methodDefinition",isInner, parentContext);
+	return \definition(declaration,isInner, parentContext);
   }
 
 > Method definition(Token input, Boolean mustInner, Context parentContext){
@@ -28,16 +28,20 @@
 	Body methodBody = new Body ();
 	methodBody.setParentContext(parentContext);
 	Context context = methodBody.getContext();
-	
-	if input.get("inline") != null{
-	  List<Variable > parameters = new ArrayList<Variable >();
-	  for Token element: input->"inline".getAllSafely("variable_declaration") {
-	    parameters.add(variable.declaration(element,isInner,parentContext));
+	if (input.get("inline") != null) {
+	  if input.get("inline").get("method_parameters") != null{
+	    List<Variable > parameters = new ArrayList<Variable >();
+	    for Token element: input->"inline"->"method_parameters".getAllSafely("variable_declaration") {
+	      parameters.add(variable.declaration(element,isInner,parentContext));
+	    }
+	    newMethod.setParameters(parameters);
 	  }
-	  newMethod.setParameters(parameters);
 	}
 	else if input.get("variableParameters") != null{
 	  newMethod.setParametersAsStatement(body.statement(input->"variableParameters"->"body_statement",true,parentContext));
+	}
+	else {
+	  newMethod.setParameters(new ArrayList<Variable >());
 	}
 	if input->"throwException" != null {
 	  StringBuilder exceptionBuilder = new StringBuilder();

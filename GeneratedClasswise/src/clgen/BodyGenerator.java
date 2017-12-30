@@ -14,7 +14,7 @@ import clent.*;
 import java.util.*;
 import java.io.*;
 import java.nio.*;
-import com.rem.crg.parser.Token;
+import com.rem.gen.parser.Token;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -78,14 +78,16 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 		else if (element.getName().equals("body_throw")) {
 			final Boolean throwIsInner = isInner || element.get("inner") != null;
 			return /*InCl*/new ExternalStatement(
-		/*Thrw*/new ExternalStatement(new TabEntry(new StringEntry("throw new RuntimeException(\"")), new StringEntry("\");"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("statement"),throwIsInner,parentContext))))));
+		/*Thrw*/new ExternalStatement(new TabEntry(new StringEntry("throw new RuntimeException(\"")), new StringEntry("\");"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("body_statement"),throwIsInner,parentContext))))));
 		}
 		else if (element.getName().equals("class_declaration")) {
-			final ExternalClassEntry newClass = MainFlow.variables.get_classGenerator().declaration(element.get("class_declaration"),false,parentContext);
-			final String variableName = newClass.getName() + "Class";
-			parentContext.add(new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("ExternalClassEntry"))),"", /*Enty*/new ExternalStatement(new StringEntry(variableName.toString()))));
+			final ExternalClassEntry innerClass = new ExternalClassEntry();
+			final ExternalClassEntry outerClass = new ExternalClassEntry();
+			MainFlow.variables.get_classGenerator().declaration(element.get("class_declaration"),innerClass,outerClass,false,parentContext);
+			final String variableName = outerClass.getName() + "Class";
+			parentContext.add(new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("ExternalClassEntry"))),"", /*Enty*/new ExternalStatement(new StringEntry(variableName.toString()))));
 			return /*Body*/new ExternalStatement.Body(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Exac*/new ExternalStatement(new StringEntry("ExternalClassEntry")))),"", /*Enty*/new ExternalStatement(new StringEntry(variableName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newClass.getAsStatement()))))),
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Exac*/new ExternalStatement(new StringEntry("ExternalClassEntry")))),"", /*Enty*/new ExternalStatement(new StringEntry(variableName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(outerClass.getAsStatement()))))),
 /*BODY*/				
 		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(variableName.toString()))), /*Enty*/new ExternalStatement(new StringEntry("__INIT__"))),
@@ -100,14 +102,30 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 		else if (element.getName().equals("body_conditional")) {
 			final Boolean conditionalIsInner = isInner || element.get("inner") != null;
 			Boolean isCase = false;
-			String conditionalName = element.get("conditional").getValue().trim() + " ";
-			ExternalStatement statement = MainFlow.variables.get_body().statement(element.get("body_statemenet"),isInner,parentContext);
+			String conditionalName = "";
+			if (element.get("conditional").getAll() == null) {
+				conditionalName = element.get("conditional").getValue().trim();
+			}
+			else  {
+				final StringBuilder conditionalNameBuilder = new StringBuilder();
+				String space = "";
+				for (final Token conditionName :  element.get("conditional").getAll()) {
+					conditionalNameBuilder.append(space);
+					conditionalNameBuilder.append(conditionName.getValue().trim());
+					space = " ";
+				}
+				conditionalName = conditionalNameBuilder.toString();
+			}
+			ExternalStatement statement = null;
+			if (element.get("body_statement") != null) {
+				statement = MainFlow.variables.get_body().statement(element.get("body_statement"),isInner,parentContext);
+			}
 			for (final Token atom :  element.getAllSafely("variable_declaration")) {
 				final String operator = element.get("OPERATOR").toString();
 				if (operator.contains(":")) {
 					final ExternalStatement headerStatement = new ExternalStatement(":");
 					final ExternalVariableEntry headerVariable = MainFlow.variables.get_variable().declaration(atom,conditionalIsInner,parentContext);
-					headerStatement.add(headerVariable.getAsStatement());
+					headerStatement.add(headerVariable);
 					headerStatement.add(statement);
 					statement = headerStatement;
 				}
@@ -115,10 +133,10 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 					final ExternalStatement headerStatement = new ExternalStatement(";");
 					final ExternalVariableEntry headerVariable = MainFlow.variables.get_variable().declaration(atom,conditionalIsInner,parentContext);
 					headerVariable.setAssignment(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("0")))));
-					headerStatement.add(headerVariable.getAsStatement());
+					headerVariable.setIsFinal(false);
+					headerStatement.add(headerVariable);
 					final ExternalStatement evaluationStatement = new ExternalStatement(operator);
 					evaluationStatement.add(headerVariable.getNameAsStatement());
-					evaluationStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(operator.toString())))));
 					evaluationStatement.add(statement);
 					headerStatement.add(evaluationStatement);
 					final ExternalStatement incrementationStatement = new ExternalStatement();
@@ -186,14 +204,22 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 	return null;
 }
 public ExternalStatement statement(final Token input,final Boolean mustInner,final ExternalContext parentContext)  {
-	final Boolean isInner = mustInner || input.get("statement") != null;
+	final Boolean isInner = mustInner || input.get("inner") != null;
 	final ExternalStatement statement = new ExternalStatement();
 	for (final Token element :  input.getAll()) {
-		if (element.getName().equals("as_string")) {
-			return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("body_statement"),isInner,parentContext))), /*Enty*/new ExternalStatement(new StringEntry("toString"))),
+		if (element.getName().equals("statement_as_char")) {
+			return new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry(element.toString())));
+		}
+		if (element.getName().equals("statement_as_string")) {
+			if (isInner) {
+				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("body_statement"),true,parentContext))), /*Enty*/new ExternalStatement(new StringEntry("toString"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())));
+			}
+			else  {
+				return new ExternalStatement(new VariableNameEntry(MainFlow.variables.get_body().statement(element.get("body_statement"),true,parentContext)));
+			}
 		}
 		else if (element.getName().equals("body_call")) {
 			statement.add(MainFlow.variables.get_body().call(element,isInner,parentContext));
@@ -208,12 +234,12 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 	final Boolean isInner = mustInner || input.get("inner") != null;
 	if (input.get("as_braced") != null) {
 		final ExternalStatement call = new ExternalStatement();
-		call.add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(input.get("as_braced").get("left").get("body_statement"),isInner,parentContext)))))));
+		call.add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(input.get("as_braced").get("left").get("statement_as_braced").get("body_statement"),isInner,parentContext)))))));
 		if (input.get("as_braced").get("OPERATOR") != null) {
 			call.set(input.get("as_braced").get("OPERATOR").getValue().trim());
 		}
 		if (input.get("as_braced").get("right") != null) {
-			call.add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(input.get("as_braced").get("right").get("body_statement"),isInner,parentContext)))))));
+			call.add(MainFlow.variables.get_body().statement(input.get("as_braced").get("right").get("body_statement"),isInner,parentContext));
 		}
 		return call;
 	}
@@ -221,12 +247,15 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 	statement.set(".");
 	for (final Token element :  input.getAllSafely("group")) {
 		final ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
-		final List<ExternalStatement> arrayParameters = new ArrayList<ExternalStatement>();
+		final ExternalStatement.Parameters arrayParameters = new ExternalStatement.Parameters();
 		ExternalStatement subject = null;
 		if (element.get("type_var") != null) {
 			final Type subjectAsType = new Type();
 			for (final Token atom :  element.getAllSafely("type_var")) {
 				MainFlow.variables.get_classwise().type_var(atom,subjectAsType,isInner,parentContext);
+			}
+			if (element.get("NEW") == null) {
+				subjectAsType.as_variable();
 			}
 			subject = subjectAsType.getAsStatement();
 		}
@@ -234,6 +263,9 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 			final Type subjectAsType = new Type();
 			for (final Token atom :  element.getAllSafely("typeName")) {
 				MainFlow.variables.get_classwise().all_type(atom,subjectAsType,isInner,parentContext);
+			}
+			if (element.get("NEW") == null) {
+				subjectAsType.as_variable();
 			}
 			subject = subjectAsType.getAsStatement();
 		}
@@ -246,7 +278,7 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 			subject = /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("NAME").toString()))));
 		}
 		Boolean containsParameters = false;
-		for (final Token atom :  element.getAllSafely("parameters")) {
+		for (final Token atom :  element.getAllSafely("method_arguments")) {
 			containsParameters = true;
 			for (final Token quark :  atom.getAllSafely("method_argument")) {
 				parameters.add(MainFlow.variables.get_body().argument(quark,isInner,parentContext));
@@ -264,15 +296,15 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 				}
 			}
 		}
-		final ExternalStatement arrayParametersStatement = new ExternalStatement();
-		arrayParametersStatement.set("][");
-		for (final ExternalStatement arrayParameter :  arrayParameters) {
-			arrayParametersStatement.add(arrayParameter);
-		}
 		if (element.get("NEW") != null) {
 			final ExternalStatement subjectAsType = subject;
 			if (containsArrayParameters) {
-				statement.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*InCl*/new ExternalStatement(subjectAsType))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))), new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParametersStatement)))))));
+				if (containsParameters) {
+					statement.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*InCl*/new ExternalStatement(subjectAsType))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))), new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParameters)))))));
+				}
+				else  {
+					statement.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*InCl*/new ExternalStatement(subjectAsType))),new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParameters)))))));
+				}
 			}
 			else  {
 				statement.add(/*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*InCl*/new ExternalStatement(subjectAsType))),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
@@ -285,7 +317,7 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 					statement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",/*InCl*/new ExternalStatement(subjectAsSubject),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters))))),
-			 	new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParametersStatement)))))));
+			 	new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParameters)))))));
 				}
 				else  {
 					statement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*InCl*/new ExternalStatement(subjectAsSubject),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(parameters)))))));
@@ -293,7 +325,7 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 			}
 			else  {
 				if (containsArrayParameters) {
-					statement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement("", /*InCl*/new ExternalStatement(subjectAsSubject), new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParametersStatement)))))));
+					statement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement("", /*InCl*/new ExternalStatement(subjectAsSubject), new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arrayParameters)))))));
 				}
 				else  {
 					statement.add(subject);
@@ -301,7 +333,12 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 			}
 		}
 	}
-	return statement;
+	if (statement.size() == 1 ) {
+		return statement.get(0);
+	}
+	else  {
+		return statement;
+	}
 }
 public ExternalStatement manipulate(final Token input,final Boolean isInner,final ExternalContext parentContext)  {
 	if (input.get("type_var") != null) {
@@ -311,49 +348,58 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 		if (input.get("name_var") != null) {
 			MainFlow.variables.get_classwise().name_var(input.get("name_var"),access,true,parentContext);
 		}
+		type.as_entry();
 		if (input.get("class_declaration") != null) {
-			final ExternalClassEntry newClass = MainFlow.variables.get_classGenerator().declaration(input.get("class_declaration"),false,parentContext);
+			final ExternalClassEntry innerClass = new ExternalClassEntry();
+			final ExternalClassEntry outerClass = new ExternalClassEntry();
+			MainFlow.variables.get_classGenerator().declaration(input.get("class_declaration"),innerClass,outerClass,false,parentContext);
 			if (input.get("methodName").getValue().contains("+=")) {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry("addSubClass"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newClass.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(outerClass.getAsStatement())))))))));
 			}
 			else  {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry(input.get("methodName").toString()))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newClass.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(outerClass.getAsStatement())))))))));
 			}
 		}
 		else if (input.get("method_declaration") != null) {
 			final ExternalMethodEntry newMethod = MainFlow.variables.get_method().declaration(input.get("method_declaration"),false,parentContext);
 			if (input.get("methodName").getValue().contains("+=")) {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry("addMethod"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newMethod.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newMethod.getAsStatement())))))))));
 			}
 			else  {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry(input.get("methodName").toString()))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newMethod.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newMethod.getAsStatement())))))))));
 			}
 		}
 		else if (input.get("variable_declaration") != null) {
 			final ExternalVariableEntry newVariable = MainFlow.variables.get_variable().declaration(input.get("variable_declaration"),false,parentContext);
 			if (input.get("methodName").getValue().contains("+=")) {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry("addVariable"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newVariable.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newVariable.getAsStatement())))))))));
 			}
 			else  {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry(input.get("methodName").toString()))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newVariable.getAsStatement())))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(newVariable.getAsStatement())))))))));
 			}
 		}
 		else if (input.get("body") != null) {
@@ -365,16 +411,18 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				}
 			}
 			if (input.get("methodName").getValue().contains("+=")) {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry("appendToBody"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arguments)))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arguments)))))))));
 			}
 			else  {
-				return /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+				return /*InCl*/new ExternalStatement(
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(type.getAsStatement())), /*Enty*/new ExternalStatement(new StringEntry(input.get("methodName").toString()))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arguments)))))));
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(arguments)))))))));
 			}
 		}
 	}
@@ -414,7 +462,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				final String finalTokenType = "final Token";
 				final Integer tempTokenElementIndexValue = tempTokenElementIndex;
 				instanceBody.add(/*InCl*/new ExternalStatement(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))))))));
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))))))));
 			}
 			for (final Token atom :  element.getAllSafely("body_element")) {
 				final ExternalStatement newBodyElement = MainFlow.variables.get_body().element(atom,true,bodyContext);
@@ -431,7 +479,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 			"if ", 
 			/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__")), /*Enty*/new ExternalStatement(new StringEntry(elementNameValue.toString())))), /*Name*/new ExternalStatement(new StringEntry("_KEY__"))))), /*Enty*/new ExternalStatement(new StringEntry("getName"))),
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(elementNameValue.toString()))), /*Enty*/new ExternalStatement(new StringEntry("getName"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())), /*Enty*/new ExternalStatement(new StringEntry("equals"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
@@ -440,24 +488,22 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 			}
 		}
 		if (numberOfInstances == 1 ) {
-			final String finalTokenType = "final Token";
 			final String singleTokenNameValue = singleTokenName;
 			return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAllSafely"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Quot*/new ExternalStatement(new QuoteEntry(singleTokenNameValue.toString().toString()))))))))),
 			/*InCl*/new ExternalStatement(manipulateBody)));
 		}
 		else  {
-			final String finalTokenType = "final Token";
 			if (elementName != null) {
 				return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAll"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())))),
@@ -469,7 +515,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAll"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())))),
@@ -482,7 +528,10 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 public ExternalStatement argument(final Token input,final Boolean isInner,final ExternalContext parentContext)  {
 	for (final Token element :  input.getAll()) {
 		if (element.getName().equals("class_declaration")) {
-			return MainFlow.variables.get_classGenerator().declaration(element,false,parentContext).getAsStatement();
+			final ExternalClassEntry innerClass = new ExternalClassEntry();
+			final ExternalClassEntry outerClass = new ExternalClassEntry();
+			MainFlow.variables.get_classGenerator().declaration(element,innerClass,outerClass,false,parentContext);
+			return outerClass.getAsStatement();
 		}
 		else if (element.getName().equals("method_declaration")) {
 			return MainFlow.variables.get_method().declaration(element,false,parentContext).getAsStatement();
@@ -502,10 +551,10 @@ public ExternalStatement argument(final Token input,final Boolean isInner,final 
 						argumentBody.add(newBodyElement);
 					}
 				}
-				return argumentBody;
+				return argumentBody.getAsStatement();
 			}
 			else if (element.get("body_statement") != null) {
-				return MainFlow.variables.get_body().statement(element.get("statement"),false,parentContext);
+				return MainFlow.variables.get_body().statement(element.get("body_statement"),false,parentContext).getAsStatement();
 			}
 		}
 		else if (element.getName().equals("body_entries")) {
@@ -516,7 +565,7 @@ public ExternalStatement argument(final Token input,final Boolean isInner,final 
 					elements.add(newBodyElement);
 				}
 			}
-			return elements;
+			return elements.getAsStatement();
 		}
 	}
 	return null;
