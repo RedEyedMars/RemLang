@@ -700,14 +700,13 @@ public  class Tokens{
 		}
 		public static class syntax_48 extends Token.Parsed{
 			public static final Tokens.Syntax.syntax_48 __SYNTAX__ = new Tokens.Syntax.syntax_48("SYNTAX");
-			public static final Token.Parsed CAMEL = new Tokens.Syntax.syntax_48("CAMEL");
 			public syntax_48(final String initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_48() {
 			}
 			public String getValue(){
-				return "^";
+				return "%T";
 			}
 			public void setValue(String newValue){
 			}
@@ -720,7 +719,7 @@ public  class Tokens{
 			public syntax_49() {
 			}
 			public String getValue(){
-				return "->";
+				return "%Parser";
 			}
 			public void setValue(String newValue){
 			}
@@ -733,7 +732,7 @@ public  class Tokens{
 			public syntax_50() {
 			}
 			public String getValue(){
-				return "+";
+				return "%Result";
 			}
 			public void setValue(String newValue){
 			}
@@ -746,7 +745,7 @@ public  class Tokens{
 			public syntax_51() {
 			}
 			public String getValue(){
-				return "super";
+				return "%Pass";
 			}
 			public void setValue(String newValue){
 			}
@@ -759,20 +758,21 @@ public  class Tokens{
 			public syntax_52() {
 			}
 			public String getValue(){
-				return "this";
+				return "%Fail";
 			}
 			public void setValue(String newValue){
 			}
 		}
 		public static class syntax_53 extends Token.Parsed{
 			public static final Tokens.Syntax.syntax_53 __SYNTAX__ = new Tokens.Syntax.syntax_53("SYNTAX");
+			public static final Token.Parsed CAMEL = new Tokens.Syntax.syntax_53("CAMEL");
 			public syntax_53(final String initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_53() {
 			}
 			public String getValue(){
-				return "null";
+				return "^";
 			}
 			public void setValue(String newValue){
 			}
@@ -785,7 +785,7 @@ public  class Tokens{
 			public syntax_54() {
 			}
 			public String getValue(){
-				return "true";
+				return "->";
 			}
 			public void setValue(String newValue){
 			}
@@ -798,21 +798,20 @@ public  class Tokens{
 			public syntax_55() {
 			}
 			public String getValue(){
-				return "false";
+				return "+";
 			}
 			public void setValue(String newValue){
 			}
 		}
 		public static class syntax_56 extends Token.Parsed{
 			public static final Tokens.Syntax.syntax_56 __SYNTAX__ = new Tokens.Syntax.syntax_56("SYNTAX");
-			public static final Token.Parsed ISTYPENAME = new Tokens.Syntax.syntax_56("ISTYPENAME");
 			public syntax_56(final String initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_56() {
 			}
 			public String getValue(){
-				return "$";
+				return "super";
 			}
 			public void setValue(String newValue){
 			}
@@ -823,6 +822,72 @@ public  class Tokens{
 				super(initalSuperName);
 			}
 			public syntax_57() {
+			}
+			public String getValue(){
+				return "this";
+			}
+			public void setValue(String newValue){
+			}
+		}
+		public static class syntax_58 extends Token.Parsed{
+			public static final Tokens.Syntax.syntax_58 __SYNTAX__ = new Tokens.Syntax.syntax_58("SYNTAX");
+			public syntax_58(final String initalSuperName) {
+				super(initalSuperName);
+			}
+			public syntax_58() {
+			}
+			public String getValue(){
+				return "null";
+			}
+			public void setValue(String newValue){
+			}
+		}
+		public static class syntax_59 extends Token.Parsed{
+			public static final Tokens.Syntax.syntax_59 __SYNTAX__ = new Tokens.Syntax.syntax_59("SYNTAX");
+			public syntax_59(final String initalSuperName) {
+				super(initalSuperName);
+			}
+			public syntax_59() {
+			}
+			public String getValue(){
+				return "true";
+			}
+			public void setValue(String newValue){
+			}
+		}
+		public static class syntax_60 extends Token.Parsed{
+			public static final Tokens.Syntax.syntax_60 __SYNTAX__ = new Tokens.Syntax.syntax_60("SYNTAX");
+			public syntax_60(final String initalSuperName) {
+				super(initalSuperName);
+			}
+			public syntax_60() {
+			}
+			public String getValue(){
+				return "false";
+			}
+			public void setValue(String newValue){
+			}
+		}
+		public static class syntax_61 extends Token.Parsed{
+			public static final Tokens.Syntax.syntax_61 __SYNTAX__ = new Tokens.Syntax.syntax_61("SYNTAX");
+			public static final Token.Parsed ISTYPENAME = new Tokens.Syntax.syntax_61("ISTYPENAME");
+			public syntax_61(final String initalSuperName) {
+				super(initalSuperName);
+			}
+			public syntax_61() {
+			}
+			public String getValue(){
+				return "$";
+			}
+			public void setValue(String newValue){
+			}
+		}
+		public static class syntax_62 extends Token.Parsed{
+			public static final Tokens.Syntax.syntax_62 __SYNTAX__ = new Tokens.Syntax.syntax_62("SYNTAX");
+			public syntax_62(final String initalSuperName) {
+				super(initalSuperName);
+			}
+			public syntax_62() {
 			}
 			public String getValue(){
 				return "\\>";

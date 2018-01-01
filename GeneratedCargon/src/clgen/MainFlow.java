@@ -50,8 +50,8 @@ public class MainFlow extends FlowController  {
 	protected final RegexParser __VAR__lazyNameParser = CargonTokens.NAME;
 	protected final ExternalStatement.Body __VAR__variableDeclarations = new ExternalStatement.Body();
 	protected final Set<String> __VAR__variableDeclarationNames = new HashSet<String>();
-	protected final ExternalStatement __VAR__ignoresHeaderVariableSection = new ExternalStatement();
-	protected final ExternalStatement __VAR__ignoresHeaderStatement = new ExternalStatement();
+	protected final ExternalStatement __VAR__globalIgnoresHeader = new ExternalStatement();
+	protected final Map<String,ExternalStatement> __VAR__ruleIgnoresHeaders = new HashMap<String,ExternalStatement>();
 	protected final String __VAR__packageName = "com.rem.gen";
 	protected final String __VAR__charArray = "char[]";
 
@@ -82,18 +82,19 @@ public class MainFlow extends FlowController  {
 		final ExternalStatement.Body vb = new ExternalStatement.Body();
 		vb.add(MainFlow.variables.get_variableDeclarations());
 		MainFlow.classes.ParserClass.ContextClass.getMethod("parse").appendToBody(vb);
-		MainFlow.methods.setupIgnoresStatement();
+		final ExternalStatement globalIgnoresHeaderVariableSection = new ExternalStatement();
+		MainFlow.methods.setupIgnoresHeader(MainFlow.variables.get_globalIgnoresHeader(),globalIgnoresHeaderVariableSection);
 		if (root.get("ignores") != null) {
 			for(final IToken element:root.getAllSafely("ignores")) {
 					for(final IToken atom:element.getAllSafely("ignoreCharacter")) {
-						MainFlow.methods.addIgnoresCharacter(atom.toString());
+						MainFlow.methods.addIgnoresCharacter(atom.toString(),globalIgnoresHeaderVariableSection);
 					}
 			}
 		}
 		else  {
-			MainFlow.methods.addIgnoresCharacter(" ");
-			MainFlow.methods.addIgnoresCharacter("\\t");
-			MainFlow.methods.addIgnoresCharacter("\\n");
+			MainFlow.methods.addIgnoresCharacter(" ",globalIgnoresHeaderVariableSection);
+			MainFlow.methods.addIgnoresCharacter("\\t",globalIgnoresHeaderVariableSection);
+			MainFlow.methods.addIgnoresCharacter("\\n",globalIgnoresHeaderVariableSection);
 		}
 		for(final IToken list:root.getAllSafely("list")) {
 				MainFlow.classes.ParserClass.list(list);
@@ -108,29 +109,32 @@ public class MainFlow extends FlowController  {
 		for(final IToken rule:root.getAllSafely("rule")) {
 				MainFlow.classes.ParserClass.define(rule,null);
 		}
+		for(final IToken list:root.getAllSafely("list")) {
+				MainFlow.classes.ParserClass.list(list);
+		}
 		MainFlow.classes.ParserClass.outputBraces();
 		MainFlow.classes.ParserClass.output();
 		output(data);
 	}
-	public void setupIgnoresStatement()  {
-		MainFlow.variables.get_ignoresHeaderStatement().set("&&");
-		MainFlow.variables.get_ignoresHeaderVariableSection().set("||");
-		MainFlow.variables.get_ignoresHeaderVariableSection().add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("false")))));
-		MainFlow.variables.get_ignoresHeaderStatement().add(/*Optr*/new ExternalStatement("<", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputLength")))));
-		MainFlow.variables.get_ignoresHeaderStatement().add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderVariableSection()))))));
+	public void setupIgnoresHeader(final ExternalStatement toSetup,final ExternalStatement variableSection)  {
+		toSetup.set("&&");
+		variableSection.set("||");
+		variableSection.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("false")))));
+		toSetup.add(/*Optr*/new ExternalStatement("<", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputLength")))));
+		toSetup.add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(variableSection))))));
 	}
-	public void addIgnoresCharacter(final String ignoresCharacter)  {
+	public void addIgnoresCharacter(final String ignoresCharacter,final ExternalStatement variableSection)  {
 		if (ignoresCharacter.equals("")) {
-			MainFlow.variables.get_ignoresHeaderVariableSection().add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("' '")))));
+			variableSection.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("' '")))));
 		}
 		else  {
 			final StringBuilder characterBuilder = new StringBuilder();
 			characterBuilder.append("'");
 			characterBuilder.append(ignoresCharacter);
 			characterBuilder.append("'");
-			MainFlow.variables.get_ignoresHeaderVariableSection().add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(characterBuilder.toString())))));
+			variableSection.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(characterBuilder.toString())))));
 			if (ignoresCharacter.equals("\\n")) {
-				MainFlow.variables.get_ignoresHeaderVariableSection().add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\r'")))));
+				variableSection.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\r'")))));
 			}
 		}
 	}
@@ -170,17 +174,17 @@ public class MainFlow extends FlowController  {
 	public Set<String> get_variableDeclarationNames()  {
 		return __VAR__variableDeclarationNames;
 	}
-	public ExternalStatement getIgnoresHeaderVariableSection()  {
-		return __VAR__ignoresHeaderVariableSection;
+	public ExternalStatement getGlobalIgnoresHeader()  {
+		return __VAR__globalIgnoresHeader;
 	}
-	public ExternalStatement get_ignoresHeaderVariableSection()  {
-		return __VAR__ignoresHeaderVariableSection;
+	public ExternalStatement get_globalIgnoresHeader()  {
+		return __VAR__globalIgnoresHeader;
 	}
-	public ExternalStatement getIgnoresHeaderStatement()  {
-		return __VAR__ignoresHeaderStatement;
+	public Map<String,ExternalStatement> getRuleIgnoresHeaders()  {
+		return __VAR__ruleIgnoresHeaders;
 	}
-	public ExternalStatement get_ignoresHeaderStatement()  {
-		return __VAR__ignoresHeaderStatement;
+	public Map<String,ExternalStatement> get_ruleIgnoresHeaders()  {
+		return __VAR__ruleIgnoresHeaders;
 	}
 	public String getPackageName()  {
 		return __VAR__packageName;

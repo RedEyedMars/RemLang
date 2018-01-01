@@ -22,7 +22,8 @@ public class RegexSpecial extends ConcreteRule {
 							CargonTokens.REGEX_DOT,
 							CargonTokens.REGEX_WHITESPACE,
 							CargonTokens.REGEX_QUOTE,
-							CargonTokens.REGEX_APOS));
+							CargonTokens.REGEX_APOS,
+							CargonTokens.REGEX_SLASH));
 
 	}
 

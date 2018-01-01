@@ -40,9 +40,12 @@ cargon_token-s
 	"\\." as REGEX_DOT
 	"\\\"" as REGEX_QUOTE
 	"\\'" as REGEX_APOS
+	"\\\\" as REGEX_SLASH
 	"@" as PASS_SYMBOL
 	"global" as GLOBAL
 	"ignore" as IGNORE
+	"Ignore" as IGNORE_PARAM
+	"None" as NONE
 	"\\" as BACKSLASH
 
 uote is silent
@@ -67,6 +70,7 @@ rule_params is silent
 	SILENT
 	(PASS_SYMBOL NUMBER as passConstraint)? BRACED braced_parameters
 	IMPORTS import_parameters
+	IGNORE_PARAM ( NONE as ignores_none | SINGLE_CHAR_CAPTURE as ignores_character+ )
 braced_parameters
 	NONSPACE as left NONSPACE as right
 import_parameters
@@ -113,4 +117,4 @@ regex_element
 	regex_special ( OPTIONAL | MANY | PLUS ) as multiple?
 	ANYCHAR as character ( OPTIONAL | MANY | PLUS ) as multiple?
 regex_special
-	( REGEX_NUMBER | REGEX_DOT | REGEX_WHITESPACE | REGEX_QUOTE | REGEX_APOS )
+	( REGEX_NUMBER | REGEX_DOT | REGEX_WHITESPACE | REGEX_QUOTE | REGEX_APOS | REGEX_SLASH )

@@ -204,6 +204,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			else if(prefix instanceof ExternalStatement){
 				((ExternalStatement)prefix).setTabs(tabs);
 			}
+			else if(prefix instanceof VariableNameEntry){
+				((VariableNameEntry)prefix).setTabs(tabs);
+			}
 			prefix.get(builder);
 		}
 		if(subStatements.isEmpty()){
@@ -224,6 +227,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			}
 			else if(suffix instanceof ExternalStatement){
 				((ExternalStatement)suffix).setTabs(tabs);
+			}
+			else if(suffix instanceof VariableNameEntry){
+				((VariableNameEntry)suffix).setTabs(tabs);
 			}
 			suffix.get(builder);
 		}

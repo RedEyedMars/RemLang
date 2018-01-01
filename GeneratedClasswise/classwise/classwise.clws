@@ -129,24 +129,26 @@
     }
 	
   }
-> String parserResult = "Parser.Result";
 > void generate(Parser.Result result){
     String mainPackageName = sourceDirectory;
     String mainFlow = "MainFlow";
+    String parserTypePath = "com.rem.gen.parser.Parser";
+    String resultTypePath = "com.rem.gen.parser.Parser.Result";
+    String passTypePath = "com.rem.gen.parser.Parser.Result.Pass";
 	class 'innerPackageName' mainFlow GeneralFlowController {
 	    @'mainFlow' self = new 'mainFlow'(); 
 	    @Set<Class > outputClasses = new HashSet<Class >();
 	    File __ROOTDIRECTORY__ = new File(''"."'');
 	    @void main(String[] args){
 	      if args.length == 1 {
-	        Parser parser = new Parser();
-		    'parserResult' result = parser.parse(args[0]);
+	        'parserTypePath' parser = new 'parserTypePath'();
+		    'resultTypePath' result = parser.parse(args[0]);
 		    System.out.println(result);
-		    if result.getState() == Parser.SUCCESS {
+		    if result.getState() == 'parserTypePath'.SUCCESS {
 		      self.setupRootDirectory(args[0]);
 		      self.setupGenerators();
-		      self.setup(('parserResult'.Pass)result);
-		      self.generate(('parserResult'.Pass)result);
+		      self.setup(('passTypePath')result);
+		      self.generate(('passTypePath'.Pass)result);
 		      self.output();
 		    }
 	      }
@@ -227,13 +229,29 @@
 		}
       }
       else if element.getName().equals("statement_as_char") {
-	    nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry('element->"value"'.replace("\\","\\\\")))));
+        if 'element->"value"'.equals("\\") {
+          nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\\\\"))));
+        }
+        else if 'element->"value"'.equals("\"") {
+          nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\""))));
+        }
+        else if 'element->"value"'.equals("\'") {
+          nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\'"))));
+        }
+        else if 'element->"value"'.equals("\'") {
+          nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry('element->"value"'))));
+        }
 	  }
       else if element.getName().equals("statement_as_method") {
-		nameVar.add(body.statement(element->"body_statement",true,context));
+        if isInner {
+		  nameVar.add(body.statement(element->"body_statement",true,context));
+		}
+		else {
+		  nameVar.add(new Statement ( new VariableNameEntry (body.statement(element->"body_statement",true,context),false)));
+		}
 	  }
 	  else if element.getName().equals("statement_as_quote") {
-	    Statement asQuoteStatement = body.statement(element->"body_statement",true,context);
+	    Statement asQuoteStatement = body.statement(element->"body_statement",isInner,context);
 	    if isInner {
 		  nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
 		}
@@ -400,7 +418,7 @@
       }
       else if element.getName().equals("statement_as_string") {
         if isInner {
-          output.addSubClass(|`body.statement(element->"body_statement",true,parentContext)`.toString()|);
+          output.addSubClass(|"\"+"+`body.statement(element->"body_statement",true,parentContext)`.toString()+"\""|);
         }
         else {
           output.addSubClass(body.statement(element->"body_statement",true,parentContext));
@@ -461,7 +479,22 @@
 	  }
     }
     else {
-	  if input.getValue().equals("Class") {
+      if input.getValue().equals("%T") {
+		output.addSubClass("com.rem.gen.parser.Token");
+	  }
+	  else if input.getValue().equals("%Parser") {
+		output.addSubClass("com.rem.gen.parser.Parser");
+	  }
+	  else if input.getValue().equals("%Result") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result");
+	  }
+	  else if input.getValue().equals("%Pass") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result.Pass");
+	  }
+	  else if input.getValue().equals("%Fail") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result.Fail");
+	  }
+	  else if input.getValue().equals("Class") {
 		output.addSubClass("ExternalClassEntry");
 	  }
 	  else if input.getValue().equals("Variable") {

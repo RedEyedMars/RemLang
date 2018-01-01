@@ -170,7 +170,7 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 				exceptionStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(exceptionVariableName.toString())))));
 				statement = exceptionStatement;
 			}
-			final ExternalStatement.Body conditionalBody = new ExternalStatement.Body();
+			ExternalStatement conditionalBody = new ExternalStatement.Body();
 			for (final Token atom :  element.getAllSafely("as_body")) {
 				if (element.get("PRINT") != null) {
 					conditionalBody.add(/*InCl*/new ExternalStatement(
@@ -189,8 +189,8 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 			if (element.get("exception") != null) {
 				exceptionIndex += 1;
 			}
-			if (element.get("as_method") != null) {
-				conditionalBody.add(MainFlow.variables.get_body().statement(element.get("as_method").get("body_statement"),true,parentContext));
+			if (element.get("statement_as_method") != null) {
+				conditionalBody = MainFlow.variables.get_body().statement(element.get("statement_as_method").get("body_statement"),true,parentContext);
 			}
 			if (conditionalName.contains("case")) {
 				final ExternalStatement previousStatement = statement;
@@ -446,6 +446,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 			numberOfInstances += 1;
 		}
 		String singleTokenName = null;
+		final String tokenTypePath = "com.rem.gen.parser.Token";
 		for (final Token element :  input.getAllSafely("tokenInstance")) {
 			final String tokenName = element.get("tokenName").toString();
 			singleTokenName = tokenName;
@@ -459,10 +460,9 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				elementNameValue = elementName;
 			}
 			if (numberOfInstances != 1  && elementName == null) {
-				final String finalTokenType = "final Token";
 				final Integer tempTokenElementIndexValue = tempTokenElementIndex;
 				instanceBody.add(/*InCl*/new ExternalStatement(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(finalTokenType.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))))))));
+		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(tokenTypePath.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString())), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))))))));
 			}
 			for (final Token atom :  element.getAllSafely("body_element")) {
 				final ExternalStatement newBodyElement = MainFlow.variables.get_body().element(atom,true,bodyContext);
@@ -492,7 +492,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 			return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(tokenTypePath.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAllSafely"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Quot*/new ExternalStatement(new QuoteEntry(singleTokenNameValue.toString().toString()))))))))),
@@ -503,7 +503,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(tokenTypePath.toString())))),"", /*Enty*/new ExternalStatement(new StringEntry(elementName.toString()))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAll"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())))),
@@ -515,7 +515,7 @@ public ExternalStatement manipulate(final Token input,final Boolean isInner,fina
 				return /*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"for ", 
-			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Token"))),"", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Optr*/new ExternalStatement(": ", new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(tokenTypePath.toString())))),"", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("__TEMP_TOKEN_ELEMENT_NAME__")), /*Enty*/new ExternalStatement(new StringEntry(tempTokenElementIndexValue.toString()))))), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(subject)), /*Enty*/new ExternalStatement(new StringEntry("getAll"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters())))),

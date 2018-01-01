@@ -116,7 +116,7 @@
             exceptionStatement.add(|'exceptionVariableName'|);
             statement = exceptionStatement;
           }
-          Body conditionalBody = new Body ();
+          ~Statement conditionalBody = new Body ();
           for Token atom: element.getAllSafely("as_body") {
             if element->"PRINT" != null {
               conditionalBody.add(|"e"+'exceptionIndex'.printStackTrace();|);
@@ -131,8 +131,8 @@
 		  if element->"exception" != null {
             exceptionIndex \+= 1;
           }
-          if element->"as_method" != null {
-            conditionalBody.add(body.statement(element->"as_method"->"body_statement",true,parentContext));
+          if element->"statement_as_method" != null {
+            conditionalBody = body.statement(element->"statement_as_method"->"body_statement",true,parentContext);
           }
           
           if conditionalName.contains("case") {
@@ -355,6 +355,7 @@
           numberOfInstances \+= 1;
         }
         ~String singleTokenName = null;
+        String tokenTypePath = "com.rem.gen.parser.Token";
         for Token element: input.getAllSafely("tokenInstance") {
           String tokenName = 'element->"tokenName"';
           singleTokenName = tokenName;
@@ -368,9 +369,8 @@
             elementNameValue = elementName;
           }
           if numberOfInstances != 1 && elementName == null{
-            String finalTokenType = "final Token";
             Integer tempTokenElementIndexValue = tempTokenElementIndex;
-            instanceBody.add(|'finalTokenType' 'elementName' = "__TEMP_TOKEN_ELEMENT_NAME__"+'tempTokenElementIndexValue';|);
+            instanceBody.add(|'tokenTypePath' 'elementName' = "__TEMP_TOKEN_ELEMENT_NAME__"+'tempTokenElementIndexValue';|);
           }
           for Token atom: element.getAllSafely("body_element") {
             Statement newBodyElement = body.element(atom,true,bodyContext);
@@ -387,16 +387,16 @@
         }
         if numberOfInstances == 1 {
           String singleTokenNameValue = singleTokenName;
-          return |for Token 'elementName': `subject`.getAllSafely('' 'singleTokenNameValue' '') `manipulateBody`|;
+          return |for 'tokenTypePath' 'elementName': `subject`.getAllSafely('' 'singleTokenNameValue' '') `manipulateBody`|;
         }
         else {
           if elementName != null {
-            return |for Token 'elementName': `subject`.getAll() `manipulateBody`|;
+            return |for 'tokenTypePath' 'elementName': `subject`.getAll() `manipulateBody`|;
           }
           else {
             Integer tempTokenElementIndexValue = tempTokenElementIndex;
             tempTokenElementIndex \+= 1;
-            return |for Token "__TEMP_TOKEN_ELEMENT_NAME__"+'tempTokenElementIndexValue': `subject`.getAll() `manipulateBody`|;
+            return |for 'tokenTypePath' "__TEMP_TOKEN_ELEMENT_NAME__"+'tempTokenElementIndexValue': `subject`.getAll() `manipulateBody`|;
           }
         }
       }

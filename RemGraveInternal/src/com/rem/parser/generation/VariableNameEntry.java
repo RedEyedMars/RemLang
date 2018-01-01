@@ -7,6 +7,7 @@ public class VariableNameEntry extends StringEntry{
 	private ExternalStatement asStatement;
 	private String asString;
 	private boolean isString = false;
+	private int tabs = 0;
 
 	public VariableNameEntry(String value) {
 		super(value);
@@ -38,7 +39,13 @@ public class VariableNameEntry extends StringEntry{
 			if(isString){
 				builder.append("(");
 			}
-			asStatement.get(builder);
+			if(asStatement instanceof ExternalStatement){
+				((ExternalStatement)asStatement).setTabs(tabs);
+				asStatement.get(builder);
+			}
+			else {
+				asStatement.get(builder);
+			}
 			if(isString ){
 				builder.append(").toString()");
 			}
@@ -46,6 +53,9 @@ public class VariableNameEntry extends StringEntry{
 		else {
 			super.get(builder);
 		}
+	}
+	public void setTabs(int newTabs){
+		tabs = newTabs;
 	}
 
 	public ExternalStatement getAsStatement(){
@@ -55,11 +65,17 @@ public class VariableNameEntry extends StringEntry{
 							new ExternalStatement.Parameters(new ExternalStatement(new StringEntry(
 									asString.replace("\"", "\\\""))))));
 		}
-		else {
+		else if (isString){
 			return new ExternalStatement(
 					new ExternalStatement.NewObject(new ExternalStatement.TypeName("VariableNameEntry"),
 							new ExternalStatement.Parameters(
 									new ExternalStatement(new StringEntry("("), new StringEntry(").toString()"),asStatement))));
+		}
+		else {
+			return new ExternalStatement(
+					new ExternalStatement.NewObject(new ExternalStatement.TypeName("VariableNameEntry"),
+							new ExternalStatement.Parameters(
+									asStatement)));
 		}
 	}
 

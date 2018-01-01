@@ -43,7 +43,6 @@ protected File outerDirectory = null;
 protected ExternalClassEntry mainClass = null;
 protected final Parser pulsar = null;
 protected String sourceDirectory = null;
-protected final String parserResult = "Parser.Result";
 
 	public File getInnerDirectory()  {
 		return innerDirectory;
@@ -74,12 +73,6 @@ protected final String parserResult = "Parser.Result";
 	}
 	public String get_sourceDirectory()  {
 		return sourceDirectory;
-	}
-	public String getParserResult()  {
-		return parserResult;
-	}
-	public String get_parserResult()  {
-		return parserResult;
 	}
 public void setup(final Parser.Result result)  {
 	String fileName = result.getFileName();
@@ -172,6 +165,9 @@ public void generateAll(final Token input)  {
 public void generate(final Parser.Result result)  {
 	final String mainPackageName = sourceDirectory;
 	final String mainFlow = "MainFlow";
+	final String parserTypePath = "com.rem.gen.parser.Parser";
+	final String resultTypePath = "com.rem.gen.parser.Parser.Result";
+	final String passTypePath = "com.rem.gen.parser.Parser.Result.Pass";
 	
 	final ExternalClassEntry mainFlowClass = new ExternalClassEntry(){public void __INIT__(){super.__SETUP__(new Entry(){
 			public void get(StringBuilder __BUILDER__){/*Enty*/new ExternalStatement(new StringEntry(MainFlow.variables.get_innerPackageName().toString())).get(__BUILDER__);
@@ -215,9 +211,9 @@ public void generate(final Parser.Result result)  {
 			"if ", 
 			/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("args"))), /*Enty*/new ExternalStatement(new StringEntry("length")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("1 ")))),
 			/*Body*/new ExternalStatement.Body(
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Parser"))),"", /*Name*/new ExternalStatement(new StringEntry("parser")), /*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Parser"))),new ExternalStatement.Parameters())))),
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(parserTypePath.toString())))),"", /*Name*/new ExternalStatement(new StringEntry("parser")), /*Name*/new ExternalStatement(/*NObj*/new ExternalStatement.NewObject(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(parserTypePath.toString())))),new ExternalStatement.Parameters())))),
 /*BODY*/				
-			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(parserResult.toString())))),"", /*Name*/new ExternalStatement(new StringEntry("result")), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), new ExternalVariableEntry(false,false, false, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(resultTypePath.toString())))),"", /*Name*/new ExternalStatement(new StringEntry("result")), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("parser"))), /*Enty*/new ExternalStatement(new StringEntry("parse"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("args")), new ExternalStatement.ArrayParameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("0"))))))))))))),
@@ -232,7 +228,7 @@ public void generate(final Parser.Result result)  {
 			/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))), /*Enty*/new ExternalStatement(new StringEntry("getState"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters()))), /*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(new StringEntry("Parser")))), /*Enty*/new ExternalStatement(new StringEntry("SUCCESS")))),
+			 		new ExternalStatement.Parameters()))), /*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(parserTypePath.toString()))), /*Enty*/new ExternalStatement(new StringEntry("SUCCESS")))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("self"))), /*Enty*/new ExternalStatement(new StringEntry("setupRootDirectory"))),
@@ -247,12 +243,12 @@ public void generate(final Parser.Result result)  {
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("self"))), /*Enty*/new ExternalStatement(new StringEntry("setup"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(parserResult.toString()))), /*Enty*/new ExternalStatement(new StringEntry("Pass"))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))))))))))),
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(passTypePath.toString()))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))))))))))),
 /*BODY*/				
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("self"))), /*Enty*/new ExternalStatement(new StringEntry("generate"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(parserResult.toString()))), /*Enty*/new ExternalStatement(new StringEntry("Pass"))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))))))))))),
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Cast*/new ExternalStatement("",new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(passTypePath.toString()))), /*Enty*/new ExternalStatement(new StringEntry("Pass"))))), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("result"))))))))))),
 /*BODY*/				
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("self"))), /*Enty*/new ExternalStatement(new StringEntry("output"))),
@@ -400,13 +396,29 @@ public void name_var(final Token input,final NameVar nameVar,final boolean isInn
 			}
 		}
 		else if (element.getName().equals("statement_as_char")) {
-			nameVar.add(new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry(element.get("value").toString().replace("\\","\\\\")))));
+			if (element.get("value").toString().equals("\\")) {
+				nameVar.add(new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry("\\\\")),new ExternalStatement(new StringEntry("\\\\"))));
+			}
+			else if (element.get("value").toString().equals("\"")) {
+				nameVar.add(new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry("\\\\")),new ExternalStatement(new StringEntry("\""))));
+			}
+			else if (element.get("value").toString().equals("\'")) {
+				nameVar.add(new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry("\\\\")),new ExternalStatement(new StringEntry("\'"))));
+			}
+			else if (element.get("value").toString().equals("\'")) {
+				nameVar.add(new ExternalStatement(new StringEntry("\'"),new StringEntry("\'"),new ExternalStatement(new StringEntry(element.get("value").toString()))));
+			}
 		}
 		else if (element.getName().equals("statement_as_method")) {
-			nameVar.add(MainFlow.variables.get_body().statement(element.get("body_statement"),true,context));
+			if (isInner) {
+				nameVar.add(MainFlow.variables.get_body().statement(element.get("body_statement"),true,context));
+			}
+			else  {
+				nameVar.add(new ExternalStatement(new VariableNameEntry(MainFlow.variables.get_body().statement(element.get("body_statement"),true,context),false)));
+			}
 		}
 		else if (element.getName().equals("statement_as_quote")) {
-			final ExternalStatement asQuoteStatement = MainFlow.variables.get_body().statement(element.get("body_statement"),true,context);
+			final ExternalStatement asQuoteStatement = MainFlow.variables.get_body().statement(element.get("body_statement"),isInner,context);
 			if (isInner) {
 				nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""),asQuoteStatement));
 			}
@@ -572,10 +584,10 @@ public void type_var(final Token input,final Type output,final Boolean isInner,f
 		}
 		else if (element.getName().equals("statement_as_string")) {
 			if (isInner) {
-				output.addSubClass(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
-			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("body_statement"),true,parentContext))), /*Enty*/new ExternalStatement(new StringEntry("toString"))),
+				output.addSubClass(/*Optr*/new ExternalStatement("+", /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"+")), /*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(element.get("body_statement"),true,parentContext))))), /*Enty*/new ExternalStatement(new StringEntry("toString"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters()))));
+			 		new ExternalStatement.Parameters()))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("\"")))));
 			}
 			else  {
 				output.addSubClass(MainFlow.variables.get_body().statement(element.get("body_statement"),true,parentContext));
@@ -636,7 +648,22 @@ public void all_type(final Token input,final Type output,final Boolean isInner,f
 		}
 	}
 	else  {
-		if (input.getValue().equals("Class")) {
+		if (input.getValue().equals("%T")) {
+			output.addSubClass("com.rem.gen.parser.Token");
+		}
+		else if (input.getValue().equals("%Parser")) {
+			output.addSubClass("com.rem.gen.parser.Parser");
+		}
+		else if (input.getValue().equals("%Result")) {
+			output.addSubClass("com.rem.gen.parser.Parser.Result");
+		}
+		else if (input.getValue().equals("%Pass")) {
+			output.addSubClass("com.rem.gen.parser.Parser.Result.Pass");
+		}
+		else if (input.getValue().equals("%Fail")) {
+			output.addSubClass("com.rem.gen.parser.Parser.Result.Fail");
+		}
+		else if (input.getValue().equals("Class")) {
 			output.addSubClass("ExternalClassEntry");
 		}
 		else if (input.getValue().equals("Variable")) {

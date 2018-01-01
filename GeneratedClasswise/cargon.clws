@@ -48,18 +48,19 @@
 	Body vb = new Body ();
 	vb.add(variableDeclarations);
 	Parser->Context->*"parse".appendToBody(vb);
-	\setupIgnoresStatement();
+	Statement globalIgnoresHeaderVariableSection = new Statement ();
+	\setupIgnoresHeader(globalIgnoresHeader,globalIgnoresHeaderVariableSection);
 	if root->"ignores" != null {
 	  root :  element : ignores {
         element : atom : ignoreCharacter {
-          \addIgnoresCharacter('atom');
+          \addIgnoresCharacter('atom',globalIgnoresHeaderVariableSection);
 	    }
 	  }
 	}
 	else {
-	  \addIgnoresCharacter(" ");
-	  \addIgnoresCharacter("\\t");
-	  \addIgnoresCharacter("\\n");
+	  \addIgnoresCharacter(" ",globalIgnoresHeaderVariableSection);
+	  \addIgnoresCharacter("\\t",globalIgnoresHeaderVariableSection);
+	  \addIgnoresCharacter("\\n",globalIgnoresHeaderVariableSection);
 	}
 	root : list : list {
 		Parser.list(list);
@@ -79,27 +80,28 @@
 	\output(data);
 }
 
-> Statement ignoresHeaderVariableSection = new Statement ();
-> Statement ignoresHeaderStatement = new Statement ();
-> void setupIgnoresStatement(){
-    ignoresHeaderStatement.set("&&");
-    ignoresHeaderVariableSection.set("||");
-    ignoresHeaderVariableSection.add(|"false"|);
-    ignoresHeaderStatement.add(|"_position" < "_inputLength" |);
-    ignoresHeaderStatement.add(|(`ignoresHeaderVariableSection`)|);
+
+> Statement globalIgnoresHeader = new Statement ();
+> Map<String, Statement > ruleIgnoresHeaders = new HashMap<String, Statement >();
+> void setupIgnoresHeader(Statement toSetup, Statement variableSection){
+    toSetup.set("&&");
+    variableSection.set("||");
+    variableSection.add(|"false"|);
+    toSetup.add(|"_position" < "_inputLength" |);
+    toSetup.add(|(`variableSection`)|);
   }
-> void addIgnoresCharacter(String ignoresCharacter){
+> void addIgnoresCharacter(String ignoresCharacter, Statement variableSection){
     if ignoresCharacter.equals("") {
- 	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "' '"|);
+ 	  variableSection.add(|"_inputArray[_position]" == "' '"|);
     }
     else {
       StringBuilder characterBuilder = new StringBuilder();
       characterBuilder.append("'");
       characterBuilder.append(ignoresCharacter);
       characterBuilder.append("'");
-	  ignoresHeaderVariableSection.add(|"_inputArray[_position]" == 'characterBuilder' |);
+	  variableSection.add(|"_inputArray[_position]" == 'characterBuilder' |);
 	  if ignoresCharacter.equals("\\n") {
-	    ignoresHeaderVariableSection.add(|"_inputArray[_position]" == "'\\r'"|);
+	    variableSection.add(|"_inputArray[_position]" == "'\\r'"|);
       } 
     }
   }
@@ -307,7 +309,9 @@ class 'packageName'."parser" Parser {
     }
     Body readBracesBody = new Body ();
     readInputBody.add(|
-      "_inputBuffer".append("(char)_readInput");
+      if "_readInput" != 13 {
+        "_inputBuffer".append("(char)_readInput");
+      }
       if "_readInput" == "'"+"\\n"+"'" {
         "_lineNumberRanges".add("_position");
       }
@@ -326,7 +330,9 @@ class 'packageName'."parser" Parser {
         "brace_0".put("brace_open_0".pop(),_position);
       }
       else if 'notQuoting' && 'notEscaping' `readBracesBody`
-      "_position" = "_position" \+ 1;|);
+      if "_readInput" != 13 {
+        "++_position";
+      }|);
     ~Integer i = maxOpen;
     while i > 0 {
     if declaredBraceCloseValues.containsKey(i) {
@@ -585,7 +591,7 @@ class 'packageName'."parser" Parser {
               if "_pass" == "SECOND_PASS" `withinBraces`
               else {
                 "_position" = "brace_"+'braceIds.get(declaredBraceRules.get(ruleName))'.get("_position") \+ 'declaredBraceCloseLengths.get(ruleName)';
-                while `ignoresHeaderStatement` {
+                while `ruleIgnoresHeaders.get(ruleName)` {
                   "++_position";
                 }
               }|);
@@ -606,7 +612,7 @@ class 'packageName'."parser" Parser {
       currentOption.add(|"_position" \+= 'declaredBraceOpenLengths.get(ruleName)';|);
       
       currentOption.add(|
-        while `ignoresHeaderStatement` {
+        while `ruleIgnoresHeaders.get(ruleName)` {
           "++_position";
         }|);
     }
@@ -660,7 +666,7 @@ class 'packageName'."parser" Parser {
         "_succeedOnEnd" = false;
       }
       "_inputLength" = 'currentLengthValue';
-      while `ignoresHeaderStatement` {
+      while `globalIgnoresHeader` {
         "++_position";
       }|);
     }
@@ -764,6 +770,23 @@ class 'packageName'."parser" Parser {
       }
       "_position" = 'currentPositionValue';|);
     ruleForeBodies.put(ruleName,foreBody);
+    if input->"ignores_character" != null {
+      Statement newIgnoresHeader = new Statement ();
+      Statement newIgnoresVariableSection = new Statement ();
+      \setupIgnoresHeader(newIgnoresHeader, newIgnoresVariableSection);
+      input : character: ignores_character {
+        \addIgnoresCharacter('character', newIgnoresVariableSection);
+      }
+      ruleIgnoresHeaders.put(ruleName,newIgnoresHeader);
+    }
+    else if input->"ignores_none" != null {
+      Statement newIgnoresHeader = new Statement ();
+      \setupIgnoresHeader(newIgnoresHeader, new Statement ());
+      ruleIgnoresHeaders.put(ruleName,newIgnoresHeader);
+    }
+    else {
+      ruleIgnoresHeaders.put(ruleName,globalIgnoresHeader);
+    }
     if input->"braced_parameters" != null {
       String left = 'input->"braced_parameters"->"left"';
       String right = 'input->"braced_parameters"->"right"';
@@ -774,7 +797,7 @@ class 'packageName'."parser" Parser {
         declaredBraceValues.put(both,new ArrayList<String>());
       }
       if input->"passConstraint" != null {
-        declaredBracePasses.put(ruleName,Integer.parseInt('input->"passConstraint"'));
+        declaredBracePasses.put(ruleName,Integer.parseInt('input->"passConstraint"'.trim()));
       }
       declaredBraceValues.get(both).add(ruleName);
       declaredBraceRules.put(ruleName,both);
@@ -1070,7 +1093,7 @@ class 'packageName'."parser" Parser {
         if "_state" == "SUCCESS" {
           "_token".add("_position",Tokens->Syntax->'quoteName'->'newTokenName');
           "_position" = "_position" \+ 'quoteLengthValue';
-          while `ignoresHeaderStatement` {
+          while `ruleIgnoresHeaders.get(ruleName)` {
             "++_position";
           }
         }
@@ -1107,7 +1130,7 @@ class 'packageName'."parser" Parser {
             if 'element->"listName"'.add("_input".substring('currentPositionValue',"_position")) {
               'element->"listName"'+"_additions".add("_input".substring('currentPositionValue',"_position"));
             }
-            while `ignoresHeaderStatement` {
+            while `ruleIgnoresHeaders.get(ruleName)` {
               "++_position";
             }
           }|);
@@ -1123,7 +1146,7 @@ class 'packageName'."parser" Parser {
         else {        
           rule.add(|if "_state" == "SUCCESS" {
             "_token".add('currentPositionValue',new Tokens->Plain->'newTokenName'("_input".substring('currentPositionValue',"_position")));
-            while `ignoresHeaderStatement` {
+            while `ruleIgnoresHeaders.get(ruleName)` {
               "++_position";
             }
           }|);
@@ -1132,7 +1155,7 @@ class 'packageName'."parser" Parser {
       else {
         rule.add(|if "_state" == "SUCCESS" {
             "_token".setValue("_input".substring('currentPositionValue',"_position"));
-            while `ignoresHeaderStatement` {
+            while `globalIgnoresHeader` {
               "++_position";
             }
           }|);
@@ -1183,7 +1206,7 @@ class 'packageName'."parser" Parser {
             if "_state" == "SUCCESS" {
               "_token".add("_position",new Tokens->Name->'newTokenClassName'("_list_name_result"));
               "_position" \+= "_list_name_result".length();
-              while `ignoresHeaderStatement` {
+              while `ruleIgnoresHeaders.get(ruleName)` {
                 "++_position";
               }
             }
@@ -1319,6 +1342,10 @@ class 'packageName'."parser" Parser {
           option.add(|"_inputArray[_position]" == "'.'"|);
           regexValue.append("\\.");  
         }
+        : REGEX_SLASH {
+          option.add(|"_inputArray[_position]" == "'\\\\'"|);
+          regexValue.append("\\\\");  
+        }
       }
       : standAlone {
         String ch;
@@ -1381,6 +1408,10 @@ class 'packageName'."parser" Parser {
         : REGEX_DOT {
           option.add(|"_inputArray[_position]" == "'.'"|);
           regexValue.append("\\.");  
+        }
+        : REGEX_SLASH {
+          option.add(|"_inputArray[_position]" == "'\\\\'"|);
+          regexValue.append("\\\\");  
         }
       }
       : standAlone {
@@ -1542,6 +1573,10 @@ class 'packageName'."parser" Parser {
         : REGEX_QUOTE {
           option.add(|"_inputArray[_position]" == "'\\\"'"|);
           regexValue.append("\\\"");  
+        }
+        : REGEX_SLASH {
+          option.add(|"_inputArray[_position]" == "'\\\\'"|);
+          regexValue.append("\\\\");  
         }
         regexBody.add(|
           if "_position" < "_inputLength" {

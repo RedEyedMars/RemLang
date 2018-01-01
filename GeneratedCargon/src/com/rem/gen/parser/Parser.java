@@ -96,15 +96,16 @@ public  class Parser{
 		protected Set<Integer> _recursion_protection_definition_0 = new HashSet<Integer>();
 		protected Map<Integer,Integer> brace_3 = new HashMap<Integer,Integer>();
 		protected Set<Integer> _recursion_protection_regex_definition_1 = new HashSet<Integer>();
-		protected Set<Integer> _recursion_protection_NAME_2 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_single_ignores_character_2 = new HashSet<Integer>();
 		protected Set<Integer> _recursion_protection_NAME_3 = new HashSet<Integer>();
-		protected Set<Integer> _recursion_protection_definition_4 = new HashSet<Integer>();
-		protected Set<Integer> _recursion_protection_quote_5 = new HashSet<Integer>();
-		protected Set<Integer> _recursion_protection_NAME_6 = new HashSet<Integer>();
-		protected Set<Integer> _recursion_protection_regex_special_7 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_NAME_4 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_definition_5 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_quote_6 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_NAME_7 = new HashSet<Integer>();
+		protected Set<Integer> _recursion_protection_regex_special_8 = new HashSet<Integer>();
 		protected int _readInput_1 = 0;
 		protected Parser.NameList list_names_additions_list = null;
-		public Context(final String _input, final String _fileName, final char[] _inputArray, final Parser.Result _result, final Parser.Result.Acceptor _result_acceptor, final Boolean _succeedOnEnd, final String _list_name_result, final List<Integer> _lineNumberRanges, final Token.Parsed _root, final Token.Parsed _token, final Map<Integer,Integer> brace_0, final Parser.NameList list_names, final Parser.NameList list_names_additions, final Map<Integer,Parser.NameList> list_names_first_passes, final Map<Integer,Integer> brace_1, final Map<Integer,Integer> brace_2, final Set<Integer> _recursion_protection_definition_0, final Map<Integer,Integer> brace_3, final Set<Integer> _recursion_protection_regex_definition_1, final Set<Integer> _recursion_protection_NAME_2, final Set<Integer> _recursion_protection_NAME_3, final Set<Integer> _recursion_protection_definition_4, final Set<Integer> _recursion_protection_quote_5, final Set<Integer> _recursion_protection_NAME_6, final Set<Integer> _recursion_protection_regex_special_7, final Parser.NameList list_names_additions_list) {
+		public Context(final String _input, final String _fileName, final char[] _inputArray, final Parser.Result _result, final Parser.Result.Acceptor _result_acceptor, final Boolean _succeedOnEnd, final String _list_name_result, final List<Integer> _lineNumberRanges, final Token.Parsed _root, final Token.Parsed _token, final Map<Integer,Integer> brace_0, final Parser.NameList list_names, final Parser.NameList list_names_additions, final Map<Integer,Parser.NameList> list_names_first_passes, final Map<Integer,Integer> brace_1, final Map<Integer,Integer> brace_2, final Set<Integer> _recursion_protection_definition_0, final Map<Integer,Integer> brace_3, final Set<Integer> _recursion_protection_regex_definition_1, final Set<Integer> _recursion_protection_single_ignores_character_2, final Set<Integer> _recursion_protection_NAME_3, final Set<Integer> _recursion_protection_NAME_4, final Set<Integer> _recursion_protection_definition_5, final Set<Integer> _recursion_protection_quote_6, final Set<Integer> _recursion_protection_NAME_7, final Set<Integer> _recursion_protection_regex_special_8, final Parser.NameList list_names_additions_list) {
 			if(_input != null){
 				this._input = _input;
 			}
@@ -162,23 +163,26 @@ public  class Parser{
 			if(_recursion_protection_regex_definition_1 != null){
 				this._recursion_protection_regex_definition_1 = _recursion_protection_regex_definition_1;
 			}
-			if(_recursion_protection_NAME_2 != null){
-				this._recursion_protection_NAME_2 = _recursion_protection_NAME_2;
+			if(_recursion_protection_single_ignores_character_2 != null){
+				this._recursion_protection_single_ignores_character_2 = _recursion_protection_single_ignores_character_2;
 			}
 			if(_recursion_protection_NAME_3 != null){
 				this._recursion_protection_NAME_3 = _recursion_protection_NAME_3;
 			}
-			if(_recursion_protection_definition_4 != null){
-				this._recursion_protection_definition_4 = _recursion_protection_definition_4;
+			if(_recursion_protection_NAME_4 != null){
+				this._recursion_protection_NAME_4 = _recursion_protection_NAME_4;
 			}
-			if(_recursion_protection_quote_5 != null){
-				this._recursion_protection_quote_5 = _recursion_protection_quote_5;
+			if(_recursion_protection_definition_5 != null){
+				this._recursion_protection_definition_5 = _recursion_protection_definition_5;
 			}
-			if(_recursion_protection_NAME_6 != null){
-				this._recursion_protection_NAME_6 = _recursion_protection_NAME_6;
+			if(_recursion_protection_quote_6 != null){
+				this._recursion_protection_quote_6 = _recursion_protection_quote_6;
 			}
-			if(_recursion_protection_regex_special_7 != null){
-				this._recursion_protection_regex_special_7 = _recursion_protection_regex_special_7;
+			if(_recursion_protection_NAME_7 != null){
+				this._recursion_protection_NAME_7 = _recursion_protection_NAME_7;
+			}
+			if(_recursion_protection_regex_special_8 != null){
+				this._recursion_protection_regex_special_8 = _recursion_protection_regex_special_8;
 			}
 			if(list_names_additions_list != null){
 				this.list_names_additions_list = list_names_additions_list;
@@ -296,7 +300,9 @@ public  class Parser{
 				boolean escaping = false;
 				boolean quoting = false;
 				while (_readInput>=0 ){
-					_inputBuffer.append((char)_readInput);
+					if (_readInput!=13 ){
+						_inputBuffer.append((char)_readInput);
+					}
 					if (_readInput=='\n'){
 						_lineNumberRanges.add(_position);
 					}
@@ -340,7 +346,9 @@ public  class Parser{
 							brace_open_3.push(_position);
 						}
 					}
-					_position=_position+1;
+					if (_readInput!=13 ){
+						++_position;
+					}
 					_readInput_1=_readInput;
 					_readInput=_inputReader.read();
 				}
@@ -446,11 +454,11 @@ public  class Parser{
 		public void set_recursionProtectionRegexDefinition1(Set<Integer> new_recursionProtectionRegexDefinition1){
 			_recursion_protection_regex_definition_1 = new_recursionProtectionRegexDefinition1;
 		}
-		public Set<Integer> get_recursionProtectionNAME2(){
-			return _recursion_protection_NAME_2;
+		public Set<Integer> get_recursionProtectionSingleIgnoresCharacter2(){
+			return _recursion_protection_single_ignores_character_2;
 		}
-		public void set_recursionProtectionNAME2(Set<Integer> new_recursionProtectionNAME2){
-			_recursion_protection_NAME_2 = new_recursionProtectionNAME2;
+		public void set_recursionProtectionSingleIgnoresCharacter2(Set<Integer> new_recursionProtectionSingleIgnoresCharacter2){
+			_recursion_protection_single_ignores_character_2 = new_recursionProtectionSingleIgnoresCharacter2;
 		}
 		public Set<Integer> get_recursionProtectionNAME3(){
 			return _recursion_protection_NAME_3;
@@ -458,29 +466,35 @@ public  class Parser{
 		public void set_recursionProtectionNAME3(Set<Integer> new_recursionProtectionNAME3){
 			_recursion_protection_NAME_3 = new_recursionProtectionNAME3;
 		}
-		public Set<Integer> get_recursionProtectionDefinition4(){
-			return _recursion_protection_definition_4;
+		public Set<Integer> get_recursionProtectionNAME4(){
+			return _recursion_protection_NAME_4;
 		}
-		public void set_recursionProtectionDefinition4(Set<Integer> new_recursionProtectionDefinition4){
-			_recursion_protection_definition_4 = new_recursionProtectionDefinition4;
+		public void set_recursionProtectionNAME4(Set<Integer> new_recursionProtectionNAME4){
+			_recursion_protection_NAME_4 = new_recursionProtectionNAME4;
 		}
-		public Set<Integer> get_recursionProtectionQuote5(){
-			return _recursion_protection_quote_5;
+		public Set<Integer> get_recursionProtectionDefinition5(){
+			return _recursion_protection_definition_5;
 		}
-		public void set_recursionProtectionQuote5(Set<Integer> new_recursionProtectionQuote5){
-			_recursion_protection_quote_5 = new_recursionProtectionQuote5;
+		public void set_recursionProtectionDefinition5(Set<Integer> new_recursionProtectionDefinition5){
+			_recursion_protection_definition_5 = new_recursionProtectionDefinition5;
 		}
-		public Set<Integer> get_recursionProtectionNAME6(){
-			return _recursion_protection_NAME_6;
+		public Set<Integer> get_recursionProtectionQuote6(){
+			return _recursion_protection_quote_6;
 		}
-		public void set_recursionProtectionNAME6(Set<Integer> new_recursionProtectionNAME6){
-			_recursion_protection_NAME_6 = new_recursionProtectionNAME6;
+		public void set_recursionProtectionQuote6(Set<Integer> new_recursionProtectionQuote6){
+			_recursion_protection_quote_6 = new_recursionProtectionQuote6;
 		}
-		public Set<Integer> get_recursionProtectionRegexSpecial7(){
-			return _recursion_protection_regex_special_7;
+		public Set<Integer> get_recursionProtectionNAME7(){
+			return _recursion_protection_NAME_7;
 		}
-		public void set_recursionProtectionRegexSpecial7(Set<Integer> new_recursionProtectionRegexSpecial7){
-			_recursion_protection_regex_special_7 = new_recursionProtectionRegexSpecial7;
+		public void set_recursionProtectionNAME7(Set<Integer> new_recursionProtectionNAME7){
+			_recursion_protection_NAME_7 = new_recursionProtectionNAME7;
+		}
+		public Set<Integer> get_recursionProtectionRegexSpecial8(){
+			return _recursion_protection_regex_special_8;
+		}
+		public void set_recursionProtectionRegexSpecial8(Set<Integer> new_recursionProtectionRegexSpecial8){
+			_recursion_protection_regex_special_8 = new_recursionProtectionRegexSpecial8;
 		}
 		public int get_readInput1(){
 			return _readInput_1;
@@ -493,6 +507,27 @@ public  class Parser{
 			Token.Parsed _token__anonymous_44 = null;
 			_position__anonymous_44=_position;
 			_token__anonymous_44=_token;
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_45();
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_44)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_44;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_44.addAll(_token);
+			}
+			_token=_token__anonymous_44;
+		}
+		public void parse__anonymous_43(){
+			int _position__anonymous_43 = -1;
+			Token.Parsed _token__anonymous_43 = null;
+			_position__anonymous_43=_position;
+			_token__anonymous_43=_token;
 			_token=new Tokens.Name.MultipleToken();
 			if (_position+1-1 >=_inputLength){
 				_state=FAILED;
@@ -503,7 +538,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_16.OPTIONAL);
+				_token.add(_position,Tokens.Syntax.syntax_20.OPTIONAL);
 				_position=_position+1;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -517,21 +552,21 @@ public  class Parser{
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_44)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_43)");
 					_furthestPosition=_position;
 				}
-				_position=_position__anonymous_44;
+				_position=_position__anonymous_43;
 			}
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_44.add(_position__anonymous_44,_token);
+				_token__anonymous_43.add(_position__anonymous_43,_token);
 			}
-			_token=_token__anonymous_44;
+			_token=_token__anonymous_43;
 			if (_state==FAILED){
 				_state=SUCCESS;
-				_position__anonymous_44=_position;
-				_token__anonymous_44=_token;
+				_position__anonymous_43=_position;
+				_token__anonymous_43=_token;
 				_token=new Tokens.Name.MultipleToken();
 				if (_position+1-1 >=_inputLength){
 					_state=FAILED;
@@ -542,7 +577,7 @@ public  class Parser{
 					}
 				}
 				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_17.MANY);
+					_token.add(_position,Tokens.Syntax.syntax_21.MANY);
 					_position=_position+1;
 					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 						++_position;
@@ -556,21 +591,21 @@ public  class Parser{
 				}
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_44)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_43)");
 						_furthestPosition=_position;
 					}
-					_position=_position__anonymous_44;
+					_position=_position__anonymous_43;
 				}
 				else {
 				}
 				if (_state==SUCCESS){
-					_token__anonymous_44.add(_position__anonymous_44,_token);
+					_token__anonymous_43.add(_position__anonymous_43,_token);
 				}
-				_token=_token__anonymous_44;
+				_token=_token__anonymous_43;
 				if (_state==FAILED){
 					_state=SUCCESS;
-					_position__anonymous_44=_position;
-					_token__anonymous_44=_token;
+					_position__anonymous_43=_position;
+					_token__anonymous_43=_token;
 					_token=new Tokens.Name.MultipleToken();
 					if (_position+1-1 >=_inputLength){
 						_state=FAILED;
@@ -581,7 +616,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_18.PLUS);
+						_token.add(_position,Tokens.Syntax.syntax_22.PLUS);
 						_position=_position+1;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -595,40 +630,282 @@ public  class Parser{
 					}
 					if (_state==FAILED){
 						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_44)");
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_43)");
 							_furthestPosition=_position;
 						}
-						_position=_position__anonymous_44;
+						_position=_position__anonymous_43;
 					}
 					else {
 					}
 					if (_state==SUCCESS){
-						_token__anonymous_44.add(_position__anonymous_44,_token);
+						_token__anonymous_43.add(_position__anonymous_43,_token);
 					}
-					_token=_token__anonymous_44;
+					_token=_token__anonymous_43;
 				}
 			}
 		}
-		public void parse__anonymous_43(){
-			int _position__anonymous_43 = -1;
-			Token.Parsed _token__anonymous_43 = null;
-			_position__anonymous_43=_position;
-			_token__anonymous_43=_token;
+		public void parse__anonymous_46(){
+			int _position__anonymous_46 = -1;
+			Token.Parsed _token__anonymous_46 = null;
+			_position__anonymous_46=_position;
+			_token__anonymous_46=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_44();
+			parse__anonymous_47();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_43)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_46)");
 					_furthestPosition=_position;
 				}
-				_position=_position__anonymous_43;
+				_position=_position__anonymous_46;
 			}
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_43.addAll(_token);
+				_token__anonymous_46.addAll(_token);
 			}
-			_token=_token__anonymous_43;
+			_token=_token__anonymous_46;
+		}
+		public void parse__anonymous_45(){
+			int _position__anonymous_45 = -1;
+			Token.Parsed _token__anonymous_45 = null;
+			_position__anonymous_45=_position;
+			_token__anonymous_45=_token;
+			_token=new Tokens.Name.MultipleToken();
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='?'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_20.OPTIONAL);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
+					_furthestPosition=_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_45)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_45;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_45.add(_position__anonymous_45,_token);
+			}
+			_token=_token__anonymous_45;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_45=_position;
+				_token__anonymous_45=_token;
+				_token=new Tokens.Name.MultipleToken();
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='*'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_21.MANY);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_45)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_45;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_45.add(_position__anonymous_45,_token);
+				}
+				_token=_token__anonymous_45;
+				if (_state==FAILED){
+					_state=SUCCESS;
+					_position__anonymous_45=_position;
+					_token__anonymous_45=_token;
+					_token=new Tokens.Name.MultipleToken();
+					if (_position+1-1 >=_inputLength){
+						_state=FAILED;
+					}
+					else {
+						if (_inputArray[_position+0]!='+'){
+							_state=FAILED;
+						}
+					}
+					if (_state==SUCCESS){
+						_token.add(_position,Tokens.Syntax.syntax_22.PLUS);
+						_position=_position+1;
+						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+							++_position;
+						}
+					}
+					else if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
+							_furthestPosition=_position;
+						}
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_45)");
+							_furthestPosition=_position;
+						}
+						_position=_position__anonymous_45;
+					}
+					else {
+					}
+					if (_state==SUCCESS){
+						_token__anonymous_45.add(_position__anonymous_45,_token);
+					}
+					_token=_token__anonymous_45;
+				}
+			}
+		}
+		public void parse__anonymous_47(){
+			int _position__anonymous_47 = -1;
+			Token.Parsed _token__anonymous_47 = null;
+			_position__anonymous_47=_position;
+			_token__anonymous_47=_token;
+			_token=new Tokens.Name.MultipleToken();
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='?'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_20.OPTIONAL);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
+					_furthestPosition=_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_47)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_47;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_47.add(_position__anonymous_47,_token);
+			}
+			_token=_token__anonymous_47;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_47=_position;
+				_token__anonymous_47=_token;
+				_token=new Tokens.Name.MultipleToken();
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='*'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_21.MANY);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_47)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_47;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_47.add(_position__anonymous_47,_token);
+				}
+				_token=_token__anonymous_47;
+				if (_state==FAILED){
+					_state=SUCCESS;
+					_position__anonymous_47=_position;
+					_token__anonymous_47=_token;
+					_token=new Tokens.Name.MultipleToken();
+					if (_position+1-1 >=_inputLength){
+						_state=FAILED;
+					}
+					else {
+						if (_inputArray[_position+0]!='+'){
+							_state=FAILED;
+						}
+					}
+					if (_state==SUCCESS){
+						_token.add(_position,Tokens.Syntax.syntax_22.PLUS);
+						_position=_position+1;
+						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+							++_position;
+						}
+					}
+					else if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
+							_furthestPosition=_position;
+						}
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_47)");
+							_furthestPosition=_position;
+						}
+						_position=_position__anonymous_47;
+					}
+					else {
+					}
+					if (_state==SUCCESS){
+						_token__anonymous_47.add(_position__anonymous_47,_token);
+					}
+					_token=_token__anonymous_47;
+				}
+			}
 		}
 		public void parse__anonymous_6(){
 			int _position__anonymous_6 = -1;
@@ -639,7 +916,7 @@ public  class Parser{
 			parse__anonymous_7();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_6)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_6)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_6;
@@ -656,49 +933,97 @@ public  class Parser{
 			Token.Parsed _token__anonymous_5 = null;
 			_position__anonymous_5=_position;
 			_token__anonymous_5=_token;
-			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
+			_token=new Tokens.Name.RangeToken();
+			int _position_regex_6 = _position;
+			if (_position<_inputLength){
+				++_position;
 			}
 			else {
-				if (_inputArray[_position+0]!=','){
-					_state=FAILED;
-				}
+				_state=FAILED;
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_2.__SYNTAX__);
-				_position=_position+1;
+				_token.add(_position_regex_6,new Tokens.Plain.Left(_input.substring(_position_regex_6,_position)));
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
 			}
-			else if (_state==FAILED){
+			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \",\"");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
 					_furthestPosition=_position;
 				}
+				_position=_position_regex_6;
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_5)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_5)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_5;
 			}
 			else {
-				parse_rule_params();
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='-'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_4.__SYNTAX__);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"-\"");
+						_furthestPosition=_position;
+					}
+				}
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_5)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_5)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_5;
 				}
 				else {
+					int _position_regex_7 = _position;
+					if (_position<_inputLength){
+						++_position;
+					}
+					else {
+						_state=FAILED;
+					}
+					if (_state==SUCCESS){
+						_token.add(_position_regex_7,new Tokens.Plain.Right(_input.substring(_position_regex_7,_position)));
+						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+							++_position;
+						}
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
+							_furthestPosition=_position;
+						}
+						_position=_position_regex_7;
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_5)");
+							_furthestPosition=_position;
+						}
+						_position=_position__anonymous_5;
+					}
+					else {
+					}
 				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_5.addAll(_token);
+				_token__anonymous_5.add(_position__anonymous_5,_token);
 			}
 			_token=_token__anonymous_5;
 		}
@@ -732,7 +1057,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_3.__SYNTAX__);
+				_token.add(_position,Tokens.Syntax.syntax_6.SILENT);
 				_position=_position+6;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -762,9 +1087,9 @@ public  class Parser{
 				_position_rule_params=_position;
 				_token_rule_params=_token;
 				_token=new Token.Parsed("$ANON");
-				int _state_14 = _state;
-				parse__anonymous_6();
-				if (_state_14==SUCCESS&&_state==FAILED){
+				int _state_17 = _state;
+				parse__anonymous_8();
+				if (_state_17==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -799,7 +1124,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_5.__SYNTAX__);
+						_token.add(_position,Tokens.Syntax.syntax_8.__SYNTAX__);
 						_position=_position+6;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -819,7 +1144,7 @@ public  class Parser{
 						_position=_position_rule_params;
 					}
 					else {
-						parse__anonymous_8();
+						parse__anonymous_10();
 						if (_state==FAILED){
 							if (_position>=_furthestPosition){
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(rule_params)");
@@ -867,7 +1192,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_6.__SYNTAX__);
+						_token.add(_position,Tokens.Syntax.syntax_9.__SYNTAX__);
 						_position=_position+7;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -887,7 +1212,7 @@ public  class Parser{
 						_position=_position_rule_params;
 					}
 					else {
-						parse__anonymous_9();
+						parse__anonymous_11();
 						if (_state==FAILED){
 							if (_position>=_furthestPosition){
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(rule_params)");
@@ -902,42 +1227,223 @@ public  class Parser{
 						_token_rule_params.addAll(_token);
 					}
 					_token=_token_rule_params;
+					if (_state==FAILED){
+						_state=SUCCESS;
+						_position_rule_params=_position;
+						_token_rule_params=_token;
+						_token=new Token.Parsed("$ANON");
+						if (_position+6-1 >=_inputLength){
+							_state=FAILED;
+						}
+						else {
+							if (_inputArray[_position+0]!='I'){
+								_state=FAILED;
+							}
+							if (_inputArray[_position+1]!='g'){
+								_state=FAILED;
+							}
+							if (_inputArray[_position+2]!='n'){
+								_state=FAILED;
+							}
+							if (_inputArray[_position+3]!='o'){
+								_state=FAILED;
+							}
+							if (_inputArray[_position+4]!='r'){
+								_state=FAILED;
+							}
+							if (_inputArray[_position+5]!='e'){
+								_state=FAILED;
+							}
+						}
+						if (_state==SUCCESS){
+							_token.add(_position,Tokens.Syntax.syntax_10.__SYNTAX__);
+							_position=_position+6;
+							while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+								++_position;
+							}
+						}
+						else if (_state==FAILED){
+							if (_position>=_furthestPosition){
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"Ignore\"");
+								_furthestPosition=_position;
+							}
+						}
+						if (_state==FAILED){
+							if (_position>=_furthestPosition){
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(rule_params)");
+								_furthestPosition=_position;
+							}
+							_position=_position_rule_params;
+						}
+						else {
+							parse__anonymous_14();
+							if (_state==FAILED){
+								if (_position>=_furthestPosition){
+									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(rule_params)");
+									_furthestPosition=_position;
+								}
+								_position=_position_rule_params;
+							}
+							else {
+							}
+						}
+						if (_state==SUCCESS){
+							_token_rule_params.addAll(_token);
+						}
+						_token=_token_rule_params;
+					}
 				}
 			}
+		}
+		public void parse_ignores(){
+			int _position_ignores = -1;
+			Token.Parsed _token_ignores = null;
+			_position_ignores=_position;
+			_token_ignores=_token;
+			_token=new Tokens.Rule.IgnoresToken();
+			if (_position+6-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='i'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+1]!='g'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+2]!='n'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+3]!='o'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+4]!='r'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+5]!='e'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_0.__SYNTAX__);
+				_position=_position+6;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"ignore\"");
+					_furthestPosition=_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(ignores)");
+					_furthestPosition=_position;
+				}
+				_position=_position_ignores;
+			}
+			else {
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!=':'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_1.__SYNTAX__);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \":\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(ignores)");
+						_furthestPosition=_position;
+					}
+					_position=_position_ignores;
+				}
+				else {
+					int _state_2 = _state;
+					int _multiple_index_2 = 0;
+					while (_position<_inputLength){
+						parse__anonymous_1();
+						if (_state==FAILED){
+							break;
+						}
+						else {
+							++_multiple_index_2;
+						}
+					}
+					if (_multiple_index_2==0 ){
+						_state=FAILED;
+					}
+					else if (_state_2==SUCCESS&&_multiple_index_2>0 &&_state==FAILED){
+						_state=SUCCESS;
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(ignores)");
+							_furthestPosition=_position;
+						}
+						_position=_position_ignores;
+					}
+					else {
+						if (_position+1-1 >=_inputLength){
+							_state=FAILED;
+						}
+						else {
+							if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
+								_state=FAILED;
+							}
+						}
+						if (_state==SUCCESS){
+							_token.add(_position,Tokens.Syntax.syntax_2.__SYNTAX__);
+							_position=_position+1;
+							while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+								++_position;
+							}
+						}
+						else if (_state==FAILED){
+							if (_position>=_furthestPosition){
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
+								_furthestPosition=_position;
+							}
+						}
+						if (_state==FAILED){
+							if (_position>=_furthestPosition){
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(ignores)");
+								_furthestPosition=_position;
+							}
+							_position=_position_ignores;
+						}
+						else {
+						}
+					}
+				}
+			}
+			if (_state==SUCCESS){
+				_token_ignores.add(_position_ignores,_token);
+			}
+			_token=_token_ignores;
 		}
 		public void parse__anonymous_8(){
 			int _position__anonymous_8 = -1;
 			Token.Parsed _token__anonymous_8 = null;
 			_position__anonymous_8=_position;
 			_token__anonymous_8=_token;
-			_token=new Tokens.Name.BracedParametersToken();
-			int _position_regex_8 = _position;
-			int _multiple_index_15 = 0;
-			while (_position<_inputLength){
-				if (_inputArray[_position]!=' '&&_inputArray[_position]!='\t'&&_inputArray[_position]!='\r'&&_inputArray[_position]!='\n'){
-					++_position;
-					++_multiple_index_15;
-				}
-				else {
-					break;
-				}
-			}
-			if (_multiple_index_15==0 ){
-				_state=FAILED;
-			}
-			if (_state==SUCCESS){
-				_token.add(_position_regex_8,new Tokens.Plain.Left(_input.substring(_position_regex_8,_position)));
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[\\\\s]+");
-					_furthestPosition=_position;
-				}
-				_position=_position_regex_8;
-			}
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_9();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_8)");
@@ -946,45 +1452,9 @@ public  class Parser{
 				_position=_position__anonymous_8;
 			}
 			else {
-				int _position_regex_9 = _position;
-				int _multiple_index_16 = 0;
-				while (_position<_inputLength){
-					if (_inputArray[_position]!=' '&&_inputArray[_position]!='\t'&&_inputArray[_position]!='\r'&&_inputArray[_position]!='\n'){
-						++_position;
-						++_multiple_index_16;
-					}
-					else {
-						break;
-					}
-				}
-				if (_multiple_index_16==0 ){
-					_state=FAILED;
-				}
-				if (_state==SUCCESS){
-					_token.add(_position_regex_9,new Tokens.Plain.Right(_input.substring(_position_regex_9,_position)));
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[\\\\s]+");
-						_furthestPosition=_position;
-					}
-					_position=_position_regex_9;
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_8)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_8;
-				}
-				else {
-				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_8.add(_position__anonymous_8,_token);
+				_token__anonymous_8.addAll(_token);
 			}
 			_token=_token__anonymous_8;
 		}
@@ -996,15 +1466,15 @@ public  class Parser{
 				_inputLength=brace_0.get(_position);
 				int _position_quote_brace = _position;
 				_position+=1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+				while (_position<_inputLength&&(false)){
 					++_position;
 				}
 				_position_quote=_position;
 				_token_quote=_token;
 				_token=new Tokens.Rule.QuoteToken();
 				int _position_regex_4 = _position;
-				int _multiple_index_10 = 0;
-				int _state_10 = _state;
+				int _multiple_index_11 = 0;
+				int _state_11 = _state;
 				while (_position<_inputLength){
 					if (_position<_inputLength){
 						++_position;
@@ -1016,10 +1486,10 @@ public  class Parser{
 						break;
 					}
 					else {
-						++_multiple_index_10;
+						++_multiple_index_11;
 					}
 				}
-				if (_state_10==SUCCESS){
+				if (_state_11==SUCCESS){
 					_state=SUCCESS;
 				}
 				if (_state==SUCCESS){
@@ -1081,12 +1551,12 @@ public  class Parser{
 				_state=FAILED;
 			}
 			else {
-				if (_inputArray[_position+0]!='@'){
+				if (_inputArray[_position+0]!=','){
 					_state=FAILED;
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_4.__SYNTAX__);
+				_token.add(_position,Tokens.Syntax.syntax_5.__SYNTAX__);
 				_position=_position+1;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -1094,29 +1564,22 @@ public  class Parser{
 			}
 			else if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"@\"");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \",\"");
 					_furthestPosition=_position;
 				}
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_7)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_7)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_7;
 			}
 			else {
-				Token.Parsed _tokenNUMBER = _token;
-				_token=new Tokens.Name.PassConstraintToken();
-				int _position_NUMBER = _position;
-				parse_NUMBER();
-				if (_state==SUCCESS){
-					_tokenNUMBER.add(_position_NUMBER,_token);
-				}
-				_token=_tokenNUMBER;
+				parse_rule_params();
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_7)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_7)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_7;
@@ -1135,10 +1598,17 @@ public  class Parser{
 			_position__anonymous_2=_position;
 			_token__anonymous_2=_token;
 			_token=new Token.Parsed("$ANON");
-			parse_regex_option_definition();
+			Token.Parsed _tokensingle_ignores_character = _token;
+			_token=new Tokens.Name.IgnoreCharacterToken();
+			int _position_single_ignores_character = _position;
+			parse_single_ignores_character();
+			if (_state==SUCCESS){
+				_tokensingle_ignores_character.add(_position_single_ignores_character,_token);
+			}
+			_token=_tokensingle_ignores_character;
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option(_anonymous_2)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(_anonymous_2)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_2;
@@ -1155,28 +1625,8 @@ public  class Parser{
 			Token.Parsed _token__anonymous_40 = null;
 			_position__anonymous_40=_position;
 			_token__anonymous_40=_token;
-			_token=new Tokens.Name.MultipleToken();
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='?'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_16.OPTIONAL);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
-					_furthestPosition=_position;
-				}
-			}
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_41();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_40)");
@@ -1187,89 +1637,9 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_40.add(_position__anonymous_40,_token);
+				_token__anonymous_40.addAll(_token);
 			}
 			_token=_token__anonymous_40;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_40=_position;
-				_token__anonymous_40=_token;
-				_token=new Tokens.Name.MultipleToken();
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='*'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_17.MANY);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_40)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_40;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_40.add(_position__anonymous_40,_token);
-				}
-				_token=_token__anonymous_40;
-				if (_state==FAILED){
-					_state=SUCCESS;
-					_position__anonymous_40=_position;
-					_token__anonymous_40=_token;
-					_token=new Tokens.Name.MultipleToken();
-					if (_position+1-1 >=_inputLength){
-						_state=FAILED;
-					}
-					else {
-						if (_inputArray[_position+0]!='+'){
-							_state=FAILED;
-						}
-					}
-					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_18.PLUS);
-						_position=_position+1;
-						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-							++_position;
-						}
-					}
-					else if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
-							_furthestPosition=_position;
-						}
-					}
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_40)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_40;
-					}
-					else {
-					}
-					if (_state==SUCCESS){
-						_token__anonymous_40.add(_position__anonymous_40,_token);
-					}
-					_token=_token__anonymous_40;
-				}
-			}
 		}
 		public void parse__anonymous_1(){
 			int _position__anonymous_1 = -1;
@@ -1277,30 +1647,10 @@ public  class Parser{
 			_position__anonymous_1=_position;
 			_token__anonymous_1=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='^'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_0.negate);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"^\"");
-					_furthestPosition=_position;
-				}
-			}
+			parse__anonymous_2();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option(_anonymous_1)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"ignores(_anonymous_1)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_1;
@@ -1318,10 +1668,10 @@ public  class Parser{
 			_position__anonymous_4=_position;
 			_token__anonymous_4=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_5();
+			parse_regex_option_definition();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_parameters(_anonymous_4)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option(_anonymous_4)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_4;
@@ -1338,28 +1688,8 @@ public  class Parser{
 			Token.Parsed _token__anonymous_42 = null;
 			_position__anonymous_42=_position;
 			_token__anonymous_42=_token;
-			_token=new Tokens.Name.MultipleToken();
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='?'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_16.OPTIONAL);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
-					_furthestPosition=_position;
-				}
-			}
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_43();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_42)");
@@ -1370,186 +1700,48 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_42.add(_position__anonymous_42,_token);
+				_token__anonymous_42.addAll(_token);
 			}
 			_token=_token__anonymous_42;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_42=_position;
-				_token__anonymous_42=_token;
-				_token=new Tokens.Name.MultipleToken();
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='*'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_17.MANY);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_42)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_42;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_42.add(_position__anonymous_42,_token);
-				}
-				_token=_token__anonymous_42;
-				if (_state==FAILED){
-					_state=SUCCESS;
-					_position__anonymous_42=_position;
-					_token__anonymous_42=_token;
-					_token=new Tokens.Name.MultipleToken();
-					if (_position+1-1 >=_inputLength){
-						_state=FAILED;
-					}
-					else {
-						if (_inputArray[_position+0]!='+'){
-							_state=FAILED;
-						}
-					}
-					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_18.PLUS);
-						_position=_position+1;
-						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-							++_position;
-						}
-					}
-					else if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
-							_furthestPosition=_position;
-						}
-					}
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_42)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_42;
-					}
-					else {
-					}
-					if (_state==SUCCESS){
-						_token__anonymous_42.add(_position__anonymous_42,_token);
-					}
-					_token=_token__anonymous_42;
-				}
-			}
 		}
 		public void parse__anonymous_3(){
 			int _position__anonymous_3 = -1;
 			Token.Parsed _token__anonymous_3 = null;
 			_position__anonymous_3=_position;
 			_token__anonymous_3=_token;
-			_token=new Tokens.Name.RangeToken();
-			int _position_regex_5 = _position;
-			if (_position<_inputLength){
-				++_position;
-			}
-			else {
+			_token=new Token.Parsed("$ANON");
+			if (_position+1-1 >=_inputLength){
 				_state=FAILED;
 			}
+			else {
+				if (_inputArray[_position+0]!='^'){
+					_state=FAILED;
+				}
+			}
 			if (_state==SUCCESS){
-				_token.add(_position_regex_5,new Tokens.Plain.Left(_input.substring(_position_regex_5,_position)));
+				_token.add(_position,Tokens.Syntax.syntax_3.negate);
+				_position=_position+1;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
 			}
-			if (_state==FAILED){
+			else if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"^\"");
 					_furthestPosition=_position;
 				}
-				_position=_position_regex_5;
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_3)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option(_anonymous_3)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_3;
 			}
 			else {
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='-'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_1.__SYNTAX__);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"-\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_3)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_3;
-				}
-				else {
-					int _position_regex_6 = _position;
-					if (_position<_inputLength){
-						++_position;
-					}
-					else {
-						_state=FAILED;
-					}
-					if (_state==SUCCESS){
-						_token.add(_position_regex_6,new Tokens.Plain.Right(_input.substring(_position_regex_6,_position)));
-						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-							++_position;
-						}
-					}
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
-							_furthestPosition=_position;
-						}
-						_position=_position_regex_6;
-					}
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(_anonymous_3)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_3;
-					}
-					else {
-					}
-				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_3.add(_position__anonymous_3,_token);
+				_token__anonymous_3.addAll(_token);
 			}
 			_token=_token__anonymous_3;
 		}
@@ -1559,21 +1751,21 @@ public  class Parser{
 			_position_base_element=_position;
 			_token_base_element=_token;
 			_token=new Token.Parsed("$ANON");
-			int _state_18 = _state;
-			int _multiple_index_18 = 0;
+			int _state_22 = _state;
+			int _multiple_index_22 = 0;
 			while (_position<_inputLength){
-				parse__anonymous_12();
+				parse__anonymous_17();
 				if (_state==FAILED){
 					break;
 				}
 				else {
-					++_multiple_index_18;
+					++_multiple_index_22;
 				}
 			}
-			if (_multiple_index_18==0 ){
+			if (_multiple_index_22==0 ){
 				_state=FAILED;
 			}
-			else if (_state_18==SUCCESS&&_multiple_index_18>0 &&_state==FAILED){
+			else if (_state_22==SUCCESS&&_multiple_index_22>0 &&_state==FAILED){
 				_state=SUCCESS;
 			}
 			if (_state==FAILED){
@@ -1595,8 +1787,28 @@ public  class Parser{
 			Token.Parsed _token__anonymous_41 = null;
 			_position__anonymous_41=_position;
 			_token__anonymous_41=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_42();
+			_token=new Tokens.Name.MultipleToken();
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='?'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_20.OPTIONAL);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
+					_furthestPosition=_position;
+				}
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_41)");
@@ -1607,9 +1819,89 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_41.addAll(_token);
+				_token__anonymous_41.add(_position__anonymous_41,_token);
 			}
 			_token=_token__anonymous_41;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_41=_position;
+				_token__anonymous_41=_token;
+				_token=new Tokens.Name.MultipleToken();
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='*'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_21.MANY);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_41)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_41;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_41.add(_position__anonymous_41,_token);
+				}
+				_token=_token__anonymous_41;
+				if (_state==FAILED){
+					_state=SUCCESS;
+					_position__anonymous_41=_position;
+					_token__anonymous_41=_token;
+					_token=new Tokens.Name.MultipleToken();
+					if (_position+1-1 >=_inputLength){
+						_state=FAILED;
+					}
+					else {
+						if (_inputArray[_position+0]!='+'){
+							_state=FAILED;
+						}
+					}
+					if (_state==SUCCESS){
+						_token.add(_position,Tokens.Syntax.syntax_22.PLUS);
+						_position=_position+1;
+						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+							++_position;
+						}
+					}
+					else if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
+							_furthestPosition=_position;
+						}
+					}
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_41)");
+							_furthestPosition=_position;
+						}
+						_position=_position__anonymous_41;
+					}
+					else {
+					}
+					if (_state==SUCCESS){
+						_token__anonymous_41.add(_position__anonymous_41,_token);
+					}
+					_token=_token__anonymous_41;
+				}
+			}
 		}
 		public void parse_regex_special(){
 			int _position_regex_special = -1;
@@ -1629,7 +1921,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_19.number);
+				_token.add(_position,Tokens.Syntax.syntax_23.number);
 				_position=_position+2;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -1671,7 +1963,7 @@ public  class Parser{
 					}
 				}
 				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_20.dot);
+					_token.add(_position,Tokens.Syntax.syntax_24.dot);
 					_position=_position+2;
 					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 						++_position;
@@ -1713,7 +2005,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_21.whitespace);
+						_token.add(_position,Tokens.Syntax.syntax_25.whitespace);
 						_position=_position+2;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -1743,7 +2035,18 @@ public  class Parser{
 						_position_regex_special=_position;
 						_token_regex_special=_token;
 						_token=new Tokens.Rule.RegexSpecialToken();
-						int _position_regex_11 = _position;
+						int _position_regex_12 = _position;
+						if (_position<_inputLength){
+							if (_inputArray[_position]=='\\'){
+								++_position;
+							}
+							else {
+								_state=FAILED;
+							}
+						}
+						else {
+							_state=FAILED;
+						}
 						if (_position<_inputLength){
 							if (_inputArray[_position]=='\"'){
 								++_position;
@@ -1756,17 +2059,17 @@ public  class Parser{
 							_state=FAILED;
 						}
 						if (_state==SUCCESS){
-							_token.add(_position_regex_11,new Tokens.Plain.Quote(_input.substring(_position_regex_11,_position)));
+							_token.add(_position_regex_12,new Tokens.Plain.Quote(_input.substring(_position_regex_12,_position)));
 							while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 								++_position;
 							}
 						}
 						if (_state==FAILED){
 							if (_position>=_furthestPosition){
-								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"\\\"");
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"\\\\\\\"");
 								_furthestPosition=_position;
 							}
-							_position=_position_regex_11;
+							_position=_position_regex_12;
 						}
 						if (_state==FAILED){
 							if (_position>=_furthestPosition){
@@ -1798,7 +2101,7 @@ public  class Parser{
 								}
 							}
 							if (_state==SUCCESS){
-								_token.add(_position,Tokens.Syntax.syntax_22.apostrophe);
+								_token.add(_position,Tokens.Syntax.syntax_26.apostrophe);
 								_position=_position+2;
 								while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 									++_position;
@@ -1823,6 +2126,49 @@ public  class Parser{
 								_token_regex_special.add(_position_regex_special,_token);
 							}
 							_token=_token_regex_special;
+							if (_state==FAILED){
+								_state=SUCCESS;
+								_position_regex_special=_position;
+								_token_regex_special=_token;
+								_token=new Tokens.Rule.RegexSpecialToken();
+								if (_position+2-1 >=_inputLength){
+									_state=FAILED;
+								}
+								else {
+									if (_inputArray[_position+0]!='\\'){
+										_state=FAILED;
+									}
+									if (_inputArray[_position+1]!='\\'){
+										_state=FAILED;
+									}
+								}
+								if (_state==SUCCESS){
+									_token.add(_position,Tokens.Syntax.syntax_27.slash);
+									_position=_position+2;
+									while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+										++_position;
+									}
+								}
+								else if (_state==FAILED){
+									if (_position>=_furthestPosition){
+										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\\\\\"");
+										_furthestPosition=_position;
+									}
+								}
+								if (_state==FAILED){
+									if (_position>=_furthestPosition){
+										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_special(regex_special)");
+										_furthestPosition=_position;
+									}
+									_position=_position_regex_special;
+								}
+								else {
+								}
+								if (_state==SUCCESS){
+									_token_regex_special.add(_position_regex_special,_token);
+								}
+								_token=_token_regex_special;
+							}
 						}
 					}
 				}
@@ -1833,23 +2179,27 @@ public  class Parser{
 			Token.Parsed _token__anonymous_9 = null;
 			_position__anonymous_9=_position;
 			_token__anonymous_9=_token;
-			_token=new Tokens.Name.ImportParametersToken();
-			int _state_17 = _state;
-			int _multiple_index_17 = 0;
-			while (_position<_inputLength){
-				parse__anonymous_10();
-				if (_state==FAILED){
-					break;
-				}
-				else {
-					++_multiple_index_17;
-				}
-			}
-			if (_multiple_index_17==0 ){
+			_token=new Token.Parsed("$ANON");
+			if (_position+1-1 >=_inputLength){
 				_state=FAILED;
 			}
-			else if (_state_17==SUCCESS&&_multiple_index_17>0 &&_state==FAILED){
-				_state=SUCCESS;
+			else {
+				if (_inputArray[_position+0]!='@'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_7.__SYNTAX__);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"@\"");
+					_furthestPosition=_position;
+				}
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
@@ -1859,9 +2209,26 @@ public  class Parser{
 				_position=_position__anonymous_9;
 			}
 			else {
+				Token.Parsed _tokenNUMBER = _token;
+				_token=new Tokens.Name.PassConstraintToken();
+				int _position_NUMBER = _position;
+				parse_NUMBER();
+				if (_state==SUCCESS){
+					_tokenNUMBER.add(_position_NUMBER,_token);
+				}
+				_token=_tokenNUMBER;
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_9)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_9;
+				}
+				else {
+				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_9.add(_position__anonymous_9,_token);
+				_token__anonymous_9.addAll(_token);
 			}
 			_token=_token__anonymous_9;
 		}
@@ -1880,9 +2247,9 @@ public  class Parser{
 				_position=_position_element;
 			}
 			else {
-				int _state_27 = _state;
-				parse__anonymous_30();
-				if (_state_27==SUCCESS&&_state==FAILED){
+				int _state_29 = _state;
+				parse__anonymous_33();
+				if (_state_29==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -1893,9 +2260,9 @@ public  class Parser{
 					_position=_position_element;
 				}
 				else {
-					int _state_28 = _state;
-					parse__anonymous_32();
-					if (_state_28==SUCCESS&&_state==FAILED){
+					int _state_30 = _state;
+					parse__anonymous_35();
+					if (_state_30==SUCCESS&&_state==FAILED){
 						_state=SUCCESS;
 					}
 					if (_state==FAILED){
@@ -1985,11 +2352,11 @@ public  class Parser{
 					++_position;
 				}
 			}
-			int _state_5 = _state;
+			int _state_6 = _state;
 			if (_position<_inputLength){
 				int _position_of_last_success_5 = _position;
-				int _multiple_index_6 = 0;
-				int _state_6 = _state;
+				int _multiple_index_7 = 0;
+				int _state_7 = _state;
 				while (_position<_inputLength){
 					if (_position<_inputLength){
 						if (_inputArray[_position]=='0'||_inputArray[_position]=='1'||_inputArray[_position]=='2'||_inputArray[_position]=='3'||_inputArray[_position]=='4'||_inputArray[_position]=='5'||_inputArray[_position]=='6'||_inputArray[_position]=='7'||_inputArray[_position]=='8'||_inputArray[_position]=='9'){
@@ -2006,10 +2373,10 @@ public  class Parser{
 						break;
 					}
 					else {
-						++_multiple_index_6;
+						++_multiple_index_7;
 					}
 				}
-				if (_state_6==SUCCESS){
+				if (_state_7==SUCCESS){
 					_state=SUCCESS;
 				}
 				if (_position<_inputLength){
@@ -2027,11 +2394,11 @@ public  class Parser{
 					_position=_position_of_last_success_5;
 				}
 			}
-			if (_state_5==SUCCESS){
+			if (_state_6==SUCCESS){
 				_state=SUCCESS;
 			}
-			int _multiple_index_7 = 0;
-			int _state_7 = _state;
+			int _multiple_index_8 = 0;
+			int _state_8 = _state;
 			while (_position<_inputLength){
 				if (_position<_inputLength){
 					if (_inputArray[_position]=='0'||_inputArray[_position]=='1'||_inputArray[_position]=='2'||_inputArray[_position]=='3'||_inputArray[_position]=='4'||_inputArray[_position]=='5'||_inputArray[_position]=='6'||_inputArray[_position]=='7'||_inputArray[_position]=='8'||_inputArray[_position]=='9'){
@@ -2048,16 +2415,16 @@ public  class Parser{
 					break;
 				}
 				else {
-					++_multiple_index_7;
+					++_multiple_index_8;
 				}
 			}
-			if (_state_7==SUCCESS&&_multiple_index_7>0 ){
+			if (_state_8==SUCCESS&&_multiple_index_8>0 ){
 				_state=SUCCESS;
 			}
 			else {
 				_state=FAILED;
 			}
-			int _state_8 = _state;
+			int _state_9 = _state;
 			if (_position<_inputLength){
 				if (_position<_inputLength){
 					if (_inputArray[_position]=='f'){
@@ -2071,11 +2438,11 @@ public  class Parser{
 					_state=FAILED;
 				}
 			}
-			if (_state_8==SUCCESS){
+			if (_state_9==SUCCESS){
 				_state=SUCCESS;
 			}
-			int _multiple_index_9 = 0;
-			int _state_9 = _state;
+			int _multiple_index_10 = 0;
+			int _state_10 = _state;
 			while (_position<_inputLength){
 				if (_position<_inputLength){
 					if (_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\r'||_inputArray[_position]=='\n'){
@@ -2092,10 +2459,10 @@ public  class Parser{
 					break;
 				}
 				else {
-					++_multiple_index_9;
+					++_multiple_index_10;
 				}
 			}
-			if (_state_9==SUCCESS){
+			if (_state_10==SUCCESS){
 				_state=SUCCESS;
 			}
 			if (_state==SUCCESS){
@@ -2130,7 +2497,7 @@ public  class Parser{
 			Token.Parsed _token_rule_parameters = null;
 			_position_rule_parameters=_position;
 			_token_rule_parameters=_token;
-			_token=new Tokens.Rule.RuleParametersToken();
+			_token=new Token.Parsed("$ANON");
 			parse_rule_params();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
@@ -2140,14 +2507,14 @@ public  class Parser{
 				_position=_position_rule_parameters;
 			}
 			else {
-				int _state_13 = _state;
+				int _state_16 = _state;
 				while (_position<_inputLength){
-					parse__anonymous_4();
+					parse__anonymous_6();
 					if (_state==FAILED){
 						break;
 					}
 				}
-				if (_state_13==SUCCESS&&_state==FAILED){
+				if (_state_16==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -2161,7 +2528,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token_rule_parameters.add(_position_rule_parameters,_token);
+				_token_rule_parameters.addAll(_token);
 			}
 			_token=_token_rule_parameters;
 		}
@@ -2171,30 +2538,7 @@ public  class Parser{
 			_position__anonymous_33=_position;
 			_token__anonymous_33=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+2-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='i'){
-					_state=FAILED;
-				}
-				if (_inputArray[_position+1]!='n'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_15.__SYNTAX__);
-				_position=_position+2;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"in\"");
-					_furthestPosition=_position;
-				}
-			}
+			parse__anonymous_34();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_33)");
@@ -2203,23 +2547,6 @@ public  class Parser{
 				_position=_position__anonymous_33;
 			}
 			else {
-				Token.Parsed _tokenNAME = _token;
-				_token=new Tokens.Name.ListNameToken();
-				int _position_NAME = _position;
-				parse_NAME();
-				if (_state==SUCCESS){
-					_tokenNAME.add(_position_NAME,_token);
-				}
-				_token=_tokenNAME;
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_33)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_33;
-				}
-				else {
-				}
 			}
 			if (_state==SUCCESS){
 				_token__anonymous_33.addAll(_token);
@@ -2232,10 +2559,30 @@ public  class Parser{
 			_position__anonymous_32=_position;
 			_token__anonymous_32=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_33();
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='|'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_17.__SYNTAX__);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"|\"");
+					_furthestPosition=_position;
+				}
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_32)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_32)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_32;
@@ -2246,6 +2593,49 @@ public  class Parser{
 				_token__anonymous_32.addAll(_token);
 			}
 			_token=_token__anonymous_32;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_32=_position;
+				_token__anonymous_32=_token;
+				_token=new Token.Parsed("$ANON");
+				if (_position+2-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
+						_state=FAILED;
+					}
+					if (_inputArray[_position+1]!='\t'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_13.__SYNTAX__);
+					_position=_position+2;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_32)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_32;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_32.addAll(_token);
+				}
+				_token=_token__anonymous_32;
+			}
 		}
 		public void parse__anonymous_0(){
 			int _position__anonymous_0 = -1;
@@ -2273,31 +2663,11 @@ public  class Parser{
 			Token.Parsed _token__anonymous_35 = null;
 			_position__anonymous_35=_position;
 			_token__anonymous_35=_token;
-			_token=new Tokens.Name.OptionToken();
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='?'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_16.OPTIONAL);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"?\"");
-					_furthestPosition=_position;
-				}
-			}
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_36();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_35)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_35)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_35;
@@ -2305,117 +2675,59 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_35.add(_position__anonymous_35,_token);
+				_token__anonymous_35.addAll(_token);
 			}
 			_token=_token__anonymous_35;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_35=_position;
-				_token__anonymous_35=_token;
-				_token=new Tokens.Name.OptionToken();
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='*'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_17.MANY);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"*\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_35)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_35;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_35.add(_position__anonymous_35,_token);
-				}
-				_token=_token__anonymous_35;
-				if (_state==FAILED){
-					_state=SUCCESS;
-					_position__anonymous_35=_position;
-					_token__anonymous_35=_token;
-					_token=new Tokens.Name.OptionToken();
-					if (_position+1-1 >=_inputLength){
-						_state=FAILED;
-					}
-					else {
-						if (_inputArray[_position+0]!='+'){
-							_state=FAILED;
-						}
-					}
-					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_18.PLUS);
-						_position=_position+1;
-						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-							++_position;
-						}
-					}
-					else if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"+\"");
-							_furthestPosition=_position;
-						}
-					}
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_35)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_35;
-					}
-					else {
-					}
-					if (_state==SUCCESS){
-						_token__anonymous_35.add(_position__anonymous_35,_token);
-					}
-					_token=_token__anonymous_35;
-				}
-			}
 		}
 		public void parse__anonymous_34(){
 			int _position__anonymous_34 = -1;
 			Token.Parsed _token__anonymous_34 = null;
 			_position__anonymous_34=_position;
 			_token__anonymous_34=_token;
-			_token=new Tokens.Name.MultipleToken();
-			int _position_definition = _position;
-			if (_state==SUCCESS&&!_recursion_protection_definition_4.contains(_position)){
-				_recursion_protection_definition_4.add(_position);
-				parse_definition();
-				_recursion_protection_definition_4.remove(_position_definition);
+			_token=new Token.Parsed("$ANON");
+			if (_position+2-1 >=_inputLength){
+				_state=FAILED;
 			}
 			else {
-				_state=FAILED;
+				if (_inputArray[_position+0]!='a'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+1]!='s'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_18.__SYNTAX__);
+				_position=_position+2;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"as\"");
+					_furthestPosition=_position;
+				}
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_34)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_34)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_34;
 			}
 			else {
-				parse__anonymous_35();
+				Token.Parsed _tokenNAME = _token;
+				_token=new Tokens.Name.NewNameToken();
+				int _position_NAME = _position;
+				parse_NAME();
+				if (_state==SUCCESS){
+					_tokenNAME.add(_position_NAME,_token);
+				}
+				_token=_tokenNAME;
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_34)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_34)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_34;
@@ -2424,7 +2736,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_34.add(_position__anonymous_34,_token);
+				_token__anonymous_34.addAll(_token);
 			}
 			_token=_token__anonymous_34;
 		}
@@ -2443,10 +2755,10 @@ public  class Parser{
 			_token_list=_token;
 			_token=new Tokens.Rule.ListToken();
 			int _position_NAME = _position;
-			if (_state==SUCCESS&&!_recursion_protection_NAME_3.contains(_position)){
-				_recursion_protection_NAME_3.add(_position);
+			if (_state==SUCCESS&&!_recursion_protection_NAME_4.contains(_position)){
+				_recursion_protection_NAME_4.add(_position);
 				parse_NAME();
-				_recursion_protection_NAME_3.remove(_position_NAME);
+				_recursion_protection_NAME_4.remove(_position_NAME);
 			}
 			else {
 				_state=FAILED;
@@ -2466,9 +2778,9 @@ public  class Parser{
 				_position=_position_list;
 			}
 			else {
-				int _state_21 = _state;
-				parse__anonymous_19();
-				if (_state_21==SUCCESS&&_state==FAILED){
+				int _state_24 = _state;
+				parse__anonymous_23();
+				if (_state_24==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -2497,7 +2809,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_11.__SYNTAX__);
+						_token.add(_position,Tokens.Syntax.syntax_15.__SYNTAX__);
 						_position=_position+4;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -2517,9 +2829,9 @@ public  class Parser{
 						_position=_position_list;
 					}
 					else {
-						int _state_22 = _state;
-						parse__anonymous_20();
-						if (_state_22==SUCCESS&&_state==FAILED){
+						int _state_25 = _state;
+						parse__anonymous_24();
+						if (_state_25==SUCCESS&&_state==FAILED){
 							_state=SUCCESS;
 						}
 						if (_state==FAILED){
@@ -2530,14 +2842,14 @@ public  class Parser{
 							_position=_position_list;
 						}
 						else {
-							int _state_23 = _state;
+							int _state_26 = _state;
 							while (_position<_inputLength){
-								parse__anonymous_22();
+								parse__anonymous_26();
 								if (_state==FAILED){
 									break;
 								}
 							}
-							if (_state_23==SUCCESS&&_state==FAILED){
+							if (_state_26==SUCCESS&&_state==FAILED){
 								_state=SUCCESS;
 							}
 							if (_state==FAILED){
@@ -2576,19 +2888,37 @@ public  class Parser{
 			Token.Parsed _token__anonymous_37 = null;
 			_position__anonymous_37=_position;
 			_token__anonymous_37=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_38();
+			_token=new Tokens.Name.MultipleToken();
+			int _position_definition = _position;
+			if (_state==SUCCESS&&!_recursion_protection_definition_5.contains(_position)){
+				_recursion_protection_definition_5.add(_position);
+				parse_definition();
+				_recursion_protection_definition_5.remove(_position_definition);
+			}
+			else {
+				_state=FAILED;
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_37)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_37)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_37;
 			}
 			else {
+				parse__anonymous_38();
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_37)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_37;
+				}
+				else {
+				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_37.addAll(_token);
+				_token__anonymous_37.add(_position__anonymous_37,_token);
 			}
 			_token=_token__anonymous_37;
 		}
@@ -2598,15 +2928,55 @@ public  class Parser{
 			_position__anonymous_36=_position;
 			_token__anonymous_36=_token;
 			_token=new Token.Parsed("$ANON");
-			parse_regex_element();
+			if (_position+2-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='i'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+1]!='n'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_19.__SYNTAX__);
+				_position=_position+2;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"in\"");
+					_furthestPosition=_position;
+				}
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_definition(_anonymous_36)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_36)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_36;
 			}
 			else {
+				Token.Parsed _tokenNAME = _token;
+				_token=new Tokens.Name.ListNameToken();
+				int _position_NAME = _position;
+				parse_NAME();
+				if (_state==SUCCESS){
+					_tokenNAME.add(_position_NAME,_token);
+				}
+				_token=_tokenNAME;
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_36)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_36;
+				}
+				else {
+				}
 			}
 			if (_state==SUCCESS){
 				_token__anonymous_36.addAll(_token);
@@ -2619,10 +2989,10 @@ public  class Parser{
 			_position__anonymous_39=_position;
 			_token__anonymous_39=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_40();
+			parse_regex_element();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_39)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_definition(_anonymous_39)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_39;
@@ -2692,7 +3062,7 @@ public  class Parser{
 			Token.Parsed _token__anonymous_38 = null;
 			_position__anonymous_38=_position;
 			_token__anonymous_38=_token;
-			_token=new Tokens.Name.MultipleToken();
+			_token=new Tokens.Name.OptionToken();
 			if (_position+1-1 >=_inputLength){
 				_state=FAILED;
 			}
@@ -2702,7 +3072,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_16.OPTIONAL);
+				_token.add(_position,Tokens.Syntax.syntax_20.OPTIONAL);
 				_position=_position+1;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -2716,7 +3086,7 @@ public  class Parser{
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_38)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_38)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_38;
@@ -2731,7 +3101,7 @@ public  class Parser{
 				_state=SUCCESS;
 				_position__anonymous_38=_position;
 				_token__anonymous_38=_token;
-				_token=new Tokens.Name.MultipleToken();
+				_token=new Tokens.Name.OptionToken();
 				if (_position+1-1 >=_inputLength){
 					_state=FAILED;
 				}
@@ -2741,7 +3111,7 @@ public  class Parser{
 					}
 				}
 				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_17.MANY);
+					_token.add(_position,Tokens.Syntax.syntax_21.MANY);
 					_position=_position+1;
 					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 						++_position;
@@ -2755,7 +3125,7 @@ public  class Parser{
 				}
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_38)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_38)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_38;
@@ -2770,7 +3140,7 @@ public  class Parser{
 					_state=SUCCESS;
 					_position__anonymous_38=_position;
 					_token__anonymous_38=_token;
-					_token=new Tokens.Name.MultipleToken();
+					_token=new Tokens.Name.OptionToken();
 					if (_position+1-1 >=_inputLength){
 						_state=FAILED;
 					}
@@ -2780,7 +3150,7 @@ public  class Parser{
 						}
 					}
 					if (_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_18.PLUS);
+						_token.add(_position,Tokens.Syntax.syntax_22.PLUS);
 						_position=_position+1;
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
@@ -2794,7 +3164,7 @@ public  class Parser{
 					}
 					if (_state==FAILED){
 						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_element(_anonymous_38)");
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(_anonymous_38)");
 							_furthestPosition=_position;
 						}
 						_position=_position__anonymous_38;
@@ -2805,6 +3175,99 @@ public  class Parser{
 						_token__anonymous_38.add(_position__anonymous_38,_token);
 					}
 					_token=_token__anonymous_38;
+				}
+			}
+		}
+		public void parse_single_ignores_character(){
+			int _position_single_ignores_character = -1;
+			Token.Parsed _token_single_ignores_character = null;
+			int _length_single_ignores_character_brace = _inputLength;
+			if (brace_3.containsKey(_position)){
+				_inputLength=brace_3.get(_position);
+				int _position_single_ignores_character_brace = _position;
+				_position+=1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+				_position_single_ignores_character=_position;
+				_token_single_ignores_character=_token;
+				_token=new Token.Parsed("$ANON");
+				int _position_regex_5 = _position;
+				int _state_14 = _state;
+				if (_position<_inputLength){
+					if (_position<_inputLength){
+						if (_inputArray[_position]=='\\'){
+							++_position;
+						}
+						else {
+							_state=FAILED;
+						}
+					}
+					else {
+						_state=FAILED;
+					}
+				}
+				if (_state_14==SUCCESS){
+					_state=SUCCESS;
+				}
+				int _state_15 = _state;
+				if (_position<_inputLength){
+					if (_position<_inputLength){
+						++_position;
+					}
+					else {
+						_state=FAILED;
+					}
+				}
+				if (_state_15==SUCCESS){
+					_state=SUCCESS;
+				}
+				if (_state==SUCCESS){
+					_token.setValue(_input.substring(_position_regex_5,_position));
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"\\\\?.?");
+						_furthestPosition=_position;
+					}
+					_position=_position_regex_5;
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"single_ignores_character(single_ignores_character)");
+						_furthestPosition=_position;
+					}
+					_position=_position_single_ignores_character;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token_single_ignores_character.addAll(_token);
+				}
+				_token=_token_single_ignores_character;
+				if (_state==SUCCESS&&brace_3.get(_position_single_ignores_character_brace)==_position){
+					_position+=1;
+				}
+				else {
+					_state=SUCCESS;
+					_result_acceptor.add(_result);
+					_result_acceptor.add(new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"Did not reach end of braces"));
+					_position=brace_3.get(_position_single_ignores_character_brace)+1;
+					_succeedOnEnd=false;
+				}
+				_inputLength=_length_single_ignores_character_brace;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else {
+				_state=FAILED;
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"single_ignores_character(single_ignores_character)");
+					_furthestPosition=_position;
 				}
 			}
 		}
@@ -2929,50 +3392,20 @@ public  class Parser{
 			Token.Parsed _token__anonymous_31 = null;
 			_position__anonymous_31=_position;
 			_token__anonymous_31=_token;
-			_token=new Token.Parsed("$ANON");
-			if (_position+2-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='a'){
-					_state=FAILED;
-				}
-				if (_inputArray[_position+1]!='s'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_14.__SYNTAX__);
-				_position=_position+2;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"as\"");
-					_furthestPosition=_position;
-				}
-			}
+			_token=new Tokens.Name.ChoiceToken();
+			parse__anonymous_32();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_31)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_31)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_31;
 			}
 			else {
-				Token.Parsed _tokenNAME = _token;
-				_token=new Tokens.Name.NewNameToken();
-				int _position_NAME = _position;
-				parse_NAME();
-				if (_state==SUCCESS){
-					_tokenNAME.add(_position_NAME,_token);
-				}
-				_token=_tokenNAME;
+				parse_definition();
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_31)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_31)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_31;
@@ -2981,7 +3414,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_31.addAll(_token);
+				_token__anonymous_31.add(_position__anonymous_31,_token);
 			}
 			_token=_token__anonymous_31;
 		}
@@ -2994,7 +3427,7 @@ public  class Parser{
 			parse__anonymous_31();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"element(_anonymous_30)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_30)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_30;
@@ -3012,27 +3445,14 @@ public  class Parser{
 			_position__anonymous_29=_position;
 			_token__anonymous_29=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='|'){
-					_state=FAILED;
-				}
-			}
+			Token.Parsed _tokenelement = _token;
+			_token=new Tokens.Name.ChainToken();
+			int _position_element = _position;
+			parse_element();
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_13.__SYNTAX__);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
+				_tokenelement.add(_position_element,_token);
 			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"|\"");
-					_furthestPosition=_position;
-				}
-			}
+			_token=_tokenelement;
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_29)");
@@ -3046,49 +3466,6 @@ public  class Parser{
 				_token__anonymous_29.addAll(_token);
 			}
 			_token=_token__anonymous_29;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_29=_position;
-				_token__anonymous_29=_token;
-				_token=new Token.Parsed("$ANON");
-				if (_position+2-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-						_state=FAILED;
-					}
-					if (_inputArray[_position+1]!='\t'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_9.__SYNTAX__);
-					_position=_position+2;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_29)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_29;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_29.addAll(_token);
-				}
-				_token=_token__anonymous_29;
-			}
 		}
 		public void parse_regex_option_definition(){
 			int _position_regex_option_definition = -1;
@@ -3096,7 +3473,7 @@ public  class Parser{
 			_position_regex_option_definition=_position;
 			_token_regex_option_definition=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_3();
+			parse__anonymous_5();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"regex_option_definition(regex_option_definition)");
@@ -3134,7 +3511,7 @@ public  class Parser{
 					_position_regex_option_definition=_position;
 					_token_regex_option_definition=_token;
 					_token=new Token.Parsed("$ANON");
-					int _position_regex_7 = _position;
+					int _position_regex_8 = _position;
 					if (_position<_inputLength){
 						++_position;
 					}
@@ -3142,7 +3519,7 @@ public  class Parser{
 						_state=FAILED;
 					}
 					if (_state==SUCCESS){
-						_token.add(_position_regex_7,new Tokens.Plain.StandAlone(_input.substring(_position_regex_7,_position)));
+						_token.add(_position_regex_8,new Tokens.Plain.StandAlone(_input.substring(_position_regex_8,_position)));
 						while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 							++_position;
 						}
@@ -3152,7 +3529,7 @@ public  class Parser{
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
 							_furthestPosition=_position;
 						}
-						_position=_position_regex_7;
+						_position=_position_regex_8;
 					}
 					if (_state==FAILED){
 						if (_position>=_furthestPosition){
@@ -3184,9 +3561,9 @@ public  class Parser{
 				_position_regex_option=_position;
 				_token_regex_option=_token;
 				_token=new Token.Parsed("$ANON");
-				int _state_11 = _state;
-				parse__anonymous_1();
-				if (_state_11==SUCCESS&&_state==FAILED){
+				int _state_12 = _state;
+				parse__anonymous_3();
+				if (_state_12==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -3197,15 +3574,15 @@ public  class Parser{
 					_position=_position_regex_option;
 				}
 				else {
-					int _state_12 = _state;
+					int _state_13 = _state;
 					while (_position<_inputLength){
-						parse__anonymous_2();
+						parse__anonymous_4();
 						if (_state==FAILED){
 							break;
 						}
 					}
-					if (_state_12==SUCCESS&&_state==SUCCESS)
-					if (_state_12==SUCCESS&&_state==FAILED){
+					if (_state_13==SUCCESS&&_state==SUCCESS)
+					if (_state_13==SUCCESS&&_state==FAILED){
 						_state=SUCCESS;
 					}
 					if (_state==FAILED){
@@ -3251,10 +3628,30 @@ public  class Parser{
 			_position__anonymous_22=_position;
 			_token__anonymous_22=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_23();
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='='){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_12.__SYNTAX__);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"=\"");
+					_furthestPosition=_position;
+				}
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_22)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_22)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_22;
@@ -3265,6 +3662,49 @@ public  class Parser{
 				_token__anonymous_22.addAll(_token);
 			}
 			_token=_token__anonymous_22;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_22=_position;
+				_token__anonymous_22=_token;
+				_token=new Token.Parsed("$ANON");
+				if (_position+2-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
+						_state=FAILED;
+					}
+					if (_inputArray[_position+1]!='\t'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_13.__SYNTAX__);
+					_position=_position+2;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_22)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_22;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_22.addAll(_token);
+				}
+				_token=_token__anonymous_22;
+			}
 		}
 		public void parse_rule(){
 			int _position_rule = -1;
@@ -3275,10 +3715,10 @@ public  class Parser{
 			Token.Parsed _tokenNAME = _token;
 			_token=new Tokens.Name.RuleNameToken();
 			int _position_NAME = _position;
-			if (_state==SUCCESS&&!_recursion_protection_NAME_2.contains(_position)){
-				_recursion_protection_NAME_2.add(_position);
+			if (_state==SUCCESS&&!_recursion_protection_NAME_3.contains(_position)){
+				_recursion_protection_NAME_3.add(_position);
 				parse_NAME();
-				_recursion_protection_NAME_2.remove(_position_NAME);
+				_recursion_protection_NAME_3.remove(_position_NAME);
 			}
 			else {
 				_state=FAILED;
@@ -3295,9 +3735,9 @@ public  class Parser{
 				_position=_position_rule;
 			}
 			else {
-				int _state_19 = _state;
-				parse__anonymous_14();
-				if (_state_19==SUCCESS&&_state==FAILED){
+				int _state_23 = _state;
+				parse__anonymous_19();
+				if (_state_23==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -3308,23 +3748,7 @@ public  class Parser{
 					_position=_position_rule;
 				}
 				else {
-					int _state_20 = _state;
-					int _multiple_index_20 = 0;
-					while (_position<_inputLength){
-						parse__anonymous_16();
-						if (_state==FAILED){
-							break;
-						}
-						else {
-							++_multiple_index_20;
-						}
-					}
-					if (_multiple_index_20==0 ){
-						_state=FAILED;
-					}
-					else if (_state_20==SUCCESS&&_multiple_index_20>0 &&_state==FAILED){
-						_state=SUCCESS;
-					}
+					parse__anonymous_21();
 					if (_state==FAILED){
 						if (_position>=_furthestPosition){
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(rule)");
@@ -3347,55 +3771,19 @@ public  class Parser{
 			_position__anonymous_21=_position;
 			_token__anonymous_21=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+4-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='w'){
-					_state=FAILED;
-				}
-				if (_inputArray[_position+1]!='i'){
-					_state=FAILED;
-				}
-				if (_inputArray[_position+2]!='t'){
-					_state=FAILED;
-				}
-				if (_inputArray[_position+3]!='h'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_12.__SYNTAX__);
-				_position=_position+4;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"with\"");
-					_furthestPosition=_position;
-				}
-			}
+			parse__anonymous_22();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_21)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_21)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_21;
 			}
 			else {
-				Token.Parsed _tokenNAME = _token;
-				_token=new Tokens.Name.ListRuleNameToken();
-				int _position_NAME = _position;
-				parse_NAME();
-				if (_state==SUCCESS){
-					_tokenNAME.add(_position_NAME,_token);
-				}
-				_token=_tokenNAME;
+				parse_definition();
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_21)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_21)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_21;
@@ -3414,27 +3802,7 @@ public  class Parser{
 			_position__anonymous_24=_position;
 			_token__anonymous_24=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!=','){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_2.__SYNTAX__);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \",\"");
-					_furthestPosition=_position;
-				}
-			}
+			parse__anonymous_25();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_24)");
@@ -3448,338 +3816,12 @@ public  class Parser{
 				_token__anonymous_24.addAll(_token);
 			}
 			_token=_token__anonymous_24;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_24=_position;
-				_token__anonymous_24=_token;
-				_token=new Token.Parsed("$ANON");
-				if (_position+2-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-						_state=FAILED;
-					}
-					if (_inputArray[_position+1]!='\t'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_9.__SYNTAX__);
-					_position=_position+2;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_24)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_24;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_24.addAll(_token);
-				}
-				_token=_token__anonymous_24;
-			}
 		}
 		public void parse__anonymous_23(){
 			int _position__anonymous_23 = -1;
 			Token.Parsed _token__anonymous_23 = null;
 			_position__anonymous_23=_position;
 			_token__anonymous_23=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_24();
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_23)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_23;
-			}
-			else {
-				parse_quote();
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_23)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_23;
-				}
-				else {
-				}
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_23.addAll(_token);
-			}
-			_token=_token__anonymous_23;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_23=_position;
-				_token__anonymous_23=_token;
-				_token=new Token.Parsed("$ANON");
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_7.__SYNTAX__);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_23)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_23;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_23.addAll(_token);
-				}
-				_token=_token__anonymous_23;
-			}
-		}
-		public void parse__anonymous_26(){
-			int _position__anonymous_26 = -1;
-			Token.Parsed _token__anonymous_26 = null;
-			_position__anonymous_26=_position;
-			_token__anonymous_26=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_27();
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_26)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_26;
-			}
-			else {
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_26.addAll(_token);
-			}
-			_token=_token__anonymous_26;
-		}
-		public void parse__anonymous_25(){
-			int _position__anonymous_25 = -1;
-			Token.Parsed _token__anonymous_25 = null;
-			_position__anonymous_25=_position;
-			_token__anonymous_25=_token;
-			_token=new Token.Parsed("$ANON");
-			Token.Parsed _tokenelement = _token;
-			_token=new Tokens.Name.ChainToken();
-			int _position_element = _position;
-			parse_element();
-			if (_state==SUCCESS){
-				_tokenelement.add(_position_element,_token);
-			}
-			_token=_tokenelement;
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_25)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_25;
-			}
-			else {
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_25.addAll(_token);
-			}
-			_token=_token__anonymous_25;
-		}
-		public void parse__anonymous_28(){
-			int _position__anonymous_28 = -1;
-			Token.Parsed _token__anonymous_28 = null;
-			_position__anonymous_28=_position;
-			_token__anonymous_28=_token;
-			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_7.__SYNTAX__);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
-					_furthestPosition=_position;
-				}
-			}
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_28)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_28;
-			}
-			else {
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_28.addAll(_token);
-			}
-			_token=_token__anonymous_28;
-		}
-		public void parse__anonymous_27(){
-			int _position__anonymous_27 = -1;
-			Token.Parsed _token__anonymous_27 = null;
-			_position__anonymous_27=_position;
-			_token__anonymous_27=_token;
-			_token=new Tokens.Name.ChoiceToken();
-			int _state_25 = _state;
-			while (_position<_inputLength){
-				parse__anonymous_28();
-				if (_state==FAILED){
-					break;
-				}
-			}
-			if (_state_25==SUCCESS&&_state==FAILED){
-				_state=SUCCESS;
-			}
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_27)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_27;
-			}
-			else {
-				parse__anonymous_29();
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_27)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_27;
-				}
-				else {
-					parse_definition();
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(_anonymous_27)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_27;
-					}
-					else {
-					}
-				}
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_27.add(_position__anonymous_27,_token);
-			}
-			_token=_token__anonymous_27;
-		}
-		public void parse__anonymous_20(){
-			int _position__anonymous_20 = -1;
-			Token.Parsed _token__anonymous_20 = null;
-			_position__anonymous_20=_position;
-			_token__anonymous_20=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_21();
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_20)");
-					_furthestPosition=_position;
-				}
-				_position=_position__anonymous_20;
-			}
-			else {
-			}
-			if (_state==SUCCESS){
-				_token__anonymous_20.addAll(_token);
-			}
-			_token=_token__anonymous_20;
-		}
-		public void parse_definition(){
-			int _position_definition = -1;
-			Token.Parsed _token_definition = null;
-			_position_definition=_position;
-			_token_definition=_token;
-			_token=new Tokens.Rule.DefinitionToken();
-			int _state_24 = _state;
-			int _multiple_index_24 = 0;
-			while (_position<_inputLength){
-				parse__anonymous_25();
-				if (_state==FAILED){
-					break;
-				}
-				else {
-					++_multiple_index_24;
-				}
-			}
-			if (_multiple_index_24==0 ){
-				_state=FAILED;
-			}
-			else if (_state_24==SUCCESS&&_multiple_index_24>0 &&_state==FAILED){
-				_state=SUCCESS;
-			}
-			if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(definition)");
-					_furthestPosition=_position;
-				}
-				_position=_position_definition;
-			}
-			else {
-				int _state_26 = _state;
-				parse__anonymous_26();
-				if (_state_26==SUCCESS&&_state==FAILED){
-					_state=SUCCESS;
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(definition)");
-						_furthestPosition=_position;
-					}
-					_position=_position_definition;
-				}
-				else {
-				}
-			}
-			if (_state==SUCCESS){
-				_token_definition.add(_position_definition,_token);
-			}
-			_token=_token_definition;
-		}
-		public void parse__anonymous_19(){
-			int _position__anonymous_19 = -1;
-			Token.Parsed _token__anonymous_19 = null;
-			_position__anonymous_19=_position;
-			_token__anonymous_19=_token;
 			_token=new Token.Parsed("$ANON");
 			if (_position+6-1 >=_inputLength){
 				_state=FAILED;
@@ -3805,7 +3847,7 @@ public  class Parser{
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_10.__SYNTAX__);
+				_token.add(_position,Tokens.Syntax.syntax_14.__SYNTAX__);
 				_position=_position+6;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -3819,7 +3861,343 @@ public  class Parser{
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_19)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_23)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_23;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_23.addAll(_token);
+			}
+			_token=_token__anonymous_23;
+		}
+		public void parse__anonymous_26(){
+			int _position__anonymous_26 = -1;
+			Token.Parsed _token__anonymous_26 = null;
+			_position__anonymous_26=_position;
+			_token__anonymous_26=_token;
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_27();
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_26)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_26;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_26.addAll(_token);
+			}
+			_token=_token__anonymous_26;
+		}
+		public void parse__anonymous_25(){
+			int _position__anonymous_25 = -1;
+			Token.Parsed _token__anonymous_25 = null;
+			_position__anonymous_25=_position;
+			_token__anonymous_25=_token;
+			_token=new Token.Parsed("$ANON");
+			if (_position+4-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='w'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+1]!='i'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+2]!='t'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+3]!='h'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_16.__SYNTAX__);
+				_position=_position+4;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"with\"");
+					_furthestPosition=_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_25)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_25;
+			}
+			else {
+				Token.Parsed _tokenNAME = _token;
+				_token=new Tokens.Name.ListRuleNameToken();
+				int _position_NAME = _position;
+				parse_NAME();
+				if (_state==SUCCESS){
+					_tokenNAME.add(_position_NAME,_token);
+				}
+				_token=_tokenNAME;
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_25)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_25;
+				}
+				else {
+				}
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_25.addAll(_token);
+			}
+			_token=_token__anonymous_25;
+		}
+		public void parse__anonymous_28(){
+			int _position__anonymous_28 = -1;
+			Token.Parsed _token__anonymous_28 = null;
+			_position__anonymous_28=_position;
+			_token__anonymous_28=_token;
+			_token=new Token.Parsed("$ANON");
+			if (_position+1-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!=','){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_5.__SYNTAX__);
+				_position=_position+1;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \",\"");
+					_furthestPosition=_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_28)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_28;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_28.addAll(_token);
+			}
+			_token=_token__anonymous_28;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_28=_position;
+				_token__anonymous_28=_token;
+				_token=new Token.Parsed("$ANON");
+				if (_position+2-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
+						_state=FAILED;
+					}
+					if (_inputArray[_position+1]!='\t'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_13.__SYNTAX__);
+					_position=_position+2;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_28)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_28;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_28.addAll(_token);
+				}
+				_token=_token__anonymous_28;
+			}
+		}
+		public void parse__anonymous_27(){
+			int _position__anonymous_27 = -1;
+			Token.Parsed _token__anonymous_27 = null;
+			_position__anonymous_27=_position;
+			_token__anonymous_27=_token;
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_28();
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_27)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_27;
+			}
+			else {
+				parse_quote();
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_27)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_27;
+				}
+				else {
+				}
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_27.addAll(_token);
+			}
+			_token=_token__anonymous_27;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_27=_position;
+				_token__anonymous_27=_token;
+				_token=new Token.Parsed("$ANON");
+				if (_position+1-1 >=_inputLength){
+					_state=FAILED;
+				}
+				else {
+					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
+						_state=FAILED;
+					}
+				}
+				if (_state==SUCCESS){
+					_token.add(_position,Tokens.Syntax.syntax_2.__SYNTAX__);
+					_position=_position+1;
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				else if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
+						_furthestPosition=_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(_anonymous_27)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_27;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_27.addAll(_token);
+				}
+				_token=_token__anonymous_27;
+			}
+		}
+		public void parse__anonymous_20(){
+			int _position__anonymous_20 = -1;
+			Token.Parsed _token__anonymous_20 = null;
+			_position__anonymous_20=_position;
+			_token__anonymous_20=_token;
+			_token=new Token.Parsed("$ANON");
+			parse_rule_parameters();
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_20)");
+					_furthestPosition=_position;
+				}
+				_position=_position__anonymous_20;
+			}
+			else {
+			}
+			if (_state==SUCCESS){
+				_token__anonymous_20.addAll(_token);
+			}
+			_token=_token__anonymous_20;
+		}
+		public void parse_definition(){
+			int _position_definition = -1;
+			Token.Parsed _token_definition = null;
+			_position_definition=_position;
+			_token_definition=_token;
+			_token=new Tokens.Rule.DefinitionToken();
+			int _state_27 = _state;
+			int _multiple_index_27 = 0;
+			while (_position<_inputLength){
+				parse__anonymous_29();
+				if (_state==FAILED){
+					break;
+				}
+				else {
+					++_multiple_index_27;
+				}
+			}
+			if (_multiple_index_27==0 ){
+				_state=FAILED;
+			}
+			else if (_state_27==SUCCESS&&_multiple_index_27>0 &&_state==FAILED){
+				_state=SUCCESS;
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(definition)");
+					_furthestPosition=_position;
+				}
+				_position=_position_definition;
+			}
+			else {
+				int _state_28 = _state;
+				parse__anonymous_30();
+				if (_state_28==SUCCESS&&_state==FAILED){
+					_state=SUCCESS;
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"definition(definition)");
+						_furthestPosition=_position;
+					}
+					_position=_position_definition;
+				}
+				else {
+				}
+			}
+			if (_state==SUCCESS){
+				_token_definition.add(_position_definition,_token);
+			}
+			_token=_token_definition;
+		}
+		public void parse__anonymous_19(){
+			int _position__anonymous_19 = -1;
+			Token.Parsed _token__anonymous_19 = null;
+			_position__anonymous_19=_position;
+			_token__anonymous_19=_token;
+			_token=new Token.Parsed("$ANON");
+			parse__anonymous_20();
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_19)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_19;
@@ -3841,12 +4219,12 @@ public  class Parser{
 				_state=FAILED;
 			}
 			else {
-				if (_inputArray[_position+0]!='='){
+				if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
 					_state=FAILED;
 				}
 			}
 			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_8.__SYNTAX__);
+				_token.add(_position,Tokens.Syntax.syntax_2.__SYNTAX__);
 				_position=_position+1;
 				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
@@ -3854,13 +4232,13 @@ public  class Parser{
 			}
 			else if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"=\"");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
 					_furthestPosition=_position;
 				}
 			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_18)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_18)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_18;
@@ -3876,33 +4254,10 @@ public  class Parser{
 				_position__anonymous_18=_position;
 				_token__anonymous_18=_token;
 				_token=new Token.Parsed("$ANON");
-				if (_position+2-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-						_state=FAILED;
-					}
-					if (_inputArray[_position+1]!='\t'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_9.__SYNTAX__);
-					_position=_position+2;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\t\"");
-						_furthestPosition=_position;
-					}
-				}
+				parse_ignores();
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_18)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_18)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_18;
@@ -3913,6 +4268,66 @@ public  class Parser{
 					_token__anonymous_18.addAll(_token);
 				}
 				_token=_token__anonymous_18;
+				if (_state==FAILED){
+					_state=SUCCESS;
+					_position__anonymous_18=_position;
+					_token__anonymous_18=_token;
+					_token=new Token.Parsed("$ANON");
+					parse_comments();
+					if (_state==FAILED){
+						if (_position>=_furthestPosition){
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_18)");
+							_furthestPosition=_position;
+						}
+						_position=_position__anonymous_18;
+					}
+					else {
+					}
+					if (_state==SUCCESS){
+						_token__anonymous_18.addAll(_token);
+					}
+					_token=_token__anonymous_18;
+					if (_state==FAILED){
+						_state=SUCCESS;
+						_position__anonymous_18=_position;
+						_token__anonymous_18=_token;
+						_token=new Token.Parsed("$ANON");
+						parse_list();
+						if (_state==FAILED){
+							if (_position>=_furthestPosition){
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_18)");
+								_furthestPosition=_position;
+							}
+							_position=_position__anonymous_18;
+						}
+						else {
+						}
+						if (_state==SUCCESS){
+							_token__anonymous_18.addAll(_token);
+						}
+						_token=_token__anonymous_18;
+						if (_state==FAILED){
+							_state=SUCCESS;
+							_position__anonymous_18=_position;
+							_token__anonymous_18=_token;
+							_token=new Token.Parsed("$ANON");
+							parse_rule();
+							if (_state==FAILED){
+								if (_position>=_furthestPosition){
+									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_18)");
+									_furthestPosition=_position;
+								}
+								_position=_position__anonymous_18;
+							}
+							else {
+							}
+							if (_state==SUCCESS){
+								_token__anonymous_18.addAll(_token);
+							}
+							_token=_token__anonymous_18;
+						}
+					}
+				}
 			}
 		}
 		public void parse_comments(){
@@ -4003,8 +4418,24 @@ public  class Parser{
 			Token.Parsed _token__anonymous_11 = null;
 			_position__anonymous_11=_position;
 			_token__anonymous_11=_token;
-			_token=new Token.Parsed("$ANON");
-			parse_quote();
+			_token=new Tokens.Name.ImportParametersToken();
+			int _state_20 = _state;
+			int _multiple_index_20 = 0;
+			while (_position<_inputLength){
+				parse__anonymous_12();
+				if (_state==FAILED){
+					break;
+				}
+				else {
+					++_multiple_index_20;
+				}
+			}
+			if (_multiple_index_20==0 ){
+				_state=FAILED;
+			}
+			else if (_state_20==SUCCESS&&_multiple_index_20>0 &&_state==FAILED){
+				_state=SUCCESS;
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_11)");
@@ -4015,44 +4446,43 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_11.addAll(_token);
+				_token__anonymous_11.add(_position__anonymous_11,_token);
 			}
 			_token=_token__anonymous_11;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_11=_position;
-				_token__anonymous_11=_token;
-				_token=new Token.Parsed("$ANON");
-				Token.Parsed _tokenNAME = _token;
-				_token=new Tokens.Name.RuleNameToken();
-				int _position_NAME = _position;
-				parse_NAME();
-				if (_state==SUCCESS){
-					_tokenNAME.add(_position_NAME,_token);
-				}
-				_token=_tokenNAME;
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_11)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_11;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_11.addAll(_token);
-				}
-				_token=_token__anonymous_11;
-			}
 		}
 		public void parse__anonymous_10(){
 			int _position__anonymous_10 = -1;
 			Token.Parsed _token__anonymous_10 = null;
 			_position__anonymous_10=_position;
 			_token__anonymous_10=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_11();
+			_token=new Tokens.Name.BracedParametersToken();
+			int _position_regex_9 = _position;
+			int _multiple_index_18 = 0;
+			while (_position<_inputLength){
+				if (_inputArray[_position]!=' '&&_inputArray[_position]!='\t'&&_inputArray[_position]!='\r'&&_inputArray[_position]!='\n'){
+					++_position;
+					++_multiple_index_18;
+				}
+				else {
+					break;
+				}
+			}
+			if (_multiple_index_18==0 ){
+				_state=FAILED;
+			}
+			if (_state==SUCCESS){
+				_token.add(_position_regex_9,new Tokens.Plain.Left(_input.substring(_position_regex_9,_position)));
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[\\\\s]+");
+					_furthestPosition=_position;
+				}
+				_position=_position_regex_9;
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_10)");
@@ -4061,9 +4491,45 @@ public  class Parser{
 				_position=_position__anonymous_10;
 			}
 			else {
+				int _position_regex_10 = _position;
+				int _multiple_index_19 = 0;
+				while (_position<_inputLength){
+					if (_inputArray[_position]!=' '&&_inputArray[_position]!='\t'&&_inputArray[_position]!='\r'&&_inputArray[_position]!='\n'){
+						++_position;
+						++_multiple_index_19;
+					}
+					else {
+						break;
+					}
+				}
+				if (_multiple_index_19==0 ){
+					_state=FAILED;
+				}
+				if (_state==SUCCESS){
+					_token.add(_position_regex_10,new Tokens.Plain.Right(_input.substring(_position_regex_10,_position)));
+					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+						++_position;
+					}
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[\\\\s]+");
+						_furthestPosition=_position;
+					}
+					_position=_position_regex_10;
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_10)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_10;
+				}
+				else {
+				}
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_10.addAll(_token);
+				_token__anonymous_10.add(_position__anonymous_10,_token);
 			}
 			_token=_token__anonymous_10;
 		}
@@ -4073,30 +4539,10 @@ public  class Parser{
 			_position__anonymous_13=_position;
 			_token__anonymous_13=_token;
 			_token=new Token.Parsed("$ANON");
-			if (_position+1-1 >=_inputLength){
-				_state=FAILED;
-			}
-			else {
-				if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-					_state=FAILED;
-				}
-			}
-			if (_state==SUCCESS){
-				_token.add(_position,Tokens.Syntax.syntax_7.__SYNTAX__);
-				_position=_position+1;
-				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-					++_position;
-				}
-			}
-			else if (_state==FAILED){
-				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
-					_furthestPosition=_position;
-				}
-			}
+			parse_quote();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_13)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_13)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_13;
@@ -4112,10 +4558,17 @@ public  class Parser{
 				_position__anonymous_13=_position;
 				_token__anonymous_13=_token;
 				_token=new Token.Parsed("$ANON");
-				parse_comments();
+				Token.Parsed _tokenNAME = _token;
+				_token=new Tokens.Name.RuleNameToken();
+				int _position_NAME = _position;
+				parse_NAME();
+				if (_state==SUCCESS){
+					_tokenNAME.add(_position_NAME,_token);
+				}
+				_token=_tokenNAME;
 				if (_state==FAILED){
 					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_13)");
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_13)");
 						_furthestPosition=_position;
 					}
 					_position=_position__anonymous_13;
@@ -4126,46 +4579,6 @@ public  class Parser{
 					_token__anonymous_13.addAll(_token);
 				}
 				_token=_token__anonymous_13;
-				if (_state==FAILED){
-					_state=SUCCESS;
-					_position__anonymous_13=_position;
-					_token__anonymous_13=_token;
-					_token=new Token.Parsed("$ANON");
-					parse_list();
-					if (_state==FAILED){
-						if (_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_13)");
-							_furthestPosition=_position;
-						}
-						_position=_position__anonymous_13;
-					}
-					else {
-					}
-					if (_state==SUCCESS){
-						_token__anonymous_13.addAll(_token);
-					}
-					_token=_token__anonymous_13;
-					if (_state==FAILED){
-						_state=SUCCESS;
-						_position__anonymous_13=_position;
-						_token__anonymous_13=_token;
-						_token=new Token.Parsed("$ANON");
-						parse_rule();
-						if (_state==FAILED){
-							if (_position>=_furthestPosition){
-								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_13)");
-								_furthestPosition=_position;
-							}
-							_position=_position__anonymous_13;
-						}
-						else {
-						}
-						if (_state==SUCCESS){
-							_token__anonymous_13.addAll(_token);
-						}
-						_token=_token__anonymous_13;
-					}
-				}
 			}
 		}
 		public void parse__anonymous_12(){
@@ -4177,7 +4590,7 @@ public  class Parser{
 			parse__anonymous_13();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_12)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_12)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_12;
@@ -4195,21 +4608,21 @@ public  class Parser{
 			_position_regex_definition=_position;
 			_token_regex_definition=_token;
 			_token=new Token.Parsed("$ANON");
-			int _state_29 = _state;
-			int _multiple_index_29 = 0;
+			int _state_31 = _state;
+			int _multiple_index_31 = 0;
 			while (_position<_inputLength){
-				parse__anonymous_36();
+				parse__anonymous_39();
 				if (_state==FAILED){
 					break;
 				}
 				else {
-					++_multiple_index_29;
+					++_multiple_index_31;
 				}
 			}
-			if (_multiple_index_29==0 ){
+			if (_multiple_index_31==0 ){
 				_state=FAILED;
 			}
-			else if (_state_29==SUCCESS&&_multiple_index_29>0 &&_state==FAILED){
+			else if (_state_31==SUCCESS&&_multiple_index_31>0 &&_state==FAILED){
 				_state=SUCCESS;
 			}
 			if (_state==FAILED){
@@ -4232,10 +4645,10 @@ public  class Parser{
 			_position__anonymous_15=_position;
 			_token__anonymous_15=_token;
 			_token=new Token.Parsed("$ANON");
-			parse_rule_parameters();
+			parse__anonymous_16();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_15)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_15)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_15;
@@ -4253,10 +4666,39 @@ public  class Parser{
 			_position__anonymous_14=_position;
 			_token__anonymous_14=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_15();
+			if (_position+4-1 >=_inputLength){
+				_state=FAILED;
+			}
+			else {
+				if (_inputArray[_position+0]!='N'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+1]!='o'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+2]!='n'){
+					_state=FAILED;
+				}
+				if (_inputArray[_position+3]!='e'){
+					_state=FAILED;
+				}
+			}
+			if (_state==SUCCESS){
+				_token.add(_position,Tokens.Syntax.syntax_11.ignores_none);
+				_position=_position+4;
+				while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
+					++_position;
+				}
+			}
+			else if (_state==FAILED){
+				if (_position>=_furthestPosition){
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"None\"");
+					_furthestPosition=_position;
+				}
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_14)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_14)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_14;
@@ -4267,6 +4709,42 @@ public  class Parser{
 				_token__anonymous_14.addAll(_token);
 			}
 			_token=_token__anonymous_14;
+			if (_state==FAILED){
+				_state=SUCCESS;
+				_position__anonymous_14=_position;
+				_token__anonymous_14=_token;
+				_token=new Token.Parsed("$ANON");
+				int _state_21 = _state;
+				int _multiple_index_21 = 0;
+				while (_position<_inputLength){
+					parse__anonymous_15();
+					if (_state==FAILED){
+						break;
+					}
+					else {
+						++_multiple_index_21;
+					}
+				}
+				if (_multiple_index_21==0 ){
+					_state=FAILED;
+				}
+				else if (_state_21==SUCCESS&&_multiple_index_21>0 &&_state==FAILED){
+					_state=SUCCESS;
+				}
+				if (_state==FAILED){
+					if (_position>=_furthestPosition){
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_14)");
+						_furthestPosition=_position;
+					}
+					_position=_position__anonymous_14;
+				}
+				else {
+				}
+				if (_state==SUCCESS){
+					_token__anonymous_14.addAll(_token);
+				}
+				_token=_token__anonymous_14;
+			}
 		}
 		public void parse__anonymous_17(){
 			int _position__anonymous_17 = -1;
@@ -4277,78 +4755,36 @@ public  class Parser{
 			parse__anonymous_18();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_17)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"base_element(_anonymous_17)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_17;
 			}
 			else {
-				parse_definition();
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_17)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_17;
-				}
-				else {
-				}
 			}
 			if (_state==SUCCESS){
 				_token__anonymous_17.addAll(_token);
 			}
 			_token=_token__anonymous_17;
-			if (_state==FAILED){
-				_state=SUCCESS;
-				_position__anonymous_17=_position;
-				_token__anonymous_17=_token;
-				_token=new Token.Parsed("$ANON");
-				if (_position+1-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else {
-					if (_inputArray[_position+0]!='\n'&&_inputArray[_position+0]!='\r'){
-						_state=FAILED;
-					}
-				}
-				if (_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_7.__SYNTAX__);
-					_position=_position+1;
-					while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
-						++_position;
-					}
-				}
-				else if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \"\n\"");
-						_furthestPosition=_position;
-					}
-				}
-				if (_state==FAILED){
-					if (_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_17)");
-						_furthestPosition=_position;
-					}
-					_position=_position__anonymous_17;
-				}
-				else {
-				}
-				if (_state==SUCCESS){
-					_token__anonymous_17.addAll(_token);
-				}
-				_token=_token__anonymous_17;
-			}
 		}
 		public void parse__anonymous_16(){
 			int _position__anonymous_16 = -1;
 			Token.Parsed _token__anonymous_16 = null;
 			_position__anonymous_16=_position;
 			_token__anonymous_16=_token;
-			_token=new Token.Parsed("$ANON");
-			parse__anonymous_17();
+			_token=new Tokens.Name.IgnoresCharacterToken();
+			int _position_single_ignores_character = _position;
+			if (_state==SUCCESS&&!_recursion_protection_single_ignores_character_2.contains(_position)){
+				_recursion_protection_single_ignores_character_2.add(_position);
+				parse_single_ignores_character();
+				_recursion_protection_single_ignores_character_2.remove(_position_single_ignores_character);
+			}
+			else {
+				_state=FAILED;
+			}
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule(_anonymous_16)");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"rule_params(_anonymous_16)");
 					_furthestPosition=_position;
 				}
 				_position=_position__anonymous_16;
@@ -4356,7 +4792,7 @@ public  class Parser{
 			else {
 			}
 			if (_state==SUCCESS){
-				_token__anonymous_16.addAll(_token);
+				_token__anonymous_16.add(_position__anonymous_16,_token);
 			}
 			_token=_token__anonymous_16;
 		}
@@ -4367,17 +4803,17 @@ public  class Parser{
 			_token_OPERATOR=_token;
 			_token=new Tokens.Rule.OPERATORToken();
 			int _position_regex_2 = _position;
-			int _multiple_index_3 = 0;
+			int _multiple_index_4 = 0;
 			while (_position<_inputLength){
 				if (_inputArray[_position]!='a'&&_inputArray[_position]!='b'&&_inputArray[_position]!='c'&&_inputArray[_position]!='d'&&_inputArray[_position]!='e'&&_inputArray[_position]!='f'&&_inputArray[_position]!='g'&&_inputArray[_position]!='h'&&_inputArray[_position]!='i'&&_inputArray[_position]!='j'&&_inputArray[_position]!='k'&&_inputArray[_position]!='l'&&_inputArray[_position]!='m'&&_inputArray[_position]!='n'&&_inputArray[_position]!='o'&&_inputArray[_position]!='p'&&_inputArray[_position]!='q'&&_inputArray[_position]!='r'&&_inputArray[_position]!='s'&&_inputArray[_position]!='t'&&_inputArray[_position]!='u'&&_inputArray[_position]!='v'&&_inputArray[_position]!='w'&&_inputArray[_position]!='x'&&_inputArray[_position]!='y'&&_inputArray[_position]!='z'&&_inputArray[_position]!='A'&&_inputArray[_position]!='B'&&_inputArray[_position]!='C'&&_inputArray[_position]!='D'&&_inputArray[_position]!='E'&&_inputArray[_position]!='F'&&_inputArray[_position]!='G'&&_inputArray[_position]!='H'&&_inputArray[_position]!='I'&&_inputArray[_position]!='J'&&_inputArray[_position]!='K'&&_inputArray[_position]!='L'&&_inputArray[_position]!='M'&&_inputArray[_position]!='N'&&_inputArray[_position]!='O'&&_inputArray[_position]!='P'&&_inputArray[_position]!='Q'&&_inputArray[_position]!='R'&&_inputArray[_position]!='S'&&_inputArray[_position]!='T'&&_inputArray[_position]!='U'&&_inputArray[_position]!='V'&&_inputArray[_position]!='W'&&_inputArray[_position]!='X'&&_inputArray[_position]!='Y'&&_inputArray[_position]!='Z'&&_inputArray[_position]!='0'&&_inputArray[_position]!='1'&&_inputArray[_position]!='2'&&_inputArray[_position]!='3'&&_inputArray[_position]!='4'&&_inputArray[_position]!='5'&&_inputArray[_position]!='6'&&_inputArray[_position]!='7'&&_inputArray[_position]!='8'&&_inputArray[_position]!='9'&&_inputArray[_position]!='_'&&_inputArray[_position]!=' '&&_inputArray[_position]!='\t'&&_inputArray[_position]!='\r'&&_inputArray[_position]!='\n'&&_inputArray[_position]!='\\'&&_inputArray[_position]!='n'&&_inputArray[_position]!='('&&_inputArray[_position]!=')'&&_inputArray[_position]!='{'&&_inputArray[_position]!='}'&&_inputArray[_position]!='['&&_inputArray[_position]!=']'&&_inputArray[_position]!=';'&&_inputArray[_position]!='\"'&&_inputArray[_position]!='\''&&_inputArray[_position]!='`'&&_inputArray[_position]!=','){
 					++_position;
-					++_multiple_index_3;
+					++_multiple_index_4;
 				}
 				else {
 					break;
 				}
 			}
-			if (_multiple_index_3==0 ){
+			if (_multiple_index_4==0 ){
 				_state=FAILED;
 			}
 			if (_state==SUCCESS){
@@ -4429,9 +4865,9 @@ public  class Parser{
 				_position=_position_regex_element;
 			}
 			else {
-				int _state_30 = _state;
-				parse__anonymous_37();
-				if (_state_30==SUCCESS&&_state==FAILED){
+				int _state_32 = _state;
+				parse__anonymous_40();
+				if (_state_32==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if (_state==FAILED){
@@ -4469,9 +4905,9 @@ public  class Parser{
 					_position=_position_regex_element;
 				}
 				else {
-					int _state_31 = _state;
-					parse__anonymous_39();
-					if (_state_31==SUCCESS&&_state==FAILED){
+					int _state_33 = _state;
+					parse__anonymous_42();
+					if (_state_33==SUCCESS&&_state==FAILED){
 						_state=SUCCESS;
 					}
 					if (_state==FAILED){
@@ -4494,10 +4930,10 @@ public  class Parser{
 					_token_regex_element=_token;
 					_token=new Tokens.Rule.RegexElementToken();
 					int _position_regex_special = _position;
-					if (_state==SUCCESS&&!_recursion_protection_regex_special_7.contains(_position)){
-						_recursion_protection_regex_special_7.add(_position);
+					if (_state==SUCCESS&&!_recursion_protection_regex_special_8.contains(_position)){
+						_recursion_protection_regex_special_8.add(_position);
 						parse_regex_special();
-						_recursion_protection_regex_special_7.remove(_position_regex_special);
+						_recursion_protection_regex_special_8.remove(_position_regex_special);
 					}
 					else {
 						_state=FAILED;
@@ -4510,9 +4946,9 @@ public  class Parser{
 						_position=_position_regex_element;
 					}
 					else {
-						int _state_32 = _state;
-						parse__anonymous_41();
-						if (_state_32==SUCCESS&&_state==FAILED){
+						int _state_34 = _state;
+						parse__anonymous_44();
+						if (_state_34==SUCCESS&&_state==FAILED){
 							_state=SUCCESS;
 						}
 						if (_state==FAILED){
@@ -4534,7 +4970,7 @@ public  class Parser{
 						_position_regex_element=_position;
 						_token_regex_element=_token;
 						_token=new Tokens.Rule.RegexElementToken();
-						int _position_regex_10 = _position;
+						int _position_regex_11 = _position;
 						if (_position<_inputLength){
 							++_position;
 						}
@@ -4542,7 +4978,7 @@ public  class Parser{
 							_state=FAILED;
 						}
 						if (_state==SUCCESS){
-							_token.add(_position_regex_10,new Tokens.Plain.Character(_input.substring(_position_regex_10,_position)));
+							_token.add(_position_regex_11,new Tokens.Plain.Character(_input.substring(_position_regex_11,_position)));
 							while (_position<_inputLength&&(false||_inputArray[_position]==' ')){
 								++_position;
 							}
@@ -4552,7 +4988,7 @@ public  class Parser{
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,".");
 								_furthestPosition=_position;
 							}
-							_position=_position_regex_10;
+							_position=_position_regex_11;
 						}
 						if (_state==FAILED){
 							if (_position>=_furthestPosition){
@@ -4562,9 +4998,9 @@ public  class Parser{
 							_position=_position_regex_element;
 						}
 						else {
-							int _state_33 = _state;
-							parse__anonymous_43();
-							if (_state_33==SUCCESS&&_state==FAILED){
+							int _state_35 = _state;
+							parse__anonymous_46();
+							if (_state_35==SUCCESS&&_state==FAILED){
 								_state=SUCCESS;
 							}
 							if (_state==FAILED){
@@ -4591,7 +5027,7 @@ public  class Parser{
 			_position_atom=_position;
 			_token_atom=_token;
 			_token=new Token.Parsed("$ANON");
-			parse__anonymous_34();
+			parse__anonymous_37();
 			if (_state==FAILED){
 				if (_position>=_furthestPosition){
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"atom(atom)");
@@ -4632,10 +5068,10 @@ public  class Parser{
 					Token.Parsed _tokenquote = _token;
 					_token=new Tokens.Name.QuoteTokenToken();
 					int _position_quote = _position;
-					if (_state==SUCCESS&&!_recursion_protection_quote_5.contains(_position)){
-						_recursion_protection_quote_5.add(_position);
+					if (_state==SUCCESS&&!_recursion_protection_quote_6.contains(_position)){
+						_recursion_protection_quote_6.add(_position);
 						parse_quote();
-						_recursion_protection_quote_5.remove(_position_quote);
+						_recursion_protection_quote_6.remove(_position_quote);
 					}
 					else {
 						_state=FAILED;
@@ -4691,10 +5127,10 @@ public  class Parser{
 							Token.Parsed _tokenNAME = _token;
 							_token=new Tokens.Name.RuleTokenToken();
 							int _position_NAME = _position;
-							if (_state==SUCCESS&&!_recursion_protection_NAME_6.contains(_position)){
-								_recursion_protection_NAME_6.add(_position);
+							if (_state==SUCCESS&&!_recursion_protection_NAME_7.contains(_position)){
+								_recursion_protection_NAME_7.add(_position);
 								parse_NAME();
-								_recursion_protection_NAME_6.remove(_position_NAME);
+								_recursion_protection_NAME_7.remove(_position_NAME);
 							}
 							else {
 								_state=FAILED;

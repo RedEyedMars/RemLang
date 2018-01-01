@@ -2,6 +2,8 @@ package com.rem.gen;
 import java.util.*;
 import java.io.*;
 import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.HashSet;
 import com.rem.parser.generation.VariableNameEntry;
 import com.rem.parser.generation.StringEntry;
@@ -9,25 +11,24 @@ import com.rem.parser.generation.GeneralFlowController;
 import com.rem.parser.generation.Generator;
 import java.lang.StringBuilder;
 import java.io.File;
-import com.rem.gen.ExternalParser;
 import com.rem.gen.MainFlow;
+import com.rem.gen.Parser;
 import com.rem.parser.generation.classwise.ExternalStatement;
 import com.rem.parser.generation.classwise.ExternalImportEntry;
 import com.rem.parser.generation.classwise.ExternalClassHelper;
 import com.rem.parser.generation.classwise.ExternalClassEntry;
-import com.rem.gen.parser.Token;
-import com.rem.gen.parser.Parser;
 
 public  class MainFlow extends GeneralFlowController{
 	public static final MainFlow self = new MainFlow();
 	public static final Set<ExternalClassEntry> outputClasses = new HashSet<ExternalClassEntry>();
 	protected File __ROOTDIRECTORY__ = new File(".");
 	protected final ExternalStatement.Body variableDeclarations = new ExternalStatement.Body();
+	protected final ExternalStatement globalIgnoresHeader = new ExternalStatement();
+	protected final Map<String,ExternalStatement> ruleIgnoresHeaders = new HashMap<String,ExternalStatement>();
 	protected final Set<String> variableDeclarationNames = new HashSet<String>();
+	protected final String parserPackageName = "com.rem.gen.parser";
 	protected final String packageName = "com.rem.gen";
 	protected final String charArray = "char[]";
-	protected final ExternalStatement ignoresHeaderVariableSection = new ExternalStatement();
-	protected final ExternalStatement ignoresHeaderStatement = new ExternalStatement();
 	public File get_ROOTDIRECTORY(){
 		return __ROOTDIRECTORY__;
 	}
@@ -36,14 +37,14 @@ public  class MainFlow extends GeneralFlowController{
 	}
 	public static void main(String[] args){
 		if (args.length==1 ){
-			Parser parser = new Parser();
-			Parser.Result result = parser.parse(args[0]);
+			com.rem.gen.parser.Parser parser = new com.rem.gen.parser.Parser();
+			com.rem.gen.parser.Parser.Result result = parser.parse(args[0]);
 			System.out.println(result);
-			if (result.getState()==Parser.SUCCESS){
+			if (result.getState()==com.rem.gen.parser.Parser.SUCCESS){
 				self.setupRootDirectory(args[0]);
 				self.setupGenerators();
-				self.setup((Parser.Result.Pass)result);
-				self.generate((Parser.Result.Pass)result);
+				self.setup((com.rem.gen.parser.Parser.Result.Pass)result);
+				self.generate((com.rem.gen.parser.Parser.Result.Pass.Pass)result);
 				self.output();
 			}
 		}
@@ -73,12 +74,12 @@ public  class MainFlow extends GeneralFlowController{
 			ExternalClassEntry.suppliment("CargonTokens","");
 			ExternalClassEntry.suppliment("Rules","");
 			ExternalClassEntry.suppliment("Listnames","");
-			ExternalParser._.__INIT__();
-			MainFlow.outputClasses.add(ExternalParser._);
-			ExternalParserTokens._.__INIT__();
-			MainFlow.outputClasses.add(ExternalParserTokens._);
-			ExternalParserToken._.__INIT__();
-			MainFlow.outputClasses.add(ExternalParserToken._);
+			Parser._.__INIT__();
+			MainFlow.outputClasses.add(Parser._);
+			Tokens._.__INIT__();
+			MainFlow.outputClasses.add(Tokens._);
+			Token._.__INIT__();
+			MainFlow.outputClasses.add(Token._);
 		};
 	}
 	public void output(){
@@ -94,8 +95,17 @@ public  class MainFlow extends GeneralFlowController{
 	public ExternalStatement.Body getVariableDeclarations(){
 		return variableDeclarations;
 	}
+	public ExternalStatement getGlobalIgnoresHeader(){
+		return globalIgnoresHeader;
+	}
+	public Map<String,ExternalStatement> getRuleIgnoresHeaders(){
+		return ruleIgnoresHeaders;
+	}
 	public Set<String> getVariableDeclarationNames(){
 		return variableDeclarationNames;
+	}
+	public String getParserPackageName(){
+		return parserPackageName;
 	}
 	public String getPackageName(){
 		return packageName;
@@ -103,61 +113,63 @@ public  class MainFlow extends GeneralFlowController{
 	public String getCharArray(){
 		return charArray;
 	}
-	public ExternalStatement getIgnoresHeaderVariableSection(){
-		return ignoresHeaderVariableSection;
+	public void setup(final com.rem.gen.parser.Parser.Result data){
+		Parser._.setupCompile();
 	}
-	public ExternalStatement getIgnoresHeaderStatement(){
-		return ignoresHeaderStatement;
-	}
-	public void setup(final Parser.Result data){
-		ExternalParser._.setupCompile();
-	}
-	public void generate(final Parser.Result.Pass data){
-		final Token root = data.getRoot();
+	public void generate(final com.rem.gen.parser.Parser.Result.Pass data){
+		final com.rem.gen.parser.Token root = data.getRoot();
 		final ExternalStatement.Body vb = new ExternalStatement.Body();
 		vb.add(variableDeclarations);
-		ExternalClassEntry.classMap.get("ExternalParser").getSubClass("Context").getMethod("parse").appendToBody(vb);
-		setupIgnoresStatement();
+		ExternalClassEntry.classMap.get("Parser").getSubClass("Context").getMethod("parse").appendToBody(vb);
+		final ExternalStatement globalIgnoresHeaderVariableSection = new ExternalStatement();
+		setupIgnoresHeader(globalIgnoresHeader,globalIgnoresHeaderVariableSection);
 		if(root.get("ignores")!=null){
-			for (Token element: root.getAllSafely("ignores")){
-				for (Token atom: element.getAllSafely("ignoreCharacter")){
-					addIgnoresCharacter((atom).toString());
+			for (com.rem.gen.parser.Token element: root.getAllSafely("ignores")){
+				for (com.rem.gen.parser.Token atom: element.getAllSafely("ignoreCharacter")){
+					addIgnoresCharacter((atom).toString(),globalIgnoresHeaderVariableSection);
 				}
 			}
 		}
 		else{
-			addIgnoresCharacter("");
-			addIgnoresCharacter("\\t");
-			addIgnoresCharacter("\\n");
+			addIgnoresCharacter(" ",globalIgnoresHeaderVariableSection);
+			addIgnoresCharacter("\\t",globalIgnoresHeaderVariableSection);
+			addIgnoresCharacter("\\n",globalIgnoresHeaderVariableSection);
 		}
-		for (Token list: root.getAllSafely("list")){
-			ExternalParser._.list(list);
+		for (com.rem.gen.parser.Token list: root.getAllSafely("list")){
+			Parser._.list(list);
 		}
-		for (Token rule: root.getAllSafely("rule")){
-			ExternalParser._.define(rule,null);
+		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+			Parser._.findSilentRule(rule);
 		}
-		ExternalParser._.outputBraces();
-		ExternalParser._.output();
+		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+			Parser._.findRuleHeirachy(rule);
+		}
+		Parser._.consolidateRuleHeirachy();
+		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+			Parser._.define(rule,null);
+		}
+		Parser._.outputBraces();
+		Parser._.output();
 	}
-	public void setupIgnoresStatement(){
-		ignoresHeaderStatement.set("&&");
-		ignoresHeaderVariableSection.set("||");
-		ignoresHeaderVariableSection.add(new ExternalStatement(".",new ExternalStatement(new StringEntry("false"),"")));
-		ignoresHeaderStatement.add(new ExternalStatement("<",new ExternalStatement(".",new ExternalStatement(new StringEntry("_position"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputLength"),""))));
-		ignoresHeaderStatement.add(new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new VariableNameEntry(ignoresHeaderVariableSection),"")))));
+	public void setupIgnoresHeader(final ExternalStatement toSetup,final ExternalStatement variableSection){
+		toSetup.set("&&");
+		variableSection.set("||");
+		variableSection.add(new ExternalStatement(".",new ExternalStatement(new StringEntry("false"),"")));
+		toSetup.add(new ExternalStatement("<",new ExternalStatement(".",new ExternalStatement(new StringEntry("_position"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputLength"),""))));
+		toSetup.add(new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",new ExternalStatement(".",new ExternalStatement(new VariableNameEntry(variableSection),""))));
 	}
-	public void addIgnoresCharacter(final String ignoresCharacter){
-		if(ignoresCharacter.equals("")){
-			MainFlow.self.ignoresHeaderVariableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("' '"),""))));
+	public void addIgnoresCharacter(final String ignoresCharacter,final ExternalStatement variableSection){
+		if(ignoresCharacter==null||ignoresCharacter.equals("")){
+			variableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("' '"),""))));
 		}
 		else{
 			final StringBuilder characterBuilder = new StringBuilder();
 			characterBuilder.append("'");
 			characterBuilder.append(ignoresCharacter);
 			characterBuilder.append("'");
-			MainFlow.self.ignoresHeaderVariableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new VariableNameEntry((characterBuilder).toString()),""))));
+			variableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new VariableNameEntry((characterBuilder).toString()),""))));
 			if(ignoresCharacter.equals("\\n")){
-				MainFlow.self.ignoresHeaderVariableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("'\\r'"),""))));
+				variableSection.add(new ExternalStatement("==",new ExternalStatement(".",new ExternalStatement(new StringEntry("_inputArray[_position]"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("'\\r'"),""))));
 			}
 		}
 	}

@@ -230,10 +230,14 @@ public void outputBraces()  {
 	}
 	final ExternalStatement.Body readBracesBody = new ExternalStatement.Body();
 	readInputBody.add(/*InCl*/new ExternalStatement(
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+		/*Cond*/new ExternalStatement.Conditional(
+			"if ", 
+			/*Optr*/new ExternalStatement("!=", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_readInput")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("13 ")))),
+			/*Body*/new ExternalStatement.Body(
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputBuffer"))), /*Enty*/new ExternalStatement(new StringEntry("append"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
-			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("(char)_readInput"))))))))),
+			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("(char)_readInput"))))))))))),
 		/*Cond*/new ExternalStatement.Conditional(
 			"if ", 
 			/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_readInput")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("'")), /*Name*/new ExternalStatement(new StringEntry("\\n")))), /*Name*/new ExternalStatement(new StringEntry("'")))))),
@@ -279,7 +283,11 @@ public void outputBraces()  {
 			"else if ", 
 			/*Optr*/new ExternalStatement("&&", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(notQuoting.toString())))), /*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(notEscaping.toString())))),
 			/*InCl*/new ExternalStatement(readBracesBody)),
-		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("_position")), /*Optr*/new ExternalStatement("+", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("1"))))))));
+		/*Cond*/new ExternalStatement.Conditional(
+			"if ", 
+			/*Optr*/new ExternalStatement("!=", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_readInput")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("13 ")))),
+			/*Body*/new ExternalStatement.Body(
+			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))));
 	Integer i = maxOpen;
 	while (i > 0 ) {
 		if (declaredBraceCloseValues.containsKey(i)) {
@@ -608,7 +616,7 @@ public void getRuleBody(final ExternalStatement.Body completeBody,final String r
 /*BODY*/				
 			/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))))));
 				currentOption.add(/*InCl*/new ExternalStatement(
@@ -646,7 +654,7 @@ public void getRuleBody(final ExternalStatement.Body completeBody,final String r
 		currentOption.add(/*InCl*/new ExternalStatement(
 		/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))));
 	}
@@ -736,7 +744,7 @@ MainFlow.classes.ParserClass.ContextClass.addVariable(new ExternalVariableEntry(
 		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("_inputLength")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(currentLengthValue.toString())))))),
 		/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_globalIgnoresHeader()))),
 			/*Body*/new ExternalStatement.Body(
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))));
 	}
@@ -901,6 +909,23 @@ MainFlow.classes.TokensClass.RuleClass.addSubClass(new ExternalClassEntry(){publ
 			/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("_furthestPosition")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_position")))))))),
 		/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(new StringEntry("_position")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(currentPositionValue.toString()))))))));
 	ruleForeBodies.put(ruleName,foreBody);
+	if (input.get("ignores_character") != null) {
+		final ExternalStatement newIgnoresHeader = new ExternalStatement();
+		final ExternalStatement newIgnoresVariableSection = new ExternalStatement();
+		MainFlow.methods.setupIgnoresHeader(newIgnoresHeader,newIgnoresVariableSection);
+		for(final IToken character:input.getAllSafely("ignores_character")) {
+				MainFlow.methods.addIgnoresCharacter(character.toString(),newIgnoresVariableSection);
+		}
+		MainFlow.variables.get_ruleIgnoresHeaders().put(ruleName,newIgnoresHeader);
+	}
+	else if (input.get("ignores_none") != null) {
+		final ExternalStatement newIgnoresHeader = new ExternalStatement();
+		MainFlow.methods.setupIgnoresHeader(newIgnoresHeader,new ExternalStatement());
+		MainFlow.variables.get_ruleIgnoresHeaders().put(ruleName,newIgnoresHeader);
+	}
+	else  {
+		MainFlow.variables.get_ruleIgnoresHeaders().put(ruleName,MainFlow.variables.get_globalIgnoresHeader());
+	}
 	if (input.get("braced_parameters") != null) {
 		final String left = input.get("braced_parameters").get("left").toString();
 		final String right = input.get("braced_parameters").get("right").toString();
@@ -911,7 +936,7 @@ MainFlow.classes.TokensClass.RuleClass.addSubClass(new ExternalClassEntry(){publ
 			declaredBraceValues.put(both,new ArrayList<String>());
 		}
 		if (input.get("passConstraint") != null) {
-			declaredBracePasses.put(ruleName,Integer.parseInt(input.get("passConstraint").toString()));
+			declaredBracePasses.put(ruleName,Integer.parseInt(input.get("passConstraint").toString().trim()));
 		}
 		declaredBraceValues.get(both).add(ruleName);
 		declaredBraceRules.put(ruleName,both);
@@ -1333,7 +1358,7 @@ MainFlow.classes.TokensClass.SyntaxClass.getSubClass(quoteName.toString()).addVa
 /*BODY*/				
 			/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position"))))))))),
 		/*Cond*/new ExternalStatement.Conditional(
@@ -1424,7 +1449,7 @@ MainFlow.classes.TokensClass.PlainClass.addSubClass(new ExternalClassEntry(){pub
 /*BODY*/				
 			/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))))));
 				if (listNamesInRule.containsKey(parentRuleName) == false) {
@@ -1452,7 +1477,7 @@ MainFlow.classes.TokensClass.PlainClass.addSubClass(new ExternalClassEntry(){pub
 /*BODY*/				
 			/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))))));
 			}
@@ -1473,7 +1498,7 @@ MainFlow.classes.TokensClass.PlainClass.addSubClass(new ExternalClassEntry(){pub
 /*BODY*/				
 			/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_globalIgnoresHeader()))),
 			/*Body*/new ExternalStatement.Body(
 				/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position")))))))))));
 			}
@@ -1568,7 +1593,7 @@ MainFlow.classes.TokensClass.PlainClass.addSubClass(new ExternalClassEntry(){pub
 /*BODY*/				
 				/*Cond*/new ExternalStatement.Conditional(
 			"while ", 
-			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ignoresHeaderStatement()))),
+			/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_ruleIgnoresHeaders().get(ruleName)))),
 			/*Body*/new ExternalStatement.Body(
 					/*Elem*/new ExternalStatement(new TabEntry(new StringEntry("")), new StringEntry(";"), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("++_position"))))))))))),
 		/*Cond*/new ExternalStatement.Conditional(
@@ -1749,6 +1774,10 @@ public String addRegexElementToRule(final IToken element,final ExternalStatement
 						option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'.'")))));
 						regexValue.append("\\.");
 					}
+					if(__quark__KEY.getName().equals("REGEX_SLASH")){ final IToken quark = atom.get(__quark__KEY);
+						option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\\\'")))));
+						regexValue.append("\\\\");
+					}
 					}
 				}
 				if(__atom__KEY.getName().equals("standAlone")){ final IToken atom = optionToken.get(__atom__KEY);
@@ -1815,6 +1844,10 @@ public String addRegexElementToRule(final IToken element,final ExternalStatement
 					if(__quark__KEY.getName().equals("REGEX_DOT")){ final IToken quark = atom.get(__quark__KEY);
 						option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'.'")))));
 						regexValue.append("\\.");
+					}
+					if(__quark__KEY.getName().equals("REGEX_SLASH")){ final IToken quark = atom.get(__quark__KEY);
+						option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\\\'")))));
+						regexValue.append("\\\\");
 					}
 					}
 				}
@@ -2006,6 +2039,10 @@ public String addRegexElementToRule(final IToken element,final ExternalStatement
 				if(__quark__KEY.getName().equals("REGEX_QUOTE")){ final IToken quark = element.get("regex_special").get(__quark__KEY);
 					option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\\"'")))));
 					regexValue.append("\\\"");
+				}
+				if(__quark__KEY.getName().equals("REGEX_SLASH")){ final IToken quark = element.get("regex_special").get(__quark__KEY);
+					option.add(/*Optr*/new ExternalStatement("==", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("_inputArray[_position]")))), /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("'\\\\'")))));
+					regexValue.append("\\\\");
 				}
 			}
 			regexBody.add(/*InCl*/new ExternalStatement(
