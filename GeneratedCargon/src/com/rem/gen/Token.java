@@ -5,11 +5,11 @@ import com.rem.parser.generation.VariableNameEntry;
 import com.rem.parser.generation.Entry;
 import com.rem.parser.generation.StringEntry;
 import com.rem.parser.generation.TabEntry;
+import com.rem.gen.Token;
 import com.rem.parser.generation.classwise.ExternalMethodEntry;
 import com.rem.parser.generation.classwise.ExternalStatement;
 import com.rem.parser.generation.classwise.ExternalVariableEntry;
 import com.rem.parser.generation.classwise.ExternalClassEntry;
-import com.rem.gen.Token;
 
 public class Token extends ExternalClassEntry{
 	public static final Token _ = new Token();
@@ -137,6 +137,9 @@ public class Token extends ExternalClassEntry{
 		public void __add_method_10__(){
 			addMethod(new ExternalMethodEntry(0,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("void"),"")),null,new ExternalStatement(new StringEntry("addAll"),""),Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(".",new ExternalStatement(new StringEntry("Token"),""),new ExternalStatement(new StringEntry("Parsed"),""))),"",new ExternalStatement(new StringEntry("inductee"),""),null)}),null,new ExternalStatement.Body(new ExternalStatement.Conditional("for",new ExternalStatement(";",new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Integer"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("i"),"")),new ExternalStatement(new StringEntry("0"),"")),new ExternalStatement("<",new ExternalStatement(".",new ExternalStatement(new StringEntry("i"),"")),new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new StringEntry("inductee"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("children"),"")),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("size"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters())))),new ExternalStatement(new ExternalStatement(".",new ExternalStatement(new StringEntry("i"),"")),new ExternalStatement(new StringEntry("++"),""))),new ExternalStatement.Body(new ExternalStatement(new TabEntry(new StringEntry("")),new StringEntry(";"),"",new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new StringEntry("children"),"")),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("add"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new StringEntry("inductee"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("children"),"")),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(new StringEntry("i"),""))))))))))),new ExternalStatement(new TabEntry(new StringEntry("")),new StringEntry(";"),"",new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new StringEntry("positions"),"")),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("add"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new StringEntry("inductee"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("positions"),"")),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(new StringEntry("i"),""))))))))))))))));
 		}
+		public void __add_sub_class_0__(){
+			addSubClass(Import._);
+		}
 		public void __INIT__(){
 			super.__SETUP__(
 				new ExternalStatement("."),
@@ -161,12 +164,47 @@ public class Token extends ExternalClassEntry{
 			__add_method_8__();
 			__add_method_9__();
 			__add_method_10__();
+			__add_sub_class_0__();
+		}
+		public static class Import extends ExternalClassEntry{
+			public static final Import _ = new Import();
+			public void __add_variable_0__(){
+				addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("fileName"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
+			}
+			public void __add_method_0__(){
+				addMethod(new ExternalMethodEntry(0,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new Entry(){public void get(StringBuilder builder){builder.append("getFileName");}},Arrays.asList(new ExternalVariableEntry[]{}),"",new ExternalStatement.Body(new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry("fileName"),"")))));
+			}
+			public void __add_method_1__(){
+				addMethod(new ExternalMethodEntry(0,false,new ExternalStatement.TypeName(new StringEntry("void")),"",new Entry(){public void get(StringBuilder builder){builder.append("setFileName");}},Arrays.asList(new ExternalVariableEntry[]{new ExternalVariableEntry(true,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new Entry(){public void get(StringBuilder builder){builder.append("newFileName");}},null)}),"",new ExternalStatement.Body(new ExternalStatement(new TabEntry(new StringEntry("fileName = ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry("newFileName"),"")))));
+			}
+			public void __add_method_2__(){
+				addMethod(new ExternalMethodEntry(0,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("List"),""),new ExternalStatement(new StringEntry("<"),new StringEntry(">"),"",new ExternalStatement(",",new ExternalStatement.TypeName(new ExternalStatement(".",new ExternalStatement(new StringEntry("Token"),""),new ExternalStatement(new StringEntry("Parsed"),"")))))),null,new ExternalStatement(new StringEntry("getChildren"),""),Arrays.asList(new ExternalVariableEntry[]{}),null,new ExternalStatement.Body(new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(".",new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Parser"),"")),new ExternalStatement(new StringEntry("contexts"),""),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(new StringEntry("fileName"),""))))),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get_root"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters())),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("getChildren"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters())))))));
+			}
+			public void __add_method_3__(){
+				addMethod(new ExternalMethodEntry(0,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("List"),""),new ExternalStatement(new StringEntry("<"),new StringEntry(">"),"",new ExternalStatement(",",new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Integer"),""))))),null,new ExternalStatement(new StringEntry("getPositions"),""),Arrays.asList(new ExternalVariableEntry[]{}),null,new ExternalStatement.Body(new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(".",new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Parser"),"")),new ExternalStatement(new StringEntry("contexts"),""),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters(new ExternalStatement(".",new ExternalStatement(new StringEntry("fileName"),""))))),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("get_root"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters())),new ExternalStatement(null,new StringEntry(")"),"(",new ExternalStatement(new StringEntry("getPositions"),""),new ExternalStatement.Parameters(new ExternalStatement.Parameters())))))));
+			}
+			public void __INIT__(){
+				super.__SETUP__(
+					new ExternalStatement("."),
+				new Entry(){public void get(StringBuilder builder){}},
+					new VariableNameEntry("Import"),
+					"class ",
+					new ExternalStatement.TypeName(new ExternalStatement(".",new ExternalStatement(new StringEntry("Token"),""),new ExternalStatement(new StringEntry("Parsed"),""))),
+					Arrays.asList(new Entry[]{}),
+					null);
+				setIsStatic(true);
+				__add_variable_0__();
+				__add_method_0__();
+				__add_method_1__();
+				__add_method_2__();
+				__add_method_3__();
+			}
 		}
 	}
 	public static class Leaf extends ExternalClassEntry{
 		public static final Leaf _ = new Leaf();
 		public void __add_variable_0__(){
-			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(new StringEntry("name"),""),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
+			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("name"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
 		}
 		public void __add_variable_1__(){
 			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("value"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
@@ -298,7 +336,7 @@ public class Token extends ExternalClassEntry{
 			addVariable(new ExternalVariableEntry(true,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("List"),""),new ExternalStatement(new StringEntry("<"),new StringEntry(">"),"",new ExternalStatement(",",new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Token"),""))))),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("children"),"")),new ExternalStatement.NewObject(new ExternalStatement.TypeName(new ExternalStatement.TypeName(new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("ArrayList"),""),new ExternalStatement(new StringEntry("<"),new StringEntry(">"),"",new ExternalStatement(",",new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Token"),""))))))),new ExternalStatement.Parameters(new ExternalStatement.Parameters()))));
 		}
 		public void __add_variable_2__(){
-			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(new StringEntry("name"),""),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
+			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("String"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("name"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));
 		}
 		public void __add_variable_3__(){
 			addVariable(new ExternalVariableEntry(false,false,false,new ExternalStatement.TypeName(new ExternalStatement(new StringEntry("Integer"),"")),"",new ExternalStatement(".",new ExternalStatement(new StringEntry("position"),"")),new ExternalStatement(".",new ExternalStatement(new StringEntry("null"),""))));

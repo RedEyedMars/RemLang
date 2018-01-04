@@ -1,0 +1,162 @@
+base silent = base_element*
+comments Braced # # = [.*] as comment
+NAME = [[a-zA-Z_][a-zA-Z0-9_]*]
+OPERATOR = [[^a-zA-Z0-9_\s\n(){}[];"'`,]+]
+NUMBER = [[-]?(\d*[.])?\d+f?\s*]
+
+quote                  Braced " " , Ignore None = [.*]
+class_body             Braced { } , silent = class_element*
+method_body         @2 Braced { } , silent = body_element*
+method_arguments       Braced ( )        = ( method_argument ( "," method_argument )* )?
+template_parameters @2 Braced < >        = all_type_name as template_parameter ( "," all_type_name as template_parameter )*
+array_parameters       Braced [ ]        = ( method_argument ( "," method_argument )* )?
+statement_as_quote     Braced ''  ''     = body_statement
+statement_as_string    Braced ' '        = body_statement
+statement_as_method    Braced ` `        = body_statement
+statement_as_braced    Braced ( )        = body_statement
+as_statement           Braced | |        = (body_element+ | body_statement)
+
+
+statement_as_char                        = "char\" [.] as value
+
+class_file_name = [[^.]+]
+
+class_names global list with NAME
+	"void"
+	"boolean", "Boolean"
+	"int", "Integer"
+	"long", "Long"
+	"float", "Float"
+	"double", "Double"
+	"byte", "Byte"
+	"char", "Character"
+	"String"
+	"Object", "System", "Math", "StringBuilder"
+	"Thread", "Runnable"
+	"Iterator",	"Iterable"
+	"Serializable", "Random"
+	"Set", "HashSet", "TreeSet"
+	"List", "ArrayList", "LinkedList"
+	"Map", "HashMap"
+	"Stack", "Deque"
+	"File", "FileReader", "FileWriter", "BufferedReader", "BufferedWriter"
+	"Parser", "Token", "Result", "Tokens"
+	"Pass", "Fail"
+class_variable_names list with NAME
+variable_names list with NAME
+
+base_element silent
+	comments
+	imports
+	anonymous_class
+	class_declaration
+	method_declaration
+	variable_declaration ";"
+
+imports Imports "import " class_file_name ".clws" = "@@@" base_element*
+
+packageName = "\"? NAME | quote | statement_as_string
+anonymous_class
+	("<"|"hidden") NAME as className in class_names (":"|"from") (packageName ("." packageName)*)? ";"
+
+inner = (">"|"inner ")
+weak = "~"
+class_declaration
+	inner? weak? ("class "|"interface " | "enum ") as objectType (packageName ("." packageName)*) (variable_names|class_variable_names|NAME ) as className in class_names ( "<" NAME as templateTypeName in class_variable_names ">" )? ( type_var as parentName )? ( type_var as interfaceName )* class_body
+	inner? weak? ("class "|"interface " | "enum ") as objectType (variable_names|class_variable_names|NAME ) as className in class_names  ( "<" NAME as templateTypeName in class_variable_names ">" )? "/" ( type_var as parentName )? "/" ( type_var as interfaceName )* class_body
+class_element silent
+	comments
+	class_declaration
+	method_declaration
+	variable_declaration ";"
+body_element
+	comments
+	inner? ( "return" ("void" | method_argument) ";" ) as body_return
+	inner? ( "throw" body_statement ";" ) as body_throw
+	class_declaration
+	( variable_declaration ";" ) as body_line
+	( variable_assignment ";" ) as body_line
+	body_manipulate
+	body_conditional
+	( body_statement ";" ) as body_line
+body_conditional
+	inner? ("if"|"else" "if"|"while"|"synchronized"|"switch"|"case") as conditional body_statement ( method_body as as_body | statement_as_method )
+	inner? "else" as conditional ( method_body as as_body | statement_as_method )
+	inner? "for"  as conditional variable_declaration OPERATOR body_statement ( method_body as as_body | statement_as_method )
+	inner? "try"  as conditional ( method_body as as_body | statement_as_method )
+	inner? "print"? "catch" as conditional ("*" | NAME) as exception ( "|" ("*" | NAME) as exception )* ( method_body as as_body | statement_as_method )
+body_statement
+	inner? body_call ( ( "\"? OPERATOR) body_call )*
+	statement_as_string
+	statement_as_char
+body_call
+	( statement_as_braced as left ( "\"? OPERATOR)? body_statement as right? )  as as_braced
+	("new " as NEW all_type_name as typeName method_arguments? array_parameters*) as group ( "." (NAME method_arguments? array_parameters*) as group )*
+	(name_var method_arguments? array_parameters*) as group ( "." ((name_var | NAME) method_arguments? array_parameters*) as group )*
+	(type_var ("." type_var)* method_arguments? array_parameters*) as group ( "." (NAME method_arguments? array_parameters*) as group )*
+body_manipulate
+	inner? type_var "+=" as methodName ( class_declaration | method_declaration | variable_declaration ";" | method_body as body | as_statement as body )
+	inner? name_var ":" NAME as variableName in variable_names ( ":" NAME as tokenName method_body) as tokenInstance+
+
+
+
+method_parameters
+	"(" variable_declaration? ( "," variable_declaration )* ")"
+method_argument
+	class_declaration
+	method_declaration
+	variable_declaration ";"
+	as_statement
+	body_statement
+	method_body as body_entries
+method_declaration
+	inner? ("@"|"static") as static? all_type_name as typeName "[]" as ARRAY_TYPE* ("*" as NAME | name_var | NAME) as methodName ( method_parameters as inline | statement_as_method as variableParameters ) method_body
+variable_declaration
+	inner? weak? ("@"|"static") as static? weak? ( class_name_definition | variable_name_definition ) ( "=" method_argument)?
+variable_assignment
+	inner? name_var "=" method_argument
+
+variable_name_definition silent
+	all_type_name as typeName "..."? "[]" as ARRAY_TYPE* (name_var as variableName | NAME as variableName in variable_names ) 
+class_name_definition silent
+	"Class" as typeName (name_var as variableName | NAME as variableName in class_variable_names ) 
+
+all_type_name silent
+	"Class"
+	"Method"
+	"Variable"
+	"Body"
+	"Statement"
+	"Parameters"
+	"Context"
+	"%T"
+	"%Parser"
+	"%Result"
+	"%Pass"
+	"%Fail"
+	type_var ("." type_var)*
+
+name_var
+	( "^" as CAMEL? name_var_element as name_var ( ("->") name_var_element as name_var )+ ) as access
+	( "^" as CAMEL? name_var_element as name_var ( "+" name_var_element as name_var )+ ) as concat
+	name_var_element
+name_var_element silent
+	( NUMBER as NAME ) as exact
+	statement_as_char
+	statement_as_method
+	statement_as_quote
+	statement_as_string
+	( "\" "^" as CAMEL? ( quote | variable_names | NAME ) ) as exact
+	( "^" as CAMEL? ( variable_names ) ) as variable
+	( "^" as CAMEL? ( quote|(NUMBER|"super"|"this"|"null"|"true"|"false") as NAME) ) as exact
+type_var
+	( "$" as ISTYPENAME? "^" as CAMEL? type_var_element as type_var ( ("->"|"\>") type_var_element as type_var )+ ( ("->") "*" name_var? ) as as_method?) as access_multi
+	( "$" as ISTYPENAME? "^" as CAMEL? type_var_element as type_var ( ("->") "*" name_var? )  ) as access_method
+	( "$" as ISTYPENAME? "^" as CAMEL? type_var_element as type_var ( "+" type_var_element as type_var)+ ) as concat
+	"$" as ISTYPENAME? type_var_element
+type_var_element silent
+	statement_as_method
+	statement_as_quote
+	statement_as_string
+	( "\" "^" as CAMEL? ( variable_names | NAME )  template_parameters? ) as exact
+	( "^" as CAMEL? ( class_variable_names | class_names ) template_parameters? ) as class

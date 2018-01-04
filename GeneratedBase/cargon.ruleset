@@ -69,12 +69,10 @@ altbrace-s are CharitableBraced
 rule_params is silent
 	SILENT
 	(PASS_SYMBOL NUMBER as passConstraint)? BRACED braced_parameters
-	IMPORTS import_parameters
+	IMPORTS  ( uote as quote | NAME as ruleName ) as import_parameter
 	IGNORE_PARAM ( NONE as ignores_none | SINGLE_CHAR_CAPTURE as ignores_character+ )
 braced_parameters
 	NONSPACE as left NONSPACE as right
-import_parameters
-	( uote | NAME as ruleName )+
 
 #List Prototypes
 rule-s are empty
