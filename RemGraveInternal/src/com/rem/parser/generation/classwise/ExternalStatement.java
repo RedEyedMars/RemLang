@@ -568,6 +568,11 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			this.name = name;
 			this.header = header;
 		}
+		public Conditional(String name, String initialLeftBrace, ExternalStatement header, String initialRightBrace, ExternalStatement body){
+			this(name,header,body);
+			leftBrace.set(initialLeftBrace);
+			rightBrace.set(initialRightBrace);
+		}
 		@Override
 		public boolean add(ExternalStatement element){
 			boolean result = __BODY__.add(element);
@@ -585,7 +590,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 								new TypeName("ExternalStatement.Conditional"),
 								new Parameters(
 								new ExternalStatement(new QuoteEntry(name)),
+								new ExternalStatement(new QuoteEntry(leftBrace.getString())),
 								header!=null?header.getAsStatement():new ExternalStatement(new StringEntry("null")),
+								new ExternalStatement(new QuoteEntry(rightBrace.getString())),
 								__BODY__!=null?__BODY__.getAsStatement():new ExternalStatement(new StringEntry("null")))
 								);
 			

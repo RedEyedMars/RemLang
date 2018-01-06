@@ -26,6 +26,9 @@ public  class MainFlow extends GeneralFlowController{
 	protected final ExternalStatement globalIgnoresHeader = new ExternalStatement();
 	protected final Map<String,ExternalStatement> ruleIgnoresHeaders = new HashMap<String,ExternalStatement>();
 	protected final Set<String> variableDeclarationNames = new HashSet<String>();
+	protected final Map<String,Set<String>> ruleHeirachy = new HashMap<String,Set<String>>();
+	protected final Set<String> listNames = new HashSet<String>();
+	protected final Map<String,com.rem.gen.parser.Token> subRulesProposed = new HashMap<String,com.rem.gen.parser.Token>();
 	protected final String parserPackageName = "com.rem.gen.parser";
 	protected final String packageName = "com.rem.gen";
 	protected final String charArray = "char[]";
@@ -74,6 +77,7 @@ public  class MainFlow extends GeneralFlowController{
 			ExternalClassEntry.suppliment("CargonTokens","");
 			ExternalClassEntry.suppliment("Rules","");
 			ExternalClassEntry.suppliment("Listnames","");
+			ExternalClassEntry.suppliment("Arrays","");
 			Parser._.__INIT__();
 			MainFlow.outputClasses.add(Parser._);
 			Tokens._.__INIT__();
@@ -103,6 +107,15 @@ public  class MainFlow extends GeneralFlowController{
 	}
 	public Set<String> getVariableDeclarationNames(){
 		return variableDeclarationNames;
+	}
+	public Map<String,Set<String>> getRuleHeirachy(){
+		return ruleHeirachy;
+	}
+	public Set<String> getListNames(){
+		return listNames;
+	}
+	public Map<String,com.rem.gen.parser.Token> getSubRulesProposed(){
+		return subRulesProposed;
 	}
 	public String getParserPackageName(){
 		return parserPackageName;
@@ -144,12 +157,22 @@ public  class MainFlow extends GeneralFlowController{
 		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
 			Parser._.findRuleHeirachy(rule);
 		}
-		Parser._.consolidateRuleHeirachy();
-		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
-			Parser._.define(rule,null);
+		boolean hasAllRulesDefined = true;
+		for(final String ruleName:subRulesProposed.keySet()){
+			if(MainFlow.self.ruleHeirachy.containsKey(ruleName)==false&&MainFlow.self.listNames.contains(ruleName)==false){
+				System.out.println("Could not find rule name: "+ruleName+" from :");
+				MainFlow.self.subRulesProposed.get(ruleName).print();
+				hasAllRulesDefined=false;
+			}
 		}
-		Parser._.outputBraces();
-		Parser._.output();
+		if(hasAllRulesDefined){
+			Parser._.consolidateRuleHeirachy();
+			for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+				Parser._.define(rule,null);
+			}
+			Parser._.outputBraces();
+			Parser._.output();
+		}
 	}
 	public void setupIgnoresHeader(final ExternalStatement toSetup,final ExternalStatement variableSection){
 		toSetup.set("&&");

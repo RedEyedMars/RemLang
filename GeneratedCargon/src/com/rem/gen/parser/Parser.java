@@ -21,7 +21,7 @@ public class Parser{
 	public static Integer SECOND_PASS = 1;
 	public static Set<String> fileNames = new HashSet<String>();
 	public static Map<String,Parser.Context> contexts = new HashMap<String,Parser.Context>();
-	protected Parser.NameList.Root list_names_root = new Parser.NameList.Root();
+	protected Parser.NameList list_names_root = new Parser.NameList(null);
 	public Parser() {
 	}
 	public void setSUCCESS(Integer newSUCCESS){
@@ -43,6 +43,7 @@ public class Parser{
 		contexts = newContexts;
 	}
 	public Parser.Result parse(String fileName){
+		long startParseTime = System.currentTimeMillis();
 		Parser.Result firstResult = parseFile(fileName,FIRST_PASS);
 		if(firstResult.getState()==SUCCESS){
 			System.out.println("First-Pass Successful");
@@ -54,10 +55,12 @@ public class Parser{
 			else{
 				System.out.println("Second-Pass Failed");
 			}
+			secondResult.setParseTime(System.currentTimeMillis()-startParseTime);
 			return secondResult;
 		}
 		else{
 			System.out.println("First-Pass Failed");
+			firstResult.setParseTime(System.currentTimeMillis()-startParseTime);
 			return firstResult;
 		}
 	}
@@ -82,10 +85,10 @@ public class Parser{
 			return input.substring(position,indexOfLine);
 		}
 	}
-	public Parser.NameList.Root getListNamesRoot(){
+	public Parser.NameList getListNamesRoot(){
 		return list_names_root;
 	}
-	public void setListNamesRoot(Parser.NameList.Root newListNamesRoot){
+	public void setListNamesRoot(Parser.NameList newListNamesRoot){
 		list_names_root = newListNamesRoot;
 	}
 	public static class Context{
@@ -110,7 +113,7 @@ public class Parser{
 		protected Map<Integer,Integer> brace_0 = new HashMap<Integer,Integer>();
 		protected Parser.NameList list_names_root = null;
 		protected Parser.NameList list_names = null;
-		protected Parser.NameList list_names_additions = null;
+		protected Map<Integer,String> _preparsed_NAME = new HashMap<Integer,String>();
 		protected Map<Integer,Integer> brace_1 = new HashMap<Integer,Integer>();
 		protected String _import_FILE_NAME_value = null;
 		protected Set<Integer> _recursion_protection_base_0 = new HashSet<Integer>();
@@ -121,14 +124,6 @@ public class Parser{
 		protected Set<Integer> _recursion_protection_NAME_3 = new HashSet<Integer>();
 		protected Set<Integer> _recursion_protection_NAME_4 = new HashSet<Integer>();
 		protected int _readInput_1 = 0;
-		protected Parser.NameList list_names_quote = null;
-		protected Parser.NameList list_names_braced_definition = null;
-		protected Parser.NameList list_names_additions_list = null;
-		protected Parser.NameList list_names_single_ignores_character = null;
-		protected Parser.NameList list_names_regex = null;
-		protected Parser.NameList list_names_regex_group_definition = null;
-		protected Parser.NameList list_names_regex_option = null;
-		protected Parser.NameList list_names_comments = null;
 		public Context(final Parser.NameList list_names_root) {
 			if(list_names_root != null){
 				this.list_names_root = list_names_root;
@@ -250,11 +245,11 @@ public class Parser{
 			Stack<Integer> brace_open_3 = new Stack<Integer>();
 			Stack<Integer> brace_open_2 = new Stack<Integer>();
 			Stack<Integer> brace_open_1 = new Stack<Integer>();
+			Parser.NameList.Builder _builder_NAME = new Parser.NameList.Builder.NAME(_preparsed_NAME);
 			Stack<Integer> brace_open_0 = new Stack<Integer>();
 			if(fileNames.add(_fileName)==false){
 				return null;
 			}
-			long startParseTime = System.currentTimeMillis();
 			_pass=_pass_index;
 			_directoryName="./";
 			int indexOfDirectorySlash = _fileName.lastIndexOf("/");
@@ -272,6 +267,7 @@ public class Parser{
 				boolean escaping = false;
 				boolean quoting = false;
 				while(_readInput>=0 ){
+					_builder_NAME.add(_position,(char)_readInput);
 					if(_readInput!=13 ){
 						_inputBuffer.append((char)_readInput);
 					}
@@ -368,7 +364,7 @@ public class Parser{
 				if(_result!=null){
 					_result_acceptor.add(_result);
 				}
-				_result_acceptor.add(new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName," tail of file could not be parsed"));
+				_result_acceptor.add(new Parser.Result.Fail.EOF(_fileName));
 				_result_acceptor.setFileName(_fileName);
 				_result=_result_acceptor;
 				_state=FAILED;
@@ -378,8 +374,6 @@ public class Parser{
 				_result_acceptor.setFileName(_fileName);
 				_result=_result_acceptor;
 			}
-			long parseTime = System.currentTimeMillis()-startParseTime;
-			_result.setParseTime(parseTime);
 			return _result;
 		}
 		public void addImportThread(String importFileName){
@@ -407,11 +401,11 @@ public class Parser{
 		public void setListNames(Parser.NameList newListNames){
 			list_names = newListNames;
 		}
-		public Parser.NameList getListNamesAdditions(){
-			return list_names_additions;
+		public Map<Integer,String> get_preparsedNAME(){
+			return _preparsed_NAME;
 		}
-		public void setListNamesAdditions(Parser.NameList newListNamesAdditions){
-			list_names_additions = newListNamesAdditions;
+		public void set_preparsedNAME(Map<Integer,String> new_preparsedNAME){
+			_preparsed_NAME = new_preparsedNAME;
 		}
 		public Map<Integer,Integer> getBrace1(){
 			return brace_1;
@@ -1165,19 +1159,11 @@ public class Parser{
 				_token=_token__anonymous_8;
 			}
 		}
-		public Parser.NameList getListNamesQuote(){
-			return list_names_quote;
-		}
-		public void setListNamesQuote(Parser.NameList newListNamesQuote){
-			list_names_quote = newListNamesQuote;
-		}
 		public void parse_quote(){
 			int _position_quote = -1;
 			Token.Parsed _token_quote = null;
 			int _length_quote_brace = _inputLength;
 			if(brace_0.containsKey(_position)){
-				list_names_quote=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_0.get(_position);
 				int _position_quote_brace = _position;
 				_position+=1;
@@ -1247,7 +1233,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_quote;
 			}
 			else{
 				_state=FAILED;
@@ -1774,6 +1759,17 @@ public class Parser{
 							_state=FAILED;
 						}
 						if(_position<_inputLength){
+							if(_inputArray[_position]=='\\'){
+								++_position;
+							}
+							else{
+								_state=FAILED;
+							}
+						}
+						else{
+							_state=FAILED;
+						}
+						if(_position<_inputLength){
 							if(_inputArray[_position]=='\"'){
 								++_position;
 							}
@@ -1792,7 +1788,7 @@ public class Parser{
 						}
 						if(_state==FAILED){
 							if(_position>=_furthestPosition){
-								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"\\\\\\\"");
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"\\\\\\\\\\\"");
 								_furthestPosition=_position;
 							}
 							_position=_position_regex_13;
@@ -1854,27 +1850,24 @@ public class Parser{
 								_position_regex_special=_position;
 								_token_regex_special=_token;
 								_token=new Tokens.Rule.RegexSpecialToken();
-								if(_position+2-1 >=_inputLength){
+								if(_position+1-1 >=_inputLength){
 									_state=FAILED;
 								}
 								else{
 									if(_inputArray[_position+0]!='\\'){
 										_state=FAILED;
 									}
-									if(_inputArray[_position+1]!='\\'){
-										_state=FAILED;
-									}
 								}
 								if(_state==SUCCESS){
 									_token.add(_position,Tokens.Syntax.syntax_28.slash);
-									_position=_position+2;
+									_position=_position+1;
 									while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 										++_position;
 									}
 								}
 								else if(_state==FAILED){
 									if(_position>=_furthestPosition){
-										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \\\\");
+										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain \\");
 										_furthestPosition=_position;
 									}
 								}
@@ -1933,9 +1926,9 @@ public class Parser{
 				_position=_position_element;
 			}
 			else{
-				int _state_31 = _state;
+				int _state_30 = _state;
 				parse__anonymous_19();
-				if(_state_31==SUCCESS&&_state==FAILED){
+				if(_state_30==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if(_state==FAILED){
@@ -1946,9 +1939,9 @@ public class Parser{
 					_position=_position_element;
 				}
 				else{
-					int _state_32 = _state;
+					int _state_31 = _state;
 					parse__anonymous_20();
-					if(_state_32==SUCCESS&&_state==FAILED){
+					if(_state_31==SUCCESS&&_state==FAILED){
 						_state=SUCCESS;
 					}
 					if(_state==FAILED){
@@ -1959,9 +1952,9 @@ public class Parser{
 						_position=_position_element;
 					}
 					else{
-						int _state_33 = _state;
+						int _state_32 = _state;
 						parse__anonymous_21();
-						if(_state_33==SUCCESS&&_state==FAILED){
+						if(_state_32==SUCCESS&&_state==FAILED){
 							_state=SUCCESS;
 						}
 						if(_state==FAILED){
@@ -1981,19 +1974,11 @@ public class Parser{
 			}
 			_token=_token_element;
 		}
-		public Parser.NameList getListNamesBracedDefinition(){
-			return list_names_braced_definition;
-		}
-		public void setListNamesBracedDefinition(Parser.NameList newListNamesBracedDefinition){
-			list_names_braced_definition = newListNamesBracedDefinition;
-		}
 		public void parse_braced_definition(){
 			int _position_braced_definition = -1;
 			Token.Parsed _token_braced_definition = null;
 			int _length_braced_definition_brace = _inputLength;
 			if(brace_2.containsKey(_position)){
-				list_names_braced_definition=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_2.get(_position);
 				int _position_braced_definition_brace = _position;
 				_position+=1;
@@ -2039,7 +2024,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_braced_definition;
 			}
 			else{
 				_state=FAILED;
@@ -2395,17 +2379,10 @@ public class Parser{
 			}
 			_token=_token__anonymous_0;
 		}
-		public Parser.NameList getListNamesAdditionsList(){
-			return list_names_additions_list;
-		}
-		public void setListNamesAdditionsList(Parser.NameList newListNamesAdditionsList){
-			list_names_additions_list = newListNamesAdditionsList;
-		}
 		public void parse_list(){
 			int _position_list = -1;
 			Token.Parsed _token_list = null;
-			list_names_additions_list=list_names_additions;
-			list_names_additions=new Parser.NameList.Child(list_names);
+			list_names=list_names.push();
 			_position_list=_position;
 			_token_list=_token;
 			_token=new Tokens.Rule.ListToken();
@@ -2420,8 +2397,8 @@ public class Parser{
 			}
 			if(_state==SUCCESS){
 				String _value = _token.getLastValue();
-				if(_value!=null&&list_names.add(_value)){
-					list_names_additions.add(_value);
+				if(_value!=null){
+					list_names.add(_value);
 				}
 				_token.add(_position,new Tokens.Name.ListNameToken(_value));
 			}
@@ -2470,7 +2447,6 @@ public class Parser{
 						_furthestPosition=_position;
 					}
 				}
-				list_names_additions=list_names_additions_list;
 				if(_state_26==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
@@ -2520,12 +2496,7 @@ public class Parser{
 						_position=_position_list;
 					}
 					else{
-						int _state_27 = _state;
 						parse__anonymous_14();
-						list_names_additions=list_names_additions_list;
-						if(_state_27==SUCCESS&&_state==FAILED){
-							_state=SUCCESS;
-						}
 						if(_state==FAILED){
 							if(_position>=_furthestPosition){
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"list(list)");
@@ -2534,16 +2505,14 @@ public class Parser{
 							_position=_position_list;
 						}
 						else{
-							int _state_28 = _state;
+							int _state_27 = _state;
 							while(_position<_inputLength){
 								parse__anonymous_15();
 								if(_state==FAILED){
-									list_names_additions=list_names_additions_list;
 									break;
 								}
 							}
-							if(_state_28==SUCCESS&&_state==FAILED){
-								list_names_additions=list_names_additions_list;
+							if(_state_27==SUCCESS&&_state==FAILED){
 								_state=SUCCESS;
 							}
 							if(_state==FAILED){
@@ -2564,18 +2533,12 @@ public class Parser{
 			}
 			_token=_token_list;
 			if(_state==FAILED){
-				if(list_names_additions!=null){
-					list_names.removeAll(list_names_additions);
-					list_names_additions.clear();
-				}
+				list_names.reject();
 			}
 			else if(_state==SUCCESS){
-				if(list_names_additions!=null){
-					list_names.addAll(list_names_additions);
-					list_names_additions.clear();
-				}
+				list_names.accept();
 			}
-			list_names_additions=list_names_additions_list;
+			list_names=list_names.pop();
 		}
 		public void parse_NAME(){
 			int _position_NAME = -1;
@@ -2630,19 +2593,11 @@ public class Parser{
 			}
 			_token=_token_NAME;
 		}
-		public Parser.NameList getListNamesSingleIgnoresCharacter(){
-			return list_names_single_ignores_character;
-		}
-		public void setListNamesSingleIgnoresCharacter(Parser.NameList newListNamesSingleIgnoresCharacter){
-			list_names_single_ignores_character = newListNamesSingleIgnoresCharacter;
-		}
 		public void parse_single_ignores_character(){
 			int _position_single_ignores_character = -1;
 			Token.Parsed _token_single_ignores_character = null;
 			int _length_single_ignores_character_brace = _inputLength;
 			if(brace_3.containsKey(_position)){
-				list_names_single_ignores_character=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_3.get(_position);
 				int _position_single_ignores_character_brace = _position;
 				_position+=1;
@@ -2722,7 +2677,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_single_ignores_character;
 			}
 			else{
 				_state=FAILED;
@@ -2732,19 +2686,11 @@ public class Parser{
 				}
 			}
 		}
-		public Parser.NameList getListNamesRegex(){
-			return list_names_regex;
-		}
-		public void setListNamesRegex(Parser.NameList newListNamesRegex){
-			list_names_regex = newListNamesRegex;
-		}
 		public void parse_regex(){
 			int _position_regex = -1;
 			Token.Parsed _token_regex = null;
 			int _length_regex_brace = _inputLength;
 			if(brace_3.containsKey(_position)){
-				list_names_regex=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_3.get(_position);
 				int _position_regex_brace = _position;
 				_position+=1;
@@ -2782,7 +2728,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_regex;
 			}
 			else{
 				_state=FAILED;
@@ -2792,19 +2737,11 @@ public class Parser{
 				}
 			}
 		}
-		public Parser.NameList getListNamesRegexGroupDefinition(){
-			return list_names_regex_group_definition;
-		}
-		public void setListNamesRegexGroupDefinition(Parser.NameList newListNamesRegexGroupDefinition){
-			list_names_regex_group_definition = newListNamesRegexGroupDefinition;
-		}
 		public void parse_regex_group_definition(){
 			int _position_regex_group_definition = -1;
 			Token.Parsed _token_regex_group_definition = null;
 			int _length_regex_group_definition_brace = _inputLength;
 			if(brace_2.containsKey(_position)){
-				list_names_regex_group_definition=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_2.get(_position);
 				int _position_regex_group_definition_brace = _position;
 				_position+=1;
@@ -2856,7 +2793,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_regex_group_definition;
 			}
 			else{
 				_state=FAILED;
@@ -2946,19 +2882,11 @@ public class Parser{
 				}
 			}
 		}
-		public Parser.NameList getListNamesRegexOption(){
-			return list_names_regex_option;
-		}
-		public void setListNamesRegexOption(Parser.NameList newListNamesRegexOption){
-			list_names_regex_option = newListNamesRegexOption;
-		}
 		public void parse_regex_option(){
 			int _position_regex_option = -1;
 			Token.Parsed _token_regex_option = null;
 			int _length_regex_option_brace = _inputLength;
 			if(brace_3.containsKey(_position)){
-				list_names_regex_option=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_3.get(_position);
 				int _position_regex_option_brace = _position;
 				_position+=1;
@@ -3039,7 +2967,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_regex_option;
 			}
 			else{
 				_state=FAILED;
@@ -3780,8 +3707,8 @@ public class Parser{
 			_position_definition=_position;
 			_token_definition=_token;
 			_token=new Tokens.Rule.DefinitionToken();
-			int _state_29 = _state;
-			boolean _iteration_achieved_29 = false;
+			int _state_28 = _state;
+			boolean _iteration_achieved_28 = false;
 			while(_position<_inputLength){
 				Token.Parsed _tokenelement = _token;
 				_token=new Tokens.Name.ChainToken();
@@ -3795,13 +3722,13 @@ public class Parser{
 					break;
 				}
 				else{
-					_iteration_achieved_29=true;
+					_iteration_achieved_28=true;
 				}
 			}
-			if(_iteration_achieved_29==false){
+			if(_iteration_achieved_28==false){
 				_state=FAILED;
 			}
-			else if(_state_29==SUCCESS&&_state==FAILED){
+			else if(_state_28==SUCCESS&&_state==FAILED){
 				_state=SUCCESS;
 			}
 			if(_state==FAILED){
@@ -3812,9 +3739,9 @@ public class Parser{
 				_position=_position_definition;
 			}
 			else{
-				int _state_30 = _state;
+				int _state_29 = _state;
 				parse__anonymous_17();
-				if(_state_30==SUCCESS&&_state==FAILED){
+				if(_state_29==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if(_state==FAILED){
@@ -3977,19 +3904,11 @@ public class Parser{
 				_token=_token__anonymous_18;
 			}
 		}
-		public Parser.NameList getListNamesComments(){
-			return list_names_comments;
-		}
-		public void setListNamesComments(Parser.NameList newListNamesComments){
-			list_names_comments = newListNamesComments;
-		}
 		public void parse_comments(){
 			int _position_comments = -1;
 			Token.Parsed _token_comments = null;
 			int _length_comments_brace = _inputLength;
 			if(brace_1.containsKey(_position)){
-				list_names_comments=list_names;
-				list_names=new Parser.NameList.Child(list_names);
 				_inputLength=brace_1.get(_position);
 				int _position_comments_brace = _position;
 				_position+=1;
@@ -4059,7 +3978,6 @@ public class Parser{
 				while(_position<_inputLength&&(false||_inputArray[_position]==' ')){
 					++_position;
 				}
-				list_names=list_names_comments;
 			}
 			else{
 				_state=FAILED;
@@ -4352,21 +4270,21 @@ public class Parser{
 			_position_regex_definition=_position;
 			_token_regex_definition=_token;
 			_token=new Token.Parsed("$ANON");
-			int _state_34 = _state;
-			boolean _iteration_achieved_34 = false;
+			int _state_33 = _state;
+			boolean _iteration_achieved_33 = false;
 			while(_position<_inputLength){
 				parse_regex_element();
 				if(_state==FAILED){
 					break;
 				}
 				else{
-					_iteration_achieved_34=true;
+					_iteration_achieved_33=true;
 				}
 			}
-			if(_iteration_achieved_34==false){
+			if(_iteration_achieved_33==false){
 				_state=FAILED;
 			}
-			else if(_state_34==SUCCESS&&_state==FAILED){
+			else if(_state_33==SUCCESS&&_state==FAILED){
 				_state=SUCCESS;
 			}
 			if(_state==FAILED){
@@ -4664,7 +4582,7 @@ public class Parser{
 			}
 			if(_state==FAILED){
 				if(_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[a-zA-Z0-9_\\\\s\\n(){}[];\\\"\\\\\'`,]+");
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"[a-zA-Z0-9_\\\\s\\\\n(){}[];\\\"\\\\\\\'`,]+");
 					_furthestPosition=_position;
 				}
 				_position=_position_regex_3;
@@ -4705,9 +4623,9 @@ public class Parser{
 				_position=_position_regex_element;
 			}
 			else{
-				int _state_35 = _state;
+				int _state_34 = _state;
 				parse__anonymous_22();
-				if(_state_35==SUCCESS&&_state==FAILED){
+				if(_state_34==SUCCESS&&_state==FAILED){
 					_state=SUCCESS;
 				}
 				if(_state==FAILED){
@@ -4745,9 +4663,9 @@ public class Parser{
 					_position=_position_regex_element;
 				}
 				else{
-					int _state_36 = _state;
+					int _state_35 = _state;
 					parse__anonymous_23();
-					if(_state_36==SUCCESS&&_state==FAILED){
+					if(_state_35==SUCCESS&&_state==FAILED){
 						_state=SUCCESS;
 					}
 					if(_state==FAILED){
@@ -4778,9 +4696,9 @@ public class Parser{
 						_position=_position_regex_element;
 					}
 					else{
-						int _state_37 = _state;
+						int _state_36 = _state;
 						parse__anonymous_24();
-						if(_state_37==SUCCESS&&_state==FAILED){
+						if(_state_36==SUCCESS&&_state==FAILED){
 							_state=SUCCESS;
 						}
 						if(_state==FAILED){
@@ -4830,9 +4748,9 @@ public class Parser{
 							_position=_position_regex_element;
 						}
 						else{
-							int _state_38 = _state;
+							int _state_37 = _state;
 							parse__anonymous_25();
-							if(_state_38==SUCCESS&&_state==FAILED){
+							if(_state_37==SUCCESS&&_state==FAILED){
 								_state=SUCCESS;
 							}
 							if(_state==FAILED){
@@ -5042,210 +4960,178 @@ public class Parser{
 			}
 		}
 	}
-	public static class NameList{
-		protected Parser.NameList.Node.Root root = new Parser.NameList.Node.Root();
+	public static class NameList extends HashSet<String>{
+		protected NameList parent = null;
+		protected Set<String> additions = new HashSet<String>();
+		public NameList(final NameList parent) {
+			super();
+			if(parent != null){
+				this.parent = parent;
+			}
+		}
 		public NameList() {
 		}
-		public Parser.NameList.Node.Root getRoot(){
-			return root;
+		public NameList getParent(){
+			return parent;
 		}
-		public void setRoot(Parser.NameList.Node.Root newRoot){
-			root = newRoot;
+		public void setParent(NameList newParent){
+			parent = newParent;
 		}
-		public boolean add(String newEntry){
-			return root.add(newEntry);
+		public Set<String> getAdditions(){
+			return additions;
 		}
-		public String get(int position,int length,char[] input){
-			return root.get(position,length,input);
+		public void setAdditions(Set<String> newAdditions){
+			additions = newAdditions;
 		}
-		public Set<String> list(){
-			return root.list();
-		}
-		public void clear(){
-			root.clear();
-		}
-		public void removeAll(Parser.NameList fromList){
-			root.removeAll(fromList.getRoot());
-		}
-		public void addAll(Parser.NameList fromList){
-			root.addAll(fromList.getRoot());
-		}
-		public static class Node{
-			protected Node[] children = new Node[128];
-			protected int numberOfEntries = 0;
-			protected String value = null;
-			public Node() {
+		public NameList push(){
+			NameList result = new NameList(this);
+			synchronized(this){
+				for(String newEntry:this){
+					result.supAdd(newEntry);
+				}
 			}
-			public Node[] getChildren(){
-				return children;
+			return result;
+		}
+		public NameList pop(){
+			return parent;
+		}
+		public boolean supAdd(String newAddition){
+			synchronized(this){
+				return super.add(newAddition);
 			}
-			public void setChildren(Node[] newChildren){
-				children = newChildren;
-			}
-			public int getNumberOfEntries(){
-				return numberOfEntries;
-			}
-			public void setNumberOfEntries(int newNumberOfEntries){
-				numberOfEntries = newNumberOfEntries;
-			}
-			public String getValue(){
-				return value;
-			}
-			public void setValue(String newValue){
-				value = newValue;
-			}
-			public boolean add(String newEntry,int position){
-				if(position<newEntry.length()){
-					if(children[newEntry.charAt(position)]==null){
-						children[newEntry.charAt(position)]=new Parser.NameList.Node();
-						++numberOfEntries;
-					}
-					return children[newEntry.charAt(position)].add(newEntry,position+1);
+		}
+		public boolean add(String addition){
+			synchronized(this){
+				if(super.add(addition)){
+					additions.add(addition);
+					return true;
 				}
 				else{
-					if(value==null||!value.equals(newEntry)){
-						value=newEntry;
-						return true;
-					}
-					else{
-						return false;
-					}
+					return false;
 				}
 			}
-			public String get(int position,int length,char[] input){
-				if(position>=length){
-					return value;
+		}
+		public void accept(){
+			if(parent!=null){
+				for(String newEntry:additions){
+					parent.add(newEntry);
 				}
-				if(children[input[position]]!=null){
-					String result = children[input[position]].get(position+1,length,input);
-					if(result!=null){
-						return result;
-					}
-					else{
-						return value;
-					}
-				}
-				return value;
 			}
-			public int remove(String toRemove,int index){
-				if(index>=toRemove.length()){
-					if(toRemove.equals(value)){
-						value=null;
-						return 0;
+			synchronized(this){
+				additions.clear();
+			}
+		}
+		public void reject(){
+			synchronized(this){
+				removeAll(additions);
+				if(parent!=null){
+					parent.removeAll(additions);
+				}
+				additions.clear();
+			}
+		}
+		public static class Builder{
+			protected StringBuilder builder = null;
+			protected int length = 0;
+			protected int state = 0;
+			protected boolean multiple_satisfied = false;
+			protected Map<Integer,String> _output = null;
+			public Builder(final Map<Integer,String> _output) {
+				if(_output != null){
+					this._output = _output;
+				}
+			}
+			public Builder() {
+			}
+			public StringBuilder getBuilder(){
+				return builder;
+			}
+			public void setBuilder(StringBuilder newBuilder){
+				builder = newBuilder;
+			}
+			public int getLength(){
+				return length;
+			}
+			public void setLength(int newLength){
+				length = newLength;
+			}
+			public int getState(){
+				return state;
+			}
+			public void setState(int newState){
+				state = newState;
+			}
+			public boolean getMultipleSatisfied(){
+				return multiple_satisfied;
+			}
+			public void setMultipleSatisfied(boolean newMultipleSatisfied){
+				multiple_satisfied = newMultipleSatisfied;
+			}
+			public Map<Integer,String> get_output(){
+				return _output;
+			}
+			public void set_output(Map<Integer,String> new_output){
+				_output = new_output;
+			}
+			public boolean can(int position,char newChar){
+				return false;
+			}
+			public boolean add(int position,char newChar){
+				if(can(position,newChar)){
+					if(builder==null){
+						builder=new StringBuilder();
+						length=0;
 					}
-					else{
-						return 2;
-					}
+					builder.append(newChar);
+					length+=1;
+					return true;
 				}
 				else{
-					if(children[toRemove.charAt(index)]!=null){
-						int result = children[toRemove.charAt(index)].remove(toRemove,index+1);
-						if(result<2){
-							if(numberOfEntries>1 ){
-								children[toRemove.charAt(index)]=null;
-								--numberOfEntries;
+					if(builder!=null&&state>=0 ){
+						String result = builder.toString();
+						_output.put(position-length,result);
+					}
+					builder=null;
+					state=0;
+					return false;
+				}
+			}
+			public void end(int position){
+				if(builder!=null&&state>=0 ){
+					String result = builder.toString();
+					_output.put(position-length,result);
+				}
+			}
+			public static class NAME extends Parser.NameList.Builder{
+				public NAME(final Map<Integer,String> initalSuper_output) {
+					super(initalSuper_output);
+				}
+				public NAME() {
+				}
+				public boolean can(int position,char nextChar){
+					switch(state){
+						case 0:{
+							if((nextChar>='a'&&nextChar<='z')||(nextChar>='A'&&nextChar<='Z')||nextChar=='_'){
+								state=1;
+								return true;
 							}
-							return numberOfEntries;
+							else{
+								state=-1;
+								return false;
+							}
 						}
-						else{
-							return result;
+						case 1:{
+							if((nextChar>='a'&&nextChar<='z')||(nextChar>='A'&&nextChar<='Z')||(nextChar>='0'&&nextChar<='9')||nextChar=='_'){
+								return true;
+							}
+							else{
+								state=2;
+								return can(position,nextChar);
+							}
 						}
 					}
-					else{
-						return 2;
-					}
+					return false;
 				}
-			}
-			public static class Root extends Parser.NameList.Node{
-				protected Set<String> allEntries = new HashSet<String>();
-				public Root() {
-					super();
-				}
-				public Set<String> getAllEntries(){
-					return allEntries;
-				}
-				public void setAllEntries(Set<String> newAllEntries){
-					allEntries = newAllEntries;
-				}
-				public boolean add(String newEntry){
-					if(allEntries.add(newEntry)){
-						return super.add(newEntry,0);
-					}
-					else{
-						return false;
-					}
-				}
-				public Set<String> list(){
-					return allEntries;
-				}
-				public void clear(){
-					for(String entry:allEntries){
-						children[entry.charAt(0)]=null;
-					}
-				}
-				public void removeAll(Parser.NameList.Node.Root fromNode){
-					for(String entry:fromNode.allEntries){
-						remove(entry,0);
-					}
-					allEntries.removeAll(fromNode.allEntries);
-					numberOfEntries=allEntries.size();
-				}
-				public void addAll(Parser.NameList.Node.Root fromNode){
-					for(String entry:fromNode.allEntries){
-						add(entry,0);
-					}
-				}
-			}
-		}
-		public static class Root extends Parser.NameList{
-			public Root() {
-				super();
-			}
-			public boolean add(String query){
-				synchronized(this){
-					return super.add(query);
-				}
-			}
-		}
-		public static class Child extends Parser.NameList{
-			protected NameList parentList = null;
-			public Child(final NameList parentList) {
-				super();
-				if(parentList != null){
-					this.parentList = parentList;
-				}
-			}
-			public Child() {
-			}
-			public NameList getParentList(){
-				return parentList;
-			}
-			public void setParentList(NameList newParentList){
-				parentList = newParentList;
-			}
-			public String get(int position,int length,char[] input){
-				String result = super.get(position,length,input);
-				String parentResult = parentList.get(position,length,input);
-				if(result!=null){
-					if(parentResult==null){
-						return result;
-					}
-					else if(parentResult.length()<result.length()){
-						return result;
-					}
-					else{
-						return parentResult;
-					}
-				}
-				else{
-					return parentResult;
-				}
-			}
-			public Set<String> list(){
-				Set<String> set = new HashSet<String>();
-				set.addAll(super.list());
-				set.addAll(parentList.list());
-				return set;
 			}
 		}
 	}
@@ -5350,46 +5236,68 @@ public class Parser{
 				}
 				if(parseTime<=0 ){
 					if(fileName==null){
-						return "\n\tError: "+errorAt+"\n\tLine Number: "+lineNumber;
+						return "\n\tLine Number: "+lineNumber+"\n\tError: "+errorAt;
 					}
 					else{
-						return "\n\tError: "+errorAt+"\n\tLine Number: "+lineNumber+"\n\tFile Name: "+fileName;
+						return "\nFile: "+fileName+" Line : "+lineNumber+"\n\tError: "+errorAt;
 					}
 				}
 				else{
 					if(position==-1 ){
 						if(parseTime<1000 ){
-							return "File Name: "+fileName+"\nParse Time: "+parseTime+"ms";
+							return "File: "+fileName+"\nParse Time: "+parseTime+"ms";
 						}
 						else{
-							return "File Name: "+fileName+"\nParse Time: "+parseTime/1000 +"."+parseTime%1000 +"s";
+							int minutes = (int)(parseTime/1000);
+							int hundreds = (int)(parseTime/100)%10;
+							int tens = (int)(parseTime/10)%10;
+							int ones = ((int)parseTime)%10;
+							return "File: "+fileName+"\nParse Time: "+minutes+"."+hundreds+""+tens+""+ones+"s";
 						}
 					}
 					else{
 						if(parseTime<1000 ){
-							return "\n\tError: "+errorAt+"\n\tLine Number: "+lineNumber+"\n\tFile Name: "+fileName+"\n\tParse Time: "+parseTime+"ms";
+							return "\n\tError: "+errorAt+"\n\tFile: "+fileName+" Line : "+lineNumber+"\n\tParse Time: "+parseTime+"ms";
 						}
 						else{
-							return "\n\tError: "+errorAt+"\n\tLine Number: "+lineNumber+"\n\tFile Name: "+fileName+"\n\tParse Time: "+parseTime/1000 +"."+parseTime%1000 +"s";
+							int minutes = (int)(parseTime/1000);
+							int hundreds = (int)(parseTime/100)%10;
+							int tens = (int)(parseTime/10)%10;
+							int ones = ((int)parseTime)%10;
+							return "\n\tError: "+errorAt+"\n\tFile: "+fileName+" Line: "+lineNumber+"\n\tParse Time: "+minutes+"."+hundreds+""+tens+""+ones+"s";
 						}
 					}
 				}
 			}
 			else{
-				if(parseTime==0 ){
+				if(parseTime<=0 ){
 					if(fileName==null){
 						return "";
 					}
 					else{
-						return "File Name: "+fileName;
+						return "File: "+fileName;
 					}
 				}
 				else{
 					if(parseTime<1000 ){
-						return "File Name: "+fileName+"\nParse Time: "+parseTime+"ms";
+						if(fileName==null){
+							return "Parse Time: "+parseTime+"ms";
+						}
+						else{
+							return "File: "+fileName+"\nParse Time: "+parseTime+"ms";
+						}
 					}
 					else{
-						return "File Name: "+fileName+"\nParse Time: "+parseTime/1000 +"."+parseTime%1000 +"s";
+						int minutes = (int)(parseTime/1000);
+						int hundreds = (int)(parseTime/100)%10;
+						int tens = (int)(parseTime/10)%10;
+						int ones = ((int)parseTime)%10;
+						if(fileName==null){
+							return "Parse Time: "+minutes+"."+hundreds+""+tens+""+ones+"s";
+						}
+						else{
+							return "File: "+fileName+"\nParse Time: "+minutes+"."+hundreds+""+tens+""+ones+"s";
+						}
 					}
 				}
 			}
@@ -5448,7 +5356,16 @@ public class Parser{
 			}
 			public String toString(){
 				if(fileName!=null){
-					return "Passed:\n\t"+super.toString();
+					String realFileName = fileName;
+					fileName=null;
+					String result = super.toString();
+					fileName=realFileName;
+					if(result.equals("")){
+						return null;
+					}
+					else{
+						return "Passed: "+result;
+					}
 				}
 				else{
 					return null;
@@ -5477,7 +5394,32 @@ public class Parser{
 				ruleName = newRuleName;
 			}
 			public String toString(){
-				return "Failed:\n\tRule:"+ruleName+super.toString();
+				return "Failed: "+ruleName+super.toString();
+			}
+			public static class EOF extends Parser.Result{
+				protected String erroneousFile = null;
+				public EOF(final Integer initalSuperState, final Integer initalSuperPosition, final List<Integer> initalSuperLineNumberRanges, final String initalSuperInput, final String initalSuperFileName, final String erroneousFile) {
+					super(initalSuperState, initalSuperPosition, initalSuperLineNumberRanges, initalSuperInput, initalSuperFileName);
+					if(erroneousFile != null){
+						this.erroneousFile = erroneousFile;
+					}
+				}
+				public EOF(final String erroneousFile) {
+					if(erroneousFile != null){
+						this.erroneousFile = erroneousFile;
+					}
+				}
+				public EOF() {
+				}
+				public String getErroneousFile(){
+					return erroneousFile;
+				}
+				public void setErroneousFile(String newErroneousFile){
+					erroneousFile = newErroneousFile;
+				}
+				public String toString(){
+					return "End of file not reached:"+erroneousFile;
+				}
 			}
 		}
 		public static class Acceptor extends Parser.Result{
@@ -5508,10 +5450,12 @@ public class Parser{
 			public String toString(){
 				StringBuilder builder = new StringBuilder();
 				for(Parser.Result result:results){
-					String resultString = result.toString();
-					if(resultString!=null){
-						builder.append("\n");
-						builder.append(resultString);
+					if(result!=null){
+						String resultString = result.toString();
+						if(resultString!=null){
+							builder.append("\n");
+							builder.append(resultString);
+						}
 					}
 				}
 				return super.toString()+builder.toString();

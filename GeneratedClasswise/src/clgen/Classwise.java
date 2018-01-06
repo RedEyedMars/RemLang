@@ -612,10 +612,10 @@ public void type_var(final Token input,final Type output,final Boolean isInner,f
 			}
 		}
 		else if (element.getName().equals("class")) {
-			Type ret = null;
 			ExternalStatement value = null;
 			if (element.get("class_variable_names") != null) {
 				value = /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("class_variable_names").toString()))));
+				output.plain();
 			}
 			else  {
 				value = /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.get("class_names").toString()))));

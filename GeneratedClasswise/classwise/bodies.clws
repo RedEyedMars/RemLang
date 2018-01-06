@@ -3,6 +3,10 @@
 > BodyGenerator body = new BodyGenerator();
 > class BodyGenerator // {
     ~Integer exceptionIndex = 0;
+    ~Boolean isClassArgument = false;
+    void setIsClassArgument(Boolean newClassArgument){
+      isClassArgument = newClassArgument;
+    }
     Statement element(Token input, Boolean isInner, Context parentContext) {
       for Token element: input.getAll() {
         if element.getName().equals("body_manipulate") {
@@ -137,7 +141,7 @@
           
           if conditionalName.contains("case") {
             Statement previousStatement = statement;
-            return new Statement.Conditional(conditionalName,| `previousStatement`+":"|,conditionalBody);
+            return new Statement.Conditional(conditionalName.trim()\+" ","",| `previousStatement`+":"|,"",conditionalBody);
           }
           else {
             return new Statement.Conditional(conditionalName,statement,conditionalBody);
@@ -172,11 +176,14 @@
 	  return statement;
 	}
 	
+	~Boolean statementIsBraced = false;
 	Statement call(Token input, Boolean mustInner, Context parentContext){
 	  Boolean isInner = mustInner || input->"inner" != null;
 	  if input->"as_braced" != null {
 	    Statement call = new Statement ();
+	    statementIsBraced = true;
 	    call.add(|(`body.statement(input->"as_braced"->"left"->"statement_as_braced"->"body_statement",isInner,parentContext)`)|);
+	    statementIsBraced = false;
 	    if input->"as_braced"->"OPERATOR" != null {
 	      call.set(input->"as_braced"->"OPERATOR".getValue().trim());
 	    }
@@ -187,6 +194,12 @@
 	  }
 	  Statement statement = new Statement ();
 	  statement.set(".");
+	  ~Boolean containsNameName = false;
+	  for Token element: input.getAllSafely("group") {
+	    if element->"NAME" != null {
+	      containsNameName = true;
+	    }
+	  }
 	  for Token element: input.getAllSafely("group") {
 		Parameters parameters = new Parameters ();
 		Parameters arrayParameters = new Parameters ();
@@ -197,7 +210,12 @@
 		    classwise.type_var(atom,subjectAsType,isInner,parentContext);
 		  }
 		  if element->"NEW" == null {
-		    subjectAsType.as_variable();
+		    if isClassArgument == false {
+		      subjectAsType.as_variable();
+		    }
+		    else {
+		      subjectAsType.as_entry();
+		    }
 		  }
 		  subject = subjectAsType.getAsStatement();
 		}

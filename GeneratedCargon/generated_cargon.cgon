@@ -38,7 +38,7 @@ rule
 	NAME as ruleName ( rule_parameters )?  ( ( "=" | "\n\t" ) definition )
 
 list
-	NAME as listName in list_names "global"? "list" ("with" NAME as listRuleName)? ( ( ","| "\n\t" ) quote | "\n" )*
+	NAME as listName in list_names "global"? "list" ("with" NAME as listRuleName) ( ( ","| "\n\t" ) quote | "\n" )*
 
 definition
 	element as chain+ ( ( "|" | "\n\t" ) definition ) as choice?

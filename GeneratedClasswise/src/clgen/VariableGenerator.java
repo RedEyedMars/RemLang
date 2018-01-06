@@ -58,7 +58,14 @@ public ExternalVariableEntry declaration(final Token declaration,final Boolean m
 	}
 	newVariable.setType(type.getAsStatement());
 	if (declaration.get("method_argument") != null) {
-		newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
+		if (newVariable.getTypeName().equals("ExternalClassEntry")) {
+			MainFlow.variables.get_body().setIsClassArgument(true);
+			newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
+			MainFlow.variables.get_body().setIsClassArgument(false);
+		}
+		else  {
+			newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
+		}
 	}
 	if (isInner) {
 		newVariable.setIsFinal(true);

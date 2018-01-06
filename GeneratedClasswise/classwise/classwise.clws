@@ -443,10 +443,10 @@
         }
       }
       else if element.getName().equals("class") {
-        ~Type ret = null;
         ~Statement value = null;
         if element->"class_variable_names" != null {
           value = |'element->"class_variable_names"'|;
+          output.plain();
         }
         else {
           value = |'element->"class_names"'|;
@@ -544,6 +544,7 @@ import variables.clws
     ~List<Statement > templateTypes = new ArrayList<Statement >();
     ~Boolean isInlineList = false;
     ~Boolean isInner = true;
+    ~Boolean isActuallyPlain = false;
     ~Boolean isPlain = true;
     ~Boolean isAsVariable = false;
     ~int numberOfArraySymbols = 0;
@@ -575,6 +576,7 @@ import variables.clws
     }
     void plain(){
       isPlain = true;
+      isActuallyPlain = true;
     }
     void as_entry(){
       isPlain = false;
@@ -642,7 +644,9 @@ import variables.clws
     }
     void addFindMethod(Statement newFindMethod){
       findMethod = newFindMethod;
-      isPlain = false;
+      if isActuallyPlain == false {
+        isPlain = false;
+      }
     }
     
     void update(){

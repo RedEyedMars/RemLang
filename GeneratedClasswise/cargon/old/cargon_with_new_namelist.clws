@@ -10,9 +10,6 @@
 > Statement globalIgnoresHeader = new Statement ();
 > Map<String, Statement > ruleIgnoresHeaders = new HashMap<String, Statement >();
 > Set<String> variableDeclarationNames = new HashSet<String>();
-> Map<String, Set<String> > ruleHeirachy = new HashMap<String, Set<String>>();
-> Set<String > listNames = new HashSet<String>();
-> Map<String, %T > subRulesProposed = new HashMap<String, %T >();
 > void setup(%Result data){
     Parser.setupCompile();
   }
@@ -44,22 +41,12 @@
 	root : rule : rule {
 		Parser.findRuleHeirachy(rule);
 	}
-	~boolean hasAllRulesDefined = true;
-	for String ruleName: subRulesProposed.keySet() {
-	  if ruleHeirachy.containsKey(ruleName) == false && listNames.contains(ruleName)==false {
-	    System.out.println("Could not find rule name: "\+ruleName\+" from :");
-	    subRulesProposed.get(ruleName).print();
-	    hasAllRulesDefined = false;
-	  }
-	}
-	if hasAllRulesDefined {
-	  Parser.consolidateRuleHeirachy();
-	  root : rule : rule {
+	Parser.consolidateRuleHeirachy();
+	root : rule : rule {
 		Parser.define(rule,null);
-	  }
-	  Parser.outputBraces();
-	  Parser.output();
 	}
+	Parser.outputBraces();
+	Parser.output();  
   }
 
 > String parserPackageName = "com.rem.gen.parser";
@@ -133,6 +120,7 @@ class 'packageName'."parser" Parser {
 > Map<String, Body > ruleForeBodies = new HashMap<String, Body >();
 > Map<String,String> parentRuleNames = new HashMap<String,String>();
 > Set<String > silentRules = new HashSet<String>();
+> Set<String > listNames = new HashSet<String>();
 > Set<String > globalListNames = new HashSet<String>();
 > Map<String, String> listFirstPassRules = new HashMap<String, String>();
 > Set<String> listPreparers = new HashSet<String>();
@@ -153,6 +141,7 @@ class 'packageName'."parser" Parser {
 > Map<Integer, Map<String, List<Integer>>> declaredBraceOpenValues = new HashMap<Integer, Map<String, List<Integer>>>();
 > Map<Integer, Map<String, List<Integer>>> declaredBraceCloseValues = new HashMap<Integer, Map<String, List<Integer>>>();
 > Map<String, Integer> declaredBracePasses = new HashMap<String, Integer>();
+> Map<String, Set<String> > ruleHeirachy = new HashMap<String, Set<String>>();
 > Parameters newContextParameters = new Parameters ();
 
 > ~Integer currentPositionIndex = 0;
@@ -500,28 +489,27 @@ class 'packageName'."parser" Parser {
         ROOT_NAME = ruleName;
       }
       ruleToken : definition : definition {
-        \findRuleHeirachy(ruleName,definition,ruleToken,ruleHeirachy.get(ruleName));
+        \findRuleHeirachy(ruleName,definition,ruleHeirachy.get(ruleName));
       }
     }
   }
-> void findRuleHeirachy(String ruleName, %T definition, %T parentRule, Set<String> subRuleSet){
+> void findRuleHeirachy(String ruleName, %T definition, Set<String> subRuleSet){
     ~Boolean hasFoundStopToken = false; 
     definition : chain : chain {
       chain : element : element {
         if hasFoundStopToken == false {
           element : atom : multiple {
             atom : quark : definition {
-              \findRuleHeirachy(ruleName, quark, parentRule, subRuleSet);
+              \findRuleHeirachy(ruleName, quark, subRuleSet);
             }
           }
           : braced_definition {
             atom : quark : definition {
-              \findRuleHeirachy(ruleName, quark, parentRule, subRuleSet);
+              \findRuleHeirachy(ruleName, quark, subRuleSet);
             }
           }
           : ruleToken {
             subRuleSet.add('element');
-            subRulesProposed.put('element',parentRule);
           }
           : regexToken {
             hasFoundStopToken = true;
@@ -534,7 +522,7 @@ class 'packageName'."parser" Parser {
     }
     definition : choice : choice {
       choice : element : definition {
-        \findRuleHeirachy(ruleName, element, parentRule, subRuleSet);
+        \findRuleHeirachy(ruleName, element, subRuleSet);
       }
     }
   }
@@ -565,10 +553,11 @@ class 'packageName'."parser" Parser {
   }
 > void list(%T input){
     String listName = 'input->"listName"';
-    Parser += ~Parser->NameList 'listName'+"_root" = new Parser->NameList(null);
+    Parser += ~Parser->NameList->Root 'listName'+"_root" = new Parser->NameList->Root();
     newContextParameters.add(|'input->"listName"'+"_root"|);
     Parser->Context += Parser->NameList 'input->"listName"'+"_root" = null;
     Parser->Context += ~Parser->NameList 'input->"listName"' = null;
+    Parser->Context += ~Parser->NameList 'input->"listName"'+"_additions" = null;
     Parser->Context->*.appendToBody(|
       'input->"listName"' = 'input->"listName"'+"_root";|); 
     listNames.add('input->"listName"');
@@ -600,15 +589,20 @@ class 'packageName'."parser" Parser {
     Body listDeclarations = new Body ();
       for String listName: listNames {
         if globalListNames.contains(listName) == false{
+          String subListName = 'listName'+"_"+'ruleName' ;
+          if variableDeclarationNames.add(subListName){
+            Parser->Context += ~Parser->NameList 'subListName' = null;
+          }
+          listDeclarations.add(|'subListName' = 'listName';|);
           if hasSecondPass {
             listDeclarations.add(|
               if "_pass" == "SECOND_PASS" {
-                'listName' = 'listName'.push();
+                'listName' = new Parser->NameList->Child('listName');
               }|);
           }
           else {
             listDeclarations.add(|
-              'listName' = 'listName'.push();|);
+              'listName' = new Parser->NameList->Child('listName');|);
           }
         }
       }
@@ -618,7 +612,8 @@ class 'packageName'."parser" Parser {
     Body listReallocations = new Body ();
       for String listName: listNames {
         if globalListNames.contains(listName) == false {
-          listReallocations.add(|'listName' = 'listName'.pop();|);
+          String subListName = 'listName'+"_"+'ruleName' ;
+          listReallocations.add(|'listName' = 'subListName';|);
         }
       }
     return listReallocations;
@@ -681,8 +676,13 @@ class 'packageName'."parser" Parser {
       String forRuleName = handleListAdditions.get(ruleName);
       if listNamesInRule.containsKey(forRuleName){
         for String listName: listNamesInRule.get(forRuleName) {
-          currentOption.add(|'listName' = 'listName'.push();|);
-          handleListAdditionAftBodies.get(ruleName).add(|'listName' = 'listName'.pop();|);
+          String subListName = 'listName'\+"_additions_"\+'ruleName';
+          if variableDeclarationNames.add(subListName){
+            Parser->Context += ~Parser->NameList 'subListName' = null;
+          }
+          currentOption.add(|'subListName' = 'listName'+"_additions";|);
+          currentOption.add(|'listName'+"_additions" = new Parser->NameList->Child('listName');|);
+          handleListAdditionAftBodies.get(ruleName).add(|'listName'+"_additions" = 'subListName';|);
         }
       }
     }
@@ -696,7 +696,8 @@ class 'packageName'."parser" Parser {
           String forRuleName = handleListAdditions.get(ruleName);
           if listNamesInRule.containsKey(forRuleName){
             for String listName: listNamesInRule.get(forRuleName) {
-              currentOption.add(|'listName'.reject();|);
+              currentOption.add(|'listName'.removeAll('listName'+"_additions");|);
+              currentOption.add(|'listName'+"_additions".clear();|);
             }
           }
         }
@@ -737,9 +738,17 @@ class 'packageName'."parser" Parser {
           previousOption.add(\getListReallocations(ruleName));
         }
         for String listName: listNamesInRule.get(forRuleName) {
-          removeAdditionsBody.add(|'listName'.reject();|);
-          addAdditionBody.add(|'listName'.accept();|);
-          previousOption.add(|'listName' = 'listName'.pop();|);
+          removeAdditionsBody.add(|if 'listName'+"_additions" != null {
+            'listName'.removeAll('listName'+"_additions");
+            'listName'+"_additions".clear();
+            }|);
+          addAdditionBody.add(|if 'listName'+"_additions" != null {
+            'listName'.addAll('listName'+"_additions");
+            'listName'+"_additions".clear();
+            }|);
+          
+          String subListName = 'listName'\+"_additions_"\+'ruleName';
+          previousOption.add(|'listName'+"_additions" = 'subListName';|);
         }
       }
     }
@@ -874,7 +883,7 @@ class 'packageName'."parser" Parser {
           }
           "_position" = "_position_"+'ruleName';
           "_state" = "FAILED";
-		  System.err.println(''"Could not find file:"''\+_directoryName\+"_fileNameBuilder".toString());
+		  System.err.println(''"Could not find file:"''\+_directoryName\+_fileNameBuilder.toString());
         }|);
       \define(input->"import_definition",ruleName,parentRuleName, handleBracedTokenName, importRuleNames, {if "_state" == SUCCESS `fileNameStatement`}, rule);
       if rules.containsKey(fileImportRuleName) == false {
@@ -1093,8 +1102,8 @@ class 'packageName'."parser" Parser {
       if element->"listName"!=null {
         rule.add(|if "_state" == "SUCCESS" {
           String _value = "_token".getLastValue();
-          if _value!=null {
-            'element->"listName"'.add(_value);
+          if _value!=null && 'element->"listName"'.add(_value) {
+            'element->"listName"'+"_additions".add(_value);
           }
         }|);
         if listNamesInRule.containsKey(parentRuleName) == false {
@@ -1272,7 +1281,9 @@ class 'packageName'."parser" Parser {
         if element->"listName" != null {
           rule.add(|if "_state" == "SUCCESS" {
             "_token".add('currentPositionValue',new Tokens->Plain->'newTokenName'("_input".substring('currentPositionValue',"_position")));
-            'element->"listName"'.add("_input".substring('currentPositionValue',"_position"));
+            if 'element->"listName"'.add("_input".substring('currentPositionValue',"_position")) {
+              'element->"listName"'+"_additions".add("_input".substring('currentPositionValue',"_position"));
+            }
             while `ruleIgnoresHeaders.get(ruleName)` {
               "++_position";
             }
@@ -1344,7 +1355,7 @@ class 'packageName'."parser" Parser {
                 "_state" = "FAILED";
               }
               else {
-                Token->Parsed _first_pass_token = new Tokens->Rule->'passRuleName'(_result);
+                Token->Parsed _first_pass_token = new Tokens->Name->'passRuleName'(_result);
                 _token.add("_position",_first_pass_token);
                 "_position" \+= "_result".length();
                 while `ruleIgnoresHeaders.get(ruleName)` {
@@ -1457,8 +1468,8 @@ class 'packageName'."parser" Parser {
           }
           rule.add(|if "_state" == "SUCCESS" {
             String _value = "_token".getLastValue();
-            if _value!=null  {
-              'element->"listName"'.add(_value);
+            if _value!=null && 'element->"listName"'.add(_value) {
+              'element->"listName"'+"_additions".add(_value);
             }
             "_token".add("_position",new Tokens->Name->'listTokenName'(_value));
           }|);
@@ -2099,57 +2110,29 @@ class 'packageName'."parser" Parser {
     }
   }
   class NameList / HashSet<String> / {
-    
-    NameList parent = null;
-    ~Set<String> additions = new HashSet<String>();
-    NameList push(){
-      NameList result = new NameList(this);
-      synchronized this {
-        for String newEntry: this{
-		  result.supAdd(newEntry);
-	    }
-	  }
-      return result;
-    }
-    NameList pop() {
-      return parent;
-    }
-    boolean supAdd(String newAddition){
-      synchronized this {
-        return super.add(newAddition);
+    class Root / NameList / {
+      boolean add(String newString){
+        synchronized this {
+          return super.add(newString);
+        }
+      }
+      boolean contains(Object candidate){
+        synchronized this {
+          return super.contains(candidate);
+        }
       }
     }
-    boolean add(String addition){
-      synchronized this {
-        if super.add(addition) {
-          additions.add(addition);
+    class Child / NameList / {
+      NameList parent = null;
+      boolean contains(Object candidate){
+        if super.contains(candidate) {
           return true;
         }
         else {
-          return false;
+          return parent.contains(candidate);
         }
       }
     }
-    void accept(){
-      if parent!=null {
-        for String newEntry:additions {
-          parent.add(newEntry);
-		}
-      }
-      synchronized this {
-        additions.clear();
-      }
-    }
-    void reject(){
-      synchronized this {
-        \removeAll(additions);
-        if parent!=null {
-          parent.removeAll(additions);
-	    }
-        additions.clear();
-      }
-    }
-    
     class Builder // {
       ~StringBuilder builder = null;
       ~int length = 0;
@@ -2248,11 +2231,7 @@ class 'packageName'."parser" Parser {
               return '' "File: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime \+ '' "ms" '';
             }
             else {
-              int minutes = (int)(parseTime / 1000);
-              int hundreds = (int)(parseTime/100) %10;
-              int tens = (int)(parseTime/10) %10;
-              int ones = ((int)parseTime) %10;
-              return '' "File: " '' \+fileName\+'' "\\nParse Time: " '' \+ minutes \+ '' "." ''\+hundreds\+''""''\+tens \+''""''\+ones\+'' "s" '';
+              return '' "File: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
             }
           }
           else {
@@ -2260,11 +2239,7 @@ class 'packageName'."parser" Parser {
               return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tFile: " '' \+fileName\+'' " Line : " '' \+lineNumber\+'' "\\n\\tParse Time: " '' \+ parseTime \+ '' "ms" '';
             }
             else {
-              int minutes = (int)(parseTime / 1000);
-              int hundreds = (int)(parseTime/100) %10;
-              int tens = (int)(parseTime/10) %10;
-              int ones = ((int)parseTime) %10;
-              return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tFile: " '' \+fileName\+'' " Line: " '' \+lineNumber\+'' "\\n\\tParse Time: " '' \+ minutes \+ '' "." ''\+hundreds\+''""''\+tens \+''""''\+ones\+'' "s" '';
+              return '' "\\n\\tError: " '' \+errorAt\+'' "\\n\\tFile: " '' \+fileName\+'' " Line: " '' \+lineNumber\+'' "\\n\\tParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
             }
           }
         }
@@ -2288,15 +2263,11 @@ class 'packageName'."parser" Parser {
             }
           }
           else {
-            int minutes = (int)(parseTime / 1000);
-            int hundreds = (int)(parseTime/100) %10;
-            int tens = (int)(parseTime/10) %10;
-            int ones = ((int)parseTime) %10;
             if fileName == null {
-              return '' "Parse Time: " '' \+ minutes \+ '' "." ''\+hundreds\+''""''\+tens \+''""''\+ones\+'' "s" '';
+              return '' "Parse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
             }
             else {
-              return '' "File: " '' \+fileName\+'' "\\nParse Time: " '' \+ minutes \+ '' "." ''\+hundreds\+''""''\+tens \+''""''\+ones\+'' "s" '';
+              return '' "File: " '' \+fileName\+'' "\\nParse Time: " '' \+ parseTime / 1000 \+ '' "." ''\+parseTime \% 1000 \+ '' "s" '';
             }
           }
         }

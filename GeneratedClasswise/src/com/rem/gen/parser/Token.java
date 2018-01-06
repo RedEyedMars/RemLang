@@ -8,7 +8,7 @@ import java.util.Map;
 import com.rem.gen.parser.Token;
 import com.rem.gen.parser.Parser;
 
-public  interface Token{
+public interface Token{
 	public Token get(String tokenName);
 	public Token getLast();
 	public Token getLast(String tokenName);
@@ -58,19 +58,11 @@ public  interface Token{
 		public void setValue(String newValue){
 		}
 		public String getLastValue(){
-			if (children.isEmpty()){
+			if(children.isEmpty()){
 				return null;
 			}
-			else {
+			else{
 				return children.get(children.size()-1).getValue();
-			}
-		}
-		public Token.Parsed getPollLast(){
-			if (children.isEmpty()){
-				return null;
-			}
-			else {
-				return children.remove(children.size()-1);
 			}
 		}
 		public void add(Integer position,Token.Parsed newToken){
@@ -78,9 +70,37 @@ public  interface Token{
 			positions.add(position);
 		}
 		public void addAll(Token.Parsed inductee){
-			for (Integer i = 0;i< inductee.children.size();++i){
+			for(Integer i = 0;i<inductee.children.size();i++){
 				children.add(inductee.children.get(i));
 				positions.add(inductee.positions.get(i));
+			}
+		}
+		public static class Import extends Token.Parsed{
+			protected String fileName = null;
+			public Import(final String initalSuperName, final String fileName) {
+				super(initalSuperName);
+				if(fileName != null){
+					this.fileName = fileName;
+				}
+			}
+			public Import(final String fileName) {
+				if(fileName != null){
+					this.fileName = fileName;
+				}
+			}
+			public Import() {
+			}
+			public String getFileName(){
+				return fileName;
+			}
+			public void setFileName(String newFileName){
+				fileName = newFileName;
+			}
+			public List<Token.Parsed> getChildren(){
+				return Parser.contexts.get(fileName).get_root().getChildren();
+			}
+			public List<Integer> getPositions(){
+				return Parser.contexts.get(fileName).get_root().getPositions();
 			}
 		}
 	}
@@ -139,6 +159,9 @@ public  interface Token{
 		public void setContext(Parser.Result.Pass newContext){
 			context = newContext;
 		}
+		public Token get(String tokenName){
+			return this;
+		}
 		public Token getLast(){
 			return null;
 		}
@@ -156,11 +179,14 @@ public  interface Token{
 		public List<Token> getAllSafely(String key){
 			return new ArrayList<Token>();
 		}
+		public String toString(){
+			return getValue();
+		}
 		public void print(){
 			printShort();
 		}
 		public void print(int tab){
-			for (Integer i = 0;i< tab;++i){
+			for(Integer i = 0;i<tab;i++){
 				System.out.print("  ");
 			}
 			printShort();
@@ -172,17 +198,11 @@ public  interface Token{
 			System.out.print(value);
 			System.out.println("]");
 		}
-		public String toString(){
-			return value;
-		}
 		public String getFileName(){
 			return context.getFileName();
 		}
 		public int getLineNumber(){
 			return context.getLineNumber(position);
-		}
-		public Token get(String tokenName){
-			return this;
 		}
 	}
 	public static class Branch implements Token{
@@ -244,20 +264,20 @@ public  interface Token{
 		public void setContext(Parser.Result.Pass newContext){
 			context = newContext;
 		}
+		public Token get(String tokenName){
+			List<Token> nameList = namedLists.get(tokenName);
+			if(nameList==null||nameList.isEmpty()){
+				return null;
+			}
+			else{
+				return nameList.get(0);
+			}
+		}
 		public String getValue(){
 			return children.get(0).getValue();
 		}
 		public String toString(){
 			return children.get(0).getValue();
-		}
-		public Token get(String tokenName){
-			List<Token> nameList = namedLists.get(tokenName);
-			if (nameList==null||nameList.isEmpty()){
-				return null;
-			}
-			else {
-				return nameList.get(0);
-			}
 		}
 		public Token getLast(){
 			return children.get(children.size()-1);
@@ -267,7 +287,7 @@ public  interface Token{
 		}
 		public void add(Token token){
 			children.add(token);
-			if (namedLists.containsKey(token.getName())==false){
+			if(namedLists.containsKey(token.getName())==false){
 				namedLists.put(token.getName(),new ArrayList<Token>());
 			}
 			namedLists.get(token.getName()).add(token);
@@ -279,30 +299,30 @@ public  interface Token{
 			return namedLists.get(key);
 		}
 		public List<Token> getAllSafely(String key){
-			if (namedLists.containsKey(key)){
+			if(namedLists.containsKey(key)){
 				return namedLists.get(key);
 			}
-			else {
+			else{
 				return new ArrayList<Token>();
 			}
 		}
 		public void print(){
 			System.out.println(":>"+name);
-			for (Token node: children){
+			for(Token node:children){
 				node.print(1);
 			}
 		}
 		public void print(int tab){
-			for (Integer i = 0;i< tab;++i){
+			for(Integer i = 0;i<tab;i++){
 				System.out.print("  ");
 			}
 			System.out.println(name);
-			for (Token node: children){
+			for(Token node:children){
 				node.print(tab+1);
 			}
 		}
 		public void printShort(){
-			for (Token node: children){
+			for(Token node:children){
 				System.out.print("[");
 				System.out.print(node.getName());
 				System.out.print(":");

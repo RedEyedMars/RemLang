@@ -31,6 +31,8 @@ public class  BodyGenerator   {
 
 	//Internals
 protected Integer exceptionIndex = 0;
+protected Boolean isClassArgument = false;
+protected Boolean statementIsBraced = false;
 protected Integer tempTokenElementIndex = 0;
 
 	public Integer getExceptionIndex()  {
@@ -39,12 +41,27 @@ protected Integer tempTokenElementIndex = 0;
 	public Integer get_exceptionIndex()  {
 		return exceptionIndex;
 	}
+	public Boolean getIsClassArgument()  {
+		return isClassArgument;
+	}
+	public Boolean get_isClassArgument()  {
+		return isClassArgument;
+	}
+	public Boolean getStatementIsBraced()  {
+		return statementIsBraced;
+	}
+	public Boolean get_statementIsBraced()  {
+		return statementIsBraced;
+	}
 	public Integer getTempTokenElementIndex()  {
 		return tempTokenElementIndex;
 	}
 	public Integer get_tempTokenElementIndex()  {
 		return tempTokenElementIndex;
 	}
+public void setIsClassArgument(final Boolean newClassArgument)  {
+	isClassArgument = newClassArgument;
+}
 public ExternalStatement element(final Token input,final Boolean isInner,final ExternalContext parentContext)  {
 	for (final Token element :  input.getAll()) {
 		if (element.getName().equals("body_manipulate")) {
@@ -194,7 +211,7 @@ public ExternalStatement element(final Token input,final Boolean isInner,final E
 			}
 			if (conditionalName.contains("case")) {
 				final ExternalStatement previousStatement = statement;
-				return new ExternalStatement.Conditional(conditionalName,/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*InCl*/new ExternalStatement(previousStatement), /*Name*/new ExternalStatement(new StringEntry(":")))))),conditionalBody);
+				return new ExternalStatement.Conditional(conditionalName.trim() + " ","",/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*InCl*/new ExternalStatement(previousStatement), /*Name*/new ExternalStatement(new StringEntry(":")))))),"",conditionalBody);
 			}
 			else  {
 				return new ExternalStatement.Conditional(conditionalName,statement,conditionalBody);
@@ -234,7 +251,9 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 	final Boolean isInner = mustInner || input.get("inner") != null;
 	if (input.get("as_braced") != null) {
 		final ExternalStatement call = new ExternalStatement();
+		statementIsBraced = true;
 		call.add(/*Name*/new ExternalStatement(/*Brac*/new ExternalStatement(new StringEntry("("),new StringEntry(")"),"", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().statement(input.get("as_braced").get("left").get("statement_as_braced").get("body_statement"),isInner,parentContext)))))));
+		statementIsBraced = false;
 		if (input.get("as_braced").get("OPERATOR") != null) {
 			call.set(input.get("as_braced").get("OPERATOR").getValue().trim());
 		}
@@ -245,6 +264,12 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 	}
 	final ExternalStatement statement = new ExternalStatement();
 	statement.set(".");
+	Boolean containsNameName = false;
+	for (final Token element :  input.getAllSafely("group")) {
+		if (element.get("NAME") != null) {
+			containsNameName = true;
+		}
+	}
 	for (final Token element :  input.getAllSafely("group")) {
 		final ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
 		final ExternalStatement.Parameters arrayParameters = new ExternalStatement.Parameters();
@@ -255,7 +280,12 @@ public ExternalStatement call(final Token input,final Boolean mustInner,final Ex
 				MainFlow.variables.get_classwise().type_var(atom,subjectAsType,isInner,parentContext);
 			}
 			if (element.get("NEW") == null) {
-				subjectAsType.as_variable();
+				if (isClassArgument == false) {
+					subjectAsType.as_variable();
+				}
+				else  {
+					subjectAsType.as_entry();
+				}
 			}
 			subject = subjectAsType.getAsStatement();
 		}

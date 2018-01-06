@@ -34,6 +34,7 @@ protected List<List<TypeStatement>> parts = new ArrayList<List<TypeStatement>>()
 protected List<ExternalStatement> templateTypes = new ArrayList<ExternalStatement>();
 protected Boolean isInlineList = false;
 protected Boolean isInner = true;
+protected Boolean isActuallyPlain = false;
 protected Boolean isPlain = true;
 protected Boolean isAsVariable = false;
 protected int numberOfArraySymbols = 0;
@@ -70,6 +71,12 @@ protected ExternalStatement findMethod = null;
 	}
 	public Boolean get_isInner()  {
 		return isInner;
+	}
+	public Boolean getIsActuallyPlain()  {
+		return isActuallyPlain;
+	}
+	public Boolean get_isActuallyPlain()  {
+		return isActuallyPlain;
 	}
 	public Boolean getIsPlain()  {
 		return isPlain;
@@ -130,6 +137,7 @@ public void as_variable()  {
 }
 public void plain()  {
 	isPlain = true;
+	isActuallyPlain = true;
 }
 public void as_entry()  {
 	isPlain = false;
@@ -197,7 +205,9 @@ public void concatenateWith(final Type otherType)  {
 }
 public void addFindMethod(final ExternalStatement newFindMethod)  {
 	findMethod = newFindMethod;
-	isPlain = false;
+	if (isActuallyPlain == false) {
+		isPlain = false;
+	}
 }
 public void update()  {
 	asPublicStatement.clear();
