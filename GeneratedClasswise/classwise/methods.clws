@@ -38,7 +38,7 @@
 	  }
 	}
 	else if input.get("variableParameters") != null{
-	  newMethod.setParametersAsStatement(body.statement(input->"variableParameters"->"body_statement",true,parentContext));
+	  newMethod.setParametersAsStatement(body.statement(input->"variableParameters"->"statement_as_method"->"body_statement",true,parentContext));
 	}
 	else {
 	  newMethod.setParameters(new ArrayList<Variable >());

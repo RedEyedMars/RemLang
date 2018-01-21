@@ -6,6 +6,7 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import com.rem.parser.parser.*;
+import gen.checks.*;
 import gen.entries.*;
 import gen.properties.*;
 import lists.*;
@@ -42,10 +43,10 @@ public class BaseGenerator extends Generator {
 		return "Base";
 	}
 
-	public void generateRoot(IToken root){
+		public void generateRoot(IToken root){
 	}
 
-	public void generate(ParseContext data){
+		public void generate(ParseContext data){
 	}
 
 	public IParser getLazyNameParser(){

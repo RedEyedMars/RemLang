@@ -142,7 +142,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		parameters.add(newParameter);
 	}
 	public void appendToBody(ExternalStatement.Body newBodyParts){
-		body.addAll(newBodyParts);
+		body.add(newBodyParts);
 	}
 	public void prependToBody(ExternalStatement.Body newBodyParts){
 		body.addAll(0, newBodyParts);
@@ -190,7 +190,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			builder.append(";");
 		}
 		else {
-			builder.append(")");
+			builder.append(") ");
 			if(throwsStatement!=null){
 				builder.append(throwsStatement);	
 			}
@@ -264,7 +264,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 				name!=null?ExternalClassHelper.getAsStatementFromEntry(name):new ExternalStatement(new StringEntry("null"))
 				);
 		if(parametersAsStatement != null){
-			completeStatement.add(ExternalClassHelper.getAsStatementFromEntry(parametersAsStatement));
+			completeStatement.add(parametersAsStatement);
 		}
 		else {
 			ExternalStatement.Parameters variableAsParameters = new ExternalStatement.Parameters();

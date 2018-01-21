@@ -10,7 +10,6 @@ public class Main {
 		parse1(args[0]);
 	}
 	public static void parse1(String fileName){
-		
 		Scanner scanner = new Scanner(System.in);
 		//scanner.nextLine();
 		long start = System.currentTimeMillis();

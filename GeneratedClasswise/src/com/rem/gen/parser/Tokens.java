@@ -1019,93 +1019,13 @@ public class Tokens{
 		}
 		public static class syntax_57 extends Token.Parsed{
 			public static Tokens.Syntax.syntax_57 __SYNTAX__ = new Tokens.Syntax.syntax_57("SYNTAX");
+			public static Token.Parsed ISTYPENAME = new Tokens.Syntax.syntax_57("ISTYPENAME");
 			public syntax_57(final String initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_57() {
 			}
 			public void set_SYNTAX(Tokens.Syntax.syntax_57 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "super";
-			}
-			public void setValue(String newValue){
-			}
-		}
-		public static class syntax_58 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_58 __SYNTAX__ = new Tokens.Syntax.syntax_58("SYNTAX");
-			public syntax_58(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_58() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_58 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "this";
-			}
-			public void setValue(String newValue){
-			}
-		}
-		public static class syntax_59 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_59 __SYNTAX__ = new Tokens.Syntax.syntax_59("SYNTAX");
-			public syntax_59(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_59() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_59 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "null";
-			}
-			public void setValue(String newValue){
-			}
-		}
-		public static class syntax_60 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_60 __SYNTAX__ = new Tokens.Syntax.syntax_60("SYNTAX");
-			public syntax_60(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_60() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_60 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "true";
-			}
-			public void setValue(String newValue){
-			}
-		}
-		public static class syntax_61 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_61 __SYNTAX__ = new Tokens.Syntax.syntax_61("SYNTAX");
-			public syntax_61(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_61() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_61 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "false";
-			}
-			public void setValue(String newValue){
-			}
-		}
-		public static class syntax_62 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_62 __SYNTAX__ = new Tokens.Syntax.syntax_62("SYNTAX");
-			public static Token.Parsed ISTYPENAME = new Tokens.Syntax.syntax_62("ISTYPENAME");
-			public syntax_62(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_62() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_62 new_SYNTAX){
 				__SYNTAX__ = new_SYNTAX;
 			}
 			public String getValue(){
@@ -1117,14 +1037,14 @@ public class Tokens{
 				ISTYPENAME = newISTYPENAME;
 			}
 		}
-		public static class syntax_63 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_63 __SYNTAX__ = new Tokens.Syntax.syntax_63("SYNTAX");
-			public syntax_63(final String initalSuperName) {
+		public static class syntax_58 extends Token.Parsed{
+			public static Tokens.Syntax.syntax_58 __SYNTAX__ = new Tokens.Syntax.syntax_58("SYNTAX");
+			public syntax_58(final String initalSuperName) {
 				super(initalSuperName);
 			}
-			public syntax_63() {
+			public syntax_58() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_63 new_SYNTAX){
+			public void set_SYNTAX(Tokens.Syntax.syntax_58 new_SYNTAX){
 				__SYNTAX__ = new_SYNTAX;
 			}
 			public String getValue(){
@@ -1161,6 +1081,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "template_parameter";
@@ -1190,6 +1111,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "className";
@@ -1219,6 +1141,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "objectType";
@@ -1248,9 +1171,40 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "variable_names";
+			}
+		}
+		public static class NAMEToken extends Token.Parsed{
+			protected String value = null;
+			public NAMEToken(final String initalSuperName, final String value) {
+				super(initalSuperName);
+				if(value != null){
+					this.value = value;
+				}
+			}
+			public NAMEToken(final String value) {
+				if(value != null){
+					this.value = value;
+				}
+			}
+			public NAMEToken() {
+			}
+			public String getValue(){
+				if(children.isEmpty()){
+					return value;
+				}
+				else{
+					return children.get(0).getValue();
+				}
+			}
+			public void setValue(String newValue){
+				value=newValue;
+			}
+			public String getName(){
+				return "NAME";
 			}
 		}
 		public static class ClassVariableNamesToken extends Token.Parsed{
@@ -1277,6 +1231,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "class_variable_names";
@@ -1306,6 +1261,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "templateTypeName";
@@ -1335,6 +1291,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "parentName";
@@ -1364,6 +1321,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "interfaceName";
@@ -1393,6 +1351,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "body_return";
@@ -1422,6 +1381,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "body_throw";
@@ -1451,6 +1411,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "body_line";
@@ -1480,6 +1441,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "conditional";
@@ -1509,6 +1471,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "as_body";
@@ -1538,6 +1501,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "exception";
@@ -1567,6 +1531,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "as_braced";
@@ -1596,6 +1561,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "left";
@@ -1625,6 +1591,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "right";
@@ -1654,6 +1621,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "group";
@@ -1683,6 +1651,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "typeName";
@@ -1712,6 +1681,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "body";
@@ -1741,6 +1711,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "variableName";
@@ -1770,6 +1741,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "tokenInstance";
@@ -1799,6 +1771,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "tokenName";
@@ -1828,6 +1801,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "body_entries";
@@ -1857,6 +1831,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "static";
@@ -1886,6 +1861,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "methodName";
@@ -1915,6 +1891,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "inline";
@@ -1944,6 +1921,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "variableParameters";
@@ -1973,6 +1951,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "access";
@@ -2002,6 +1981,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "name_var";
@@ -2031,6 +2011,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "concat";
@@ -2060,38 +2041,10 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "exact";
-			}
-		}
-		public static class NAMEToken extends Token.Parsed{
-			protected String value = null;
-			public NAMEToken(final String initalSuperName, final String value) {
-				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
-			}
-			public NAMEToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
-			}
-			public NAMEToken() {
-			}
-			public String getValue(){
-				if(children.isEmpty()){
-					return value;
-				}
-				else{
-					return children.get(0).getValue();
-				}
-			}
-			public void setValue(String newValue){
-			}
-			public String getName(){
-				return "NAME";
 			}
 		}
 		public static class VariableToken extends Token.Parsed{
@@ -2118,6 +2071,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "variable";
@@ -2147,6 +2101,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "access_multi";
@@ -2176,6 +2131,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "type_var";
@@ -2205,6 +2161,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "as_method";
@@ -2234,6 +2191,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "access_method";
@@ -2263,6 +2221,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "class";
@@ -2292,6 +2251,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "class_names";
@@ -2309,18 +2269,18 @@ public class Tokens{
 			public BaseToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "base";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class CommentsToken extends Token.Parsed{
@@ -2331,18 +2291,18 @@ public class Tokens{
 			public CommentsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "comments";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NAMEToken extends Token.Parsed{
@@ -2353,18 +2313,18 @@ public class Tokens{
 			public NAMEToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "NAME";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class OPERATORToken extends Token.Parsed{
@@ -2375,18 +2335,18 @@ public class Tokens{
 			public OPERATORToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "OPERATOR";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NUMBERToken extends Token.Parsed{
@@ -2397,18 +2357,18 @@ public class Tokens{
 			public NUMBERToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "NUMBER";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class QuoteToken extends Token.Parsed{
@@ -2419,18 +2379,18 @@ public class Tokens{
 			public QuoteToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "quote";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ClassBodyToken extends Token.Parsed{
@@ -2441,18 +2401,18 @@ public class Tokens{
 			public ClassBodyToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "class_body";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class MethodBodyToken extends Token.Parsed{
@@ -2463,18 +2423,18 @@ public class Tokens{
 			public MethodBodyToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "method_body";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class MethodArgumentsToken extends Token.Parsed{
@@ -2485,18 +2445,18 @@ public class Tokens{
 			public MethodArgumentsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "method_arguments";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class TemplateParametersToken extends Token.Parsed{
@@ -2507,18 +2467,18 @@ public class Tokens{
 			public TemplateParametersToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "template_parameters";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ArrayParametersToken extends Token.Parsed{
@@ -2529,18 +2489,18 @@ public class Tokens{
 			public ArrayParametersToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "array_parameters";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class StatementAsQuoteToken extends Token.Parsed{
@@ -2551,18 +2511,18 @@ public class Tokens{
 			public StatementAsQuoteToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "statement_as_quote";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class StatementAsStringToken extends Token.Parsed{
@@ -2573,18 +2533,18 @@ public class Tokens{
 			public StatementAsStringToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "statement_as_string";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class StatementAsMethodToken extends Token.Parsed{
@@ -2595,18 +2555,18 @@ public class Tokens{
 			public StatementAsMethodToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "statement_as_method";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class StatementAsBracedToken extends Token.Parsed{
@@ -2617,18 +2577,18 @@ public class Tokens{
 			public StatementAsBracedToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "statement_as_braced";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class AsStatementToken extends Token.Parsed{
@@ -2639,18 +2599,18 @@ public class Tokens{
 			public AsStatementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "as_statement";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class StatementAsCharToken extends Token.Parsed{
@@ -2661,18 +2621,18 @@ public class Tokens{
 			public StatementAsCharToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "statement_as_char";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ClassFileNameToken extends Token.Parsed{
@@ -2683,18 +2643,18 @@ public class Tokens{
 			public ClassFileNameToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "class_file_name";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BaseElementToken extends Token.Parsed{
@@ -2705,18 +2665,18 @@ public class Tokens{
 			public BaseElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "base_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ImportsToken extends Token.Parsed{
@@ -2727,18 +2687,18 @@ public class Tokens{
 			public ImportsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "imports";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ImportsFileImportToken extends Token.Parsed{
@@ -2749,18 +2709,18 @@ public class Tokens{
 			public ImportsFileImportToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "imports__file_import";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class PackageNameToken extends Token.Parsed{
@@ -2771,18 +2731,18 @@ public class Tokens{
 			public PackageNameToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "packageName";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class AnonymousClassToken extends Token.Parsed{
@@ -2793,18 +2753,18 @@ public class Tokens{
 			public AnonymousClassToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "anonymous_class";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class InnerToken extends Token.Parsed{
@@ -2815,18 +2775,18 @@ public class Tokens{
 			public InnerToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "inner";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class WeakToken extends Token.Parsed{
@@ -2837,18 +2797,18 @@ public class Tokens{
 			public WeakToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "weak";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ClassDeclarationToken extends Token.Parsed{
@@ -2859,18 +2819,18 @@ public class Tokens{
 			public ClassDeclarationToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "class_declaration";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ClassElementToken extends Token.Parsed{
@@ -2881,18 +2841,18 @@ public class Tokens{
 			public ClassElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "class_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BodyElementToken extends Token.Parsed{
@@ -2903,18 +2863,18 @@ public class Tokens{
 			public BodyElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "body_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BodyConditionalToken extends Token.Parsed{
@@ -2925,18 +2885,18 @@ public class Tokens{
 			public BodyConditionalToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "body_conditional";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BodyStatementToken extends Token.Parsed{
@@ -2947,18 +2907,18 @@ public class Tokens{
 			public BodyStatementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "body_statement";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BodyCallToken extends Token.Parsed{
@@ -2969,18 +2929,18 @@ public class Tokens{
 			public BodyCallToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "body_call";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BodyManipulateToken extends Token.Parsed{
@@ -2991,18 +2951,18 @@ public class Tokens{
 			public BodyManipulateToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "body_manipulate";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class MethodParametersToken extends Token.Parsed{
@@ -3013,18 +2973,18 @@ public class Tokens{
 			public MethodParametersToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "method_parameters";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class MethodArgumentToken extends Token.Parsed{
@@ -3035,18 +2995,18 @@ public class Tokens{
 			public MethodArgumentToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "method_argument";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class MethodDeclarationToken extends Token.Parsed{
@@ -3057,18 +3017,18 @@ public class Tokens{
 			public MethodDeclarationToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "method_declaration";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class VariableDeclarationToken extends Token.Parsed{
@@ -3079,18 +3039,18 @@ public class Tokens{
 			public VariableDeclarationToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "variable_declaration";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class VariableAssignmentToken extends Token.Parsed{
@@ -3101,18 +3061,18 @@ public class Tokens{
 			public VariableAssignmentToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "variable_assignment";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class VariableNameDefinitionToken extends Token.Parsed{
@@ -3123,18 +3083,18 @@ public class Tokens{
 			public VariableNameDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "variable_name_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ClassNameDefinitionToken extends Token.Parsed{
@@ -3145,18 +3105,18 @@ public class Tokens{
 			public ClassNameDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "class_name_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class AllTypeNameToken extends Token.Parsed{
@@ -3167,18 +3127,18 @@ public class Tokens{
 			public AllTypeNameToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "all_type_name";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NameVarToken extends Token.Parsed{
@@ -3189,18 +3149,18 @@ public class Tokens{
 			public NameVarToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "name_var";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NameVarElementToken extends Token.Parsed{
@@ -3211,18 +3171,18 @@ public class Tokens{
 			public NameVarElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "name_var_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class TypeVarToken extends Token.Parsed{
@@ -3233,18 +3193,18 @@ public class Tokens{
 			public TypeVarToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "type_var";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class TypeVarElementToken extends Token.Parsed{
@@ -3255,18 +3215,18 @@ public class Tokens{
 			public TypeVarElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "type_var_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 	}

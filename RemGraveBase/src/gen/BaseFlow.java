@@ -6,6 +6,7 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import com.rem.parser.parser.*;
+import gen.checks.*;
 import gen.entries.*;
 import gen.properties.*;
 import lists.*;
@@ -21,7 +22,7 @@ public class BaseFlow extends FlowController {
 	}
 
 
-	private RegexParser lazyNameParser = Tokens.LISTNAME;
+	private RegexParser lazyNameParser = (RegexParser)Tokens.LISTNAME;
 	private List<IParser> rules = (List<IParser>)Rules.parser;
 	private List<IParser> listnames = (List<IParser>)Listnames.parser;
 	private IParser rootParser = (IParser)Rules.base;
@@ -73,6 +74,19 @@ public class BaseFlow extends FlowController {
 		ParseList listRuless = (ParseList)context.getList("list_rules");
 		NameParser listRulessNamesParser = (NameParser)listRuless.getNamesParser();
 		listRulessNamesParser.clear();
+		ParseList customDeclarations = (ParseList)context.getList("rules");
+		if((customDeclarations != null)){
+			context.addList("rules");
+			ParseList customList = (ParseList)context.getList("rules");
+			NameParser customNameParser = (NameParser)customList.getNamesParser();
+			IToken customTokens = customDeclarations.getNewTokens();
+			List<IToken> customTokenCustomDeclaration = customTokens.getAll("custom_declaration");
+			if(customTokenCustomDeclaration != null){
+				for(IToken customToken:customTokenCustomDeclaration){
+					customNameParser.addName(customToken.get("custom_definition").get("name").getString());
+				}
+			}
+		}
 	}
 	public void setup(ParseContext context){
 	}

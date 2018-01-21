@@ -31,7 +31,7 @@ public class  Type   {
 	//Internals
 protected ExternalStatement.TypeName asPublicStatement = new ExternalStatement.TypeName();
 protected List<List<TypeStatement>> parts = new ArrayList<List<TypeStatement>>();
-protected List<ExternalStatement> templateTypes = new ArrayList<ExternalStatement>();
+protected List<ExternalStatement.TypeName> templateTypes = new ArrayList<ExternalStatement.TypeName>();
 protected Boolean isInlineList = false;
 protected Boolean isInner = true;
 protected Boolean isActuallyPlain = false;
@@ -54,10 +54,10 @@ protected ExternalStatement findMethod = null;
 	public List<List<TypeStatement>> get_parts()  {
 		return parts;
 	}
-	public List<ExternalStatement> getTemplateTypes()  {
+	public List<ExternalStatement.TypeName> getTemplateTypes()  {
 		return templateTypes;
 	}
-	public List<ExternalStatement> get_templateTypes()  {
+	public List<ExternalStatement.TypeName> get_templateTypes()  {
 		return templateTypes;
 	}
 	public Boolean getIsInlineList()  {
@@ -178,7 +178,7 @@ public void addSubClass(final Type subType)  {
 	}
 	hasChanged = true;
 }
-public void addTemplateClass(final ExternalStatement templateType)  {
+public void addTemplateClass(final ExternalStatement.TypeName templateType)  {
 	templateTypes.add(templateType);
 	hasChanged = true;
 }
@@ -249,10 +249,17 @@ public void update()  {
 							partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
 						}
 						else  {
-							partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
+							final StringBuilder nextTypeBuilder = new StringBuilder();
+							concatPart.get(nextTypeBuilder);
+							if (MainFlow.variables.get_classGenerator().hasDefinedClassName(nextTypeBuilder.toString())) {
+								partStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement("",
 			 	new ExternalStatement(".", /*Acss*/new ExternalStatement(".", /*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("ExternalClassEntry"))), /*Enty*/new ExternalStatement(new StringEntry("classMap"))), /*Enty*/new ExternalStatement(new StringEntry("get"))),
 			 	new ExternalStatement(new StringEntry("("),new StringEntry(")"),"",
 			 		new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("\"")), /*InCl*/new ExternalStatement(concatPart))), /*Name*/new ExternalStatement(new StringEntry("\"")))))))))));
+							}
+							else  {
+								partStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(concatPart))));
+							}
 						}
 					}
 					else  {
@@ -317,17 +324,15 @@ public void update()  {
 		asPublicStatement.setTypeName(partStatement);
 	}
 	if (templateTypes.isEmpty() == false) {
-		final ExternalStatement templateStatement = new ExternalStatement(",");
-		for (final ExternalStatement type :  templateTypes) {
+		final ExternalStatement.Parameters templateStatement = new ExternalStatement.Parameters();
+		for (final ExternalStatement.TypeName type :  templateTypes) {
 			templateStatement.add(type);
 		}
 		asPublicStatement.setTemplateType(templateStatement);
 	}
-	for (Integer i = 0; i <  numberOfArraySymbols; ++i) {
-		asPublicStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("[]")))));
-	}
+	asPublicStatement.setNumberOfArraySymbols(numberOfArraySymbols);
 	if (isInlineList) {
-		asPublicStatement.add(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(new StringEntry("...")))));
+		asPublicStatement.setIsInlineList(true);
 	}
 	if (findMethod != null) {
 		asPublicStatement.add(/*Name*/new ExternalStatement(/*Call*/new ExternalStatement(null,new StringEntry(")"),"(",/*Name*/new ExternalStatement(new StringEntry(".getMethod")),new ExternalStatement.Parameters(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(findMethod)))))));

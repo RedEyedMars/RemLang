@@ -71,32 +71,37 @@
 	outerDirectory.mkdirs();
 	sourceDirectory = "../"\+fileName\+"/src/";
   }
->  void generateAll(Token input){
+> void findAllClasses(Token input){
     for Token element: input.getAllSafely("imports") {
-      \generateAll(element);
+      \findAllClasses(element);
     }
-    for Token element: input.getAllSafely("IMPORT_CLASS") {
-      \generateAll(element);
+    for Token element: input.getAllSafely("class_declaration") {
+      classGenerator.collectClassNames(element);
     }
     for Token element: input.getAllSafely("anonymous_class") {
       StringBuilder anonymousPackageName = new StringBuilder();
       String className = ^element->"className";
-      ~String dot = "";
-      for Token atom: element.getAllSafely("packageName") {
-        for Token quark: atom.getAllSafely("name_var") {
-          anonymousPackageName.append(dot);
-          NameVar anonymousNameVar = new NameVar();
-          \name_var(quark,anonymousNameVar,true,new Context (false));
-          anonymousPackageName.append(anonymousNameVar.getAsString());
-          dot = ".";
-        }
-      }
+      Statement classPackageName = new Statement(".");
+      for Token packageElement: element.getAllSafely("packageName") {
+	    if packageElement->"NAME" != null {
+  	      classPackageName.add(|'packageElement->"NAME"'|);
+	    }
+	    else if packageElement->"quote" != null {
+	      classPackageName.add(|'packageElement->"quote"'|);
+	    }
+	    else if packageElement->"statement_as_string" != null {
+	      classPackageName.add(body.statement(packageElement->"statement_as_string"->"body_statement",true,new Context (false)));
+	    }
+	  }
+	  classPackageName.get(anonymousPackageName);
 	  setupClassList.add(|\ExternalClassEntry.suppliment('' 'className' '', '' 'anonymousPackageName' '');|);
+	  ExternalClassEntry.suppliment('className','anonymousPackageName');
     }
-    String packageFileName = packageName.replace(".",File.separator);
-    
-    for Token element: input.getAllSafely("class_declaration") {
-      classGenerator.collectClassNames(element);
+  }
+> void generateGlobals(Token input){
+
+    for Token element: input.getAllSafely("imports") {
+      \generateGlobals(element);
     }
     for Token element: input.getAllSafely("variable_declaration") {
 	  Variable newVariable = variable.declaration(element,true,mainClass.getContext());
@@ -106,7 +111,37 @@
     for Token element: input.getAllSafely("method_declaration") {
 	  Method newMethod = method.declaration(element,true,mainClass.getContext());
 	  mainClass.addMethod(newMethod);
+	  method.addDefinedMethodName(newMethod);
 	}
+  }
+> void generateAll(Token input){
+    for Token element: input.getAllSafely("imports") {
+      \generateAll(element);
+    }
+    for Token element: input.getAllSafely("anonymous_class") {
+      StringBuilder anonymousPackageName = new StringBuilder();
+      String className = ^element->"className";
+      Statement classPackageName = new Statement(".");
+      for Token packageElement: element.getAllSafely("packageName") {
+	    if packageElement->"NAME" != null {
+  	      classPackageName.add(|'packageElement->"NAME"'|);
+	    }
+	    else if packageElement->"quote" != null {
+	      classPackageName.add(|'packageElement->"quote"'|);
+	    }
+	    else if packageElement->"statement_as_string" != null {
+	      classPackageName.add(body.statement(packageElement->"statement_as_string"->"body_statement",true,new Context (false)));
+	    }
+	  }
+	  classPackageName.get(anonymousPackageName);
+	  setupClassList.add(|\ExternalClassEntry.suppliment('' 'className' '', '' 'anonymousPackageName' '');|);
+	  ExternalClassEntry.suppliment('className','anonymousPackageName');
+    }
+    String packageFileName = packageName.replace(".",File.separator);
+    
+    for Token element: input.getAllSafely("class_declaration") {
+      classGenerator.collectClassNames(element);
+    }
     for Token element: input.getAllSafely("class_declaration") {
 	  Class innerClass = new Class ();
 	  Class outerClass = new Class ();
@@ -119,6 +154,7 @@
 	    innerClass.addInitMethodFromClass(outerClass);
 	    innerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
 		outerClasses.put(outerClass.getFullName(),outerClass);
+		innerClass.removeInterfaces();
 		innerClass.removeConstructors();
 		setupClassList.add(|'className'."_".__INIT__();
 		  \MainFlow.outputClasses.add('className'."_");|);
@@ -189,6 +225,8 @@
 	  }
 	\mainClass = \mainFlowClass; 
 	\mainClass.removeConstructors();
+    \findAllClasses(((Parser\.\Result\.\Pass)result).\getRoot());
+    \generateGlobals(((Parser\.\Result\.\Pass)result).\getRoot());
 	\generateAll(((Parser\.\Result\.\Pass)result).\getRoot());
 	\mainClass.outputToFile(\MainFlow.methods,innerDirectory);
   }
@@ -419,9 +457,10 @@
       else if element.getName().equals("statement_as_string") {
         if isInner {
           output.addSubClass(|"\"+"+`body.statement(element->"body_statement",true,parentContext)`.toString()+"\""|);
+          output.as_entry();
         }
         else {
-          output.addSubClass(body.statement(element->"body_statement",true,parentContext));
+          output.addSubClass(new ExternalStatement(new VariableNameEntry(body.statement(element->"body_statement",true,parentContext)).asString()));
         }
       }
       else if element.getName().equals("exact") {
@@ -445,7 +484,12 @@
       else if element.getName().equals("class") {
         ~Statement value = null;
         if element->"class_variable_names" != null {
-          value = |'element->"class_variable_names"'|;
+          if isInner {
+          	value = |'element->"class_variable_names"'|;
+          }
+          else {
+            value = new Statement (new VariableNameEntry('element->"class_variable_names"'\+".getFullName()"));
+          }
           output.plain();
         }
         else {
@@ -497,7 +541,7 @@
 	  else if input.getValue().equals("Class") {
 		output.addSubClass("ExternalClassEntry");
 	  }
-	  else if input.getValue().equals("Variable") {
+	  else if input.getValue().equals("Method") {
 		output.addSubClass("ExternalMethodEntry");
 	  }
 	  else if input.getValue().equals("Variable") {
@@ -511,10 +555,12 @@
 		output.addSubClass("ExternalStatement");
 	  }
 	  else if input.getValue().equals("Parameters") {
-		output.addSubClass("ExternalStatement.Parameters");
+	  
+		output.addSubClass(new ExternalStatement.TypeName(|"ExternalStatement"|));
+		output.addSubClass(|"Parameters"|);
 	  }
 	  else if input.getValue().equals("Context") {
-		output.addSubClass("ExternalContext");
+		output.addSubClass("com.rem.parser.generation.classwise.ExternalContext");
 	  }
 	}
   }
@@ -541,7 +587,7 @@ import variables.clws
 
     ~ExternalStatement.TypeName asPublicStatement = new ExternalStatement.TypeName ();
     ~List<List<TypeStatement >> parts = new ArrayList<List<TypeStatement >>();
-    ~List<Statement > templateTypes = new ArrayList<Statement >();
+    ~List<ExternalStatement.TypeName > templateTypes = new ArrayList<ExternalStatement.TypeName >();
     ~Boolean isInlineList = false;
     ~Boolean isInner = true;
     ~Boolean isActuallyPlain = false;
@@ -617,7 +663,7 @@ import variables.clws
       }
       hasChanged = true;
     }
-    void addTemplateClass(Statement templateType){
+    void addTemplateClass(ExternalStatement.TypeName templateType){
       templateTypes.add(templateType);
       hasChanged = true;
     }
@@ -686,7 +732,14 @@ import variables.clws
                   partStatement.add(|`concatPart`|);
                 }
                 else {
-                  partStatement.add(|\ExternalClassEntry.classMap.get("\""+`concatPart`+"\"")|);
+                  StringBuilder nextTypeBuilder = new StringBuilder();
+                  concatPart.get(nextTypeBuilder);
+                  if classGenerator.hasDefinedClassName('nextTypeBuilder'){
+                    partStatement.add(|\ExternalClassEntry.classMap.get("\""+`concatPart`+"\"")|);
+                  }
+                  else {
+                    partStatement.add(|`concatPart`|);
+                  }
                 }
               }
               else {
@@ -751,17 +804,15 @@ import variables.clws
         asPublicStatement.setTypeName(partStatement);
       }
       if templateTypes.isEmpty() == false {
-        Statement templateStatement = new Statement (",");
-        for Statement type: templateTypes {
+        Parameters templateStatement = new Parameters ();
+        for ExternalStatement.TypeName type: templateTypes {
           templateStatement.add(type);
         }
         asPublicStatement.setTemplateType(templateStatement); 
       }
-      for Integer i < numberOfArraySymbols {
-        asPublicStatement.add(|"[]"|);
-      }
+      asPublicStatement.setNumberOfArraySymbols(numberOfArraySymbols);
       if isInlineList {
-        asPublicStatement.add(|"..."|);
+        asPublicStatement.setIsInlineList(true);
       }
       if findMethod != null {
         asPublicStatement.add(|".getMethod"(`findMethod`)|);

@@ -34,24 +34,25 @@
         }
         else if element.getName().equals("body_throw") {
           Boolean throwIsInner = isInner || element->"inner" != null;
-          return |throw `body.statement(element->"body_statement",throwIsInner, parentContext)`;|;
+          return |throw "\"+"+`body.statement(element->"body_statement",throwIsInner, parentContext)`+"+\"";|;
         }
         else if element.getName().equals("class_declaration") {
           Class innerClass = new Class ();
           Class outerClass = new Class ();
-          classGenerator.declaration(element->"class_declaration",innerClass,outerClass,false,parentContext);
+          classGenerator.declaration(element,innerClass,outerClass,false,parentContext);
           String variableName = outerClass.getName()\+"Class";
           parentContext.add(\ExternalClassEntry 'variableName';);
-          return {
+          return |
               Class 'variableName' = `outerClass.getAsStatement()`;
               'variableName'.__INIT__();
               \MainFlow.outputClasses.add('variableName');
-            };
+            |;
         }
         else if element.getName().equals("body_conditional") {
           Boolean conditionalIsInner = isInner || element->"inner" != null;
           ~Boolean isCase = false;
           ~String conditionalName = "";
+          exceptionIndex = 0;
           if element->"conditional".getAll() == null {
             conditionalName = element->"conditional".getValue().trim();
           }
@@ -66,7 +67,9 @@
           }
           ~Statement statement = null;
           if element->"body_statement" != null {
+            isClassArgument = true;
             statement = body.statement(element->"body_statement",isInner,parentContext);
+            isClassArgument = false;
           }
           for Token atom: element.getAllSafely("variable_declaration") {
             String operator = 'element->"OPERATOR"';
@@ -148,7 +151,7 @@
           }
         }
       }
-      return null; 
+      return new Statement (); 
     }
 
 	Statement statement(Token input, Boolean mustInner, Context parentContext){
@@ -201,8 +204,20 @@
 	    }
 	  }
 	  for Token element: input.getAllSafely("group") {
+	    if element->"name_var" != null {
+		  isClassArgument = false;
+		}
+		else if element->"typeName" != null {
+		  isClassArgument = false;
+		}
+		else if element->"NAME" != null{
+		  isClassArgument = false;
+		}
+	  }
+	  for Token element: input.getAllSafely("group") {
 		Parameters parameters = new Parameters ();
 		Parameters arrayParameters = new Parameters ();
+		arrayParameters.set("][");
 		~Statement subject = null;
 		if element->"type_var" != null {
 		  Type subjectAsType = new Type();
@@ -240,9 +255,11 @@
 		~Boolean containsParameters = false;
 		for Token atom: element.getAllSafely("method_arguments") {
 		  containsParameters = true;
+		  isClassArgument = true;
 		  for Token quark: atom.getAllSafely("method_argument"){
 			parameters.add(body.argument(quark,isInner,parentContext));
 	      }
+	      isClassArgument = false;
 	    }
 	    ~Boolean containsArrayParameters = false;
 		for Token atom: element.getAllSafely("array_parameters") {
@@ -338,18 +355,34 @@
           }
         }
         else if input->"body" != null {
-          Parameters arguments = new Parameters ();
-          for Token element: input->"body".getAllSafely("body_element") {
-            Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
-            if newBodyElement != null {
-              arguments.add(newBodyElement);
+          Body arguments = new Body ();
+          if input->"body"->"as_statement" != null {
+            for Token element: input->"body"->"as_statement".getAllSafely("body_element") {
+              Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
+              if newBodyElement != null {
+                arguments.add(newBodyElement);
+              }
+            }
+            for Token element: input->"body"->"as_statement".getAllSafely("body_statement") {
+              Statement newBodyElement = body.statement(element,false,new Context (true,parentContext));
+              if newBodyElement != null {
+                arguments.add(newBodyElement);
+              }
+            }
+          }
+          else {
+            for Token element: input->"body".getAllSafely("body_element") {
+              Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
+              if newBodyElement != null {
+                arguments.add(newBodyElement);
+              }
             }
           }
           if input->"methodName".getValue().contains("+=") { 
-            return |`type.getAsStatement()`.appendToBody(`arguments`);|;
+            return |`type.getAsStatement()`.appendToBody(`arguments.getAsStatement()`);|;
           }
           else {
-            return |`type.getAsStatement()`.'input->"methodName"'(`arguments`);|;
+            return |`type.getAsStatement()`.'input->"methodName"'(`arguments.getAsStatement()`);|;
           }
         }
       }
@@ -373,7 +406,7 @@
           numberOfInstances \+= 1;
         }
         ~String singleTokenName = null;
-        String tokenTypePath = "com.rem.gen.parser.Token";
+        String tokenTypePath = "final com.rem.gen.parser.Token";
         for Token element: input.getAllSafely("tokenInstance") {
           String tokenName = 'element->"tokenName"';
           singleTokenName = tokenName;
@@ -418,7 +451,7 @@
           }
         }
       }
-      return null;
+      return new Statement ();
     }
     Statement argument(Token input, Boolean isInner, Context parentContext){
       for Token element: input.getAll() {
@@ -463,6 +496,6 @@
 		  return elements.getAsStatement();
 		}
       }
-	  return null;
+	  return new Statement ();
 	}
 }

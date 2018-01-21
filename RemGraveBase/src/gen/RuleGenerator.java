@@ -6,6 +6,7 @@ import com.rem.parser.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.token.*;
 import com.rem.parser.parser.*;
+import gen.checks.*;
 import gen.entries.*;
 import gen.properties.*;
 import lists.*;
@@ -15,6 +16,7 @@ public class RuleGenerator extends Generator {
 	private HashMap<String,List<String>> ruleParameterNames = new HashMap<String,List<String>>();
 	private File directory = null;
 	private String packageName = null;
+	private StringBuilder ruleNameBuilder = new StringBuilder();
 
 
 	public static final Element outlineElement = new Element("outline",new String[]{"package ",/*Package Name*/";\n\n"+
@@ -24,20 +26,18 @@ public class RuleGenerator extends Generator {
 			"import com.rem.parser.parser.*;\n"+
 			"import lists.*;\n\n"+
 			"public class ",/*Class Name*/" extends ConcreteRule {\n\n"+
-			"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/"\tprivate Parameter<?>[] parameters = new Parameter<?>[]{",/*Parameter List*/"};\n"+
+			"\tpublic static final IRule parser = new ",/*Class Name*/"();\n",/*Parameter Declarations*/"\n"+
 			"\tpublic ",/*Class Name*/"(){\n"+
 			"\t\tsuper(\"",/*Rule Name*/"\");\n"+
 			"\t}\n"+
 			"\t@Override\n"+
-			"\tpublic void setup(){\n",/*RuleSetup*/"\n\t}\n"+
-			"\t@Override @SuppressWarnings(\"unchecked\")\n"+
-			"\tpublic Parameter<?>[] getParameters(){\n"+
-			"\t\treturn parameters;\n\t}\n\n}"});
+			"\tpublic void setup(){\n",/*RuleSetup*/"\n\t}\n\n}"});
 	public static final Element importRulesElement = new Element("importRules",new String[]{"import ",/*Seed Name*/".rules.*;\n"});
 	public static final Element ruleElementElement = new Element("ruleElement",new String[]{"\tpublic static final IRule ",/*Rule Name*/" = ",/*Class Name*/".parser;\n"});
 	public static final Element setupSilenceElement = new Element("setupSilence",new String[]{"\t\tisSilent(true);\n"});
 	public static final Element setupAddElement = new Element("setupAdd",new String[]{"\t\tset(",/*Rule Definition*/");\n"});
 	public static final Element asElement = new Element("as",new String[]{"new AddTokenParser(",/*Inner Rule*/",",/*Token Name*/")"});
+	public static final Element recontextualizationParserElement = new Element("recontextualizationParser",new String[]{"new ReContextParser(",/*Inner Rule*/",",/*Context Name*/",",/*List Name*/")"});
 	public static final Element addToListElement = new Element("addToList",new String[]{"new AddTokenToListParser(",/*Inner Rule*/",",/*Token Name*/",",/*List Name*/")"});
 	public static final Element addToListWithTokenElement = new Element("addToListWithToken",new String[]{"new AddTokenToListParser(",/*Inner Rule*/",",/*Token Name*/",",/*List Name*/",",/*With Name*/")"});
 	public static final Element chainElement = new Element("chain",new String[]{"new ChainParser(",/*Inner Rules*/")"});
@@ -52,7 +52,7 @@ public class RuleGenerator extends Generator {
 	public static final Element parameterGetElement = new Element("parameterGet",new String[]{"\t\tswitch(i){\n",/*Params*/"\t\tdefault: return null;\n\t\t}\n"});
 	public static final Element parameterWithElement = new Element("parameterWith",new String[]{"new WithParser((IRule)",/*Parser*/",",/*Arguments*/")"});
 	public static final Element parameterOperatorElement = new Element("parameterOperator",new String[]{"new Argument.",/*OperatorName*/"(",/*Left*/",",/*Right*/")"});
-	public static final Element parameterNewNumberElement = new Element("parameterNewNumber",new String[]{"new Parameter<Integer>(",/*Value*/")"});
+	public static final Element parameterNewNumberElement = new Element("parameterNewNumber",new String[]{"new Argument.Number(",/*Value*/")"});
 	public static final Element parameterExistingElement = new Element("parameterExisting",new String[]{"this.",/*Parameter Name*/""});
 	public RuleGenerator(){
 		addElement("outline",outlineElement);
@@ -61,6 +61,7 @@ public class RuleGenerator extends Generator {
 		addElement("setupSilence",setupSilenceElement);
 		addElement("setupAdd",setupAddElement);
 		addElement("as",asElement);
+		addElement("recontextualizationParser",recontextualizationParserElement);
 		addElement("addToList",addToListElement);
 		addElement("addToListWithToken",addToListWithTokenElement);
 		addElement("chain",chainElement);
@@ -87,6 +88,7 @@ public class RuleGenerator extends Generator {
 	public void generate(ParseContext data){
 		ParseList rules = (ParseList)data.getList("rules");
 		Generators.rule.generateAll(rules.getNewTokens(),"rule");
+		Generators.rule.println(Generators.rule.buildString("Ruleset:",ruleNameBuilder.toString()));
 	}
 	public void generateRoot(IToken root){
 		String ruleName = root.get("rulename").getString();
@@ -96,56 +98,68 @@ public class RuleGenerator extends Generator {
 		Entry rulenames = new ElementEntry(RuleGenerator.ruleElementElement,new ListEntry(new StringEntry(ruleName),new StringEntry(className)));
 		String seedName = Generators.base.getSeedName();
 		Generators.list.addList(new ListEntry(new ElementEntry(RuleGenerator.importRulesElement,new ListEntry(new ListEntry(new StringEntry(seedName))))),"rules",ruleName,rulenames);
-		ListEntry param_list = new ListEntry();
 		ListEntry param_declarations = new ListEntry();
 		param_declarations.setDelimiter("");
-		ListEntry parameters = new ListEntry(new ListEntry(new StringEntry(packageName)),new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(className)),param_declarations,param_list,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(ruleName)));
+		ListEntry parameters = new ListEntry(new ListEntry(new StringEntry(packageName)),new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(className)),param_declarations,new ListEntry(new StringEntry(className)),new ListEntry(new StringEntry(ruleName)));
 		Generators.rule.addFile(Generators.rule.getDirectory(),fileName,parameters);
 		IToken silence = root.get("silence");
 		Boolean isSilent = (silence != null && !silence.isEmpty());
-		Generators.rule.println(">",ruleName);
-		ListEntry parameterIndexEntries = new ListEntry();
-		parameterIndexEntries.setDelimiter("");
-		Integer param_count = 0;
-		for(IToken.Key branchKey:root.keySet()){
-			if("definition".equals(branchKey.getName())){
-				IToken branch = root.get(branchKey);
-				ListEntry ruleEntry = new ListEntry();
-				ruleEntry.setDelimiter("");
-				if((isSilent == true)){
-					ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
-				}
-				ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(generateDefinition(branch,ruleName,3))));
-				Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
+		ruleNameBuilder.append(ruleName);
+		ruleNameBuilder.append(",");
+		if((root.get("isChoosy") != null)){
+			ListEntry ruleEntry = new ListEntry();
+			ruleEntry.setDelimiter("");
+			if((isSilent == true)){
+				ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
 			}
-			else if("rule_param".equals(branchKey.getName())){
-				IToken branch = root.get(branchKey);
-				String rule_param = branch.getString();
-				Boolean rules_contains = ruleParameterNames.containsKey(ruleName);
-				if((!rules_contains)){
-					ruleParameterNames.put(ruleName,new ArrayList<String>());
-				}
-				List<String> ruleParameterNamesList = (List<String>)ruleParameterNames.get(ruleName);
-				ruleParameterNamesList.add(rule_param);
-				param_declarations.add(new ElementEntry(RuleGenerator.parameterMemberElement,new ListEntry(new StringEntry("Integer"),new StringEntry(rule_param),new StringEntry("Integer"),new StringEntry("0"))));
-				param_list.add(new ListEntry(new StringEntry(rule_param)));
-				parameterIndexEntries.add(new ElementEntry(RuleGenerator.parameterIndexElement,new ListEntry(new StringEntry(param_count.toString()),new StringEntry(rule_param))));
-				param_count = param_count + 1;
-			}
+			ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(new ElementEntry(RuleGenerator.choiceElement,new ListEntry(new ListEntry())))));
+			Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
 		}
-		Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"params",new ElementEntry(RuleGenerator.parameterGetElement,new ListEntry(parameterIndexEntries)));
+		else {
+			ListEntry parameterIndexEntries = new ListEntry();
+			parameterIndexEntries.setDelimiter("");
+			Integer param_count = 0;
+			for(IToken.Key branchKey:root.keySet()){
+				if("definition".equals(branchKey.getName())){
+					IToken branch = root.get(branchKey);
+					ListEntry ruleEntry = new ListEntry();
+					ruleEntry.setDelimiter("");
+					if((isSilent == true)){
+						ruleEntry.add(new ElementEntry(RuleGenerator.setupSilenceElement,new ListEntry()));
+					}
+					ruleEntry.add(new ElementEntry(RuleGenerator.setupAddElement,new ListEntry(generateDefinition(branch,ruleName,3))));
+					Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"rule",ruleEntry);
+				}
+				else if("rule_param".equals(branchKey.getName())){
+					IToken branch = root.get(branchKey);
+					String rule_param = branch.getString();
+					Boolean rules_contains = ruleParameterNames.containsKey(ruleName);
+					if((!rules_contains)){
+						ruleParameterNames.put(ruleName,new ArrayList<String>());
+					}
+					List<String> ruleParameterNamesList = (List<String>)ruleParameterNames.get(ruleName);
+					ruleParameterNamesList.add(rule_param);
+					param_declarations.add(new ElementEntry(RuleGenerator.parameterMemberElement,new ListEntry(new StringEntry("Integer"),new StringEntry(rule_param),new StringEntry("Integer"),new StringEntry("0"))));
+					parameterIndexEntries.add(new ElementEntry(RuleGenerator.parameterIndexElement,new ListEntry(new StringEntry(param_count.toString()),new StringEntry(rule_param))));
+					param_count = param_count + 1;
+				}
+			}
+			Generators.rule.addEntry(Generators.rule.getDirectory(),fileName,"params",new ElementEntry(RuleGenerator.parameterGetElement,new ListEntry(parameterIndexEntries)));
+		}
 	}
 	public Entry generateAtom(IToken atom,String ruleName,Integer tabs){
 		Entry returnEntry = null;
 		QuoteEntry enclosingName = null;
 		QuoteEntry enclosingList = null;
 		QuoteEntry enclosingTokenName = null;
+		QuoteEntry enclosingFromName = null;
 		for(IToken.Key quarkKey:atom.keySet()){
 			if("parameters".equals(quarkKey.getName())){
 				IToken quark = atom.get(quarkKey);
 				IToken name = quark.get("name");
 				IToken listVar = quark.get("list");
 				IToken withToken = quark.get("tokenName");
+				IToken fromToken = quark.get("contextName");
 				if((name != null)){
 					enclosingName = new QuoteEntry(name.getString());
 				}
@@ -154,6 +168,9 @@ public class RuleGenerator extends Generator {
 				}
 				if((withToken != null)){
 					enclosingTokenName = new QuoteEntry(withToken.getString());
+				}
+				if((fromToken != null)){
+					enclosingFromName = new QuoteEntry(fromToken.getString());
 				}
 			}
 			else if("terminal".equals(quarkKey.getName())){
@@ -189,26 +206,31 @@ public class RuleGenerator extends Generator {
 				}
 			}
 		}
-		if((enclosingName != null)){
-			if((enclosingList != null)){
-				if((enclosingTokenName != null)){
-					returnEntry = new ElementEntry(RuleGenerator.addToListWithTokenElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName,enclosingList,enclosingTokenName));
+		if((enclosingFromName != null)){
+			returnEntry = new ElementEntry(RuleGenerator.recontextualizationParserElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingFromName,enclosingList));
+		}
+		else {
+			if((enclosingName != null)){
+				if((enclosingList != null)){
+					if((enclosingTokenName != null)){
+						returnEntry = new ElementEntry(RuleGenerator.addToListWithTokenElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName,enclosingList,enclosingTokenName));
+					}
+					else {
+						returnEntry = new ElementEntry(RuleGenerator.addToListElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName,enclosingList));
+					}
 				}
 				else {
-					returnEntry = new ElementEntry(RuleGenerator.addToListElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName,enclosingList));
+					returnEntry = new ElementEntry(RuleGenerator.asElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName));
 				}
 			}
 			else {
-				returnEntry = new ElementEntry(RuleGenerator.asElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),enclosingName));
-			}
-		}
-		else {
-			if((enclosingList != null)){
-				if((enclosingTokenName != null)){
-					returnEntry = new ElementEntry(RuleGenerator.addToListWithTokenElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList,enclosingTokenName));
-				}
-				else {
-					returnEntry = new ElementEntry(RuleGenerator.addToListElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList));
+				if((enclosingList != null)){
+					if((enclosingTokenName != null)){
+						returnEntry = new ElementEntry(RuleGenerator.addToListWithTokenElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList,enclosingTokenName));
+					}
+					else {
+						returnEntry = new ElementEntry(RuleGenerator.addToListElement,new ListEntry(new TabEntry(tabs + 1,new ListEntry(returnEntry)),new ListEntry(new StringEntry("null")),enclosingList));
+					}
 				}
 			}
 		}
@@ -228,7 +250,7 @@ public class RuleGenerator extends Generator {
 		for(IToken.Key pKey:parameter.keySet()){
 			if("definition".equals(pKey.getName())){
 				IToken p = parameter.get(pKey);
-				System.err.println("Rules cannot have definitons as their parameter");
+				throw new UnableToGenerateException("Rules cannot have definitons as their parameter",p);
 			}
 			else if("arithmatic".equals(pKey.getName())){
 				IToken p = parameter.get(pKey);
@@ -267,7 +289,7 @@ public class RuleGenerator extends Generator {
 					operand = "Subtract";
 				}
 				else {
-					System.err.println("Operand:"+operand+" not recognized.");
+					throw new UnableToGenerateException("Operand:"+operand+" not recognized.",element);
 				}
 			}
 			else if("NUMBER".equals(elementKey.getName())){
@@ -337,6 +359,7 @@ public class RuleGenerator extends Generator {
 		}
 	}
 	public Entry generateTerminal(IToken terminal){
+		String Xxx = null;
 		for(IToken.Key tokenKey:terminal.keySet()){
 			if("ruleToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
@@ -355,7 +378,7 @@ public class RuleGenerator extends Generator {
 			}
 			else if("listToken".equals(tokenKey.getName())){
 				IToken token = terminal.get(tokenKey);
-				String listName = Generators.rule.camelize(token.getString());
+				String listName = "#NO_LISTNAME_FOUND";
 				for(IToken.Key atomKey:token.keySet()){
 					IToken atom = token.get(atomKey);
 					listName = atomKey.getName();
@@ -365,9 +388,8 @@ public class RuleGenerator extends Generator {
 					return new ElementEntry(RuleGenerator.rule_name_parserElement,new ListEntry(new ListEntry(new StringEntry(name))));
 				}
 				else {
-					String name = Generators.rule.camelize(listName);
-
-					return new ElementEntry(RuleGenerator.listElementElement,new ListEntry(new StringEntry(name),new StringEntry(token.getString())));
+					listName = Generators.rule.camelize(listName);
+					return new ElementEntry(RuleGenerator.listElementElement,new ListEntry(new StringEntry(listName),new StringEntry(token.getString())));
 				}
 			}
 			else if("anyListNameToken".equals(tokenKey.getName())){
@@ -396,6 +418,10 @@ public class RuleGenerator extends Generator {
 
 	public String getPackageName(){
 		return packageName;
+	}
+
+	public StringBuilder getRuleNameBuilder(){
+		return ruleNameBuilder;
 	}
 
 	public String getName(){

@@ -28,24 +28,22 @@ public class VariableNameEntry extends StringEntry{
 		if(isString){
 			builder.append("(");
 		}
-		statement.get(builder);
+		if(statement!=null){
+			statement.get(builder);
+		}
 		if(isString ){
 			builder.append(").toString()");
 		}
 		return builder.toString();
 	}
+	@Override
 	public void get(StringBuilder builder){
 		if(asStatement!=null){
 			if(isString){
 				builder.append("(");
 			}
-			if(asStatement instanceof ExternalStatement){
-				((ExternalStatement)asStatement).setTabs(tabs);
-				asStatement.get(builder);
-			}
-			else {
-				asStatement.get(builder);
-			}
+			asStatement.setTabs(tabs);
+			asStatement.get(builder);
 			if(isString ){
 				builder.append(").toString()");
 			}
@@ -81,5 +79,9 @@ public class VariableNameEntry extends StringEntry{
 
 	public VariableNameEntry asString(){
 		return new VariableNameEntry(asStatement,true);
+	}
+
+	public ExternalStatement getStatement() {
+		return this.asStatement;
 	}
 }

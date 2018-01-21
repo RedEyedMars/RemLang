@@ -69,6 +69,7 @@ public class ExternalClassEntry extends ExternalImportEntry {
 
 	private ExternalContext myContext;
 	private ExternalClassEntry enclosingClass;
+	private String enclosingClassName;
 	private Entry parentClass;
 	private ExternalClassEntry bonifideParentClass;
 	private List<Entry> interfaces;
@@ -83,10 +84,16 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public static void main(String[] args0){}
 	public void __INIT__(){}
+	public void __SETUP__(String initialEnclosingClassName, Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader){
+		__SETUP__(initialEnclosingClassName,         initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
+	}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader){
-		__SETUP__(      initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
+		__SETUP__(null,         initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,new ArrayList<ExternalVariableEntry>(), new ArrayList<ExternalMethodEntry>(), new ArrayList<ExternalClassEntry>());
 	}
 	public void __SETUP__(Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
+		__SETUP__(null,         initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,  initialVariables, initialMethods, initialSubClasses);
+	}
+	public void __SETUP__(String initialEnclosingClassName, Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
 
 		isInterface = classType.contains("interface");
 		isEnum = classType.contains("enum");
@@ -98,11 +105,12 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		parentClass = initialParentClass;
 		interfaces = initialInterfaces;
 		packageName = initialPackageName;
+		enclosingClassName = initialEnclosingClassName;
 		if(packageName!=null){
-			ExternalImportEntry.packages.put(name, packageName);
+			ExternalImportEntry.packages.put(getFullName(), packageName);
 		}
 		allClasses.add(this);
-		classMap.put(name, this);
+		classMap.put(getFullName(), this);
 		if(allOffspring.containsKey(name)){
 			for(ExternalClassEntry offspring:allOffspring.get(name)){
 				offspring.myContext.setParent(myContext);
@@ -181,7 +189,7 @@ public class ExternalClassEntry extends ExternalImportEntry {
 					new ExternalStatement(new TabEntry(new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry(variable.getName())))
 					)));
 		}
-		if(!variable.isFinal()){
+		if(isEnum==false&&!variable.isFinal()){
 			StringBuilder typeBuilder = new StringBuilder();
 			variable.getType().get(typeBuilder);
 			final String camelName = Generator.camelize(variable.getName());
@@ -237,12 +245,13 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		return methods.keySet();
 	}
 	public void addSubClass(ExternalClassEntry subClass){
+
+		subClass.enclosingClass = this;
 		subClass.__INIT__();
 		classes.put(subClass.getName(), subClass);
 		classyclasses.put(subClass.getName()+"Class", subClass);
 		addSubImport(subClass);
 		subClass.isSubClass  = true;
-		subClass.enclosingClass = this;
 		//subClass.myContext.setParent(myContext);
 		subClass.redoContext();
 	}
@@ -324,6 +333,16 @@ public class ExternalClassEntry extends ExternalImportEntry {
 			enclosingClass.getFullName(builder);
 			builder.append(".");
 		}
+		else if(enclosingClassName!=null) {
+			if(classMap.containsKey(enclosingClassName)){
+				classMap.get(enclosingClassName).getFullName(builder);
+				builder.append(".");
+			}
+			else {
+				builder.append(enclosingClassName);
+				builder.append(".");
+			}
+		}
 		builder.append(name);
 	}
 	public void setTabs(int newTabs){
@@ -331,6 +350,12 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void setDisplayConstructors(boolean option){
 		displayConstructors = option;
+	}
+	public void addTemplateType(Entry newTemplateType){
+		this.templateTypes.add(newTemplateType);
+	}
+	public List<Entry> getTemplateTypes(){
+		return templateTypes;
 	}
 	public void get(StringBuilder builder){
 		if(isSubClass == false){
@@ -426,15 +451,17 @@ public class ExternalClassEntry extends ExternalImportEntry {
 				new TabEntry(tabs+1,new StringEntry("}")).get(builder);
 			}
 		}
-		for(String methodKey: methods.keySet()){
-			if(!methodKey.equals("*")){
-				methods.get(methodKey).setTabs(tabs+1);
-				methods.get(methodKey).get(builder);
+		if(!isEnum){
+			for(String methodKey: methods.keySet()){
+				if(!methodKey.equals("*")){
+					methods.get(methodKey).setTabs(tabs+1);
+					methods.get(methodKey).get(builder);
+				}
 			}
-		}
-		for(String classKey: classes.keySet()){
-			classes.get(classKey).setTabs(tabs+1);
-			classes.get(classKey).get(builder);
+			for(String classKey: classes.keySet()){
+				classes.get(classKey).setTabs(tabs+1);
+				classes.get(classKey).get(builder);
+			}
 		}
 		new TabEntry(tabs, new StringEntry("}")).get(builder);
 	}
@@ -571,7 +598,7 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void setupContext(){		
 		allClasses.add(this);
-		classMap.put(name, this);
+		classMap.put(getFullName(), this);
 		if(allOffspring.containsKey(name)){
 			for(ExternalClassEntry offspring:allOffspring.get(name)){
 				offspring.myContext.setParent(myContext);
@@ -668,13 +695,22 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public ExternalStatement.Parameters getInitParameters() {
 		ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
+		if(enclosingClass!=null){
+			parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),ExternalClassHelper.getAsStatementFromEntry(enclosingClass.getFullName())));
+		}
+		else if(enclosingClassName!=null){
+			parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),ExternalClassHelper.getAsStatementFromEntry(enclosingClassName)));
+		}
+		else {
+			parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),new ExternalStatement(new StringEntry("null"))));
+		}
 		if(packageNameAsStatement != null) {
 			parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),ExternalClassHelper.getAsStatementFromEntry(packageNameAsStatement)));
 		}
 		else {
 			parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),ExternalClassHelper.getAsStatementFromEntry(packageName)));	
 		}
-		parameters.add(new ExternalStatement(new TabEntry(new StringEntry("new Entry(){public void get(StringBuilder builder){}}"))));
+		parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),"",new ExternalStatement.NewObject(new ExternalStatement.TypeName(new StringEntry("Entry"))),new ExternalStatement(new StringEntry("{public void get(StringBuilder builder){}}"))));
 		parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),new VariableNameEntry(nameAsStatement).getAsStatement()));
 		parameters.add(new ExternalStatement(new TabEntry(new StringEntry("\t")),ExternalClassHelper.getAsStatementFromEntry(!isInterface?!isEnum?"class ":"enum ":"inteface ")));
 		if(parentClass != null){

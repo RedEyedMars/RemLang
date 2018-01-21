@@ -70,7 +70,7 @@ public ExternalMethodEntry definition(final Token input,final Boolean mustInner,
 		}
 	}
 	else if (input.get("variableParameters") != null) {
-		newMethod.setParametersAsStatement(MainFlow.variables.get_body().statement(input.get("variableParameters").get("body_statement"),true,parentContext));
+		newMethod.setParametersAsStatement(MainFlow.variables.get_body().statement(input.get("variableParameters").get("statement_as_method").get("body_statement"),true,parentContext));
 	}
 	else  {
 		newMethod.setParameters(new ArrayList<ExternalVariableEntry>());

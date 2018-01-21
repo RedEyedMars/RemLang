@@ -9,7 +9,7 @@ import lists.*;
 public class MemberDeclaration extends ConcreteRule {
 
 	public static final IRule parser = new MemberDeclaration();
-	private Parameter<?>[] parameters = new Parameter<?>[]{};
+
 	public MemberDeclaration(){
 		super("member_declaration");
 	}

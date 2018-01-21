@@ -43,6 +43,10 @@
 	    classPackageName.add(body.statement(element->"statement_as_string"->"body_statement",true,parentContext));
 	  }
 	}
+	for Token element: declaration.getAllSafely("templateTypeName") {
+	  innerClass.addTemplateType(|'element'|);
+	  outerClass.addTemplateType(|'element'|);
+	}
 	innerClass.setPackageName(classPackageName);
 	outerClass.setPackageName(classPackageName);
 	for Token element: declaration.getAllSafely("parentName") {
@@ -88,7 +92,6 @@
 	    subInnerClass.addVariable(@'subOuterClass.getName()' "_" = "new "+'subOuterClass.getName()'+"()";);
 	    subInnerClass.addInitMethodFromClass(subOuterClass);
 	    subInnerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
-		subInnerClass.removeConstructors();
 		subInnerClass.removeInterfaces();
 		
 	    outerClass.addSubClass(subOuterClass);
@@ -118,7 +121,7 @@
 	}
   }
 > void collectClassNames(Token classToken){    
-	if classToken->"className"->"NAME" != null {
+	if classToken->"className"->"NAME" != null && classToken->"inner" == null {
 	  \addDefinedClassName(^classToken->"className"->"NAME");
 	}
     for Token element: classToken.getAllSafely("class_declaration") {

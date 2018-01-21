@@ -101,6 +101,10 @@ public void declaration(final Token declaration,final ExternalClassEntry innerCl
 			classPackageName.add(MainFlow.variables.get_body().statement(element.get("statement_as_string").get("body_statement"),true,parentContext));
 		}
 	}
+	for (final Token element :  declaration.getAllSafely("templateTypeName")) {
+		innerClass.addTemplateType(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+		outerClass.addTemplateType(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(element.toString())))));
+	}
 	innerClass.setPackageName(classPackageName);
 	outerClass.setPackageName(classPackageName);
 	for (final Token element :  declaration.getAllSafely("parentName")) {
@@ -145,7 +149,6 @@ public void declaration(final Token declaration,final ExternalClassEntry innerCl
 			subInnerClass.addVariable(new ExternalVariableEntry(true,true, /*TypeName*/new ExternalStatement.TypeName(/*TypeName*/new ExternalStatement.TypeName(/*Enty*/new ExternalStatement(new StringEntry(subOuterClass.getName().toString())))),"", /*Name*/new ExternalStatement(new StringEntry("_")), /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(/*Concat*/new ExternalStatement("", /*Name*/new ExternalStatement(new StringEntry("new ")), /*Enty*/new ExternalStatement(new StringEntry(subOuterClass.getName().toString())))), /*Name*/new ExternalStatement(new StringEntry("()"))))))));
 			subInnerClass.addInitMethodFromClass(subOuterClass);
 			subInnerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
-			subInnerClass.removeConstructors();
 			subInnerClass.removeInterfaces();
 			outerClass.addSubClass(subOuterClass);
 		}
@@ -173,7 +176,7 @@ public void declaration(final Token declaration,final ExternalClassEntry innerCl
 	}
 }
 public void collectClassNames(final Token classToken)  {
-	if (classToken.get("className").get("NAME") != null) {
+	if (classToken.get("className").get("NAME") != null && classToken.get("inner") == null) {
 		addDefinedClassName(FlowController.camelize(classToken.get("className").get("NAME").toString()));
 	}
 	for (final Token element :  classToken.getAllSafely("class_declaration")) {

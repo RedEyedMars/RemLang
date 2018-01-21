@@ -16,6 +16,8 @@ public interface Token{
 	public List<Token> getAll(String key);
 	public List<Token> getAllSafely(String key);
 	public void add(Token newToken);
+	public String err();
+	public String err(int tab);
 	public void print();
 	public void print(int tab);
 	public void printShort();
@@ -53,7 +55,12 @@ public interface Token{
 			name = newName;
 		}
 		public String getValue(){
-			return null;
+			if(children.isEmpty()){
+				return null;
+			}
+			else{
+				return children.get(0).getValue();
+			}
 		}
 		public void setValue(String newValue){
 		}
@@ -182,6 +189,17 @@ public interface Token{
 		public String toString(){
 			return getValue();
 		}
+		public String err(){
+			return shortString();
+		}
+		public String err(int tab){
+			StringBuilder builder = new StringBuilder();
+			for(Integer i = 0;i<tab;i++){
+				builder.append("  ");
+			}
+			builder.append(shortString());
+			return builder.toString();
+		}
 		public void print(){
 			printShort();
 		}
@@ -192,11 +210,16 @@ public interface Token{
 			printShort();
 		}
 		public void printShort(){
-			System.out.print("[");
-			System.out.print(name);
-			System.out.print(":");
-			System.out.print(value);
-			System.out.println("]");
+			System.out.print(shortString());
+		}
+		public String shortString(){
+			StringBuilder builder = new StringBuilder();
+			builder.append("[");
+			builder.append(name);
+			builder.append(":");
+			builder.append(value);
+			builder.append("]");
+			return builder.toString();
 		}
 		public String getFileName(){
 			return context.getFileName();
@@ -305,6 +328,26 @@ public interface Token{
 			else{
 				return new ArrayList<Token>();
 			}
+		}
+		public String err(){
+			StringBuilder builder = new StringBuilder();
+			builder.append(":>");
+			builder.append(name);
+			for(Token node:children){
+				builder.append(node.err(1));
+			}
+			return builder.toString();
+		}
+		public String err(int tab){
+			StringBuilder builder = new StringBuilder();
+			for(Integer i = 0;i<tab;i++){
+				builder.append("  ");
+			}
+			builder.append(name);
+			for(Token node:children){
+				builder.append(node.err(tab+1));
+			}
+			return builder.toString();
 		}
 		public void print(){
 			System.out.println(":>"+name);

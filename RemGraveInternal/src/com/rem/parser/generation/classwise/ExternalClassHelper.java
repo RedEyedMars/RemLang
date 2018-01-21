@@ -324,7 +324,7 @@ public class ExternalClassHelper {
 		}
 		int methodIndex = 0;
 		for(String methodName: initClass.getMethodNames()){
-			if(!methodName.contains("*")){
+			
 				String addMethodMethodName = "__add_method_"+methodIndex+"__";
 				initBody.add(new ExternalStatement(new TabEntry(new StringEntry(addMethodMethodName)),new StringEntry("();")));
 				externalClassEntry.addMethod(
@@ -333,7 +333,6 @@ public class ExternalClassHelper {
 										new ExternalStatement(
 												new TabEntry(new StringEntry("addMethod(")),initClass.getMethod(methodName).getAsStatement()),new ExternalStatement(new StringEntry(");")))));
 				++methodIndex;
-			}
 		}
 		int subClassIndex = 0;
 		for(String subClassName: initClass.getSubClasses().keySet()){
@@ -344,6 +343,9 @@ public class ExternalClassHelper {
 							new ExternalStatement.Body(
 									new ExternalStatement(new TabEntry(new StringEntry("addSubClass(")),new ExternalStatement(new StringEntry(subClassName+"._"))),new ExternalStatement(new StringEntry(");")))));
 			++subClassIndex;
+		}
+		for(Entry templateType: initClass.getTemplateTypes()){
+			initBody.add(new ExternalStatement(new TabEntry(new StringEntry("addTemplateType(")),new StringEntry(");"), ExternalClassHelper.getAsStatementFromEntry(templateType)));
 		}
 
 		externalClassEntry.addMethod(

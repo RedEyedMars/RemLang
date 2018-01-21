@@ -45,12 +45,24 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			add((ExternalStatement) initialPrefix);
 		}
 		else {
+			if(initialPrefix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialPrefix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			prefix = initialPrefix;
 		}
 		if(initialSuffix instanceof ExternalStatement){
 			add((ExternalStatement) initialSuffix);
 		}
 		else {
+			if(initialSuffix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialSuffix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			suffix = initialSuffix;
 		}
 		if(statements!=null){
@@ -65,12 +77,24 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			add((ExternalStatement) initialPrefix);
 		}
 		else {
+			if(initialPrefix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialPrefix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			prefix = initialPrefix;
 		}
 		if(initialSuffix instanceof ExternalStatement){
 			add((ExternalStatement) initialSuffix);
 		}
 		else {
+			if(initialSuffix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialSuffix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			suffix = initialSuffix;
 		}
 		if(statements!=null){
@@ -87,12 +111,24 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			add((ExternalStatement) initialPrefix);
 		}
 		else {
+			if(initialPrefix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialPrefix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			prefix = initialPrefix;
 		}
 		if(initialSuffix instanceof ExternalStatement){
 			add((ExternalStatement) initialSuffix);
 		}
 		else {
+			if(initialSuffix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialSuffix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			suffix = initialSuffix;
 		}
 		if(statements!=null){
@@ -107,6 +143,12 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			add((ExternalStatement) initialPrefix);
 		}
 		else {
+			if(initialPrefix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialPrefix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			prefix = initialPrefix;
 		}
 		if(statements!=null){
@@ -120,6 +162,12 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			add((ExternalStatement) initialPrefix);
 		}
 		else {
+			if(initialPrefix instanceof VariableNameEntry){
+				VariableNameEntry asVariable = ((VariableNameEntry)initialPrefix);
+				if(asVariable.getStatement()!=null){
+					addSubImport(asVariable.getStatement());
+				}
+			}
 			prefix = initialPrefix;
 		}
 		if(statements!=null){
@@ -189,6 +237,10 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 		System.out.println(builder.toString());
 	}
+	public void addImport(String typeName){
+		this.addImport(new ImportEntry(new StringEntry(typeName)));
+	}
+
 	@Override
 	public void get(StringBuilder builder) {
 		if(negated){
@@ -237,7 +289,7 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			builder.append(")");
 		}
 	}
-
+	
 
 
 
@@ -348,37 +400,28 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	}
 
 	public static class Body extends ExternalStatement {
-		private boolean isCaptured = false; 
 		public Body(ExternalStatement... entries) {
-			super(new StringEntry("{"),"");
+			super(new StringEntry(""),"");
 			context.setIsBody(true);
-			addAll(Arrays.asList(entries));
+			for(ExternalStatement statement: entries){
+				this.add(statement);
+			}
 
 		}
 		@Override
-		public void setTabs(int newTabs){
-			this.tabs = newTabs+1;
-		}
-		@Override
-		public void get(StringBuilder builder){
-
-			if(isCaptured == false ){
-				super.get(builder);
-				new TabEntry(tabs-1,new StringEntry("}")).get(builder);
+		public boolean add(ExternalStatement otherBody){
+			if(otherBody instanceof ExternalStatement.Body){
+				for(String name:otherBody.context.links.keySet()){
+					this.context.links.put(name,otherBody.context.links.get(name));
+				}
+				for(String name:otherBody.context.linkedTypes.keySet()){
+					this.context.linkedTypes.put(name,otherBody.context.linkedTypes.get(name));
+				}
+				return super.add(otherBody);
 			}
 			else {
-				int trueTab = tabs;
-				tabs = tabs - 1;
-				super.get(builder);
-				tabs = trueTab;
+				return super.add(otherBody);
 			}
-		}
-
-		public void add(ExternalStatement.Body otherBody){
-			otherBody.prefix = null;
-			otherBody.suffix = null;
-			otherBody.isCaptured = true;
-			super.add(otherBody);
 		}
 		public String getStatementType(){
 			return "ExternalStatement.Body";
@@ -396,6 +439,10 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 	}
 	public static class Parameters extends ExternalStatement {
+		public Parameters(String delimiter, ExternalStatement...statements){
+			super(delimiter,statements);
+			onEmptyDelimiter = null;
+		}
 		public Parameters( ExternalStatement...statements){
 			super(",",statements);
 			onEmptyDelimiter = null;
@@ -403,13 +450,16 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		@Override
 		public ExternalStatement getAsStatement(){
 			Parameters statementParameters = new Parameters();
+			if(delimiter!=","){
+				statementParameters.add(ExternalClassHelper.getAsStatementFromEntry(delimiter));
+			}
 			for(ExternalStatement subStatement:subStatements){
 				ExternalStatement statement = subStatement.getAsStatement();
 				statementParameters.add(new ExternalStatement(statement));
 			}
 			return new NewObject(new TypeName("ExternalStatement.Parameters"),statementParameters);
 		}
-		
+
 	}
 	public static class ArrayParameters extends ExternalStatement {
 
@@ -483,29 +533,85 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 	}
 	public static class TypeName extends ExternalStatement {
-		ExternalStatement cleanTypeName = null;
-		public TypeName(Entry name){
-			super(name);
-			this.addImport(new ImportEntry(name));
-		}
-		public TypeName(Entry name, Entry templateParameters){
-			super(name,templateParameters);
-			this.addImport(new ImportEntry(name));
-		}
+		private ExternalStatement cleanTypeName = null;
+		private Entry myName = null;
+		private Parameters myTemplateTypes = null;
+		private int numberOfArraySymbols = 0;
+		private boolean isInlineList = false;
+
 		public TypeName(){
 			super();
 		}
 		public TypeName(final String string) {
 			this(new Entry(){public void get(StringBuilder builder){builder.append(string);}});
 		}
+		public TypeName(Entry name){
+			super(name);
+			myName = name;
+			this.addImport(new ImportEntry(name));
+		}
+		public TypeName(Entry name, Entry templateParameters){
+			super(name,templateParameters);
+			myName = name;
+			this.addImport(new ImportEntry(name));
+		}
+		public TypeName(Entry name, String angleBrace, Parameters templateParameters, String angleClose){
+			super(name,new ExternalStatement(new StringEntry("<"),new StringEntry(">"),templateParameters));
+			myName = name ;
+			myTemplateTypes = templateParameters;
+			addTemplateTypes(this);
+		}
+		public TypeName(final String string, int n, boolean l) {
+			this(new Entry(){public void get(StringBuilder builder){builder.append(string);}});
+			this.numberOfArraySymbols = n;
+			this.isInlineList = l;
+		}
+		public TypeName(Entry name, int n, boolean l){
+			super(name);
+			myName = name;
+			this.addImport(new ImportEntry(name));
+			this.numberOfArraySymbols = n;
+			this.isInlineList = l;
+		}
+		public TypeName(Entry name, Entry templateParameters, int n, boolean l){
+			super(name,templateParameters);
+			myName = name;
+			this.addImport(new ImportEntry(name));
+			this.numberOfArraySymbols = n;
+			this.isInlineList = l;
+		}
+		public TypeName(Entry name, String angleBrace, Parameters templateParameters, String angleClose, int n, boolean l){
+			super(name,new ExternalStatement(new StringEntry("<"),new StringEntry(">"),templateParameters));
+			myName = name ;
+			myTemplateTypes = templateParameters;
+			addTemplateTypes(this);
+			this.numberOfArraySymbols = n;
+			this.isInlineList = l;
+		}
+		public void addTemplateTypes(TypeName parent){
+			parent.addImport(new ImportEntry(myName));
+			if(myTemplateTypes==null){
+				return;
+			}
+			for(ExternalStatement type:myTemplateTypes){
+				if(type instanceof TypeName){
+					((TypeName)type).addTemplateTypes(parent);
+				}
+				else {
+					parent.addImport(new ImportEntry(type));
+				}
+			}
+		}
 		public void setTypeName(ExternalStatement typeName){
 			cleanTypeName = typeName;
+			myName = typeName;
 			add(typeName);
 			addImport(new ImportEntry(typeName));
 		}
-		public void setTemplateType(ExternalStatement templates){
+		public void setTemplateType(ExternalStatement.Parameters templates){
 			add(new ExternalStatement(new StringEntry("<"), new StringEntry(">"),templates));
-			addImport(new ImportEntry(templates));
+			myTemplateTypes = templates;
+			addTemplateTypes(this);
 		}
 		@Override
 		public void clear(){
@@ -519,21 +625,49 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		public String getStatementType(){
 			return "ExternalStatement.TypeName";
 		}
+		public void setNumberOfArraySymbols(int newNoAS){
+			this.numberOfArraySymbols = newNoAS;
+		}
+		public void setIsInlineList(boolean newIIL){
+			this.isInlineList = newIIL;
+		}
+		@Override
+		public void get(StringBuilder builder){
+			super.get(builder);
+			for(int i=0;i<this.numberOfArraySymbols;++i){
+				builder.append("[]");
+			}
+			if(isInlineList){
+				builder.append("...");
+			}
+		}
 		@Override
 		public ExternalStatement getAsStatement(){
 			Parameters parameters = new Parameters ();
-			if(prefix!=null){
-				parameters.add(ExternalClassHelper.getAsStatementFromEntry(prefix));
+			if(myName!=null&&myTemplateTypes!=null){
+				parameters.add(ExternalClassHelper.getAsStatementFromEntry(myName));
+				parameters.add(ExternalClassHelper.getAsStatementFromEntry("<"));
+				parameters.add(ExternalClassHelper.getAsStatementFromEntry(myTemplateTypes));
+				parameters.add(ExternalClassHelper.getAsStatementFromEntry(">"));
 			}
-			if(subStatements.size()==1){
-				parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(0)));
+			else {
+				if(prefix!=null){
+					parameters.add(ExternalClassHelper.getAsStatementFromEntry(prefix));
+				}
+				if(subStatements.size()==1){
+					parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(0)));
+				}
+				if(suffix!=null){
+					parameters.add(ExternalClassHelper.getAsStatementFromEntry(suffix));
+				}
+				if(subStatements.size()==2){
+					parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(0)));
+					parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(1)));
+				}
 			}
-			if(suffix!=null){
-				parameters.add(ExternalClassHelper.getAsStatementFromEntry(suffix));
-			}
-			if(subStatements.size()==2){
-				parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(0)));
-				parameters.add(ExternalClassHelper.getAsStatementFromEntry(subStatements.get(1)));
+			if(numberOfArraySymbols>0||isInlineList){
+				parameters.add(new ExternalStatement(new StringEntry(""+numberOfArraySymbols)));
+				parameters.add(new ExternalStatement(new StringEntry(""+isInlineList)));
 			}
 			return new ExternalStatement(
 					new ExternalStatement.NewObject(
@@ -541,30 +675,31 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		}
 	}
 	public static class Conditional extends ExternalStatement {
-		private ExternalStatement __BODY__;
+		private ExternalStatement.Body __BODY__;
 		private StringEntry leftBrace = new StringEntry("(");
 		private StringEntry rightBrace = new StringEntry(")");
 		private String name = null;
 		private ExternalStatement header = null;
 		public Conditional(String name, ExternalStatement header, ExternalStatement body){
 			super(new TabEntry(new StringEntry(name)));
-			__BODY__ = body;
 			if(header != null){
 				super.add(new ExternalStatement(leftBrace,rightBrace,"",header));
 			}
 			if(__BODY__ instanceof ExternalStatement.Body){
-				super.add(body);
+				super.add(new ExternalStatement(new StringEntry(" {")));
+				__BODY__ = ((Body)body);
 			}
 			else {
-				body.context.setIsBody(true);
-				super.add(body);
-				//super.add(new ExternalStatement(new StringEntry("{"),new TabEntry(new StringEntry("}")),"",body));
+				__BODY__ = new Body(body);
+				super.add(new ExternalStatement(new StringEntry(" {")));
 			}
+			this.__BODY__.setTabs(tabs+1);
 			if(header != null){
 				for(ExternalVariableEntry variable:header.getContext().getVariables()){
 					body.getContext().add(variable);
 				}
 			}
+			this.addSubImport(__BODY__);
 			this.name = name;
 			this.header = header;
 		}
@@ -579,23 +714,35 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 			element.setParentContext(context);
 			return result;
 		}
-
+		@Override
+		public void setTabs(int newTabs){
+			this.tabs = newTabs;
+			this.__BODY__.setTabs(newTabs+1);
+			
+		}
 		public ExternalStatement setBraces(String left, String right){
 			leftBrace.set(left);
 			rightBrace.set(right);
 			return this;
 		}
+		@Override
+		public void get(StringBuilder builder){
+			setTabs(tabs);
+			super.get(builder);
+			__BODY__.get(builder);
+			new TabEntry(tabs,new StringEntry("}")).get(builder);
+		}
 		public ExternalStatement getAsStatement() {
 			return new ExternalStatement.NewObject(
-								new TypeName("ExternalStatement.Conditional"),
-								new Parameters(
-								new ExternalStatement(new QuoteEntry(name)),
-								new ExternalStatement(new QuoteEntry(leftBrace.getString())),
-								header!=null?header.getAsStatement():new ExternalStatement(new StringEntry("null")),
-								new ExternalStatement(new QuoteEntry(rightBrace.getString())),
-								__BODY__!=null?__BODY__.getAsStatement():new ExternalStatement(new StringEntry("null")))
-								);
-			
+					new TypeName("ExternalStatement.Conditional"),
+					new Parameters(
+							new ExternalStatement(new QuoteEntry(name)),
+							new ExternalStatement(new QuoteEntry(leftBrace.getString())),
+							header!=null?header.getAsStatement():new ExternalStatement(new StringEntry("null")),
+									new ExternalStatement(new QuoteEntry(rightBrace.getString())),
+									__BODY__!=null?__BODY__.getAsStatement():new ExternalStatement(new StringEntry("null")))
+					);
+
 		}
 	}
 	public ExternalStatement getAsStatement() {

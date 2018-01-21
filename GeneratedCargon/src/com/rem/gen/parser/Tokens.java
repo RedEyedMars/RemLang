@@ -136,20 +136,20 @@ public class Tokens{
 				return "character";
 			}
 		}
-		public static class Quote extends Token.Parsed{
+		public static class Escaped extends Token.Parsed{
 			protected String value = null;
-			public Quote(final String initalSuperName, final String value) {
+			public Escaped(final String initalSuperName, final String value) {
 				super(initalSuperName);
 				if(value != null){
 					this.value = value;
 				}
 			}
-			public Quote(final String value) {
+			public Escaped(final String value) {
 				if(value != null){
 					this.value = value;
 				}
 			}
-			public Quote() {
+			public Escaped() {
 			}
 			public String getValue(){
 				return value;
@@ -158,7 +158,7 @@ public class Tokens{
 				value = newValue;
 			}
 			public String getName(){
-				return "quote";
+				return "escaped";
 			}
 		}
 	}
@@ -492,7 +492,7 @@ public class Tokens{
 				__SYNTAX__ = new_SYNTAX;
 			}
 			public String getValue(){
-				return "as";
+				return "as ";
 			}
 			public void setValue(String newValue){
 			}
@@ -508,7 +508,7 @@ public class Tokens{
 				__SYNTAX__ = new_SYNTAX;
 			}
 			public String getValue(){
-				return "in";
+				return "in ";
 			}
 			public void setValue(String newValue){
 			}
@@ -635,33 +635,13 @@ public class Tokens{
 		}
 		public static class syntax_27 extends Token.Parsed{
 			public static Tokens.Syntax.syntax_27 __SYNTAX__ = new Tokens.Syntax.syntax_27("SYNTAX");
-			public static Token.Parsed apostrophe = new Tokens.Syntax.syntax_27("apostrophe");
+			public static Token.Parsed slash = new Tokens.Syntax.syntax_27("slash");
 			public syntax_27(final String initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_27() {
 			}
 			public void set_SYNTAX(Tokens.Syntax.syntax_27 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
-			}
-			public String getValue(){
-				return "\\'";
-			}
-			public void setValue(String newValue){
-			}
-			public void setApostrophe(Token.Parsed newApostrophe){
-				apostrophe = newApostrophe;
-			}
-		}
-		public static class syntax_28 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_28 __SYNTAX__ = new Tokens.Syntax.syntax_28("SYNTAX");
-			public static Token.Parsed slash = new Tokens.Syntax.syntax_28("slash");
-			public syntax_28(final String initalSuperName) {
-				super(initalSuperName);
-			}
-			public syntax_28() {
-			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_28 new_SYNTAX){
 				__SYNTAX__ = new_SYNTAX;
 			}
 			public String getValue(){
@@ -701,6 +681,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "ignoreCharacter";
@@ -730,6 +711,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "regex";
@@ -759,6 +741,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "range";
@@ -788,6 +771,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "passConstraint";
@@ -817,6 +801,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "braced_parameters";
@@ -846,6 +831,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "import_parameter";
@@ -875,6 +861,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "ruleName";
@@ -904,6 +891,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "import_definition";
@@ -933,6 +921,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "chain";
@@ -962,6 +951,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "ignores_character";
@@ -991,6 +981,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "listName";
@@ -1020,6 +1011,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "listRuleName";
@@ -1049,6 +1041,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "choice";
@@ -1078,6 +1071,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "newName";
@@ -1107,6 +1101,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "multiple";
@@ -1136,6 +1131,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "quoteToken";
@@ -1165,6 +1161,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "regexToken";
@@ -1194,6 +1191,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "ruleToken";
@@ -1223,6 +1221,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "option";
@@ -1252,6 +1251,7 @@ public class Tokens{
 				}
 			}
 			public void setValue(String newValue){
+				value=newValue;
 			}
 			public String getName(){
 				return "group";
@@ -1269,18 +1269,18 @@ public class Tokens{
 			public BaseToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "base";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class CommentsToken extends Token.Parsed{
@@ -1291,18 +1291,18 @@ public class Tokens{
 			public CommentsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "comments";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class IgnoresToken extends Token.Parsed{
@@ -1313,18 +1313,18 @@ public class Tokens{
 			public IgnoresToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "ignores";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ImportsToken extends Token.Parsed{
@@ -1335,18 +1335,18 @@ public class Tokens{
 			public ImportsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "imports";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ImportsFileImportToken extends Token.Parsed{
@@ -1357,18 +1357,18 @@ public class Tokens{
 			public ImportsFileImportToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "imports__file_import";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class FILENAMEToken extends Token.Parsed{
@@ -1379,18 +1379,18 @@ public class Tokens{
 			public FILENAMEToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "FILE_NAME";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NAMEToken extends Token.Parsed{
@@ -1401,18 +1401,18 @@ public class Tokens{
 			public NAMEToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "NAME";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class OPERATORToken extends Token.Parsed{
@@ -1423,18 +1423,18 @@ public class Tokens{
 			public OPERATORToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "OPERATOR";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class NUMBERToken extends Token.Parsed{
@@ -1445,18 +1445,18 @@ public class Tokens{
 			public NUMBERToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "NUMBER";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class QuoteToken extends Token.Parsed{
@@ -1467,18 +1467,18 @@ public class Tokens{
 			public QuoteToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "quote";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BracedDefinitionToken extends Token.Parsed{
@@ -1489,18 +1489,18 @@ public class Tokens{
 			public BracedDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "braced_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexToken extends Token.Parsed{
@@ -1511,18 +1511,18 @@ public class Tokens{
 			public RegexToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexOptionToken extends Token.Parsed{
@@ -1533,18 +1533,18 @@ public class Tokens{
 			public RegexOptionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_option";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexGroupDefinitionToken extends Token.Parsed{
@@ -1555,18 +1555,18 @@ public class Tokens{
 			public RegexGroupDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_group_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class SingleIgnoresCharacterToken extends Token.Parsed{
@@ -1577,18 +1577,18 @@ public class Tokens{
 			public SingleIgnoresCharacterToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "single_ignores_character";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexOptionDefinitionToken extends Token.Parsed{
@@ -1599,18 +1599,18 @@ public class Tokens{
 			public RegexOptionDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_option_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RuleParametersToken extends Token.Parsed{
@@ -1621,18 +1621,18 @@ public class Tokens{
 			public RuleParametersToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "rule_parameters";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RuleParamsToken extends Token.Parsed{
@@ -1643,18 +1643,18 @@ public class Tokens{
 			public RuleParamsToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "rule_params";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class BaseElementToken extends Token.Parsed{
@@ -1665,18 +1665,18 @@ public class Tokens{
 			public BaseElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "base_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RuleToken extends Token.Parsed{
@@ -1687,18 +1687,18 @@ public class Tokens{
 			public RuleToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "rule";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ListToken extends Token.Parsed{
@@ -1709,18 +1709,18 @@ public class Tokens{
 			public ListToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "list";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class DefinitionToken extends Token.Parsed{
@@ -1731,18 +1731,18 @@ public class Tokens{
 			public DefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class ElementToken extends Token.Parsed{
@@ -1753,18 +1753,18 @@ public class Tokens{
 			public ElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class AtomToken extends Token.Parsed{
@@ -1775,18 +1775,18 @@ public class Tokens{
 			public AtomToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "atom";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexDefinitionToken extends Token.Parsed{
@@ -1797,18 +1797,18 @@ public class Tokens{
 			public RegexDefinitionToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_definition";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexElementToken extends Token.Parsed{
@@ -1819,18 +1819,18 @@ public class Tokens{
 			public RegexElementToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_element";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 		public static class RegexSpecialToken extends Token.Parsed{
@@ -1841,18 +1841,18 @@ public class Tokens{
 			public RegexSpecialToken() {
 			}
 			public String getValue(){
-				return value;
+				if(value==null){
+					return super.getValue();
+				}
+				else{
+					return value;
+				}
 			}
 			public void setValue(String newValue){
 				value = newValue;
 			}
 			public String getName(){
 				return "regex_special";
-			}
-			public void setString(String newValue){
-				if(value==null){
-					value=newValue;
-				}
 			}
 		}
 	}

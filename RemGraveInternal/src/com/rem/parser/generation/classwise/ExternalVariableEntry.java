@@ -245,6 +245,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 		StringBuilder typeBuilder = new StringBuilder();
 		type.get(typeBuilder);
 		classContext = ExternalContext.getClassContext(typeBuilder.toString());
+		addImport(new ExternalImportEntry.ImportEntry(newType));
 	}
 	public void setName(Entry newName){
 		name = newName;

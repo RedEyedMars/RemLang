@@ -16,7 +16,7 @@ braced_definition        Braced ( )          = definition
 regex                    Braced [ ]          = regex_definition
 regex_option             Braced [ ] , silent = "^" as negate? regex_option_definition*
 regex_group_definition   Braced ( ) , silent = regex_definition as regex
-single_ignores_character Braced [ ] , silent = [\\?.?]
+single_ignores_character Braced [ ] , silent = [\?.?]
 
 regex_option_definition silent
 	( [.] as left "-" [.] as right ) as range
@@ -38,7 +38,7 @@ rule
 	NAME as ruleName ( rule_parameters )?  ( ( "=" | "\n\t" ) definition )
 
 list
-	NAME as listName in list_names "global"? "list" ("with" NAME as listRuleName)? ( ( ","| "\n\t" ) quote | "\n" )*
+	NAME as listName in list_names "global"? "list" ("with" NAME as listRuleName) ( ( ","| "\n\t" ) quote | "\n" )*
 
 definition
 	element as chain+ ( ( "|" | "\n\t" ) definition ) as choice?
@@ -63,8 +63,7 @@ regex_special
 	"\d" as number
 	"\." as dot
 	"\s" as whitespace
-	[\\\"] as quote
-	"\'" as apostrophe
+	"\\" [[a-z\"\']] as escaped
 	"\\" as slash
 
 #System.out.print((_state==SUCCESS)+":>"+readLine(_input,_position));

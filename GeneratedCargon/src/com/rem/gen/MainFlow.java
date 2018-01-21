@@ -29,6 +29,8 @@ public  class MainFlow extends GeneralFlowController{
 	protected final Map<String,Set<String>> ruleHeirachy = new HashMap<String,Set<String>>();
 	protected final Set<String> listNames = new HashSet<String>();
 	protected final Map<String,com.rem.gen.parser.Token> subRulesProposed = new HashMap<String,com.rem.gen.parser.Token>();
+	protected final Set<String> declaredContexts = new HashSet<String>();
+	protected String previousContextClassName = "AnonymousContext";
 	protected final String parserPackageName = "com.rem.gen.parser";
 	protected final String packageName = "com.rem.gen";
 	protected final String charArray = "char[]";
@@ -74,12 +76,18 @@ public  class MainFlow extends GeneralFlowController{
 	public void setupGenerators(){
 		ExternalClassHelper.setup();
 		{
-			ExternalClassEntry.suppliment("CargonTokens","");
-			ExternalClassEntry.suppliment("Rules","");
-			ExternalClassEntry.suppliment("Listnames","");
-			ExternalClassEntry.suppliment("Arrays","");
+			ExternalClassEntry.suppliment("CargonTokens","lists");
+			ExternalClassEntry.suppliment("Rules","lists");
+			ExternalClassEntry.suppliment("Listnames","lists");
+			ExternalClassEntry.suppliment("Arrays","java.util");
+			ExternalClassEntry.suppliment("CargonTokens","lists");
+			ExternalClassEntry.suppliment("Rules","lists");
+			ExternalClassEntry.suppliment("Listnames","lists");
+			ExternalClassEntry.suppliment("Arrays","java.util");
 			Parser._.__INIT__();
 			MainFlow.outputClasses.add(Parser._);
+			AnonymousContext._.__INIT__();
+			MainFlow.outputClasses.add(AnonymousContext._);
 			Tokens._.__INIT__();
 			MainFlow.outputClasses.add(Tokens._);
 			Token._.__INIT__();
@@ -117,6 +125,15 @@ public  class MainFlow extends GeneralFlowController{
 	public Map<String,com.rem.gen.parser.Token> getSubRulesProposed(){
 		return subRulesProposed;
 	}
+	public Set<String> getDeclaredContexts(){
+		return declaredContexts;
+	}
+	public String getPreviousContextClassName(){
+		return previousContextClassName;
+	}
+	public void setPreviousContextClassName(String newPreviousContextClassName){
+		previousContextClassName = newPreviousContextClassName;
+	}
 	public String getParserPackageName(){
 		return parserPackageName;
 	}
@@ -126,9 +143,6 @@ public  class MainFlow extends GeneralFlowController{
 	public String getCharArray(){
 		return charArray;
 	}
-	public void setup(final com.rem.gen.parser.Parser.Result data){
-		Parser._.setupCompile();
-	}
 	public void generate(final com.rem.gen.parser.Parser.Result.Pass data){
 		final com.rem.gen.parser.Token root = data.getRoot();
 		final ExternalStatement.Body vb = new ExternalStatement.Body();
@@ -137,8 +151,8 @@ public  class MainFlow extends GeneralFlowController{
 		final ExternalStatement globalIgnoresHeaderVariableSection = new ExternalStatement();
 		setupIgnoresHeader(globalIgnoresHeader,globalIgnoresHeaderVariableSection);
 		if(root.get("ignores")!=null){
-			for (com.rem.gen.parser.Token element: root.getAllSafely("ignores")){
-				for (com.rem.gen.parser.Token atom: element.getAllSafely("ignoreCharacter")){
+			for (final com.rem.gen.parser.Token element: root.getAllSafely("ignores")){
+				for (final com.rem.gen.parser.Token atom: element.getAllSafely("ignoreCharacter")){
 					addIgnoresCharacter((atom).toString(),globalIgnoresHeaderVariableSection);
 				}
 			}
@@ -148,13 +162,13 @@ public  class MainFlow extends GeneralFlowController{
 			addIgnoresCharacter("\\t",globalIgnoresHeaderVariableSection);
 			addIgnoresCharacter("\\n",globalIgnoresHeaderVariableSection);
 		}
-		for (com.rem.gen.parser.Token list: root.getAllSafely("list")){
+		for (final com.rem.gen.parser.Token list: root.getAllSafely("list")){
 			Parser._.list(list);
 		}
-		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+		for (final com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
 			Parser._.findSilentRule(rule);
 		}
-		for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+		for (final com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
 			Parser._.findRuleHeirachy(rule);
 		}
 		boolean hasAllRulesDefined = true;
@@ -167,12 +181,15 @@ public  class MainFlow extends GeneralFlowController{
 		}
 		if(hasAllRulesDefined){
 			Parser._.consolidateRuleHeirachy();
-			for (com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
+			for (final com.rem.gen.parser.Token rule: root.getAllSafely("rule")){
 				Parser._.define(rule,null);
 			}
 			Parser._.outputBraces();
 			Parser._.output();
 		}
+	}
+	public void setup(final com.rem.gen.parser.Parser.Result data){
+		Parser._.setupCompile();
 	}
 	public void setupIgnoresHeader(final ExternalStatement toSetup,final ExternalStatement variableSection){
 		toSetup.set("&&");
