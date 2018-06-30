@@ -1,5 +1,3 @@
-imports import
-
 > BodyGenerator body_gen = new BodyGenerator();
 > class BodyGenerator {
     Integer exceptionIndex = 0;
