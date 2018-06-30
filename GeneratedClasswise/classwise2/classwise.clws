@@ -1,0 +1,308 @@
+imports import
+
+import classes
+import methods
+import bodies
+import variables
+
+> String innerPackageName = "com.rem.gen";
+
+> %Body setupClassList = %Body ();
+
+> ClasswiseGenerator classwise = new ClasswiseGenerator();
+> class ClasswiseGenerator {
+
+  @String mainClassName = "MainFlow";
+  File innerDirectory = null;
+  File outerDirectory = null;
+  
+  @%C mainClass = null;
+
+  String sourceDirectory = null;
+  void setup(%Pass result){
+    String fileName = result.getFileName();
+	int indexOfDot = fileName.lastIndexOf(".");
+	if indexOfDot > -1 {
+	  fileName = fileName.substring(0,indexOfDot);
+	}
+	int indexOfSlash = fileName.lastIndexOf("/");
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash+1);
+	}
+	indexOfSlash = fileName.lastIndexOf("\\");
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash+1);
+	}
+	fileName = %Helper.camelize(fileName);
+	mainClassName = fileName;
+	innerDirectory = new File("../"+fileName+"/src");
+	innerDirectory.mkdirs();
+	outerDirectory = new File("../"+fileName+"/src",innerPackageName.replace(".","/"));
+	outerDirectory.mkdirs();
+	sourceDirectory = "../"+fileName+"/src/";
+  }
+  void importAllClasses(%T input) {
+    input : element : anonymous_classes {
+      %Call classPackageName = %Call();
+      element : packageElement : packageName {
+	    if packageElement->NAME != null {
+  	      classPackageName.add(%E('packageElement->NAME'));
+	    }
+	    else if packageElement->quote != null {
+	      classPackageName.add(%E('packageElement->quote'));
+	    }
+	    else if packageElement->statement_as_string != null {
+	      classPackageName.add(body_gen.statement(packageElement->statement_as_string->body_statement,true,mainClass));
+	    }
+	  }
+	  element : anonymousClass : anonymous_class {
+	    defineAnonymousClass(anonymousClass, true, classPackageName.evaluate(), "");
+	  }
+    }
+  }
+  void defineAnonymousClass(%T anonymousClass, boolean isFirst, String anonymousPackageName, String parentClass) {
+    StringBuilder currentClass = new StringBuilder();
+    currentClass.append(parentClass);
+    anonymousClass : className : className {
+      if isFirst == false { currentClass.append("."); }
+	  currentClass.append(className);
+	  String currentClassValue = 'currentClass';
+	  setupClassList.add(%Static Call()
+	    .set(%Type("com.rem.output.helpers.OutputHelper"))
+	    .add(%E("suppliment"),
+	         %A().add(%Quote('currentClassValue')).add(%Quote('anonymousPackageName'))));
+	  %Helper.suppliment('currentClassValue','anonymousPackageName');
+	}
+	
+	anonymousClass :  subAnonymousClass : anonymous_class { 
+	  defineAnonymousClass(subAnonymousClass, false, anonymousPackageName, 'currentClass');
+	}
+  }
+  void findAllClasses(%T input){
+    input : element : import_imports {
+      importAllClasses(element);
+    }
+    input : element : import_clws {
+      findAllClasses(element);
+    }
+    
+    input : element : class_declaration {
+      classGenerator.collectClassNames(element);
+    }
+  }
+  void generateGlobals(%T input){
+    input : element : import_clws {
+      generateGlobals(element);
+    }
+    input : element : variable_declaration {
+	  %V newVariable = variable.declaration(element,true,mainClass).isStatic().isPublic();
+	  mainClass.addVariable(newVariable);
+	  variable.addDefinedVariableName(newVariable);
+	}
+    input : element : method_declaration {
+	  %M newMethod = method.declaration(element,true,mainClass).isStatic();
+	  mainClass.addMethod(newMethod);
+	  method.addDefinedMethodName(newMethod);
+	}
+  }
+  void generateAll(%T input){
+    input : element : import_clws {
+      generateAll(element);
+    }
+    
+    input : element : class_declaration {
+      classGenerator.collectClassNames(element);
+    }
+    input : element : class_declaration {
+      %C innerClass = new %C();
+      %C outerClass = classGenerator.declaration(element, innerClass,element->inner == null,null);
+	  if element->inner == null {
+	    innerClass.addVariable(@`innerClass.getName()` _ = `outerClass.stasis()`;);
+	  
+		setupClassList.add(|%Helper.addOutputClass(`outerClass.getName()`._);|);
+      }
+      %Helper.addOutputClass(innerClass);
+    }
+	
+  }
+> void generate(%Pass result){
+    mainClass = class  'innerPackageName'.'mainClassName' {
+        @void main(String[] args){
+           %Helper.parse(args,%Parser(),'mainClassName+"::init"','mainClassName+"::setup"','mainClassName+"::generate"');
+        }
+        @void init(%Pass result) {`setupClassList`;}
+      };
+	
+    findAllClasses(result.getRoot());
+    generateGlobals(result.getRoot());
+	generateAll(result.getRoot());
+	%Helper.addOutputClass(mainClass);
+  }
+> %Output name_var(%T input, boolean isInner, %Context context){
+    if input->tokenAccess != null {
+      return tokenAccess(input->tokenAccess,isInner,context);
+    }
+    else {
+      %Concatenation result = %Concatenation();
+      
+      input : atom : name_atom {
+	    result.add(name_atom(atom,isInner,context));
+      }
+      
+      if input->cast_statement !=null{
+        %Cast cast = new %Cast();
+        input : atom : cast_statement {
+          cast.type(classwise.all_type(atom->all_type_name,isInner,context));
+        }
+        return cast.subject(result);
+      }
+      else {
+        return result;
+      }
+    }
+  }
+  %Output tokenAccess(%T element, boolean isInner, %Context context){
+     %Callable call = %Call().add(name_atom(element->name_atom,isInner,context));
+     element : atom : access {
+       String name = 'atom->NAME';
+       if atom->get != null {
+	     call.add(%E("get"),        %A().add(%E("com.rem.gen.parser.Token.Id._"+name)));
+	   }
+	   else if atom->getAllSafely != null {
+	     call.add(%E("getAllSafely"),%A().add(%E("com.rem.gen.parser.Token.Id._"+name)));
+	   }
+	 }
+	 return call;
+  }
+  %Output name_atom(%T input, boolean isInner, %Context parentContext) {
+    if input->statement_as_char != null {
+      return new %Braced().set(%E('input->statement_as_char->value')).style("\'","\'");
+	}
+    else if input->statement_as_method != null {
+      if isInner {
+		return body_gen.statement(input->statement_as_method->body_statement,true,parentContext);
+      }
+      else {
+		return body_gen.statement(input->statement_as_method->body_statement,true,parentContext).vibrate();
+	  }
+	}
+	else if input->statement_as_quote != null {
+	  %Output asQuoteStatement = body_gen.statement(input->statement_as_quote->body_statement,isInner,parentContext);
+	  if isInner {
+		return %Quote().set(asQuoteStatement);
+      }
+	  else {
+		return %Quote().set(asQuoteStatement.vibrate()).stasis();
+      }
+	}
+	else if input->statement_as_string != null {
+	  %Output result = %String().set(body_gen.statement(input->statement_as_string->body_statement,true,parentContext).vibrate());
+	  return result;
+	}
+	else if input->quote != null {
+	  if isInner {
+		return %Quote().set('input->quote');
+      }
+	  else {
+		return %Quote().set('input->quote').stasis();
+      }
+	}
+	else if input->NUMBER != null {
+	  return %Exact('input->NUMBER');
+	}
+	else if input->variable_names != null {
+	  String value = 'input->variable_names';
+ 	  if isInner && mainClass.hasVariable(value) && (parentContext == null || parentContext.hasVariableInContext(value) == false) {
+ 	    value = mainClassName+"."+value;
+ 	  }
+ 	  return %E(value);
+ 	  
+	}
+	else {
+	  input.err();
+	  return null;
+	}
+  }  
+> %Type type_var(%T input, boolean isInner, %Context parentContext){
+    %Type type = %Type();
+    input : element : type_atom {
+        type.add(type_atom(element,isInner,parentContext));
+      }
+      : template_parameters {
+        element : quark : template_parameter { 
+          type.template(all_type(quark,isInner,parentContext));
+        }
+      }
+    
+    return type;
+  }
+> %Type type_atom(%T input, boolean isInner, %Context parentContext){
+    if input->statement_as_method != null {
+      return %Type(body_gen.statement(input->statement_as_method->body_statement,true,parentContext));
+    }
+    else if input->statement_as_string != null {
+      return %Type(%String().set(body_gen.statement(input->statement_as_string->body_statement,true,parentContext)));
+    }
+    else if input->class != null {
+      if input->class->class_variable_names != null {
+        return %Type(
+          %Call().add(
+            %Exact('input->class->class_variable_names'))
+          .add(%E("getFullName"),%A()));
+      }
+      else {
+        return %Type('input->class->class_names');
+      }
+    }
+    else {
+      return null;
+    }
+  }
+> %Type all_type(%T input, Boolean isInner, %Context parentContext){
+	if input->non_class_name != null {
+	  String elementName = 'input->>non_class_name.get(0).getAll().get(0).getName()'.substring(1);
+	  if elementName.startsWith("O") {
+	    return %Type(%Exact("com.rem.output.helpers."+elementName));
+	  }
+	  else if elementName.startsWith("Callable") {
+	    return %Type(%Exact("com.rem.output.helpers.CallableOutput"));
+	  }
+	  else if elementName.startsWith("Lineable") {
+	    return %Type(%Exact("com.rem.output.helpers.LineableOutput"));
+	  }
+	  else {
+	    if elementName.equals("Id") {
+	      return %Type(%Exact("com.rem.gen.parser.Token.Id"));
+	    }
+	    else if elementName.equals("Result") {
+	      return %Type(%Exact("com.rem.gen.parser.Parser.Result"));
+	    }
+	    else if elementName.equals("Pass") {
+	      return %Type(%Exact("com.rem.gen.parser.Parser.Result.Pass"));
+	    }
+	    else if elementName.equals("Fail") {
+	      return %Type(%Exact("com.rem.gen.parser.Parser.Result.Fail"));
+	    }
+	    else {
+	      return %Type(%Exact("com.rem.gen.parser."+elementName));
+	    }
+	  }
+	}
+	else if input->type_var!=null {
+		return type_var(input->type_var,isInner,parentContext);
+	}
+	else {
+		if input->all_type_name !=null{
+			return all_type(input->all_type_name,isInner,parentContext);
+		}
+		else {
+		  return null;
+		}
+	}
+  }
+}
+
+
+
+> void setup(%Pass result){ classwise.setup(result); }
+> void generate(%Pass result){ classwise.generate(result); }

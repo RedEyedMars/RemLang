@@ -67,6 +67,7 @@ public class InternalGenerator extends Generator {
 			"\nimport java.util.*;"+
 			"\nimport java.io.*;"+
 			"\nimport lists.*;"+
+			"\nimport com.rem.output.helpers.*;"+
 			"\nimport com.rem.parser.generation.classwise.*;"+
 			"\nimport com.rem.parser.generation.*;"+
 			"\nimport com.rem.parser.parser.*;"+

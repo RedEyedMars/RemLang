@@ -14,6 +14,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 	private ExternalStatement.Body body;
 	private boolean isInterface = false;
 	private boolean isStatic = false;
+	private boolean isAbstract = false;
 	private String typeSuffix = null;
 	private String throwsStatement = null;
 	public ExternalMethodEntry(){
@@ -165,6 +166,9 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		if(isStatic){
 			builder.append("static ");
 		}
+		if(isAbstract){
+			builder.append("abstract ");
+		}
 		type.get(builder);
 		if (typeSuffix!=null){
 			builder.append(typeSuffix);
@@ -181,7 +185,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			builder.append(",");
 			parameters.get(i).get(builder);
 		}
-		if(isInterface){
+		if(isInterface||isAbstract){
 			builder.append(")");
 			if(throwsStatement!=null){
 				builder.append(throwsStatement);	
@@ -198,6 +202,10 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			for(int i=0;i<body.size();++i){
 				body.get(i).setTabs(tabs+1);
 				body.get(i).get(builder);
+			}
+			if(endsWithStatement!=null){
+				endsWithStatement.setTabs(tabs+1);
+				endsWithStatement.get(builder);
 			}
 			new TabEntry(tabs, new StringEntry("}")).get(builder);
 		}
@@ -232,6 +240,7 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 
 	}
 	ExternalStatement parametersAsStatement = null;
+	private ExternalStatement endsWithStatement;
 	public void setParametersAsStatement(ExternalStatement parameters){
 		this.parametersAsStatement = parameters;
 
@@ -249,9 +258,18 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 			this.isInterface = true;
 		}
 	}
-	
+	public void setEndWith(ExternalStatement newEndsWithStatement){
+		endsWithStatement = newEndsWithStatement;
+	}
 	public void setIsStatic(Boolean newIsStatic){
 		this.isStatic = newIsStatic;
+	}
+	public void setIsAbstract(Boolean newIsAbstract){
+		this.isAbstract = newIsAbstract;
+	}
+	public ExternalMethodEntry _abstract(){
+		this.isAbstract = true;
+		return this;
 	}
 	//public ExternalMethodEntry(Integer tabs, Boolean isStatic, Entry type, String typeSuffix, Entry name, List<ExternalVariableEntry> parameters , String throwStatement, ExternalStatement.Body body){
 	
@@ -281,7 +299,12 @@ public class ExternalMethodEntry extends ExternalImportEntry {
 		else {
 			completeStatement.add(new ExternalStatement(new StringEntry("null")));
 		}
-		return new ExternalStatement.NewObject(new ExternalStatement.TypeName("ExternalMethodEntry"),completeStatement);
+		if(isAbstract){
+			return new ExternalStatement(".",new ExternalStatement.NewObject(new ExternalStatement.TypeName("ExternalMethodEntry"),completeStatement), new ExternalStatement(new StringEntry("_abstract()")));
+		}
+		else {
+			return new ExternalStatement.NewObject(new ExternalStatement.TypeName("ExternalMethodEntry"),completeStatement);
+		}
 				
 	}
 }

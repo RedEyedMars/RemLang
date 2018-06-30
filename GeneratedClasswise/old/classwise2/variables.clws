@@ -1,0 +1,72 @@
+
+> VariableGenerator variable = new VariableGenerator();
+> class VariableGenerator {
+  Set<String> definedVariableNames = new HashSet<String>();
+  void addDefinedVariableName(Variable definedVariable){
+	definedVariableNames.add(definedVariable.getName());
+  }
+  Variable declaration(%T declaration,boolean mustInner,Context parentContext){
+	Boolean isInner = mustInner || declaration->inner != null;
+	
+	Variable newVariable = new Variable ();
+	Type type = new Type();
+	
+	declaration : element : typeName {
+	  classwise.all_type(element,type,isInner,parentContext);
+	}
+	declaration : element : ARRAY_TYPE {
+        type.addArraySymbol();
+    }
+    if declaration->INLINE_LIST != null {
+      type.setIsInlineList(true);
+    }
+    
+	newVariable.setType(type.getAsStatement());
+    if declaration->method_argument != null {
+      newVariable.setAssignment(body.argument(declaration->method_argument,isInner,parentContext));
+	}
+	
+	if isInner {
+	  newVariable.setIsFinal(true);
+	}
+	if declaration->weak != null {
+	  newVariable.setIsFinal(false);
+      newVariable.setHasSetMethod(true);
+    }
+    else if declaration->isFinal != null {
+	  newVariable.setIsFinal(true);
+      newVariable.setHasSetMethod(false);
+    }
+    else {
+      if isInner {
+	    newVariable.setIsFinal(true);
+        newVariable.setHasSetMethod(false);
+      }
+      else {
+        newVariable.setIsFinal(false);
+        newVariable.setHasSetMethod(true);
+      }
+    }
+    if declaration->static != null {
+      newVariable.setIsStatic(true);
+    }
+    
+	if declaration->variableName->NAME != null {
+	  newVariable.setName(|'declaration->variableName'|);
+	}
+	else {
+	  NameVar nameVar = new NameVar();
+	  classwise.name_var(declaration->variableName->name_var,nameVar,isInner,parentContext);
+	  newVariable.setName(nameVar.getAsStatement());
+	}
+	return newVariable;
+  }	
+  
+  Statement assignment(%T input, boolean mustInner, Context parentContext) {
+	Boolean isInner = mustInner || input->inner != null ;
+	NameVar nameVar = new NameVar();
+	classwise.name_var(input->name_var,nameVar,isInner,parentContext);
+	return |`nameVar.getAsStatement()` = `body.argument(input->method_argument,isInner,parentContext)` |;
+  }
+
+}

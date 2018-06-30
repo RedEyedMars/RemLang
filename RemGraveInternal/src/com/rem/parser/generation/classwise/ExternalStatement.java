@@ -400,13 +400,27 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 	}
 
 	public static class Body extends ExternalStatement {
+		private boolean isEncompassed;
 		public Body(ExternalStatement... entries) {
-			super(new StringEntry(""),"");
+			this(false,entries);
+		}
+		public Body(boolean isEncompassed, ExternalStatement... entries) {
+			super(isEncompassed?new StringEntry("{"):new StringEntry(""),isEncompassed?new TabEntry(new StringEntry("}")):new StringEntry(""),"");
+			this.isEncompassed = isEncompassed;
 			context.setIsBody(true);
 			for(ExternalStatement statement: entries){
 				this.add(statement);
 			}
-
+		}
+		@Override
+		public void setTabs(int newTabs){
+			if(isEncompassed){
+				super.setTabs(newTabs+1);
+			}
+			else {
+				super.setTabs(newTabs);
+			}
+			
 		}
 		@Override
 		public boolean add(ExternalStatement otherBody){
@@ -429,6 +443,9 @@ public class ExternalStatement extends ExternalImportEntry implements List<Exter
 		@Override
 		public ExternalStatement getAsStatement(){
 			Parameters subStatementsAsStatement = new Parameters ();
+			if(isEncompassed){
+				subStatementsAsStatement.add(new ExternalStatement(new StringEntry("true")));
+			}
 			for(ExternalStatement subStatement: subStatements){
 				ExternalStatement statement = subStatement.getAsStatement();
 				subStatementsAsStatement.add(new ExternalStatement(statement));

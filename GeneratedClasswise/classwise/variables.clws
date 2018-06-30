@@ -3,68 +3,46 @@
 > VariableGenerator variable = new VariableGenerator();
 > class 'packageName' VariableGenerator {
 > Set<String> definedVariableNames = new HashSet<String>();
-> void addDefinedVariableName(Variable definedVariable){
-	definedVariableNames.add(definedVariable.getName());
+> void addDefinedVariableName(OutputVariable definedVariable){
+	definedVariableNames.add(definedVariable.getName().evaluate());
   }
-> Variable declaration(Token declaration,Boolean mustInner,Context parentContext){
+> OutputVariable declaration(Token declaration,Boolean mustInner,OutputContext parentContext){
 	Boolean isInner = mustInner || declaration->"inner" != null;
 	
-	Variable newVariable = new Variable ();
-	Type type = new Type();
+	OutputVariable newVariable = new OutputVariable ();
 	
-	for Token element: declaration.getAllSafely("typeName") {
-	  classwise.all_type(element,type,isInner,parentContext);
-	}
-    if declaration->"ARRAY_TYPE" != null {
-      for Token element: declaration.getAllSafely("ARRAY_TYPE"){
-        type.addArraySymbol();
-      }
+	OutputType type = classwise.all_type(declaration->"typeName",isInner,parentContext);
+    for Token element: declaration.getAllSafely("ARRAY_TYPE"){
+      type.array();
     }
     if declaration->"INLINE_LIST" != null {
-      type.setIsInlineList(true);
+      type.isInlineList();
     }
     
-	newVariable.setType(type.getAsStatement());
     if declaration->"method_argument" != null {
-      if newVariable.getTypeName().equals("ExternalClassEntry") {
-        body.setIsClassArgument(true);
-	    newVariable.setAssignment(body.argument(declaration->"method_argument",isInner,parentContext));
-	    body.setIsClassArgument(false);
-      }
-      else {
-        newVariable.setAssignment(body.argument(declaration->"method_argument",isInner,parentContext));
-      }
+      newVariable.assign(body_gen.argument(declaration->"method_argument",isInner,parentContext));
 	}
-	
-	if isInner {
-	  newVariable.setIsFinal(true);
-	}
-	if declaration->"weak" != null {
-	  newVariable.setIsFinal(false);
-    }
-    else {
-      newVariable.setHasSetMethod(false);
+    if declaration->"isFinal" != null {
+	  newVariable.isFinal();
     }
     if declaration->"static" != null {
-      newVariable.setIsStatic(true);
+      newVariable.isStatic();
+      newVariable.isPublic();
     }
     
-	if declaration->"variableName"->"NAME" != null {
-	  newVariable.setName(|'declaration->"variableName"'|);
+	if declaration->"variableName"->"NAME" != null || isInner {
+	  newVariable.set(type, new OutputExact('declaration->"variableName"'));
 	}
 	else {
-	  NameVar nameVar = new NameVar();
-	  classwise.name_var(declaration->"variableName"->"name_var",nameVar,isInner,parentContext);
-	  newVariable.setName(nameVar.getAsStatement());
+	  newVariable.set(type, classwise.name_var(declaration->"variableName"->"name_var",isInner,parentContext));
 	}
+	
 	return newVariable;
   }	
   
-> Statement assignment(Token input, Boolean mustInner, Context parentContext) {
-	Boolean isInner = mustInner || input->"inner" != null ;
-	NameVar nameVar = new NameVar();
-	classwise.name_var(input->"name_var",nameVar,isInner,parentContext);
-	return |`nameVar.getAsStatement()` \= `body.argument(input->"method_argument",isInner,parentContext)` |;
+> LineableOutput assignment(Token input, Boolean isInner, OutputContext parentContext) {
+	return new OutputStatement().set(new OutputOperator().left(classwise.name_var(input->"name_var",isInner,parentContext)).operator("=")
+	                           .right(body_gen.argument(input->"method_argument",isInner,parentContext)));
   }
 
 }

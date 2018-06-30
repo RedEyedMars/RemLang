@@ -2,6 +2,7 @@ package clgen;
 import java.util.*;
 import java.io.*;
 import lists.*;
+import com.rem.output.helpers.*;
 import com.rem.parser.generation.classwise.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.parser.*;
@@ -16,15 +17,39 @@ import java.io.*;
 import java.nio.*;
 import com.rem.gen.parser.Token;
 import clgen.ClassGenerator;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
-import com.rem.parser.generation.classwise.ExternalStatement;
-import clgen.TypeStatement;
-import java.lang.StringBuilder;
 import clgen.MethodGenerator;
 import clgen.BodyGenerator;
 import clgen.VariableGenerator;
+import com.rem.output.helpers.OutputStatement;
+import com.rem.output.helpers.OutputBlankStatement;
+import com.rem.output.helpers.LineableOutput;
+import com.rem.output.helpers.CallableOutput;
+import com.rem.output.helpers.OutputBraced;
+import com.rem.output.helpers.OutputCall;
+import com.rem.output.helpers.OutputNewNumber;
+import com.rem.output.helpers.OutputNewObject;
+import com.rem.output.helpers.OutputClass;
+import com.rem.output.helpers.OutputMethod;
+import com.rem.output.helpers.OutputVariable;
+import com.rem.output.helpers.OutputContext;
+import com.rem.output.helpers.OutputOperator;
+import com.rem.output.helpers.OutputLambda;
+import com.rem.output.helpers.OutputStaticCall;
+import com.rem.output.helpers.OutputArguments;
+import com.rem.output.helpers.OutputParameters;
+import com.rem.output.helpers.OutputBody;
+import com.rem.output.helpers.OutputConditional;
+import com.rem.output.helpers.OutputConditionalHeader;
+import com.rem.output.helpers.OutputQuote;
+import com.rem.output.helpers.OutputExact;
+import com.rem.output.helpers.OutputConcatenation;
+import com.rem.output.helpers.OutputString;
+import com.rem.output.helpers.OutputCast;
+import com.rem.output.helpers.OutputType;
+import com.rem.output.helpers.OutputStasis;
+import com.rem.output.helpers.OutputHelper;
+import com.rem.output.helpers.OutputFile;
+import com.rem.output.helpers.Output;
 import com.rem.gen.parser.Parser;
 import com.rem.parser.parser.IParser;
 import com.rem.parser.parser.RegexParser;
@@ -32,22 +57,15 @@ import com.rem.parser.token.IToken;
 import com.rem.parser.generation.Generator;
 import com.rem.parser.generation.GeneralFlowController;
 import com.rem.parser.generation.FlowController;
-import com.rem.parser.generation.classwise.ExternalClassHelper;
-import com.rem.parser.generation.classwise.ExternalClassEntry;
-import com.rem.parser.generation.classwise.ExternalMethodEntry;
-import com.rem.parser.generation.classwise.ExternalVariableEntry;
-import com.rem.parser.generation.classwise.ExternalContext;
-import com.rem.parser.generation.classwise.ExternalImportEntry;
-import com.rem.parser.generation.TabEntry;
-import com.rem.parser.generation.StringEntry;
-import com.rem.parser.generation.VariableNameEntry;
-import com.rem.parser.generation.QuoteEntry;
-import com.rem.parser.generation.Entry;
 import com.rem.parser.ParseContext;
 import java.io.File;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.lang.StringBuilder;
 import clgen.Classwise;
 public class MainFlow extends FlowController  {
 	public static class classes {
@@ -60,16 +78,12 @@ public class MainFlow extends FlowController  {
 	//Internals
 	protected final ClassGenerator __VAR__classGenerator = new ClassGenerator();
 	protected final MethodGenerator __VAR__method = new MethodGenerator();
-	protected final BodyGenerator __VAR__body = new BodyGenerator();
+	protected final BodyGenerator __VAR__body_gen = new BodyGenerator();
 	protected final VariableGenerator __VAR__variable = new VariableGenerator();
 	protected final String __VAR__packageName = "com.rem.crg.generator";
 	protected final String __VAR__outerPackageName = "com.rem.cls";
 	protected final String __VAR__innerPackageName = "com.rem.gen";
-	protected final Map<String,ExternalClassEntry> __VAR__innerClasses = new HashMap<String,ExternalClassEntry>();
-	protected final Map<String,ExternalClassEntry> __VAR__outerClasses = new HashMap<String,ExternalClassEntry>();
-	protected final List<ExternalClassEntry> __VAR__outerClassList = new ArrayList<ExternalClassEntry>();
-	protected final ExternalStatement.Body __VAR__addClassFileList = new ExternalStatement.Body();
-	protected final ExternalStatement.Body __VAR__setupClassList = new ExternalStatement.Body();
+	protected final OutputBody __VAR__setupClassList = new OutputBody();
 	protected final Classwise __VAR__classwise = new Classwise();
 
 	public static void main(final String[] args)  {
@@ -92,11 +106,11 @@ public class MainFlow extends FlowController  {
 	public MethodGenerator get_method()  {
 		return __VAR__method;
 	}
-	public BodyGenerator getBody()  {
-		return __VAR__body;
+	public BodyGenerator getBodyGen()  {
+		return __VAR__body_gen;
 	}
-	public BodyGenerator get_body()  {
-		return __VAR__body;
+	public BodyGenerator get_body_gen()  {
+		return __VAR__body_gen;
 	}
 	public VariableGenerator getVariable()  {
 		return __VAR__variable;
@@ -138,34 +152,10 @@ public class MainFlow extends FlowController  {
 	public String get_innerPackageName()  {
 		return __VAR__innerPackageName;
 	}
-	public Map<String,ExternalClassEntry> getInnerClasses()  {
-		return __VAR__innerClasses;
-	}
-	public Map<String,ExternalClassEntry> get_innerClasses()  {
-		return __VAR__innerClasses;
-	}
-	public Map<String,ExternalClassEntry> getOuterClasses()  {
-		return __VAR__outerClasses;
-	}
-	public Map<String,ExternalClassEntry> get_outerClasses()  {
-		return __VAR__outerClasses;
-	}
-	public List<ExternalClassEntry> getOuterClassList()  {
-		return __VAR__outerClassList;
-	}
-	public List<ExternalClassEntry> get_outerClassList()  {
-		return __VAR__outerClassList;
-	}
-	public ExternalStatement.Body getAddClassFileList()  {
-		return __VAR__addClassFileList;
-	}
-	public ExternalStatement.Body get_addClassFileList()  {
-		return __VAR__addClassFileList;
-	}
-	public ExternalStatement.Body getSetupClassList()  {
+	public OutputBody getSetupClassList()  {
 		return __VAR__setupClassList;
 	}
-	public ExternalStatement.Body get_setupClassList()  {
+	public OutputBody get_setupClassList()  {
 		return __VAR__setupClassList;
 	}
 	public Classwise getClasswise()  {
@@ -204,6 +194,36 @@ public class MainFlow extends FlowController  {
 		ExternalClassEntry.suppliment("Token", "com.rem.gen.parser");
 		ExternalClassEntry.suppliment("Token", "com.rem.gen.parser");
 		ExternalClassEntry.suppliment("Token", "com.rem.gen.parser");
+		ExternalClassEntry.suppliment("OutputStatement", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputBlankStatement", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("LineableOutput", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("CallableOutput", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputBraced", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputCall", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputNewNumber", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputNewObject", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputClass", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputMethod", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputVariable", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputContext", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputOperator", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputLambda", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputStaticCall", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputArguments", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputParameters", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputBody", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputConditional", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputConditionalHeader", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputQuote", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputExact", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputConcatenation", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputString", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputCast", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputType", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputStasis", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputHelper", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("OutputFile", "com.rem.output.helpers");
+		ExternalClassEntry.suppliment("Output", "com.rem.output.helpers");
 		ExternalClassEntry.suppliment("Parser", "com.rem.gen.parser");
 		ExternalClassEntry.suppliment("Token", "com.rem.gen.parser");
 		ExternalClassEntry.suppliment("IParser", "com.rem.parser.parser");
@@ -212,17 +232,6 @@ public class MainFlow extends FlowController  {
 		ExternalClassEntry.suppliment("Generator", "com.rem.parser.generation");
 		ExternalClassEntry.suppliment("GeneralFlowController", "com.rem.parser.generation");
 		ExternalClassEntry.suppliment("FlowController", "com.rem.parser.generation");
-		ExternalClassEntry.suppliment("ExternalClassHelper", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("ExternalClassEntry", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("ExternalMethodEntry", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("ExternalVariableEntry", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("ExternalContext", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("ExternalImportEntry", "com.rem.parser.generation.classwise");
-		ExternalClassEntry.suppliment("TabEntry", "com.rem.parser.generation");
-		ExternalClassEntry.suppliment("StringEntry", "com.rem.parser.generation");
-		ExternalClassEntry.suppliment("VariableNameEntry", "com.rem.parser.generation");
-		ExternalClassEntry.suppliment("QuoteEntry", "com.rem.parser.generation");
-		ExternalClassEntry.suppliment("Entry", "com.rem.parser.generation");
 		ExternalClassEntry.suppliment("ParseContext", "com.rem.parser");
 		ExternalClassEntry.suppliment("File", "java.io");
 		ExternalClassEntry.suppliment("List", "java.util");
@@ -232,7 +241,6 @@ public class MainFlow extends FlowController  {
 		ExternalClassEntry.suppliment("Map", "java.util");
 		ExternalClassEntry.suppliment("HashMap", "java.util");
 		ExternalClassEntry.suppliment("StringBuilder", "java.lang");
-		ExternalClassEntry.suppliment("ExternalStatement", "com.rem.parser.generation.classwise");
 	}
 	public void output(ParseContext data){
 		ExternalImportEntry.solidify();

@@ -1,0 +1,788 @@
+imports import
+import bodies
+import classes
+import methods
+import variables
+
+> String packageName = "com.rem.crg.generator";
+
+> String innerPackageName = "com.rem.gen";
+> Map<String, Class > innerClasses = new HashMap<String, Class >();
+> Map<String, Class > outerClasses = new HashMap<String, Class > ();
+
+> Body setupClassList = new Body ();
+
+> Classwise classwise = new Classwise();
+
+> class Classwise {
+
+  File innerDirectory = null?
+  File outerDirectory = null?
+  Class mainClass = null?
+
+  String sourceDirectory = null?
+  void setup(%Pass result){
+    String fileName = result.getFileName()?
+	int indexOfDot = fileName.lastIndexOf(".")?
+	if indexOfDot > -1 {
+	  fileName = fileName.substring(0,indexOfDot);
+	}
+	int indexOfSlash = fileName.lastIndexOf("/")?
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash+1);
+	}
+	indexOfSlash = fileName.lastIndexOf("\\");
+	if indexOfSlash > -1 {
+	  fileName = fileName.substring(indexOfSlash+1);
+	}
+	fileName = ExternalFlow.camelize(fileName);
+	innerDirectory = new File("../"+fileName+"/src");
+	innerDirectory.mkdirs();
+	outerDirectory = new File("../"+fileName+"/src",innerPackageName.replace(".","/"));
+	outerDirectory.mkdirs();
+	sourceDirectory = "../"+fileName+"/src/";
+  }
+  void importAllClasses(%T input) {
+    input : element : anonymous_classes {
+      StringBuilder anonymousPackageName = new StringBuilder();
+      Statement classPackageName = new Statement();
+      classPackageName.set(".");
+      element : packageElement : packageName {
+        packageElement : packageValue
+          : NAME  { classPackageName.add(|'packageValue'|); }
+	      : quote { classPackageName.add(|'packageValue'|); }
+	      : statement_as_string { 
+	          classPackageName.add(
+	            body.statement(packageElement->statement_as_string->body_statement,true,new Context (false))); }
+	  }
+	  classPackageName.get(anonymousPackageName);
+	  element : anonymousClass : anonymous_class {
+	    defineAnonymousClass(anonymousClass, true, 'anonymousPackageName', "");
+	  }
+    }
+  }
+  void defineAnonymousClass(%T anonymousClass, boolean isFirst, String anonymousPackageName, String parentClass) {
+    StringBuilder currentClass = new StringBuilder();
+    currentClass.append(parentClass);
+    anonymousClass : className : className {
+      if isFirst == false { currentClass.append("."); }
+	  currentClass.append('className');
+	  String currentClassValue = 'currentClass';
+	  setupClassList.add(|ExternalClassEntry.suppliment('' 'currentClassValue' '', '' 'anonymousPackageName' '');|);
+	  ExternalClassEntry.suppliment('currentClassValue','anonymousPackageName');
+	}
+	
+	anonymousClass : subAnonymousClass : anonymous_class {
+	  defineAnonymousClass(subAnonymousClass, false, anonymousPackageName, 'currentClass');
+	}
+  }
+  void findAllClasses(%T input){
+    input : element : import_imports {
+      importAllClasses(element);
+    }
+    input : element : import_clws {
+      findAllClasses(element);
+    }
+    input : element : class_declaration {
+      classGenerator.collectClassNames(element);
+    }
+  }
+  void generateGlobals(%T input){
+    input : element : import_clws {
+      generateGlobals(element);
+    }
+    input : element : variable_declaration {
+	  Variable newVariable = variable.declaration(element,true,mainClass.getContext());
+	  mainClass.addVariable(newVariable);
+	  variable.addDefinedVariableName(newVariable);
+	}
+	input : element : method_declaration {
+	  Method newMethod = method.declaration(element,true,mainClass.getContext());
+	  mainClass.addMethod(newMethod);
+	  method.addDefinedMethodName(newMethod);
+	}
+  }
+  void generateAll(%T input){
+    input : element : import_clws {
+      generateAll(element);
+    }
+    String packageFileName = packageName.replace(".",File.separator);
+    
+    input : element : class_declaration {
+      classGenerator.collectClassNames(element);
+    }
+    input : element : class_declaration {
+	  Class innerClass = new Class ();
+	  Class outerClass = new Class ();
+	  classGenerator.declaration(element,innerClass,outerClass,false,null);
+      String className = ExternalFlow.camelize(element->className);
+	  if element->inner == null {
+	    innerClass.setIsStatic(false);
+	    outerClass.setIsStatic(false);
+	    innerClass.addVariable(@'outerClass.getName()' "_" = new 'outerClass.getName()'(););
+	    innerClass.addInitMethodFromClass(outerClass);
+	    innerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
+		outerClasses.put(outerClass.getFullName(),outerClass);
+		innerClass.removeInterfaces();
+		innerClass.removeConstructors();
+		setupClassList.add(|'className'."_".__INIT__();
+		  'className'."_".outputAsClass();|);
+      }
+	  innerClasses.put(innerClass.getFullName(),innerClass);
+	  innerClass.setPackageName(innerPackageName);
+      innerClass.outputAsClass();
+    }
+	
+  }
+  void generate(%Pass result){
+    String mainPackageName = sourceDirectory;
+	mainClass = class 'innerPackageName'.MainFlow < ExternalFlow.Generator {
+	    @MainFlow self = new MainFlow();
+	    @void main(String[] args){
+	      ExternalFlow.parse(args,new Parser(),self);
+	    }
+	    void onSuccessfulParse(ExternalFlow.Parser.Result result){
+	      ExternalClassHelper.setup();
+	      `setupClassList`;
+	      
+		  self.classwise.setup((Parser.Result.Pass)result);
+		  self.classwise.generate((Parser.Result.Pass)result);
+		  ExternalFlow.output();
+	    }
+	  };
+	mainClass.removeConstructors();
+    findAllClasses(result.getRoot());
+    generateGlobals(result.getRoot());
+	generateAll(result.getRoot());
+	mainClass.outputAsClass();
+  }
+  
+  
+  void name_var(%T input, NameVar nameVar, boolean isInner, Context context){
+    if isInner {
+      nameVar.inner();
+    }
+    else {
+      nameVar.outer();
+    }
+    if input->tokenAccess != null {
+      tokenAccess(input->tokenAccess,nameVar,isInner,context);
+    }
+    else {
+      NameVar right = null?
+      input : element : cast_statement {
+        Type castType = new Type();
+        classwise.type_var(element->type_var,castType,isInner,context);
+        castType.plain();
+        nameVar.addCastStatement(castType.getAsStatement());
+      }
+      input : element : name_atom {
+	    name_atom(element,nameVar,isInner,context);
+      }
+    }
+  }
+  void tokenAccess(%T element, NameVar nameVar, boolean isInner, Context context){
+     nameVar.tokenAccess();
+     name_atom(element->name_atom,nameVar,isInner,context);
+     element : atom : access {
+       String name = 'atom->NAME';
+       if atom->get != null {
+	     nameVar.add(|get('"com.rem.gen.parser.Token.Id._"+name')|);
+	   }
+	   else if atom->getAllSafely != null {
+	     nameVar.add(|getAllSafely('"com.rem.gen.parser.Token.Id._"+name')|);
+	   }
+	 }
+  }
+  void name_atom(%T input, NameVar nameVar, boolean isInner, Context parentContext) {
+    if input->statement_as_char != null {
+      if 'input->statement_as_char->value'.equals("\\") {
+        nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\\\\"))));
+      }
+      else if 'input->statement_as_char->value'.equals("\"") {
+        nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\""))));
+      }
+      else if 'input->statement_as_char->value'.equals("\'") {
+        nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry("\\\\")),new Statement (new StringEntry("\'"))));
+      }
+      else {
+        nameVar.add(new Statement (new StringEntry("\'"), new StringEntry("\'"),new Statement (new StringEntry('input->value'))));
+      }
+	}
+    else if input->statement_as_method != null {
+      if isInner {
+		nameVar.add(body.statement(input->statement_as_method->body_statement,true,parentContext));
+      }
+      else {
+		nameVar.add(
+		  new Statement (
+		    new VariableNameEntry (body.statement(input->statement_as_method->body_statement,true,parentContext),false)));
+	  }
+	}
+	else if input->statement_as_quote != null {
+	  Statement asQuoteStatement = body.statement(input->statement_as_quote->body_statement,isInner,parentContext);
+	  if isInner {
+		nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
+      }
+	  else {
+		StringBuilder checkBuilder = new StringBuilder();
+		asQuoteStatement.get(checkBuilder);
+		if 'checkBuilder'.startsWith("\"") {
+		  nameVar.add(asQuoteStatement);
+		}
+		else {
+		  nameVar.add(new ExternalStatement(new StringEntry("\""),new StringEntry("\""), asQuoteStatement));
+		}
+      }
+	}
+	else if input->statement_as_string != null {
+	
+	  nameVar.setWrapNumbers(true);
+	  if isInner {
+	    nameVar.add(new Statement (new VariableNameEntry(body.statement(input->statement_as_string->body_statement,true,parentContext)).asString()));
+	  }
+	  else {
+	    nameVar.add(new Statement (new VariableNameEntry(body.statement(input->statement_as_string->body_statement,true,parentContext)).asString()).getAsStatement());
+	  }
+	  nameVar.setWrapNumbers(false);
+	}
+	else if input->quote != null {
+	  if isInner {
+		nameVar.add("\""+'input->quote'+"\"");
+	  }
+	  else {
+		nameVar.add("\""+'input->quote'+"\"");
+	  }
+	}
+	else if input->NUMBER != null {
+	  nameVar.add('input->NUMBER');
+	}
+	else if input->variable_names != null {
+	  String value = 'input->variable_names'?
+ 	  if mainClass.getVariables().containsKey(value) && (parentContext == null || parentContext.hasLink(value) == false) {
+ 	    value = "MainFlow.self."+value;
+ 	    if isInner { nameVar.add(new ExternalStatement(new VariableNameEntry(value))); }
+ 	    else { nameVar.add(new ExternalStatement(new StringEntry(value))); }
+ 	  }
+ 	  else {
+ 	    if parentContext != null && parentContext.hasLink(value) {
+ 	      String typeName = parentContext.type(value);
+ 	      NumberVar asNumber = null?
+ 	      if "int".equals(typeName) {
+ 	        asNumber = new IntegerVar(value);
+ 	      }
+ 	      else if "double".equals(typeName) {
+ 	        asNumber = new DoubleVar(value);
+ 	      }
+ 	      else if "float".equals(typeName) {
+ 	        asNumber = new FloatVar(value);
+ 	      }
+ 	      else if "long".equals(typeName) {
+ 	        asNumber = new LongVar(value);
+ 	      }
+ 	      else if "byte".equals(typeName) {
+ 	        asNumber = new ByteVar(value);
+ 	      }
+ 	      if asNumber != null {
+ 	        if nameVar.getWrapNumbers() {
+ 	          if isInner {
+ 	            nameVar.add(new ExternalStatement(new VariableNameEntry(asNumber.getAsWrapped())));
+ 	          }
+ 	          else {
+ 	            nameVar.add(new ExternalStatement(new StringEntry(asNumber.getAsWrapped())));
+              }
+ 	        }
+ 	        else {
+ 	          if isInner {
+ 	            nameVar.add(new ExternalStatement(new VariableNameEntry(value)));
+ 	          }
+ 	          else {
+ 	            nameVar.add(new ExternalStatement(new StringEntry(value)));
+              }
+ 	        }
+ 	      }
+ 	      else {
+ 	        if isInner {
+ 	          nameVar.add(new ExternalStatement(new VariableNameEntry(value)));
+ 	        }
+ 	        else {
+ 	          nameVar.add(new ExternalStatement(new StringEntry(value)));
+            }
+ 	      }
+ 	    }
+ 	    else {
+ 	      if isInner {
+ 	        nameVar.add(new ExternalStatement(new VariableNameEntry(value)));
+ 	      }
+ 	      else {
+ 	        nameVar.add(new ExternalStatement(new StringEntry(value)));
+          }
+ 	    }
+      }
+	}
+	else {
+	  input.err();
+	}
+  }  
+  void type_var(%T input, Type output, boolean isInner, Context parentContext){
+    if isInner {
+      output.inner();
+    }
+    else {
+      output.outer();
+    }
+    input : element 
+      : type_atom {
+        type_atom(element,output,isInner,parentContext);
+      }
+      : accessMethod {
+        if element->name_var != null {
+          NameVar methodNameVar = new NameVar();
+          name_var(element->name_var,methodNameVar,isInner,parentContext);
+          output.addFindMethod(methodNameVar.getAsStatement());
+        }
+        else if element->NAME != null {
+          output.addFindMethod(|'' 'element->NAME' ''|);
+        }
+        else {
+          output.addFindMethod(|'' "*" ''|);
+        }
+      }
+      : template_parameters { 
+        element : quark : template_parameter {
+          Type templateType = new Type();
+          all_type(quark,templateType,isInner,parentContext);
+          output.addTemplateClass(templateType);
+        }
+      }
+    
+  }
+  void type_atom(%T input, Type output, boolean isInner, Context parentContext){
+    if input->statement_as_method != null {
+      output.addSubClass(|`body.statement(input->statement_as_method->body_statement,true,parentContext)`|);
+    }
+    else if input->statement_as_quote != null {
+      Statement quoteAsStatement = body.statement(input->statement_as_quote->body_statement,true,parentContext);
+      output.addSubClass(new Statement (new StringEntry("\""), new StringEntry("\""), quoteAsStatement));
+    }
+    else if input->statement_as_string != null {
+      if isInner {
+        output.addSubClass(
+          |"\"+"+`body.statement(input->statement_as_string->body_statement,true,parentContext)`.toString()+"+\""|);
+        output.as_entry();
+      }
+      else {
+        output.addSubClass(
+          new ExternalStatement(new VariableNameEntry(body.statement(input->statement_as_string->body_statement,true,parentContext)).asString()));
+      }
+    }
+    else if input->class != null {
+      Statement value = null?
+      if input->class->class_variable_names != null {
+        if isInner {
+          value = |'input->class->class_variable_names'|;
+        }
+        else {
+          value = new Statement (new VariableNameEntry('input->class->class_variable_names'+".getFullName()"));
+        }
+        output.plain();
+        output.addSubClass(value);
+      }
+      else {
+        if isInner {
+          output.addSubClass(|'input->class->class_names'|);
+        }
+        else {
+          output.addSubClass("\""+'input->class->class_names'+"\"");
+        }
+      }
+    }
+  }
+  void all_type(%T input, Type output, Boolean isInner, Context parentContext){
+
+	if input.getName().toString().equals("_as_statement") {
+	  output.addSubClass("ExternalStatement");
+	  if input->subClass != null {
+		output.addSubClass('input->subClass');
+	  }
+	  return ;
+	}
+    if input.getAll() != null {
+      if input->type_var != null {
+        input : element : type_var {
+          type_var(element,output,isInner,parentContext);
+	    }
+	  }
+	  else {
+	    for Token element: input.getAll() {
+          all_type(element,output,isInner,parentContext);
+	    }
+	  }
+    }
+    else {
+      if input.getValue().equals("%T") {
+		output.addSubClass("com.rem.gen.parser.Token");
+	  }
+	  else if input.getValue().equals("%Id") {
+		output.addSubClass("com.rem.gen.parser.Token.Id");
+	  }
+	  else if input.getValue().equals("%Parser") {
+		output.addSubClass("com.rem.gen.parser.Parser");
+	  }
+	  else if input.getValue().equals("%Result") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result");
+	  }
+	  else if input.getValue().equals("%Pass") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result.Pass");
+	  }
+	  else if input.getValue().equals("%Fail") {
+		output.addSubClass("com.rem.gen.parser.Parser.Result.Fail");
+	  }
+	  else if input.getValue().trim().equals("Class") {
+		output.addSubClass("ExternalClassEntry");
+	  }
+	  else if input.getValue().trim().equals("Method") {
+		output.addSubClass("ExternalMethodEntry");
+	  }
+	  else if input.getValue().trim().equals("Variable") {
+		output.addSubClass("ExternalVariableEntry");
+	  }
+	  else if input.getValue().trim().equals("Body") {
+		output.addSubClass(new ExternalStatement.TypeName(|"ExternalStatement"|));
+		output.addSubClass(|"Body"|);
+	  }
+	  else if input.getValue().trim().equals("Parameters") {
+	  
+		output.addSubClass(new ExternalStatement.TypeName(|"ExternalStatement"|));
+		output.addSubClass(|"Parameters"|);
+	  }
+	  else if input.getValue().trim().equals("Context") {
+		output.addSubClass("com.rem.parser.generation.classwise.ExternalContext");
+	  }
+	}
+  }
+}
+
+> class TypeStatement {
+    Statement asStatement = null?
+    String asString = null?
+    void set(Statement statement){
+      asStatement = statement;
+    }
+    void set(String string){
+      asString = string;
+    }
+  }
+> class Type {
+  ExternalStatement.TypeName asPublicStatement = new ExternalStatement.TypeName ()?
+  List<TypeStatement > parts = new ArrayList<TypeStatement >()?
+  List<ExternalStatement.TypeName > templateTypes = new ArrayList<ExternalStatement.TypeName >()?
+  
+  boolean isInlineList = false?
+  boolean isInner = true?
+  boolean isActuallyPlain = false?
+  boolean isPlain = true?
+  boolean isAsVariable = false?
+  int numberOfArraySymbols = 0?
+  boolean hasChanged = false?
+  Statement findMethod = null?
+  
+  ExternalStatement.TypeName getAsStatement(){
+    if hasChanged {
+      update();
+      hasChanged = false;
+    }
+    return asPublicStatement;
+  }
+  void inner(){
+    isInner = true;
+    hasChanged = true;
+  }
+  void outer(){
+    isInner = false;
+    hasChanged = true;
+  }
+  void as_variable(){
+    isAsVariable = true;
+  }
+  void plain(){
+    isPlain = true;
+    isActuallyPlain = true;
+  }
+  void as_entry(){
+    isPlain = false;
+  }
+  TypeStatement statement(Statement statement){
+    TypeStatement typeStatement = new TypeStatement();
+    typeStatement.set(statement);
+    return typeStatement;
+  }
+  TypeStatement string(String string){
+    TypeStatement typeStatement = new TypeStatement();
+    typeStatement.set(|'string'|);
+    typeStatement.set(string);
+    return typeStatement;
+  }
+  void addSubClass(String subClass){
+    parts.add(string(subClass));
+    hasChanged = true;
+  }
+  void addSubClass(Statement subClass){
+    parts.add(statement(subClass));
+    hasChanged = true;
+  }
+  void addSubClass(Type subType){
+    int numberOfParts = parts.size();
+    parts.addAll(subType.parts);
+    templateTypes.addAll(subType.templateTypes);
+    if subType.isInlineList {
+      isInlineList = true;
+    }
+    numberOfArraySymbols = subType.numberOfArraySymbols;
+    hasChanged = true;
+  }
+  void addTemplateClass(ExternalStatement.TypeName templateType){
+    templateTypes.add(templateType);
+    hasChanged = true;
+  }
+  void addTemplateClass(Type templateType){
+    templateTypes.add(templateType.getAsStatement());
+    hasChanged = true;
+  }
+  void addArraySymbol(){
+    numberOfArraySymbols += 1;
+    hasChanged = true;
+  }
+  void setIsInlineList(Boolean newInlineList){
+    isInlineList = newInlineList;
+    hasChanged = true;
+  }
+  void addFindMethod(Statement newFindMethod){
+    findMethod = newFindMethod;
+    if isActuallyPlain == false {
+      isPlain = false;
+    }
+  }
+    
+  void update(){
+    asPublicStatement.clear();
+    Statement partStatement = new Statement (".");
+    IntStream.range(0,parts.size()).forEach(i=>{
+      TypeStatement part = parts.get(i);
+      if isInner {
+        if i == 0 {
+          if part.getAsString() == null {
+            if isPlain {
+              partStatement.add(|`part.getAsStatement()`|);
+            }
+            else {
+              StringBuilder nextTypeBuilder = new StringBuilder();
+              part.getAsStatement().get(nextTypeBuilder);
+              if classGenerator.hasDefinedClassName('nextTypeBuilder'){
+                partStatement.add(|ExternalClassEntry.classMap.get('"\""+`part.getAsStatement()`+"\""')|);
+              }
+              else {
+                partStatement.add(|`part.getAsStatement()`|);
+              }
+            }
+          }
+          else {
+            partStatement.add(|'part.getAsString()'|);
+          }
+        }
+        else {
+          if part.getAsString() == null {
+            if isPlain {
+              partStatement.add(|`part.getAsStatement()`|);
+            }
+            else {
+              partStatement.add(|getSubClass('"\""+`part.getAsStatement()`+"\""')|);
+            }
+          }
+          else {
+            partStatement.add(|'part.getAsString()'|);
+          }
+        }
+      }
+      else {
+        if part.getAsString() == null {
+          partStatement.add(|`part.getAsStatement()`|);
+        }
+        else {
+          partStatement.add(|'part.getAsString()'|);
+        }
+      }
+    });
+    asPublicStatement.setTypeName(partStatement);
+    if templateTypes.isEmpty() == false {
+      Parameters templateStatement = new Parameters ();
+      templateTypes.stream().forEach(type=>templateStatement.add(type));
+      asPublicStatement.setTemplateType(templateStatement); 
+    }
+    asPublicStatement.setNumberOfArraySymbols(numberOfArraySymbols);
+    if isInlineList {
+      asPublicStatement.setIsInlineList(true);
+    }
+    if findMethod != null {
+      asPublicStatement.add(|".getMethod"(`findMethod`)|);
+    }
+    if isPlain && isInner && isAsVariable {
+      String lastAsString;
+      if parts.get(parts.size()-1).getAsString() != null {
+        lastAsString  = parts.get(parts.size()-1).getAsString(); 
+      }
+      else {
+        StringBuilder lastBuilder = new StringBuilder();
+        parts.get(parts.size()-1).getAsStatement().get(lastBuilder);
+        lastAsString = lastBuilder.toString();
+      }
+      if classGenerator.hasDefinedClassName('lastAsString') {
+        asPublicStatement.add(|"._"|);
+      }
+    }
+  }
+}
+
+
+> class NameVar {
+  @boolean wrapNumbers = false?
+  ExternalStatement asPublicStatement = new ExternalStatement ()?
+  List<Statement > castStatements = new ArrayList<Statement >()?
+  
+  String asPublicString = null?
+  List<Statement > parts   = new ArrayList<Statement >()?
+  List<String> strings = new ArrayList<String>();
+  boolean hasChanged = false?
+  boolean isInner = true?
+  boolean isToken = false?
+  HashSet<Integer> asStatementParts = new HashSet<Integer>()?
+    
+  void tokenAccess(){
+    isToken = true;
+  }
+  ExternalStatement getAsStatement(){
+    if hasChanged {
+      update();
+      hasChanged = false;
+    }
+    return asPublicStatement;
+  }
+  String getAsString(){
+    if hasChanged {
+      update();
+      hasChanged = false;
+    }
+    return asPublicString;
+  }
+  void inner(){
+    isInner = true;
+    hasChanged = true;
+  }
+  void outer(){
+    isInner = false;
+    hasChanged = true;
+  }
+  void addCastStatement(Statement castStatement){
+    castStatements.add(castStatement);
+  }
+  void add(Statement subStatement){
+    StringBuilder builder = new StringBuilder();
+    subStatement.get(builder);
+    strings.add(builder.toString());
+    parts.add(subStatement);
+    hasChanged = true;
+  }
+  void add(String subStatement){
+    if isInner {
+      parts.add(|'subStatement'|);
+    }
+    else {
+      parts.add(|'"new StringEntry("+subStatement+")"'|);
+    }
+    strings.add(subStatement);
+    hasChanged = true;
+  }
+  void add(NumberVar numberVar) {
+    if NameVar.wrapNumbers {
+      parts.add(|'numberVar.getAsWrapped()'|);
+      strings.add(numberVar.getAsWrapped());
+    }
+    else {
+      parts.add(|'numberVar.getPlain()'|);
+      strings.add(numberVar.getPlain());
+    }
+  }
+  void add(NameVar otherNameVar){
+    parts.addAll(otherNameVar.parts);
+    strings.addAll(otherNameVar.strings);
+    hasChanged = true;
+  }
+  void concatenateWith(NameVar otherNameVar){
+    parts.addAll(otherNameVar.parts);
+    strings.addAll(otherNameVar.strings);
+    hasChanged = true;
+  }
+  void update(){
+    asPublicStatement.clear();
+    castStatements.stream().forEach(castStatement=>asPublicStatement.add(|(`castStatement`)|));
+    Statement newStatement;
+    if isToken {
+      newStatement = new Statement ();
+      newStatement.set(".");
+    }
+    else {
+      if isInner {
+         newStatement = new Statement ();
+        newStatement.set("+");
+      }
+      else {
+        newStatement = new Statement (new StringEntry("new ExternalStatement("),new StringEntry(")"),",");
+      }
+    }
+    for Statement part: parts {
+      newStatement.add(part);
+    }
+    StringBuilder stringBuilder = new StringBuilder();
+    strings.stream().forEach(string=>stringBuilder.append(string));
+    asPublicString = 'stringBuilder';
+    if isInner {
+      asPublicStatement.add(newStatement);
+    }
+    else {
+      asPublicStatement.add(newStatement);
+    }
+  }
+  boolean getWrapNumbers(){
+    return wrapNumbers;
+  }
+}
+
+> class NumberVar? {
+  String plain?
+  NumberVar (String iPlain){
+    plain = iPlain;
+  }
+  String getAsWrapped(){return "new "+getName()+"("+getPlain()+")"; }
+  String getName(){?}
+}
+
+> class DoubleVar NumberVar {
+  DoubleVar (String plain){super(plain);}
+  String getName(){ return "Double";}
+}
+> class FloatVar NumberVar {
+  FloatVar (String plain){super(plain);}
+  String getName(){ return "FloatVar";}
+}
+> class IntegerVar NumberVar {
+  IntegerVar (String plain){super(plain);}
+  String getName(){ return "Integer";}
+}
+> class LongVar NumberVar {
+  LongVar (String plain){super(plain);}
+  String getName(){ return "Long";}
+}
+> class ByteVar NumberVar {
+  ByteVar (String plain){super(plain);}
+  String getName(){ return "Byte";}
+}

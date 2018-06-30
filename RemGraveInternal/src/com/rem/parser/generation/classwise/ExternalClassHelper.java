@@ -11,6 +11,11 @@ import com.rem.parser.generation.TabEntry;
 import com.rem.parser.generation.VariableNameEntry;
 
 public class ExternalClassHelper {
+	public static ExternalClassEntry init(ExternalClassEntry newClass){
+		newClass.__INIT__();
+		ExternalFlow.outputClasses.add(newClass);
+		return newClass;
+	}
 	public static void setup(){
 		ExternalClassEntry.classMap.put("List<T1>", new ExternalClassEntry(){
 			@Override
@@ -193,7 +198,25 @@ public class ExternalClassHelper {
 		supplimentClass("java.io","FileWriter",new String[][]{});
 		supplimentClass("java.io","BufferedReader",new String[][]{});
 		supplimentClass("java.io","BufferedWriter",new String[][]{});
-
+		
+		ExternalClassEntry.primitives.add("Byte");
+		ExternalClassEntry.primitives.add("byte");
+		ExternalClassEntry.primitives.add("Double");
+		ExternalClassEntry.primitives.add("double");
+		ExternalClassEntry.primitives.add("Float");
+		ExternalClassEntry.primitives.add("float");
+		ExternalClassEntry.primitives.add("Integer");
+		ExternalClassEntry.primitives.add("int");
+		ExternalClassEntry.primitives.add("Long");
+		ExternalClassEntry.primitives.add("long");
+		ExternalClassEntry.primitives.add("Short");
+		ExternalClassEntry.primitives.add("Character");
+		ExternalClassEntry.primitives.add("char");
+		ExternalClassEntry.primitives.add("Boolean");
+		ExternalClassEntry.primitives.add("boolean");
+		ExternalClassEntry.primitives.add("String");
+		ExternalClassEntry.primitives.add("System");
+		ExternalClassEntry.primitives.add("Object");
 	}
 	private static void supplimentClass(final String packageName, final String className,String[][] collectionsOfMethodParameters, String... methodParameters){
 		final List<ExternalMethodEntry> classMethods = new ArrayList<ExternalMethodEntry>();
@@ -247,6 +270,41 @@ public class ExternalClassHelper {
 		for(String methodName: parent.getMethodNames()){
 			if(parent.getMethod(methodName).getTypeName().contains("T1")){
 				clazz.addMethod(new ExternalMethodEntry(parent.getMethod(methodName).getTypeName().replace("T1", innerType),parent.getMethod(methodName)));
+			}
+		}
+		return ExternalClassEntry.classMap.get(fullName).getContext();
+	}
+	public static ExternalContext supplimentMapClass(final String fullName,final String mapType,final String innerType) {
+
+		ExternalClassEntry.classMap.put(fullName, new ExternalClassEntry(){
+			@Override
+			public void __INIT__(){
+				super.__SETUP__(
+
+						new StringEntry("java.util"), 
+						new StringEntry(""),
+						new StringEntry(fullName),
+						" class ",
+						new StringEntry(mapType+"<T1,T2>"),
+						new ArrayList<Entry>(),
+						new StringEntry(" class "+fullName+" "),
+						new ArrayList<ExternalVariableEntry>(),
+						new ArrayList<ExternalMethodEntry>(),new ArrayList<ExternalClassEntry>()				
+
+						);
+			}
+		});
+		ExternalClassEntry.classMap.get(fullName).__INIT__();
+		ExternalClassEntry clazz = ExternalClassEntry.classMap.get(fullName);
+		ExternalClassEntry parent = ExternalClassEntry.classMap.get(mapType+"<T1,T2>");
+		for(String methodName: parent.getMethodNames()){
+			if(parent.getMethod(methodName).getTypeName().contains("T1")){
+				clazz.addMethod(new ExternalMethodEntry(parent.getMethod(methodName).getTypeName().replace("T1", innerType),parent.getMethod(methodName)));
+			}
+		}
+		for(String methodName: parent.getMethodNames()){
+			if(parent.getMethod(methodName).getTypeName().contains("T2")){
+				clazz.addMethod(new ExternalMethodEntry(parent.getMethod(methodName).getTypeName().replace("T2", innerType),parent.getMethod(methodName)));
 			}
 		}
 		return ExternalClassEntry.classMap.get(fullName).getContext();
@@ -311,6 +369,9 @@ public class ExternalClassHelper {
 		}
 		else {
 			initBody.add(new ExternalStatement(new TabEntry(new StringEntry("setIsStatic")),new StringEntry("(false);")));
+		}
+		if(initClass.isAbstract()){
+			initBody.add(new ExternalStatement(new TabEntry(new StringEntry("setIsAbstract")),new StringEntry("(true);")));
 		}
 		int variableIndex = 0;
 		for(String variableName: initClass.getVariables().keySet()){

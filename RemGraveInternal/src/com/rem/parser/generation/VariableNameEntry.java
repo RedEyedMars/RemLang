@@ -13,6 +13,10 @@ public class VariableNameEntry extends StringEntry{
 		super(value);
 		asString = value;
 	}
+	public VariableNameEntry(StringEntry value) {
+		super(value.getString());
+		asString = value.getString();
+	}
 
 	public VariableNameEntry(ExternalStatement statement){
 		super(evaluate(statement, false));
@@ -61,7 +65,7 @@ public class VariableNameEntry extends StringEntry{
 			return new ExternalStatement(
 					new ExternalStatement.NewObject(new ExternalStatement.TypeName("VariableNameEntry"),
 							new ExternalStatement.Parameters(new ExternalStatement(new StringEntry(
-									asString.replace("\"", "\\\""))))));
+									asString.replace("\"", "\""))))));
 		}
 		else if (isString){
 			return new ExternalStatement(

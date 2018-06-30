@@ -2,6 +2,7 @@ package clgen;
 import java.util.*;
 import java.io.*;
 import lists.*;
+import com.rem.output.helpers.*;
 import com.rem.parser.generation.classwise.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.parser.*;

@@ -2,6 +2,7 @@ package clgen;
 import java.util.*;
 import java.io.*;
 import lists.*;
+import com.rem.output.helpers.*;
 import com.rem.parser.generation.classwise.*;
 import com.rem.parser.generation.*;
 import com.rem.parser.parser.*;
@@ -15,12 +16,6 @@ import java.util.*;
 import java.io.*;
 import java.nio.*;
 import com.rem.gen.parser.Token;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.HashSet;
-import com.rem.parser.generation.classwise.ExternalStatement;
-import clgen.TypeStatement;
-import java.lang.StringBuilder;
 public class  VariableGenerator   {
 	public static class classes {
 	}
@@ -38,62 +33,39 @@ protected final Set<String> definedVariableNames = new HashSet<String>();
 	public Set<String> get_definedVariableNames()  {
 		return definedVariableNames;
 	}
-public void addDefinedVariableName(final ExternalVariableEntry definedVariable)  {
-	definedVariableNames.add(definedVariable.getName());
+public void addDefinedVariableName(final OutputVariable definedVariable)  {
+	definedVariableNames.add(definedVariable.getName().evaluate());
 }
-public ExternalVariableEntry declaration(final Token declaration,final Boolean mustInner,final ExternalContext parentContext)  {
+public OutputVariable declaration(final Token declaration,final Boolean mustInner,final OutputContext parentContext)  {
 	final Boolean isInner = mustInner || declaration.get("inner") != null;
-	final ExternalVariableEntry newVariable = new ExternalVariableEntry();
-	final Type type = new Type();
-	for (final Token element :  declaration.getAllSafely("typeName")) {
-		MainFlow.variables.get_classwise().all_type(element,type,isInner,parentContext);
-	}
-	if (declaration.get("ARRAY_TYPE") != null) {
-		for (final Token element :  declaration.getAllSafely("ARRAY_TYPE")) {
-			type.addArraySymbol();
-		}
+	final OutputVariable newVariable = new OutputVariable();
+	final OutputType type = MainFlow.variables.get_classwise().all_type(declaration.get("typeName"),isInner,parentContext);
+	for (final Token element :  declaration.getAllSafely("ARRAY_TYPE")) {
+		type.array();
 	}
 	if (declaration.get("INLINE_LIST") != null) {
-		type.setIsInlineList(true);
+		type.isInlineList();
 	}
-	newVariable.setType(type.getAsStatement());
 	if (declaration.get("method_argument") != null) {
-		if (newVariable.getTypeName().equals("ExternalClassEntry")) {
-			MainFlow.variables.get_body().setIsClassArgument(true);
-			newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
-			MainFlow.variables.get_body().setIsClassArgument(false);
-		}
-		else  {
-			newVariable.setAssignment(MainFlow.variables.get_body().argument(declaration.get("method_argument"),isInner,parentContext));
-		}
+		newVariable.assign(MainFlow.variables.get_body_gen().argument(declaration.get("method_argument"),isInner,parentContext));
 	}
-	if (isInner) {
-		newVariable.setIsFinal(true);
-	}
-	if (declaration.get("weak") != null) {
-		newVariable.setIsFinal(false);
-	}
-	else  {
-		newVariable.setHasSetMethod(false);
+	if (declaration.get("isFinal") != null) {
+		newVariable.isFinal();
 	}
 	if (declaration.get("static") != null) {
-		newVariable.setIsStatic(true);
+		newVariable.isStatic();
+		newVariable.isPublic();
 	}
-	if (declaration.get("variableName").get("NAME") != null) {
-		newVariable.setName(/*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*Enty*/new ExternalStatement(new StringEntry(declaration.get("variableName").toString())))));
+	if (declaration.get("variableName").get("NAME") != null || isInner) {
+		newVariable.set(type,new OutputExact(declaration.get("variableName").toString()));
 	}
 	else  {
-		final NameVar nameVar = new NameVar();
-		MainFlow.variables.get_classwise().name_var(declaration.get("variableName").get("name_var"),nameVar,isInner,parentContext);
-		newVariable.setName(nameVar.getAsStatement());
+		newVariable.set(type,MainFlow.variables.get_classwise().name_var(declaration.get("variableName").get("name_var"),isInner,parentContext));
 	}
 	return newVariable;
 }
-public ExternalStatement assignment(final Token input,final Boolean mustInner,final ExternalContext parentContext)  {
-	final Boolean isInner = mustInner || input.get("inner") != null;
-	final NameVar nameVar = new NameVar();
-	MainFlow.variables.get_classwise().name_var(input.get("name_var"),nameVar,isInner,parentContext);
-	return /*Optr*/new ExternalStatement("=", /*Name*/new ExternalStatement(/*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(nameVar.getAsStatement()))), /*Acss*/new ExternalStatement(/*InCl*/new ExternalStatement(MainFlow.variables.get_body().argument(input.get("method_argument"),isInner,parentContext))));
+public LineableOutput assignment(final Token input,final Boolean isInner,final OutputContext parentContext)  {
+	return new OutputStatement().set(new OutputOperator().left(MainFlow.variables.get_classwise().name_var(input.get("name_var"),isInner,parentContext)).operator("=").right(MainFlow.variables.get_body_gen().argument(input.get("method_argument"),isInner,parentContext)));
 }
 
 }

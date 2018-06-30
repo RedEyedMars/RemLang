@@ -3,47 +3,38 @@
 > MethodGenerator method = new MethodGenerator();
 > class MethodGenerator // {
 > Set<String> definedMethodNames = new HashSet<String>();
-> void addDefinedMethodName(Method newMethod){
-    definedMethodNames.add(newMethod.getName());
+> void addDefinedMethodName(OutputMethod newMethod){
+    definedMethodNames.add(newMethod.getName().evaluate());
   }
   
-> Method declaration(Token declaration,Boolean isInner, Context parentContext){
+> OutputMethod declaration(Token declaration,Boolean isInner, OutputContext parentContext){
 	return \definition(declaration,isInner, parentContext);
   }
 
-> Method definition(Token input, Boolean mustInner, Context parentContext){
+> OutputMethod definition(Token input, Boolean mustInner, OutputContext parentContext){
 	Boolean isInner = mustInner || input->"inner" != null ;
-	Method newMethod = new Method ();
+	OutputMethod newMethod = new OutputMethod ();
+	newMethod.setParent(parentContext);
 	
-	Type methodType = new Type();
-	for Token element: input.getAllSafely("typeName") {
-	  classwise.all_type(element,methodType,isInner,parentContext);
-	}
+	OutputType methodType = classwise.all_type(input->"all_type_name",isInner,parentContext);
 	if input->"ARRAY_TYPE" != null {
 	  for Token element: input.getAllSafely("ARRAY_TYPE") {
-        methodType.addArraySymbol();
+        methodType.array();
 	  }
 	}
-	newMethod.setType(methodType.getAsStatement());
-	Body methodBody = new Body ();
-	methodBody.setParentContext(parentContext);
-	Context context = methodBody.getContext();
 	if (input.get("inline") != null) {
 	  if input.get("inline").get("method_parameters") != null{
-	    List<Variable > parameters = new ArrayList<Variable >();
-	    for Token element: input->"inline"->"method_parameters".getAllSafely("variable_declaration") {
+	    OutputParameters parameters = new OutputParameters();
+	    for Token element: input->"inline"->"method_parameters".getAllSafely("parameter") {
 	      parameters.add(variable.declaration(element,isInner,parentContext));
 	    }
-	    newMethod.setParameters(parameters);
+	    newMethod.parameters(parameters);
 	  }
 	}
 	else if input.get("variableParameters") != null{
-	  newMethod.setParametersAsStatement(body.statement(input->"variableParameters"->"statement_as_method"->"body_statement",true,parentContext));
+	  newMethod.parametersAsVariable(body_gen.statement(input->"variableParameters"->"statement_as_method"->"body_statement",true,parentContext));
 	}
-	else {
-	  newMethod.setParameters(new ArrayList<Variable >());
-	}
-	if input->"throwException" != null {
+	#if input->"throwException" != null {
 	  StringBuilder exceptionBuilder = new StringBuilder();
 	  ~String comma = "";
 	  for Token element: input.getAllSafely("throwException"){
@@ -53,23 +44,30 @@
 	    comma = ",";
 	  }
 	  newMethod.setThrowsStatement(exceptionBuilder.toString());
+	}#
+	if input->"body" != null {
+	  OutputBody methodBody = new OutputBody ();
+	  methodBody.setParent(parentContext);
+	  for Token element: input->"body".getAllSafely("body_element"){
+	    methodBody.add(body_gen.element(element,isInner,methodBody));
+	  }
+	  newMethod.body(methodBody);
 	}
 	
-	for Token element: input.getAllSafely("body_element"){
-	  methodBody.add(body.element(element,isInner,context));
+	if input->"methodName" == null {
+	  newMethod.set(methodType, new OutputExact(""));
 	}
-	
-	if input->"methodName"->"NAME" != null {
-	  newMethod.setName(|'input->"methodName"->"NAME"'|);
+	else if input->"methodName"->"NAME" != null {
+	  newMethod.set(methodType, new OutputExact('input->"methodName"->"NAME"'));
 	}
 	else {
-	  NameVar nameVar = new NameVar();
-	  classwise.name_var(input->"methodName"->"name_var",nameVar,isInner,parentContext);
-	  newMethod.setName(nameVar.getAsStatement());
+	  newMethod.set(methodType, classwise.name_var(input->"methodName"->"name_var",isInner,parentContext));
 	}
-	newMethod.setBody(methodBody);
 	if input->"static" != null {
-	  newMethod.setIsStatic(true);
+	  newMethod.isStatic();
+	}
+	if input->"weak" != null {
+	  newMethod.isAbstract();
 	}
 	return newMethod;
   }

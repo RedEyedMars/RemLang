@@ -10,10 +10,10 @@ public class ExternalVariableEntry extends ExternalStatement {
 	private boolean isFinal = false;
 	private String typeSuffix = "";
 	private boolean hasSetMethod = true;
-	
+
 	public ExternalVariableEntry(){
 	}
-	
+
 	public ExternalVariableEntry(boolean hasSetMethod, boolean isStatic, boolean isFinal, Entry type, String typeSuffix, Entry name, ExternalImportEntry assignment){
 		this(isStatic,isFinal,type,typeSuffix,name,assignment);
 		this.hasSetMethod  = hasSetMethod;
@@ -98,7 +98,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 
 				new TabEntry(tabs, name).get(builder);
 			}
-			
+
 		};
 	}
 	public Entry getAsMember() {
@@ -115,7 +115,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 				self.get(builder);
 				builder.append(";");
 			}
-			
+
 		};
 	}
 	public Entry getAsParameter(){
@@ -131,7 +131,7 @@ public class ExternalVariableEntry extends ExternalStatement {
 				builder.append(" ");
 				name.get(builder);
 			}
-			
+
 		};
 	}
 	public Entry getAsConstructorElement(){
@@ -142,17 +142,26 @@ public class ExternalVariableEntry extends ExternalStatement {
 		return new Entry(){
 			@Override
 			public void get(StringBuilder builder) {
-				new TabEntry(tabs, new StringEntry("if(")).get(builder);
-				name.get(builder);
-				builder.append(" != null){");
-				new TabEntry(tabs+1, new StringEntry("this.")).get(builder);
-				name.get(builder);
-				builder.append(" = ");
-				name.get(builder);
-				builder.append(";");
-				new TabEntry(tabs, new StringEntry("}")).get(builder);
+				if(ExternalClassEntry.primitives.contains(getTypeName())){
+					new TabEntry(tabs, new StringEntry("this.")).get(builder);
+					name.get(builder);
+					builder.append(" = ");
+					name.get(builder);
+					builder.append(";");
+				}
+				else {
+					new TabEntry(tabs, new StringEntry("if(")).get(builder);
+					name.get(builder);
+					builder.append(" != null){");
+					new TabEntry(tabs+1, new StringEntry("this.")).get(builder);
+					name.get(builder);
+					builder.append(" = ");
+					name.get(builder);
+					builder.append(";");
+					new TabEntry(tabs, new StringEntry("}")).get(builder);
+				}
 			}
-			
+
 		};
 	}
 	public Entry getAsSuperParameter(){
@@ -234,11 +243,11 @@ public class ExternalVariableEntry extends ExternalStatement {
 				ExternalClassHelper.getAsStatementFromEntry(name),
 				assignment==null?
 						new ExternalStatement(new StringEntry("null")):
-						ExternalClassHelper.getAsStatementFromEntry(assignment)
+							ExternalClassHelper.getAsStatementFromEntry(assignment)
 				));
 	}
 	public ExternalStatement getNameAsStatement(){
-	   return new ExternalStatement(name);
+		return new ExternalStatement(name);
 	}
 	public void setType(Entry newType){
 		type = newType;

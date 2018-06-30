@@ -13,20 +13,21 @@ import com.rem.parser.generation.classwise.ExternalClassEntry;
 
 public class AnonymousContext extends ExternalClassEntry{
 	public static final AnonymousContext _ = new AnonymousContext();
-	public void __add_method_0__(){
+	public void __add_method_0__() {
 		addMethod(new ExternalMethodEntry(0,false,new Entry(){public void get(StringBuilder builder){builder.append("AnonymousContext");}},"",new Entry(){public void get(StringBuilder builder){builder.append("*");}},Arrays.asList(new ExternalVariableEntry[]{}),"",new ExternalStatement.Body()));
 	}
-	public void __INIT__(){
+	public void __INIT__() {
 		super.__SETUP__(
 			null,
 			new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new VariableNameEntry(MainFlow.self.packageName),"")),new ExternalStatement(new StringEntry("contexts"),"")),
-		new Entry(){public void get(StringBuilder builder){}},
+			new Entry(){public void get(StringBuilder builder){}},
 			new VariableNameEntry("AnonymousContext"),
 			"class ",
 			new ExternalStatement.TypeName(new ExternalStatement(".",new ExternalStatement(new StringEntry("Parser"),""),new ExternalStatement(new StringEntry("Context"),""))),
 			Arrays.asList(new Entry[]{}),
 			null);
 		setIsStatic(false);
+		setIsAbstract(true);
 		__add_method_0__();
 	}
 }

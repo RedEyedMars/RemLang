@@ -1,6 +1,6 @@
 
 
-
+< EnumMap : \java.\util;
 < CargonTokens : \lists;
 < Rules : \lists;
 < Listnames : \lists;
@@ -169,7 +169,7 @@ class 'packageName'."parser" Parser {
 > Set<String> createdNameTokens = new HashSet<String>();
 > Body preparsedListRun = new Body ();
 
-  class Context // {
+  ?class Context // {
   
   	~Integer SUCCESS = Parser.SUCCESS;
   	~Integer FAILED = Parser.FAILED;
@@ -190,7 +190,7 @@ class 'packageName'."parser" Parser {
     ~Boolean _succeedOnEnd = true;
     ~String _list_name_result = null;
     ~List<Integer> _lineNumberRanges = new ArrayList<Integer>();
-    ~Token->Parsed _root = new Token->Parsed('' "$ROOT" '');
+    ~Token->Parsed _root = new Token->Parsed(Token->Id.ROOT);
     ~Token->Parsed _token = _root;
     ~Set<ImportThread> _import_threads = new HashSet<ImportThread>();
     Parser->Result parse(String _fileName, int _pass_index){
@@ -339,7 +339,7 @@ class 'packageName'."parser" Parser {
           return context.parse(fileName, "FIRST_PASS");
         }
         else {
-          "contexts".get(fileName)._root = new Token->Parsed(''"$ROOT"'');
+          "contexts".get(fileName)._root = new Token->Parsed(Token->Id.ROOT);
 		  "contexts".get(fileName)._token = "contexts".get(fileName)._root; 
           return "contexts".get(fileName).parse(fileName, "SECOND_PASS");
         } |);
@@ -778,8 +778,7 @@ class 'packageName'."parser" Parser {
       }|);
     }
     if('ruleName'.startsWith("_anonymous")){
-      Parser->Context += void "parse_"+'ruleName'(){
-      }
+      Parser->Context += ?void "parse_"+'ruleName'(){}
       AnonymousContext += void "parse_"+'ruleName'(){
       }
       AnonymousContext->*"parse_"+'ruleName'.appendToBody(completeBody);
@@ -798,7 +797,7 @@ class 'packageName'."parser" Parser {
       }
       if declaredContexts.add(contextClassName) {
         String previousContextClassNameValue = previousContextClassName;
-        ~class 'packageName'."contexts" contextClassName 'previousContextClassNameValue' {
+        ~?class 'packageName'."contexts" contextClassName 'previousContextClassNameValue' {
           ~Parser __parser__ = null;
           ~Tokens __tokens__ = null;
         }
@@ -807,7 +806,7 @@ class 'packageName'."parser" Parser {
       \ExternalClassEntry.classMap.get('contextClassName').addMethod(void "parse_"+'ruleName'(){});
       \ExternalClassEntry.classMap.get('contextClassName').getMethod("parse_"+'ruleName').appendToBody(completeBody);
     }
-    Parser->Context += void "parse_"+'ruleName'(){} 
+    Parser->Context += ?void "parse_"+'ruleName'(){} 
   }
 > String define(%T input, String previousParentRuleName){
     return \define(input,previousParentRuleName,null,null);
@@ -818,9 +817,10 @@ class 'packageName'."parser" Parser {
     if input->"ruleName" != null {
       ruleName = 'input->"ruleName"';
       String ruleClassName = ^ruleName\+"Token";
+      Token->Id += void "_"+'ruleName';
       Tokens->Rule += class ruleClassName / Token->Parsed /{
-        String getName(){
-          return '' 'ruleName' '';
+        Token->Id getName(){
+          return Token->Id."_"+'ruleName';
         }
         ~String value = null;
         String getValue(){
@@ -915,7 +915,7 @@ class 'packageName'."parser" Parser {
             Parser->Context _import_context = new Parser->Context->'importContextClassName'(`newContextParameters`);
             Parser.contexts.put(_import_file_name,_import_context);
           }
-          Parser.contexts.get(_import_file_name).set_root(new Token.Parsed(''"$ROOT"''));
+          Parser.contexts.get(_import_file_name).set_root(new Token.Parsed(Token->Id.ROOT));
 		  Parser.contexts.get(_import_file_name).set_token(Parser.contexts.get(_import_file_name).get_root());
 		  "_token".add("_position",new Token->Parsed->Import(_import_file_name));
           \addImportThread(_import_file_name);
@@ -935,9 +935,10 @@ class 'packageName'."parser" Parser {
         rules.put(fileImportRuleName, completeRules.get(fileImportRuleName));
         completeRules.get(fileImportRuleName).add(new Body ());
       }
+      Token->Id += void "_"+'fileImportRuleName';
       Tokens->Rule += class fileImportRuleClassName / Token->Parsed /{
-        String getName(){
-          return '' 'fileImportRuleName' '';
+        Token->Id getName(){
+          return Token->Id."_"+'fileImportRuleName';
         }
         ~String value = null;
         String getValue(){
@@ -1019,7 +1020,7 @@ class 'packageName'."parser" Parser {
         rule.add(|"_token" = new Tokens->Name->'handleBracedTokenName'();|);
       }
       else if(ruleName.startsWith("_anonymous")){
-        rule.add(|"_token" = new Token->Parsed('' "$ANON" '');|);
+        rule.add(|"_token" = new Token->Parsed(Token->Id.ANON);|);
       }
       else {
         rule.add(|"_token" = new Tokens->Rule->'ruleAsClass'();|);
@@ -1259,7 +1260,7 @@ class 'packageName'."parser" Parser {
         createdSyntaxTokens.put(quote,quoteName);
         createdSyntaxNameTokens.put(quote,new HashSet<String>());
         Tokens->Syntax += class quoteName / Token->Parsed / {
-          @Tokens->Syntax->'quoteName' "__SYNTAX__" = new Tokens->Syntax->'quoteName'(''"SYNTAX"'');
+          @Tokens->Syntax->'quoteName' SYNTAX = new Tokens->Syntax->'quoteName'(Token->Id._SYNTAX);
           String getValue(){
             return '' 'quote.replace("\\","\\\\")' '';
           }
@@ -1272,11 +1273,12 @@ class 'packageName'."parser" Parser {
       if element->"newName" != null {
         newTokenName = 'element->"newName"';
         if createdSyntaxNameTokens.get(quote).add(newTokenName) {
-          Tokens->Syntax->'quoteName' += @Token->Parsed 'newTokenName' = new Tokens->Syntax->'quoteName'('' 'newTokenName' '');
+          Token->Id += void "_"+'newTokenName';
+          Tokens->Syntax->'quoteName' += @Token->Parsed 'newTokenName' = new Tokens.Syntax.'quoteName'(Token->Id."_"+'newTokenName');
         }
       }
       else {
-        newTokenName = "__SYNTAX__";
+        newTokenName = "SYNTAX";
       }
       rule.add(|
         if "_state" == "SUCCESS" {
@@ -1322,10 +1324,11 @@ class 'packageName'."parser" Parser {
       if element->"newName" != null {
         String newTokenName = ^element->"newName";
         if createdPlainTokens.add(newTokenName) {
+          Token->Id += void "_"+'element->"newName"';
           Tokens->Plain += class newTokenName /  Token->Parsed / {
             String value = null;
-            String getName(){
-              return '' 'element->"newName"' '';
+            Token->Id getName(){
+              return Token->Id."_"+'element->"newName"';
             }
           }
         }
@@ -1395,7 +1398,8 @@ class 'packageName'."parser" Parser {
         \declareNamedToken(newTokenClassName,newTokenName);
         Body listRuleBody;
         if listFirstPassRules.containsKey('listName') {
-          String passRuleName = ^listFirstPassRules->listName \+ "Token";
+          String firstListPassTokenName = listFirstPassRules.get(listName);
+          String passRuleName = ^firstListPassTokenName \+ "Token";
           listRuleBody = new Body ();
           \declareNamedToken(passRuleName,listFirstPassRules.get(listName));
           rule.add(|
@@ -2129,10 +2133,11 @@ class 'packageName'."parser" Parser {
   }
 > void declareNamedToken(String newTokenName, String simpleTokenName){
     if createdNameTokens.add(newTokenName) {
+        Token->Id += void "_"+'simpleTokenName';
         Tokens->Name += class newTokenName / Token->Parsed / {
           String value = null;
-          String getName(){
-            return '' 'simpleTokenName' '';
+          Token->Id getName(){
+            return Token->Id."_"+'simpleTokenName';
           }
           String getValue(){
             if "children".isEmpty() {
@@ -2420,13 +2425,13 @@ class 'packageName'."parser" Parser {
               \setup(current,children.get(i),positions.get(i));
             }
             else {
-              Token->Branch newToken = new Token->Branch(children.get(i).getName(),positions.get(i),currentPosition,\this);
+              Token->Branch newToken = new Token->Branch(children.get(i).getName(),positions.get(i),currentPosition,this);
               current.add(newToken);
               \setup(newToken,children.get(i),positions.get(i));
             }
           }
           else {
-            current.add(new Token->Leaf(children.get(i).getName(),children.get(i).getValue(), positions.get(i),currentPosition, \this ));
+            current.add(new Token->Leaf(children.get(i).getName(),children.get(i).getValue(), positions.get(i),currentPosition, this ));
           }
         }
       }
@@ -2493,7 +2498,7 @@ class 'packageName'."parser" Parser {
     }
   }
 }
-class 'packageName'."contexts" AnonymousContext Parser->Context {
+?class 'packageName'."contexts" AnonymousContext Parser->Context {
 }
 class 'packageName'."parser" Tokens {
   class Plain // {
@@ -2507,12 +2512,17 @@ class 'packageName'."parser" Tokens {
 }
 interface 'packageName'."parser" Token {
 
-  Token get(String tokenName){}
+  enum Id //{
+    void _SYNTAX;
+    void ROOT;
+    void ANON;
+  }
+  
+  Token get(Token->Id tokenName){}
   Token getLast(){}
-  Token getLast(String tokenName){}
+  Token getLast(Token->Id tokenName){}
+  List<Token> getAllSafely(Token->Id id){}
   List<Token> getAll(){}
-  List<Token> getAll(String key){}
-  List<Token> getAllSafely(String key){}
   void add(Token newToken){}
   String err(){}
   String err(int tab){}
@@ -2522,11 +2532,11 @@ interface 'packageName'."parser" Token {
   String getFileName(){}
   \int getLineNumber(){}
   String getValue(){}
-  String getName(){}
+  Token->Id getName(){}
   class Parsed // {
     ~List<Token\>Parsed> children = new ArrayList<Token\>Parsed>();
     ~List<Integer> positions = new ArrayList<Integer>();
-    String name = null;
+    Token->Id name = null;
     String getValue(){
       if children.isEmpty() {
         return null;
@@ -2567,31 +2577,28 @@ interface 'packageName'."parser" Token {
   }
   
   class Leaf // Token {
-    String name = null;
+    Token->Id name = null;
     String value = null;
     Integer position = null;
     Integer parentPosition = null;
     Parser->Result->Pass context = null;
     
-    Token get(String tokenName){
+    Token get(Token->Id tokenName){
       return this;
     }
 	Token getLast(){
 	  return null;
 	}
-	Token getLast(String tokenName){
+	Token getLast(Token->Id tokenName){
 	  return null;
 	}
 	void add(Token token){
 	}
-    List<Token> getAll(){
-      return null;
-    }
-	List<Token> getAll(String key){
-	  return null;
-	}
-	List<Token> getAllSafely(String key){
+    List<Token> getAllSafely(Token->Id id){
 	  return new ArrayList<Token>();
+	}
+	List<Token> getAll(){
+	  return null;
 	}
 	String toString(){
       return \getValue();
@@ -2636,14 +2643,14 @@ interface 'packageName'."parser" Token {
 	}
   }
   class Branch // Token {
-    ~Map<String, List<Token>> namedLists = new HashMap<String, List<Token>>();
+    ~Map<Token\>Id, List<Token>> namedLists = new EnumMap<Token\>Id, List<Token>>(Token->Id.class);
     ~List<Token> children = new ArrayList<Token>();
-    String name = null;
+    Token->Id name = null;
     Integer position = null;
     Integer parentPosition = null;
     Parser->Result->Pass context = null;
     
-    Token get(String tokenName){
+    Token get(Token->Id tokenName){
       List<Token> nameList = namedLists.get(tokenName);
       if nameList == null || nameList.isEmpty() {
         return null;
@@ -2661,7 +2668,7 @@ interface 'packageName'."parser" Token {
 	Token getLast(){
 	  return children.get(children.size()\-1);
 	}
-	Token getLast(String tokenName){
+	Token getLast(Token->Id tokenName){
 	  return namedLists.get(tokenName).get(namedLists.get(tokenName).size()\-1);
 	}
 	void add(Token token){
@@ -2671,19 +2678,17 @@ interface 'packageName'."parser" Token {
 	  }
 	  namedLists.get(token.getName()).add(token);
 	}
-	List<Token> getAll(){
-	  return children;
-	}
-	List<Token> getAll(String key){
-	  return namedLists.get(key);
-	}
-	List<Token> getAllSafely(String key){
-	  if namedLists.containsKey(key){
-	    return namedLists.get(key);
-	  }
-	  else {
+	List<Token> getAllSafely(Token->Id id){
+	  List<Token> list = namedLists.get(id);
+	  if list == null {
 	    return new ArrayList<Token>();
 	  }
+	  else {
+	    return list;
+	  }
+	}
+	List<Token> getAll(){
+	  return children;
 	}
 	String err(){
 	  StringBuilder builder = new StringBuilder();

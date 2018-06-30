@@ -13,63 +13,49 @@
 >~Integer addMethodIndex = 0;
 >~Integer addSubClassIndex = 0;
 
-> void declaration(Token declaration,Class innerClass, Class outerClass, Boolean mustInner, Context parentContext){
+> OutputClass declaration(Token declaration,OutputClass innerClass, Boolean mustInner, OutputContext parentContext){
 	Boolean isInner = declaration->"inner" != null || mustInner;
-	Statement classPackageName = new Statement();
-	classPackageName.set(".");
+	OutputClass outerClass = new OutputClass();
 	
 	if declaration->"className"->"NAME" != null {
-	  innerClass.setNameAsStatement(new Statement (new StringEntry("\""\+'declaration->"className"'\+"\"")));
-	  innerClass.setName('declaration->"className"');
-	  outerClass.setNameAsStatement(new Statement (new StringEntry("\""\+'declaration->"className"'\+"\"")));
-	  outerClass.setName('declaration->"className"');
+	  outerClass.name(new OutputExact('declaration->"className"'));
+	  innerClass.name(new OutputExact('declaration->"className"'));
 	}
 	else {
-	  innerClass.setNameAsStatement(new Statement (new StringEntry("\"+"\+'declaration->"className"'\+"+\"")));
-	  innerClass.setNameAsStatement(|'declaration->"className"'|);
-	  innerClass.setName('declaration->"className"');
-	  outerClass.setNameAsStatement(new Statement (new StringEntry("\"+"\+'declaration->"className"'\+"+\"")));
-	  outerClass.setNameAsStatement(|'declaration->"className"'|);
-	  outerClass.setName('declaration->"className"');
+	  outerClass.name(new OutputConcatenation().add(classwise.name_var(declaration->"className"->"name_var",isInner,parentContext)));
+	  innerClass.name(new OutputConcatenation().add(classwise.name_var(declaration->"className"->"name_var",isInner,parentContext)));
 	}
+	
+	OutputCall classPackageName = new OutputCall();
 	for Token element: declaration.getAllSafely("packageName") {
 	  if element->"NAME" != null {
-	    classPackageName.add(|'element->"NAME"'|);
+	    classPackageName.add(new OutputExact('element->"NAME"'));
 	  }
-	  else if element->"quote" != null {
-	    classPackageName.add(|'element->"quote"'|);
-	  }
-	  else if element->"statement_as_string" != null {
-	    classPackageName.add(body.statement(element->"statement_as_string"->"body_statement",true,parentContext));
+	  else if element->"name_var" != null {
+	    classPackageName.add(classwise.name_var(element->"name_var",true,parentContext));
 	  }
 	}
+	outerClass._package(classPackageName);
+	innerClass._package(innerPackageName);
 	for Token element: declaration.getAllSafely("templateTypeName") {
-	  innerClass.addTemplateType(|'element'|);
-	  outerClass.addTemplateType(|'element'|);
+	  outerClass.template(new OutputExact('element'));
+	  innerClass.template(new OutputExact('element'));
 	}
-	innerClass.setPackageName(classPackageName);
-	outerClass.setPackageName(classPackageName);
 	for Token element: declaration.getAllSafely("parentName") {
-	  Type parentType = new Type ();
-	  classwise.type_var(element->"type_var",parentType,isInner,parentContext);
-	  innerClass.setParentClass(parentType.getAsStatement());
-	  outerClass.setParentClass(parentType.getAsStatement());
+	  if declaration->"inner" != null {
+		innerClass.extendType(classwise.type_var(element->"type_var",isInner,parentContext));
+	  }
+	  outerClass.extendType(classwise.type_var(element->"type_var",isInner,parentContext));
 	}
 	for Token element: declaration.getAllSafely("interfaceName") {
-	  Type interfaceType = new Type ();
-	  classwise.type_var(element->"type_var",interfaceType,isInner,parentContext);
-	  innerClass.addImplementingInterface(interfaceType.getAsStatement());
-	  outerClass.addImplementingInterface(interfaceType.getAsStatement());
+	   if declaration->"inner" != null {
+		innerClass.implement(classwise.type_var(element->"type_var",isInner,parentContext));
+	  }
+	  outerClass.implement(classwise.type_var(element->"type_var",isInner,parentContext));
 	}
-	innerClass.setupContext();
-	outerClass.setupContext();
 	for Token element: declaration.getAllSafely("variable_declaration") {
 	  if isInner || element->"inner" != null {
-	    Variable newVariable = variable.declaration(element,isInner,parentContext);
-	    if newVariable.isFinal() && element->"IS_FINAL" == null {
-	      newVariable.setIsFinal(false);
-	    }
-	    innerClass.addVariable(newVariable);
+	    innerClass.addVariable(variable.declaration(element,isInner,parentContext));
 	  }
 	  else {
 	    outerClass.addVariable(variable.declaration(element,isInner,parentContext));
@@ -84,41 +70,47 @@
 	  }
 	}
 	for Token element: declaration.getAllSafely("class_declaration") {
-	  Class subInnerClass = new Class ();
-	  Class subOuterClass = new Class ();
-	  classGenerator.declaration(element,subInnerClass,subOuterClass,isInner,parentContext);
+	  OutputClass subInnerClass = new OutputClass();
+	  OutputClass subOuterClass = classGenerator.declaration(element,subInnerClass,isInner,parentContext);
 	  
 	  if element->"inner" == null {
-	    subInnerClass.addVariable(@'subOuterClass.getName()' "_" = "new "+'subOuterClass.getName()'+"()";);
-	    subInnerClass.addInitMethodFromClass(subOuterClass);
-	    subInnerClass.setParentClass(new ExternalStatement.TypeName("ExternalClassEntry"));
-		subInnerClass.removeInterfaces();
-		
-	    outerClass.addSubClass(subOuterClass);
+	    subInnerClass.addVariable(new OutputVariable().isStatic().set(new OutputType(subInnerClass.getName()), new OutputExact("_")).assign(subOuterClass));
+	    outerClass.encloseClass(subOuterClass);
       }
-	  innerClass.addSubClass(subInnerClass);
+	  innerClass.encloseClass(subInnerClass);
 	}
 	if 'declaration->"objectType"'.contains("interface"){
 	  if isInner {
-	    innerClass.setIsInterface(true);
+	    innerClass.isInterface();
 	  }
 	  else {
-	    outerClass.setIsInterface(true);
+	    outerClass.isInterface();
 	  }
 	}
 	else if 'declaration->"objectType"'.contains("enum"){
 	  if isInner {
-	    innerClass.setIsEnum(true);
+	    innerClass.isEnum();
 	  }
 	  else {
-	    outerClass.setIsEnum(true);
+	    outerClass.isEnum();
+	  }
+	}
+	if declaration->"weak" != null {
+	  if isInner {
+	    innerClass.isAbstract();
+	  }
+	  else {
+	    outerClass.isAbstract();
 	  }
 	}
 	
 	if isInner  == false {
-	  outerClass.setIsStatic(declaration->"weak"  == null);
-	  innerClass.setIsStatic(true);
+	  if declaration->"static" != null {
+	    outerClass.isStatic();
+	  }
+	  innerClass.isStatic();
 	}
+	return outerClass;
   }
 > void collectClassNames(Token classToken){    
 	if classToken->"className"->"NAME" != null && classToken->"inner" == null {

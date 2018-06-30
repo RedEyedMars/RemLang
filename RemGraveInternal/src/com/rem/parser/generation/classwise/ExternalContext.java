@@ -18,6 +18,10 @@ public class ExternalContext {
 				  types.put(className, new ExternalContext(true,null));
 				  types.put(className, ExternalClassHelper.supplimentListClass(className,parentClassName,templateClassName));
 			  }
+			  else if(parentClassName.equals("Map")||parentClassName.equals("HashMap")){
+				  types.put(className, new ExternalContext(true,null));
+				  types.put(className, ExternalClassHelper.supplimentMapClass(className,parentClassName,templateClassName));
+			  }
 			  else {
 				  types.put(className, new ExternalContext(true,null));
 			  }

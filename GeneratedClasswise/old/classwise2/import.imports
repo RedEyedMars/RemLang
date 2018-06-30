@@ -1,0 +1,19 @@
+< com.rem.parser.generation.classwise
+	ExternalFlow: Parser.Result | Generator 
+	ExternalClassHelper
+	ExternalClassEntry
+	ExternalMethodEntry
+	ExternalVariableEntry
+	ExternalContext
+	ExternalImportEntry
+	ExternalStatement: TypeName | NewObject | Parameters | Conditional
+
+< com.rem.parser.generation
+	Entry
+	StringEntry
+	TabEntry
+	VariableNameEntry
+	QuoteEntry
+
+< java.util.stream
+	IntStream

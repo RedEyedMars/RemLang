@@ -5,7 +5,9 @@ import java.io.File;
 import java.util.*;
 public class ExternalClassEntry extends ExternalImportEntry {
 
+	static final Set<String> primitives = new HashSet<String>();
 	public static final List<ExternalClassEntry> allClasses = new ArrayList<ExternalClassEntry>();
+	public static final Map<String,ExternalClassEntry> simpleClasses = new HashMap<String,ExternalClassEntry>();
 	public static final Map<String,ExternalClassEntry> classMap = new HashMap<String,ExternalClassEntry>(){
 		private static final long serialVersionUID = 19849465L;
 		@Override
@@ -53,6 +55,19 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	static {
 		ExternalClassHelper.setup();
 	}
+	public static String getFullNameFromSimpleName(String simpleName){
+		if(primitives.contains(simpleName)){
+			return simpleName;
+		}
+		else {
+			if(simpleClasses.containsKey(simpleName)){
+				return simpleClasses.get(simpleName).getFullName();
+			}
+			else {
+				return null;
+			}
+		}
+	}
 
 	protected Map<String,ExternalVariableEntry> variables = new LinkedHashMap<String,ExternalVariableEntry>();
 	protected Map<String,ExternalMethodEntry> methods = new LinkedHashMap<String,ExternalMethodEntry>();
@@ -77,6 +92,8 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	private boolean isEnum;
 	private boolean displayConstructors = true;
 	private boolean isStatic = false;
+	private boolean isAbstract = false;
+	private boolean isInitialized = false;
 
 	private ExternalMethodEntry constructorMethod;
 	public ExternalClassEntry(){
@@ -94,7 +111,13 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		__SETUP__(null,         initialPackageName,       preImports,       initialName,        classType,       initialParentClass,             initialInterfaces,       initialHeader,  initialVariables, initialMethods, initialSubClasses);
 	}
 	public void __SETUP__(String initialEnclosingClassName, Entry initialPackageName, Entry preImports, Entry initialName, String classType, Entry initialParentClass, List<Entry> initialInterfaces, Entry initialHeader, List<ExternalVariableEntry> initialVariables, List<ExternalMethodEntry> initialMethods, List<ExternalClassEntry> initialSubClasses){
-
+		if(isInitialized){
+			return;
+		}
+		else {
+			isInitialized = true;
+		}
+		
 		isInterface = classType.contains("interface");
 		isEnum = classType.contains("enum");
 		StringBuilder builder = new StringBuilder();
@@ -111,6 +134,7 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		}
 		allClasses.add(this);
 		classMap.put(getFullName(), this);
+		simpleClasses.put(getName(),this);
 		if(allOffspring.containsKey(name)){
 			for(ExternalClassEntry offspring:allOffspring.get(name)){
 				offspring.myContext.setParent(myContext);
@@ -241,11 +265,14 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		methods.remove(method.getName());
 		simpleMethods.remove(method.getSimpleName());
 	}
+	public void removeVariable(String variableName){
+		variables.remove(variableName);
+	}
 	public Collection<String> getMethodNames(){
 		return methods.keySet();
 	}
 	public void addSubClass(ExternalClassEntry subClass){
-
+		ExternalFlow.outputClasses.remove(subClass);
 		subClass.enclosingClass = this;
 		subClass.__INIT__();
 		classes.put(subClass.getName(), subClass);
@@ -383,6 +410,9 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		else {
 			if(isStatic){
 				builder.append("static ");
+			}
+			if(isAbstract){
+				builder.append("abstract ");
 			}
 			if(isEnum){
 				builder.append("enum ");
@@ -652,6 +682,9 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		if(isStatic()){
 			externalInitCalls.add(new ExternalStatement(new TabEntry(new StringEntry("setIsStatic")),new StringEntry("(true);")));
 		}
+		if(isAbstract){
+			externalInitCalls.add(new ExternalStatement(new TabEntry(new StringEntry("setIsAbstract")),new StringEntry("(true);")));
+		}
 		for(String variableName: variables.keySet()){
 			String addVariableMethodName = "__add_variable_"+variableIndex+"__";
 			externalInitCalls.add(new ExternalStatement(new StringEntry(addVariableMethodName),new StringEntry("();")));
@@ -692,6 +725,17 @@ public class ExternalClassEntry extends ExternalImportEntry {
 		File outputFile = new File(outputDirectory,packageNameBuilder.toString().replace("..", "$$$").replace(".", File.separator).replace("$$$", "."));
 		outputFile.mkdirs();
 		controller.addFile(outputFile, getName().replace("\"", "")+".java", this);
+	}
+	public void outputToFile(File outputDirectory){
+		StringBuilder packageNameBuilder = new StringBuilder();
+		packageName.get(packageNameBuilder);
+		outputDirectory.mkdirs();
+		File outputFile = new File(outputDirectory,packageNameBuilder.toString().replace("..", "$$$").replace(".", File.separator).replace("$$$", "."));
+		outputFile.mkdirs();
+		ExternalFlow.addFile(outputFile, getName().replace("\"", "")+".java", this);
+	}
+	public void outputAsClass(){
+		ExternalFlow.outputClasses.add(this);
 	}
 	public ExternalStatement.Parameters getInitParameters() {
 		ExternalStatement.Parameters parameters = new ExternalStatement.Parameters();
@@ -766,5 +810,11 @@ public class ExternalClassEntry extends ExternalImportEntry {
 	}
 	public void setIsStatic(Boolean newIsStatic){
 		this.isStatic = newIsStatic;
+	}
+	public void setIsAbstract(Boolean newIsAbstract){
+		this.isAbstract = newIsAbstract;
+	}
+	public boolean isAbstract() {
+		return this.isAbstract;
 	}
 }

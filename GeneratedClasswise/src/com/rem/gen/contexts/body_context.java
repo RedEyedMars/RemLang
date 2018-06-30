@@ -6,7 +6,7 @@ import com.rem.gen.parser.Token;
 import com.rem.gen.parser.Parser;
 import com.rem.gen.parser.Tokens;
 
-public class body_context extends class_file_name_context{
+public abstract class body_context extends class_file_name_context{
 	protected Parser __parser__ = null;
 	protected Tokens __tokens__ = null;
 	public body_context(final Parser.NameList initalSuperClassNamesRoot, final Parser.NameList initalSuperClassVariableNamesRoot, final Parser.NameList initalSuperVariableNamesRoot) {
@@ -14,85 +14,169 @@ public class body_context extends class_file_name_context{
 	}
 	public body_context() {
 	}
-	public Parser get_Parser(){
+	public Parser get_Parser() {
 		return __parser__;
 	}
-	public void set_Parser(Parser new_Parser){
+	public void set_Parser(Parser new_Parser) {
 		__parser__ = new_Parser;
 	}
-	public Tokens get_Tokens(){
+	public Tokens get_Tokens() {
 		return __tokens__;
 	}
-	public void set_Tokens(Tokens new_Tokens){
+	public void set_Tokens(Tokens new_Tokens) {
 		__tokens__ = new_Tokens;
 	}
-	public void parse_body_conditional(){
+	public void parse_body_access_token() {
+		int _position_body_access_token = -1;
+		Token.Parsed _token_body_access_token = null;
+		class_names.start(_position);
+		class_variable_names.start(_position);
+		variable_names.start(_position);
+		_position_body_access_token=_position;
+		_token_body_access_token=_token;
+		_token=new Tokens.Rule.BodyAccessTokenToken();
+		parse__anonymous_52();
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
+				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_access_token(body_access_token)");
+				_furthestPosition=_position;
+			}
+			_position=_position_body_access_token;
+		}
+		else {
+			if(_position+1-1 >=_inputLength) {
+				_state=FAILED;
+			}
+			else {
+				if(_inputArray[_position+0]!=':') {
+					_state=FAILED;
+				}
+			}
+			if(_state==SUCCESS) {
+				_token.add(_position,Tokens.Syntax.syntax_14.SYNTAX);
+				_position=_position+1;
+				while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+					++_position;
+				}
+			}
+			else if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain :");
+					_furthestPosition=_position;
+				}
+			}
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_access_token(body_access_token)");
+					_furthestPosition=_position;
+				}
+				_position=_position_body_access_token;
+			}
+			else {
+				parse_NAME();
+				if(_state==SUCCESS) {
+					String _value = _token.getLastValue();
+					if(_value!=null) {
+						variable_names.add(_value);
+					}
+					_token.add(_position,new Tokens.Name.VariableNameToken(_value));
+				}
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_access_token(body_access_token)");
+						_furthestPosition=_position;
+					}
+					_position=_position_body_access_token;
+				}
+				else {
+					int _state_59 = _state;
+					boolean _iteration_achieved_59 = false;
+					while(_position<_inputLength) {
+						parse__anonymous_54();
+						if(_state==FAILED) {
+							break;
+						}
+						else {
+							_iteration_achieved_59=true;
+						}
+					}
+					if(_iteration_achieved_59==false) {
+						_state=FAILED;
+					}
+					else if(_state_59==SUCCESS&&_state==FAILED) {
+						_state=SUCCESS;
+					}
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_access_token(body_access_token)");
+							_furthestPosition=_position;
+						}
+						_position=_position_body_access_token;
+					}
+					else {
+					}
+				}
+			}
+		}
+		if(_state==SUCCESS) {
+			_token_body_access_token.add(_position_body_access_token,_token);
+		}
+		_token=_token_body_access_token;
+		if(_state==FAILED) {
+			class_names.reject(_position_body_access_token);
+			class_variable_names.reject(_position_body_access_token);
+			variable_names.reject(_position_body_access_token);
+		}
+		else if(_state==SUCCESS) {
+			class_names.accept(_position_body_access_token);
+			class_variable_names.accept(_position_body_access_token);
+			variable_names.accept(_position_body_access_token);
+		}
+	}
+	public void parse_body_conditional() {
 		int _position_body_conditional = -1;
 		Token.Parsed _token_body_conditional = null;
-		int _position_inner = -1;
 		class_names.start(_position);
 		class_variable_names.start(_position);
 		variable_names.start(_position);
 		_position_body_conditional=_position;
 		_token_body_conditional=_token;
 		_token=new Tokens.Rule.BodyConditionalToken();
-		int _state_39 = _state;
-		_position_inner=_position;
-		if(_state==SUCCESS&&!_recursion_protection_inner_28.contains(_position)){
-			_recursion_protection_inner_28.add(_position);
-			parse_inner();
-			_recursion_protection_inner_28.remove(_position_inner);
-		}
-		else{
-			_state=FAILED;
-		}
-		if(_state_39==SUCCESS&&_state==FAILED){
-			_state=SUCCESS;
-		}
-		if(_state==FAILED){
-			if(_position>=_furthestPosition){
+		parse__anonymous_24();
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
 				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 				_furthestPosition=_position;
 			}
 			_position=_position_body_conditional;
 		}
-		else{
-			parse__anonymous_29();
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
+		else {
+			parse_body_statement();
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 					_furthestPosition=_position;
 				}
 				_position=_position_body_conditional;
 			}
-			else{
-				parse_body_statement();
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
+			else {
+				parse__anonymous_25();
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 						_furthestPosition=_position;
 					}
 					_position=_position_body_conditional;
 				}
-				else{
-					parse__anonymous_30();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
-							_furthestPosition=_position;
-						}
-						_position=_position_body_conditional;
-					}
-					else{
-					}
+				else {
 				}
 			}
 		}
-		if(_state==SUCCESS){
+		if(_state==SUCCESS) {
 			_token_body_conditional.add(_position_body_conditional,_token);
 		}
 		_token=_token_body_conditional;
-		if(_state==FAILED){
+		if(_state==FAILED) {
 			class_names.reject(_position_body_conditional);
 			class_variable_names.reject(_position_body_conditional);
 			variable_names.reject(_position_body_conditional);
@@ -100,82 +184,60 @@ public class body_context extends class_file_name_context{
 			_position_body_conditional=_position;
 			_token_body_conditional=_token;
 			_token=new Tokens.Rule.BodyConditionalToken();
-			int _state_40 = _state;
-			_position_inner=_position;
-			if(_state==SUCCESS&&!_recursion_protection_inner_29.contains(_position)){
-				_recursion_protection_inner_29.add(_position);
-				parse_inner();
-				_recursion_protection_inner_29.remove(_position_inner);
-			}
-			else{
+			if(_position+4-1 >=_inputLength) {
 				_state=FAILED;
 			}
-			if(_state_40==SUCCESS&&_state==FAILED){
-				_state=SUCCESS;
+			else {
+				if(_inputArray[_position+0]!='e') {
+					_state=FAILED;
+				}
+				if(_inputArray[_position+1]!='l') {
+					_state=FAILED;
+				}
+				if(_inputArray[_position+2]!='s') {
+					_state=FAILED;
+				}
+				if(_inputArray[_position+3]!='e') {
+					_state=FAILED;
+				}
 			}
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
+			if(_state==SUCCESS) {
+				_token.add(_position,Tokens.Syntax.syntax_29.conditional);
+				_position=_position+4;
+				while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+					++_position;
+				}
+			}
+			else if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain else");
+					_furthestPosition=_position;
+				}
+			}
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 					_furthestPosition=_position;
 				}
 				_position=_position_body_conditional;
 			}
-			else{
-				if(_position+4-1 >=_inputLength){
-					_state=FAILED;
-				}
-				else{
-					if(_inputArray[_position+0]!='e'){
-						_state=FAILED;
-					}
-					if(_inputArray[_position+1]!='l'){
-						_state=FAILED;
-					}
-					if(_inputArray[_position+2]!='s'){
-						_state=FAILED;
-					}
-					if(_inputArray[_position+3]!='e'){
-						_state=FAILED;
-					}
-				}
-				if(_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_22.conditional);
-					_position=_position+4;
-					while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
-						++_position;
-					}
-				}
-				else if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain else");
-						_furthestPosition=_position;
-					}
-				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
+			else {
+				parse__anonymous_26();
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 						_furthestPosition=_position;
 					}
 					_position=_position_body_conditional;
 				}
-				else{
-					parse__anonymous_31();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
-							_furthestPosition=_position;
-						}
-						_position=_position_body_conditional;
-					}
-					else{
-					}
+				else {
 				}
 			}
-			if(_state==SUCCESS){
+			if(_state==SUCCESS) {
 				_token_body_conditional.add(_position_body_conditional,_token);
 			}
 			_token=_token_body_conditional;
-			if(_state==FAILED){
+			if(_state==FAILED) {
 				class_names.reject(_position_body_conditional);
 				class_variable_names.reject(_position_body_conditional);
 				variable_names.reject(_position_body_conditional);
@@ -183,109 +245,90 @@ public class body_context extends class_file_name_context{
 				_position_body_conditional=_position;
 				_token_body_conditional=_token;
 				_token=new Tokens.Rule.BodyConditionalToken();
-				int _state_41 = _state;
-				_position_inner=_position;
-				if(_state==SUCCESS&&!_recursion_protection_inner_30.contains(_position)){
-					_recursion_protection_inner_30.add(_position);
-					parse_inner();
-					_recursion_protection_inner_30.remove(_position_inner);
-				}
-				else{
+				if(_position+4-1 >=_inputLength) {
 					_state=FAILED;
 				}
-				if(_state_41==SUCCESS&&_state==FAILED){
-					_state=SUCCESS;
+				else {
+					if(_inputArray[_position+0]!='f') {
+						_state=FAILED;
+					}
+					if(_inputArray[_position+1]!='o') {
+						_state=FAILED;
+					}
+					if(_inputArray[_position+2]!='r') {
+						_state=FAILED;
+					}
+					if(_inputArray[_position+3]!=' ') {
+						_state=FAILED;
+					}
 				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
+				if(_state==SUCCESS) {
+					_token.add(_position,Tokens.Syntax.syntax_35.conditional);
+					_position=_position+4;
+					while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+						++_position;
+					}
+				}
+				else if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain for ");
+						_furthestPosition=_position;
+					}
+				}
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 						_furthestPosition=_position;
 					}
 					_position=_position_body_conditional;
 				}
-				else{
-					if(_position+3-1 >=_inputLength){
-						_state=FAILED;
-					}
-					else{
-						if(_inputArray[_position+0]!='f'){
-							_state=FAILED;
-						}
-						if(_inputArray[_position+1]!='o'){
-							_state=FAILED;
-						}
-						if(_inputArray[_position+2]!='r'){
-							_state=FAILED;
-						}
-					}
-					if(_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_27.conditional);
-						_position=_position+3;
-						while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
-							++_position;
-						}
-					}
-					else if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain for");
-							_furthestPosition=_position;
-						}
-					}
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
+				else {
+					parse__anonymous_27();
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 							_furthestPosition=_position;
 						}
 						_position=_position_body_conditional;
 					}
-					else{
-						parse_variable_declaration();
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
+					else {
+						parse__anonymous_29();
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 								_furthestPosition=_position;
 							}
 							_position=_position_body_conditional;
 						}
-						else{
-							parse_OPERATOR();
-							if(_state==FAILED){
-								if(_position>=_furthestPosition){
+						else {
+							parse_body_statement();
+							if(_state==FAILED) {
+								if(_position>=_furthestPosition) {
 									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 									_furthestPosition=_position;
 								}
 								_position=_position_body_conditional;
 							}
-							else{
-								parse_body_statement();
-								if(_state==FAILED){
-									if(_position>=_furthestPosition){
+							else {
+								parse__anonymous_30();
+								if(_state==FAILED) {
+									if(_position>=_furthestPosition) {
 										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 										_furthestPosition=_position;
 									}
 									_position=_position_body_conditional;
 								}
-								else{
-									parse__anonymous_32();
-									if(_state==FAILED){
-										if(_position>=_furthestPosition){
-											_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
-											_furthestPosition=_position;
-										}
-										_position=_position_body_conditional;
-									}
-									else{
-									}
+								else {
 								}
 							}
 						}
 					}
 				}
-				if(_state==SUCCESS){
+				if(_state==SUCCESS) {
 					_token_body_conditional.add(_position_body_conditional,_token);
 				}
 				_token=_token_body_conditional;
-				if(_state==FAILED){
+				if(_state==FAILED) {
 					class_names.reject(_position_body_conditional);
 					class_variable_names.reject(_position_body_conditional);
 					variable_names.reject(_position_body_conditional);
@@ -293,79 +336,57 @@ public class body_context extends class_file_name_context{
 					_position_body_conditional=_position;
 					_token_body_conditional=_token;
 					_token=new Tokens.Rule.BodyConditionalToken();
-					int _state_42 = _state;
-					_position_inner=_position;
-					if(_state==SUCCESS&&!_recursion_protection_inner_31.contains(_position)){
-						_recursion_protection_inner_31.add(_position);
-						parse_inner();
-						_recursion_protection_inner_31.remove(_position_inner);
-					}
-					else{
+					if(_position+3-1 >=_inputLength) {
 						_state=FAILED;
 					}
-					if(_state_42==SUCCESS&&_state==FAILED){
-						_state=SUCCESS;
+					else {
+						if(_inputArray[_position+0]!='t') {
+							_state=FAILED;
+						}
+						if(_inputArray[_position+1]!='r') {
+							_state=FAILED;
+						}
+						if(_inputArray[_position+2]!='y') {
+							_state=FAILED;
+						}
 					}
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
+					if(_state==SUCCESS) {
+						_token.add(_position,Tokens.Syntax.syntax_39.conditional);
+						_position=_position+3;
+						while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+							++_position;
+						}
+					}
+					else if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain try");
+							_furthestPosition=_position;
+						}
+					}
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 							_furthestPosition=_position;
 						}
 						_position=_position_body_conditional;
 					}
-					else{
-						if(_position+3-1 >=_inputLength){
-							_state=FAILED;
-						}
-						else{
-							if(_inputArray[_position+0]!='t'){
-								_state=FAILED;
-							}
-							if(_inputArray[_position+1]!='r'){
-								_state=FAILED;
-							}
-							if(_inputArray[_position+2]!='y'){
-								_state=FAILED;
-							}
-						}
-						if(_state==SUCCESS){
-							_token.add(_position,Tokens.Syntax.syntax_28.conditional);
-							_position=_position+3;
-							while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
-								++_position;
-							}
-						}
-						else if(_state==FAILED){
-							if(_position>=_furthestPosition){
-								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain try");
-								_furthestPosition=_position;
-							}
-						}
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
+					else {
+						parse__anonymous_31();
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 								_furthestPosition=_position;
 							}
 							_position=_position_body_conditional;
 						}
-						else{
-							parse__anonymous_33();
-							if(_state==FAILED){
-								if(_position>=_furthestPosition){
-									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
-									_furthestPosition=_position;
-								}
-								_position=_position_body_conditional;
-							}
-							else{
-							}
+						else {
 						}
 					}
-					if(_state==SUCCESS){
+					if(_state==SUCCESS) {
 						_token_body_conditional.add(_position_body_conditional,_token);
 					}
 					_token=_token_body_conditional;
-					if(_state==FAILED){
+					if(_state==FAILED) {
 						class_names.reject(_position_body_conditional);
 						class_variable_names.reject(_position_body_conditional);
 						variable_names.reject(_position_body_conditional);
@@ -373,165 +394,143 @@ public class body_context extends class_file_name_context{
 						_position_body_conditional=_position;
 						_token_body_conditional=_token;
 						_token=new Tokens.Rule.BodyConditionalToken();
-						int _state_43 = _state;
-						_position_inner=_position;
-						if(_state==SUCCESS&&!_recursion_protection_inner_32.contains(_position)){
-							_recursion_protection_inner_32.add(_position);
-							parse_inner();
-							_recursion_protection_inner_32.remove(_position_inner);
-						}
-						else{
+						int _state_39 = _state;
+						if(_position+5-1 >=_inputLength) {
 							_state=FAILED;
 						}
-						if(_state_43==SUCCESS&&_state==FAILED){
+						else {
+							if(_inputArray[_position+0]!='p') {
+								_state=FAILED;
+							}
+							if(_inputArray[_position+1]!='r') {
+								_state=FAILED;
+							}
+							if(_inputArray[_position+2]!='i') {
+								_state=FAILED;
+							}
+							if(_inputArray[_position+3]!='n') {
+								_state=FAILED;
+							}
+							if(_inputArray[_position+4]!='t') {
+								_state=FAILED;
+							}
+						}
+						if(_state==SUCCESS) {
+							_token.add(_position,Tokens.Syntax.syntax_40.PRINT);
+							_position=_position+5;
+							while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+								++_position;
+							}
+						}
+						else if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain print");
+								_furthestPosition=_position;
+							}
+						}
+						if(_state_39==SUCCESS&&_state==FAILED) {
 							_state=SUCCESS;
 						}
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 								_furthestPosition=_position;
 							}
 							_position=_position_body_conditional;
 						}
-						else{
-							int _state_44 = _state;
-							if(_position+5-1 >=_inputLength){
+						else {
+							if(_position+5-1 >=_inputLength) {
 								_state=FAILED;
 							}
-							else{
-								if(_inputArray[_position+0]!='p'){
+							else {
+								if(_inputArray[_position+0]!='c') {
 									_state=FAILED;
 								}
-								if(_inputArray[_position+1]!='r'){
+								if(_inputArray[_position+1]!='a') {
 									_state=FAILED;
 								}
-								if(_inputArray[_position+2]!='i'){
+								if(_inputArray[_position+2]!='t') {
 									_state=FAILED;
 								}
-								if(_inputArray[_position+3]!='n'){
+								if(_inputArray[_position+3]!='c') {
 									_state=FAILED;
 								}
-								if(_inputArray[_position+4]!='t'){
+								if(_inputArray[_position+4]!='h') {
 									_state=FAILED;
 								}
 							}
-							if(_state==SUCCESS){
-								_token.add(_position,Tokens.Syntax.syntax_29.__SYNTAX__);
+							if(_state==SUCCESS) {
+								_token.add(_position,Tokens.Syntax.syntax_41.conditional);
 								_position=_position+5;
-								while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
+								while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
 									++_position;
 								}
 							}
-							else if(_state==FAILED){
-								if(_position>=_furthestPosition){
-									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain print");
+							else if(_state==FAILED) {
+								if(_position>=_furthestPosition) {
+									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain catch");
 									_furthestPosition=_position;
 								}
 							}
-							if(_state_44==SUCCESS&&_state==FAILED){
-								_state=SUCCESS;
-							}
-							if(_state==FAILED){
-								if(_position>=_furthestPosition){
+							if(_state==FAILED) {
+								if(_position>=_furthestPosition) {
 									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 									_furthestPosition=_position;
 								}
 								_position=_position_body_conditional;
 							}
-							else{
-								if(_position+5-1 >=_inputLength){
-									_state=FAILED;
-								}
-								else{
-									if(_inputArray[_position+0]!='c'){
-										_state=FAILED;
-									}
-									if(_inputArray[_position+1]!='a'){
-										_state=FAILED;
-									}
-									if(_inputArray[_position+2]!='t'){
-										_state=FAILED;
-									}
-									if(_inputArray[_position+3]!='c'){
-										_state=FAILED;
-									}
-									if(_inputArray[_position+4]!='h'){
-										_state=FAILED;
-									}
-								}
-								if(_state==SUCCESS){
-									_token.add(_position,Tokens.Syntax.syntax_30.conditional);
-									_position=_position+5;
-									while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
-										++_position;
-									}
-								}
-								else if(_state==FAILED){
-									if(_position>=_furthestPosition){
-										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain catch");
-										_furthestPosition=_position;
-									}
-								}
-								if(_state==FAILED){
-									if(_position>=_furthestPosition){
+							else {
+								parse__anonymous_32();
+								if(_state==FAILED) {
+									if(_position>=_furthestPosition) {
 										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 										_furthestPosition=_position;
 									}
 									_position=_position_body_conditional;
 								}
-								else{
-									parse__anonymous_34();
-									if(_state==FAILED){
-										if(_position>=_furthestPosition){
+								else {
+									int _state_40 = _state;
+									while(_position<_inputLength) {
+										parse__anonymous_33();
+										if(_state==FAILED) {
+											break;
+										}
+									}
+									if(_state_40==SUCCESS&&_state==FAILED) {
+										_state=SUCCESS;
+									}
+									if(_state==FAILED) {
+										if(_position>=_furthestPosition) {
 											_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 											_furthestPosition=_position;
 										}
 										_position=_position_body_conditional;
 									}
-									else{
-										int _state_45 = _state;
-										while(_position<_inputLength){
-											parse__anonymous_35();
-											if(_state==FAILED){
-												break;
-											}
-										}
-										if(_state_45==SUCCESS&&_state==FAILED){
-											_state=SUCCESS;
-										}
-										if(_state==FAILED){
-											if(_position>=_furthestPosition){
+									else {
+										parse__anonymous_35();
+										if(_state==FAILED) {
+											if(_position>=_furthestPosition) {
 												_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
 												_furthestPosition=_position;
 											}
 											_position=_position_body_conditional;
 										}
-										else{
-											parse__anonymous_37();
-											if(_state==FAILED){
-												if(_position>=_furthestPosition){
-													_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_conditional(body_conditional)");
-													_furthestPosition=_position;
-												}
-												_position=_position_body_conditional;
-											}
-											else{
-											}
+										else {
 										}
 									}
 								}
 							}
 						}
-						if(_state==SUCCESS){
+						if(_state==SUCCESS) {
 							_token_body_conditional.add(_position_body_conditional,_token);
 						}
 						_token=_token_body_conditional;
-						if(_state==FAILED){
+						if(_state==FAILED) {
 							class_names.reject(_position_body_conditional);
 							class_variable_names.reject(_position_body_conditional);
 							variable_names.reject(_position_body_conditional);
 						}
-						else if(_state==SUCCESS){
+						else if(_state==SUCCESS) {
 							class_names.accept(_position_body_conditional);
 							class_variable_names.accept(_position_body_conditional);
 							variable_names.accept(_position_body_conditional);
@@ -541,170 +540,184 @@ public class body_context extends class_file_name_context{
 			}
 		}
 	}
-	public void parse_body_statement(){
+	public void parse_body_statement() {
 		int _position_body_statement = -1;
 		Token.Parsed _token_body_statement = null;
-		int _position_statement_as_string = -1;
-		int _position_inner = -1;
-		int _position_statement_as_char = -1;
 		class_names.start(_position);
 		class_variable_names.start(_position);
 		variable_names.start(_position);
 		_position_body_statement=_position;
 		_token_body_statement=_token;
 		_token=new Tokens.Rule.BodyStatementToken();
-		int _state_46 = _state;
-		_position_inner=_position;
-		if(_state==SUCCESS&&!_recursion_protection_inner_33.contains(_position)){
-			_recursion_protection_inner_33.add(_position);
-			parse_inner();
-			_recursion_protection_inner_33.remove(_position_inner);
-		}
-		else{
-			_state=FAILED;
-		}
-		if(_state_46==SUCCESS&&_state==FAILED){
-			_state=SUCCESS;
-		}
-		if(_state==FAILED){
-			if(_position>=_furthestPosition){
+		parse__anonymous_36();
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
 				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_statement(body_statement)");
 				_furthestPosition=_position;
 			}
 			_position=_position_body_statement;
 		}
-		else{
-			parse_body_call();
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
+		else {
+			int _state_42 = _state;
+			while(_position<_inputLength) {
+				parse__anonymous_37();
+				if(_state==FAILED) {
+					break;
+				}
+			}
+			if(_state_42==SUCCESS&&_state==FAILED) {
+				_state=SUCCESS;
+			}
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_statement(body_statement)");
 					_furthestPosition=_position;
 				}
 				_position=_position_body_statement;
 			}
-			else{
-				int _state_47 = _state;
-				while(_position<_inputLength){
-					parse__anonymous_38();
-					if(_state==FAILED){
-						break;
-					}
-				}
-				if(_state_47==SUCCESS&&_state==FAILED){
-					_state=SUCCESS;
-				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_statement(body_statement)");
-						_furthestPosition=_position;
-					}
-					_position=_position_body_statement;
-				}
-				else{
-				}
+			else {
 			}
 		}
-		if(_state==SUCCESS){
+		if(_state==SUCCESS) {
 			_token_body_statement.add(_position_body_statement,_token);
 		}
 		_token=_token_body_statement;
-		if(_state==FAILED){
+		if(_state==FAILED) {
 			class_names.reject(_position_body_statement);
 			class_variable_names.reject(_position_body_statement);
 			variable_names.reject(_position_body_statement);
-			_state=SUCCESS;
-			_position_body_statement=_position;
-			_token_body_statement=_token;
-			_token=new Tokens.Rule.BodyStatementToken();
-			_position_statement_as_string=_position;
-			if(_state==SUCCESS&&!_recursion_protection_statement_as_string_34.contains(_position)){
-				_recursion_protection_statement_as_string_34.add(_position);
-				parse_statement_as_string();
-				_recursion_protection_statement_as_string_34.remove(_position_statement_as_string);
-			}
-			else{
-				_state=FAILED;
-			}
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_statement(body_statement)");
-					_furthestPosition=_position;
-				}
-				_position=_position_body_statement;
-			}
-			else{
-			}
-			if(_state==SUCCESS){
-				_token_body_statement.add(_position_body_statement,_token);
-			}
-			_token=_token_body_statement;
-			if(_state==FAILED){
-				class_names.reject(_position_body_statement);
-				class_variable_names.reject(_position_body_statement);
-				variable_names.reject(_position_body_statement);
-				_state=SUCCESS;
-				_position_body_statement=_position;
-				_token_body_statement=_token;
-				_token=new Tokens.Rule.BodyStatementToken();
-				_position_statement_as_char=_position;
-				if(_state==SUCCESS&&!_recursion_protection_statement_as_char_35.contains(_position)){
-					_recursion_protection_statement_as_char_35.add(_position);
-					parse_statement_as_char();
-					_recursion_protection_statement_as_char_35.remove(_position_statement_as_char);
-				}
-				else{
-					_state=FAILED;
-				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_statement(body_statement)");
-						_furthestPosition=_position;
-					}
-					_position=_position_body_statement;
-				}
-				else{
-				}
-				if(_state==SUCCESS){
-					_token_body_statement.add(_position_body_statement,_token);
-				}
-				_token=_token_body_statement;
-				if(_state==FAILED){
-					class_names.reject(_position_body_statement);
-					class_variable_names.reject(_position_body_statement);
-					variable_names.reject(_position_body_statement);
-				}
-				else if(_state==SUCCESS){
-					class_names.accept(_position_body_statement);
-					class_variable_names.accept(_position_body_statement);
-					variable_names.accept(_position_body_statement);
-				}
-			}
+		}
+		else if(_state==SUCCESS) {
+			class_names.accept(_position_body_statement);
+			class_variable_names.accept(_position_body_statement);
+			variable_names.accept(_position_body_statement);
 		}
 	}
-	public void parse_body_call(){
+	public void parse_body_call() {
 		int _position_body_call = -1;
 		Token.Parsed _token_body_call = null;
+		int _position_as_statement = -1;
+		int _position_all_type_name = -1;
+		int _position_statement_as_braced = -1;
+		Token.Parsed _token_all_type_name = null;
+		Token.Parsed _token_statement_as_braced = null;
 		class_names.start(_position);
 		class_variable_names.start(_position);
 		variable_names.start(_position);
 		_position_body_call=_position;
 		_token_body_call=_token;
 		_token=new Tokens.Rule.BodyCallToken();
-		parse__anonymous_40();
-		if(_state==FAILED){
-			if(_position>=_furthestPosition){
+		if(_position+1-1 >=_inputLength) {
+			_state=FAILED;
+		}
+		else {
+			if(_inputArray[_position+0]!='(') {
+				_state=FAILED;
+			}
+		}
+		if(_state==SUCCESS) {
+			_token.add(_position,Tokens.Syntax.syntax_43.SYNTAX);
+			_position=_position+1;
+			while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+				++_position;
+			}
+		}
+		else if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
+				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain (");
+				_furthestPosition=_position;
+			}
+		}
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
 				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
 				_furthestPosition=_position;
 			}
 			_position=_position_body_call;
 		}
-		else{
+		else {
+			_token_all_type_name=_token;
+			_token=new Tokens.Name.CastStatementToken();
+			_position_all_type_name=_position;
+			parse_all_type_name();
+			if(_state==SUCCESS) {
+				_token_all_type_name.add(_position_all_type_name,_token);
+			}
+			_token=_token_all_type_name;
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
+					_furthestPosition=_position;
+				}
+				_position=_position_body_call;
+			}
+			else {
+				if(_position+1-1 >=_inputLength) {
+					_state=FAILED;
+				}
+				else {
+					if(_inputArray[_position+0]!=')') {
+						_state=FAILED;
+					}
+				}
+				if(_state==SUCCESS) {
+					_token.add(_position,Tokens.Syntax.syntax_44.SYNTAX);
+					_position=_position+1;
+					while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+						++_position;
+					}
+				}
+				else if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain )");
+						_furthestPosition=_position;
+					}
+				}
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
+						_furthestPosition=_position;
+					}
+					_position=_position_body_call;
+				}
+				else {
+					parse__anonymous_38();
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
+							_furthestPosition=_position;
+						}
+						_position=_position_body_call;
+					}
+					else {
+						int _state_45 = _state;
+						while(_position<_inputLength) {
+							parse__anonymous_41();
+							if(_state==FAILED) {
+								break;
+							}
+						}
+						if(_state_45==SUCCESS&&_state==FAILED) {
+							_state=SUCCESS;
+						}
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
+								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
+								_furthestPosition=_position;
+							}
+							_position=_position_body_call;
+						}
+						else {
+						}
+					}
+				}
+			}
 		}
-		if(_state==SUCCESS){
+		if(_state==SUCCESS) {
 			_token_body_call.add(_position_body_call,_token);
 		}
 		_token=_token_body_call;
-		if(_state==FAILED){
+		if(_state==FAILED) {
 			class_names.reject(_position_body_call);
 			class_variable_names.reject(_position_body_call);
 			variable_names.reject(_position_body_call);
@@ -712,40 +725,28 @@ public class body_context extends class_file_name_context{
 			_position_body_call=_position;
 			_token_body_call=_token;
 			_token=new Tokens.Rule.BodyCallToken();
-			parse__anonymous_42();
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
+			_token_statement_as_braced=_token;
+			_token=new Tokens.Name.AsBracedToken();
+			_position_statement_as_braced=_position;
+			parse_statement_as_braced();
+			if(_state==SUCCESS) {
+				_token_statement_as_braced.add(_position_statement_as_braced,_token);
+			}
+			_token=_token_statement_as_braced;
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
 					_furthestPosition=_position;
 				}
 				_position=_position_body_call;
 			}
-			else{
-				int _state_54 = _state;
-				while(_position<_inputLength){
-					parse__anonymous_43();
-					if(_state==FAILED){
-						break;
-					}
-				}
-				if(_state_54==SUCCESS&&_state==FAILED){
-					_state=SUCCESS;
-				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
-						_furthestPosition=_position;
-					}
-					_position=_position_body_call;
-				}
-				else{
-				}
+			else {
 			}
-			if(_state==SUCCESS){
+			if(_state==SUCCESS) {
 				_token_body_call.add(_position_body_call,_token);
 			}
 			_token=_token_body_call;
-			if(_state==FAILED){
+			if(_state==FAILED) {
 				class_names.reject(_position_body_call);
 				class_variable_names.reject(_position_body_call);
 				variable_names.reject(_position_body_call);
@@ -753,40 +754,29 @@ public class body_context extends class_file_name_context{
 				_position_body_call=_position;
 				_token_body_call=_token;
 				_token=new Tokens.Rule.BodyCallToken();
-				parse__anonymous_45();
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
+				_position_as_statement=_position;
+				if(_state==SUCCESS&&!_recursion_protection_as_statement_23.contains(_position)) {
+					_recursion_protection_as_statement_23.add(_position);
+					parse_as_statement();
+					_recursion_protection_as_statement_23.remove(_position_as_statement);
+				}
+				else {
+					_state=FAILED;
+				}
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
 						_furthestPosition=_position;
 					}
 					_position=_position_body_call;
 				}
-				else{
-					int _state_59 = _state;
-					while(_position<_inputLength){
-						parse__anonymous_46();
-						if(_state==FAILED){
-							break;
-						}
-					}
-					if(_state_59==SUCCESS&&_state==FAILED){
-						_state=SUCCESS;
-					}
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
-							_furthestPosition=_position;
-						}
-						_position=_position_body_call;
-					}
-					else{
-					}
+				else {
 				}
-				if(_state==SUCCESS){
+				if(_state==SUCCESS) {
 					_token_body_call.add(_position_body_call,_token);
 				}
 				_token=_token_body_call;
-				if(_state==FAILED){
+				if(_state==FAILED) {
 					class_names.reject(_position_body_call);
 					class_variable_names.reject(_position_body_call);
 					variable_names.reject(_position_body_call);
@@ -794,45 +784,45 @@ public class body_context extends class_file_name_context{
 					_position_body_call=_position;
 					_token_body_call=_token;
 					_token=new Tokens.Rule.BodyCallToken();
-					parse__anonymous_49();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
+					parse__anonymous_44();
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
 							_furthestPosition=_position;
 						}
 						_position=_position_body_call;
 					}
-					else{
-						int _state_65 = _state;
-						while(_position<_inputLength){
-							parse__anonymous_51();
-							if(_state==FAILED){
+					else {
+						int _state_53 = _state;
+						while(_position<_inputLength) {
+							parse__anonymous_46();
+							if(_state==FAILED) {
 								break;
 							}
 						}
-						if(_state_65==SUCCESS&&_state==FAILED){
+						if(_state_53==SUCCESS&&_state==FAILED) {
 							_state=SUCCESS;
 						}
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_call(body_call)");
 								_furthestPosition=_position;
 							}
 							_position=_position_body_call;
 						}
-						else{
+						else {
 						}
 					}
-					if(_state==SUCCESS){
+					if(_state==SUCCESS) {
 						_token_body_call.add(_position_body_call,_token);
 					}
 					_token=_token_body_call;
-					if(_state==FAILED){
+					if(_state==FAILED) {
 						class_names.reject(_position_body_call);
 						class_variable_names.reject(_position_body_call);
 						variable_names.reject(_position_body_call);
 					}
-					else if(_state==SUCCESS){
+					else if(_state==SUCCESS) {
 						class_names.accept(_position_body_call);
 						class_variable_names.accept(_position_body_call);
 						variable_names.accept(_position_body_call);
@@ -841,249 +831,141 @@ public class body_context extends class_file_name_context{
 			}
 		}
 	}
-	public void parse_body_manipulate(){
-		int _position_body_manipulate = -1;
-		Token.Parsed _token_body_manipulate = null;
-		int _position_inner = -1;
+	public void parse_body_add_to_class() {
+		int _position_body_add_to_class = -1;
+		Token.Parsed _token_body_add_to_class = null;
+		int _position_type_var = -1;
 		class_names.start(_position);
 		class_variable_names.start(_position);
 		variable_names.start(_position);
-		_position_body_manipulate=_position;
-		_token_body_manipulate=_token;
-		_token=new Tokens.Rule.BodyManipulateToken();
-		int _state_68 = _state;
-		_position_inner=_position;
-		if(_state==SUCCESS&&!_recursion_protection_inner_39.contains(_position)){
-			_recursion_protection_inner_39.add(_position);
-			parse_inner();
-			_recursion_protection_inner_39.remove(_position_inner);
+		_position_body_add_to_class=_position;
+		_token_body_add_to_class=_token;
+		_token=new Tokens.Rule.BodyAddToClassToken();
+		_position_type_var=_position;
+		if(_state==SUCCESS&&!_recursion_protection_type_var_29.contains(_position)) {
+			_recursion_protection_type_var_29.add(_position);
+			parse_type_var();
+			_recursion_protection_type_var_29.remove(_position_type_var);
 		}
-		else{
+		else {
 			_state=FAILED;
 		}
-		if(_state_68==SUCCESS&&_state==FAILED){
-			_state=SUCCESS;
-		}
-		if(_state==FAILED){
-			if(_position>=_furthestPosition){
-				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
+				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_add_to_class(body_add_to_class)");
 				_furthestPosition=_position;
 			}
-			_position=_position_body_manipulate;
+			_position=_position_body_add_to_class;
 		}
-		else{
-			parse_type_var();
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
+		else {
+			int _state_56 = _state;
+			parse__anonymous_49();
+			if(_state_56==SUCCESS&&_state==FAILED) {
+				_state=SUCCESS;
+			}
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
+					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_add_to_class(body_add_to_class)");
 					_furthestPosition=_position;
 				}
-				_position=_position_body_manipulate;
+				_position=_position_body_add_to_class;
 			}
-			else{
-				if(_position+2-1 >=_inputLength){
+			else {
+				if(_position+2-1 >=_inputLength) {
 					_state=FAILED;
 				}
-				else{
-					if(_inputArray[_position+0]!='+'){
+				else {
+					if(_inputArray[_position+0]!='+') {
 						_state=FAILED;
 					}
-					if(_inputArray[_position+1]!='='){
+					if(_inputArray[_position+1]!='=') {
 						_state=FAILED;
 					}
 				}
-				if(_state==SUCCESS){
-					_token.add(_position,Tokens.Syntax.syntax_34.methodName);
+				if(_state==SUCCESS) {
+					_token.add(_position,Tokens.Syntax.syntax_48.add);
 					_position=_position+2;
-					while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
+					while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
 						++_position;
 					}
 				}
-				else if(_state==FAILED){
-					if(_position>=_furthestPosition){
+				else if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain +=");
 						_furthestPosition=_position;
 					}
 				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
+						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_add_to_class(body_add_to_class)");
 						_furthestPosition=_position;
 					}
-					_position=_position_body_manipulate;
+					_position=_position_body_add_to_class;
 				}
-				else{
-					parse__anonymous_53();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
+				else {
+					parse__anonymous_51();
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
+							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_add_to_class(body_add_to_class)");
 							_furthestPosition=_position;
 						}
-						_position=_position_body_manipulate;
+						_position=_position_body_add_to_class;
 					}
-					else{
+					else {
 					}
 				}
 			}
 		}
-		if(_state==SUCCESS){
-			_token_body_manipulate.add(_position_body_manipulate,_token);
+		if(_state==SUCCESS) {
+			_token_body_add_to_class.add(_position_body_add_to_class,_token);
 		}
-		_token=_token_body_manipulate;
-		if(_state==FAILED){
-			class_names.reject(_position_body_manipulate);
-			class_variable_names.reject(_position_body_manipulate);
-			variable_names.reject(_position_body_manipulate);
-			_state=SUCCESS;
-			_position_body_manipulate=_position;
-			_token_body_manipulate=_token;
-			_token=new Tokens.Rule.BodyManipulateToken();
-			int _state_69 = _state;
-			_position_inner=_position;
-			if(_state==SUCCESS&&!_recursion_protection_inner_40.contains(_position)){
-				_recursion_protection_inner_40.add(_position);
-				parse_inner();
-				_recursion_protection_inner_40.remove(_position_inner);
-			}
-			else{
-				_state=FAILED;
-			}
-			if(_state_69==SUCCESS&&_state==FAILED){
-				_state=SUCCESS;
-			}
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
-					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
-					_furthestPosition=_position;
-				}
-				_position=_position_body_manipulate;
-			}
-			else{
-				parse_name_var();
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
-						_furthestPosition=_position;
-					}
-					_position=_position_body_manipulate;
-				}
-				else{
-					if(_position+1-1 >=_inputLength){
-						_state=FAILED;
-					}
-					else{
-						if(_inputArray[_position+0]!=':'){
-							_state=FAILED;
-						}
-					}
-					if(_state==SUCCESS){
-						_token.add(_position,Tokens.Syntax.syntax_8.__SYNTAX__);
-						_position=_position+1;
-						while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')){
-							++_position;
-						}
-					}
-					else if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain :");
-							_furthestPosition=_position;
-						}
-					}
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
-							_furthestPosition=_position;
-						}
-						_position=_position_body_manipulate;
-					}
-					else{
-						parse_NAME();
-						if(_state==SUCCESS){
-							String _value = _token.getLastValue();
-							if(_value!=null){
-								variable_names.add(_value);
-							}
-							_token.add(_position,new Tokens.Name.VariableNameToken(_value));
-						}
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
-								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
-								_furthestPosition=_position;
-							}
-							_position=_position_body_manipulate;
-						}
-						else{
-							int _state_70 = _state;
-							boolean _iteration_achieved_70 = false;
-							while(_position<_inputLength){
-								parse__anonymous_54();
-								if(_state==FAILED){
-									break;
-								}
-								else{
-									_iteration_achieved_70=true;
-								}
-							}
-							if(_iteration_achieved_70==false){
-								_state=FAILED;
-							}
-							else if(_state_70==SUCCESS&&_state==FAILED){
-								_state=SUCCESS;
-							}
-							if(_state==FAILED){
-								if(_position>=_furthestPosition){
-									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_manipulate(body_manipulate)");
-									_furthestPosition=_position;
-								}
-								_position=_position_body_manipulate;
-							}
-							else{
-							}
-						}
-					}
-				}
-			}
-			if(_state==SUCCESS){
-				_token_body_manipulate.add(_position_body_manipulate,_token);
-			}
-			_token=_token_body_manipulate;
-			if(_state==FAILED){
-				class_names.reject(_position_body_manipulate);
-				class_variable_names.reject(_position_body_manipulate);
-				variable_names.reject(_position_body_manipulate);
-			}
-			else if(_state==SUCCESS){
-				class_names.accept(_position_body_manipulate);
-				class_variable_names.accept(_position_body_manipulate);
-				variable_names.accept(_position_body_manipulate);
-			}
+		_token=_token_body_add_to_class;
+		if(_state==FAILED) {
+			class_names.reject(_position_body_add_to_class);
+			class_variable_names.reject(_position_body_add_to_class);
+			variable_names.reject(_position_body_add_to_class);
+		}
+		else if(_state==SUCCESS) {
+			class_names.accept(_position_body_add_to_class);
+			class_variable_names.accept(_position_body_add_to_class);
+			variable_names.accept(_position_body_add_to_class);
 		}
 	}
-	public void parse_body_element(){
+	public void parse_body_element() {
 		int _position_body_element = -1;
 		Token.Parsed _token_body_element = null;
-		int _position_inner = -1;
+		int _position_comments = -1;
+		int _position_variable_declaration = -1;
+		int _position_body_statement = -1;
 		class_names.start(_position);
 		class_variable_names.start(_position);
 		variable_names.start(_position);
 		_position_body_element=_position;
 		_token_body_element=_token;
 		_token=new Tokens.Rule.BodyElementToken();
-		parse_comments();
-		if(_state==FAILED){
-			if(_position>=_furthestPosition){
+		_position_comments=_position;
+		if(_state==SUCCESS&&!_recursion_protection_comments_12.contains(_position)) {
+			_recursion_protection_comments_12.add(_position);
+			parse_comments();
+			_recursion_protection_comments_12.remove(_position_comments);
+		}
+		else {
+			_state=FAILED;
+		}
+		if(_state==FAILED) {
+			if(_position>=_furthestPosition) {
 				_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 				_furthestPosition=_position;
 			}
 			_position=_position_body_element;
 		}
-		else{
+		else {
 		}
-		if(_state==SUCCESS){
+		if(_state==SUCCESS) {
 			_token_body_element.add(_position_body_element,_token);
 		}
 		_token=_token_body_element;
-		if(_state==FAILED){
+		if(_state==FAILED) {
 			class_names.reject(_position_body_element);
 			class_variable_names.reject(_position_body_element);
 			variable_names.reject(_position_body_element);
@@ -1091,43 +973,21 @@ public class body_context extends class_file_name_context{
 			_position_body_element=_position;
 			_token_body_element=_token;
 			_token=new Tokens.Rule.BodyElementToken();
-			int _state_37 = _state;
-			_position_inner=_position;
-			if(_state==SUCCESS&&!_recursion_protection_inner_24.contains(_position)){
-				_recursion_protection_inner_24.add(_position);
-				parse_inner();
-				_recursion_protection_inner_24.remove(_position_inner);
-			}
-			else{
-				_state=FAILED;
-			}
-			if(_state_37==SUCCESS&&_state==FAILED){
-				_state=SUCCESS;
-			}
-			if(_state==FAILED){
-				if(_position>=_furthestPosition){
+			parse__anonymous_22();
+			if(_state==FAILED) {
+				if(_position>=_furthestPosition) {
 					_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 					_furthestPosition=_position;
 				}
 				_position=_position_body_element;
 			}
-			else{
-				parse__anonymous_23();
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
-						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
-						_furthestPosition=_position;
-					}
-					_position=_position_body_element;
-				}
-				else{
-				}
+			else {
 			}
-			if(_state==SUCCESS){
+			if(_state==SUCCESS) {
 				_token_body_element.add(_position_body_element,_token);
 			}
 			_token=_token_body_element;
-			if(_state==FAILED){
+			if(_state==FAILED) {
 				class_names.reject(_position_body_element);
 				class_variable_names.reject(_position_body_element);
 				variable_names.reject(_position_body_element);
@@ -1135,43 +995,21 @@ public class body_context extends class_file_name_context{
 				_position_body_element=_position;
 				_token_body_element=_token;
 				_token=new Tokens.Rule.BodyElementToken();
-				int _state_38 = _state;
-				_position_inner=_position;
-				if(_state==SUCCESS&&!_recursion_protection_inner_25.contains(_position)){
-					_recursion_protection_inner_25.add(_position);
-					parse_inner();
-					_recursion_protection_inner_25.remove(_position_inner);
-				}
-				else{
-					_state=FAILED;
-				}
-				if(_state_38==SUCCESS&&_state==FAILED){
-					_state=SUCCESS;
-				}
-				if(_state==FAILED){
-					if(_position>=_furthestPosition){
+				parse__anonymous_23();
+				if(_state==FAILED) {
+					if(_position>=_furthestPosition) {
 						_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 						_furthestPosition=_position;
 					}
 					_position=_position_body_element;
 				}
-				else{
-					parse__anonymous_25();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
-							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
-							_furthestPosition=_position;
-						}
-						_position=_position_body_element;
-					}
-					else{
-					}
+				else {
 				}
-				if(_state==SUCCESS){
+				if(_state==SUCCESS) {
 					_token_body_element.add(_position_body_element,_token);
 				}
 				_token=_token_body_element;
-				if(_state==FAILED){
+				if(_state==FAILED) {
 					class_names.reject(_position_body_element);
 					class_variable_names.reject(_position_body_element);
 					variable_names.reject(_position_body_element);
@@ -1179,21 +1017,21 @@ public class body_context extends class_file_name_context{
 					_position_body_element=_position;
 					_token_body_element=_token;
 					_token=new Tokens.Rule.BodyElementToken();
-					parse_class_declaration();
-					if(_state==FAILED){
-						if(_position>=_furthestPosition){
+					parse_body_access_token();
+					if(_state==FAILED) {
+						if(_position>=_furthestPosition) {
 							_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 							_furthestPosition=_position;
 						}
 						_position=_position_body_element;
 					}
-					else{
+					else {
 					}
-					if(_state==SUCCESS){
+					if(_state==SUCCESS) {
 						_token_body_element.add(_position_body_element,_token);
 					}
 					_token=_token_body_element;
-					if(_state==FAILED){
+					if(_state==FAILED) {
 						class_names.reject(_position_body_element);
 						class_variable_names.reject(_position_body_element);
 						variable_names.reject(_position_body_element);
@@ -1201,21 +1039,29 @@ public class body_context extends class_file_name_context{
 						_position_body_element=_position;
 						_token_body_element=_token;
 						_token=new Tokens.Rule.BodyElementToken();
-						parse__anonymous_26();
-						if(_state==FAILED){
-							if(_position>=_furthestPosition){
+						_position_variable_declaration=_position;
+						if(_state==SUCCESS&&!_recursion_protection_variable_declaration_13.contains(_position)) {
+							_recursion_protection_variable_declaration_13.add(_position);
+							parse_variable_declaration();
+							_recursion_protection_variable_declaration_13.remove(_position_variable_declaration);
+						}
+						else {
+							_state=FAILED;
+						}
+						if(_state==FAILED) {
+							if(_position>=_furthestPosition) {
 								_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 								_furthestPosition=_position;
 							}
 							_position=_position_body_element;
 						}
-						else{
+						else {
 						}
-						if(_state==SUCCESS){
+						if(_state==SUCCESS) {
 							_token_body_element.add(_position_body_element,_token);
 						}
 						_token=_token_body_element;
-						if(_state==FAILED){
+						if(_state==FAILED) {
 							class_names.reject(_position_body_element);
 							class_variable_names.reject(_position_body_element);
 							variable_names.reject(_position_body_element);
@@ -1223,21 +1069,51 @@ public class body_context extends class_file_name_context{
 							_position_body_element=_position;
 							_token_body_element=_token;
 							_token=new Tokens.Rule.BodyElementToken();
-							parse__anonymous_27();
-							if(_state==FAILED){
-								if(_position>=_furthestPosition){
+							parse_variable_assignment();
+							if(_state==FAILED) {
+								if(_position>=_furthestPosition) {
 									_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 									_furthestPosition=_position;
 								}
 								_position=_position_body_element;
 							}
-							else{
+							else {
+								if(_position+1-1 >=_inputLength) {
+									_state=FAILED;
+								}
+								else {
+									if(_inputArray[_position+0]!=';') {
+										_state=FAILED;
+									}
+								}
+								if(_state==SUCCESS) {
+									_token.add(_position,Tokens.Syntax.syntax_26.SYNTAX);
+									_position=_position+1;
+									while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+										++_position;
+									}
+								}
+								else if(_state==FAILED) {
+									if(_position>=_furthestPosition) {
+										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain ;");
+										_furthestPosition=_position;
+									}
+								}
+								if(_state==FAILED) {
+									if(_position>=_furthestPosition) {
+										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
+										_furthestPosition=_position;
+									}
+									_position=_position_body_element;
+								}
+								else {
+								}
 							}
-							if(_state==SUCCESS){
+							if(_state==SUCCESS) {
 								_token_body_element.add(_position_body_element,_token);
 							}
 							_token=_token_body_element;
-							if(_state==FAILED){
+							if(_state==FAILED) {
 								class_names.reject(_position_body_element);
 								class_variable_names.reject(_position_body_element);
 								variable_names.reject(_position_body_element);
@@ -1245,21 +1121,21 @@ public class body_context extends class_file_name_context{
 								_position_body_element=_position;
 								_token_body_element=_token;
 								_token=new Tokens.Rule.BodyElementToken();
-								parse_body_manipulate();
-								if(_state==FAILED){
-									if(_position>=_furthestPosition){
+								parse_body_add_to_class();
+								if(_state==FAILED) {
+									if(_position>=_furthestPosition) {
 										_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 										_furthestPosition=_position;
 									}
 									_position=_position_body_element;
 								}
-								else{
+								else {
 								}
-								if(_state==SUCCESS){
+								if(_state==SUCCESS) {
 									_token_body_element.add(_position_body_element,_token);
 								}
 								_token=_token_body_element;
-								if(_state==FAILED){
+								if(_state==FAILED) {
 									class_names.reject(_position_body_element);
 									class_variable_names.reject(_position_body_element);
 									variable_names.reject(_position_body_element);
@@ -1268,20 +1144,20 @@ public class body_context extends class_file_name_context{
 									_token_body_element=_token;
 									_token=new Tokens.Rule.BodyElementToken();
 									parse_body_conditional();
-									if(_state==FAILED){
-										if(_position>=_furthestPosition){
+									if(_state==FAILED) {
+										if(_position>=_furthestPosition) {
 											_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 											_furthestPosition=_position;
 										}
 										_position=_position_body_element;
 									}
-									else{
+									else {
 									}
-									if(_state==SUCCESS){
+									if(_state==SUCCESS) {
 										_token_body_element.add(_position_body_element,_token);
 									}
 									_token=_token_body_element;
-									if(_state==FAILED){
+									if(_state==FAILED) {
 										class_names.reject(_position_body_element);
 										class_variable_names.reject(_position_body_element);
 										variable_names.reject(_position_body_element);
@@ -1289,26 +1165,64 @@ public class body_context extends class_file_name_context{
 										_position_body_element=_position;
 										_token_body_element=_token;
 										_token=new Tokens.Rule.BodyElementToken();
-										parse__anonymous_28();
-										if(_state==FAILED){
-											if(_position>=_furthestPosition){
+										_position_body_statement=_position;
+										if(_state==SUCCESS&&!_recursion_protection_body_statement_14.contains(_position)) {
+											_recursion_protection_body_statement_14.add(_position);
+											parse_body_statement();
+											_recursion_protection_body_statement_14.remove(_position_body_statement);
+										}
+										else {
+											_state=FAILED;
+										}
+										if(_state==FAILED) {
+											if(_position>=_furthestPosition) {
 												_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
 												_furthestPosition=_position;
 											}
 											_position=_position_body_element;
 										}
-										else{
+										else {
+											if(_position+1-1 >=_inputLength) {
+												_state=FAILED;
+											}
+											else {
+												if(_inputArray[_position+0]!=';') {
+													_state=FAILED;
+												}
+											}
+											if(_state==SUCCESS) {
+												_token.add(_position,Tokens.Syntax.syntax_26.SYNTAX);
+												_position=_position+1;
+												while(_position<_inputLength&&(false||_inputArray[_position]==' '||_inputArray[_position]=='\t'||_inputArray[_position]=='\n'||_inputArray[_position]=='\r')) {
+													++_position;
+												}
+											}
+											else if(_state==FAILED) {
+												if(_position>=_furthestPosition) {
+													_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"unexpected plain ;");
+													_furthestPosition=_position;
+												}
+											}
+											if(_state==FAILED) {
+												if(_position>=_furthestPosition) {
+													_result=new Parser.Result.Fail(FAILED,_position,_lineNumberRanges,_input,_fileName,"body_element(body_element)");
+													_furthestPosition=_position;
+												}
+												_position=_position_body_element;
+											}
+											else {
+											}
 										}
-										if(_state==SUCCESS){
+										if(_state==SUCCESS) {
 											_token_body_element.add(_position_body_element,_token);
 										}
 										_token=_token_body_element;
-										if(_state==FAILED){
+										if(_state==FAILED) {
 											class_names.reject(_position_body_element);
 											class_variable_names.reject(_position_body_element);
 											variable_names.reject(_position_body_element);
 										}
-										else if(_state==SUCCESS){
+										else if(_state==SUCCESS) {
 											class_names.accept(_position_body_element);
 											class_variable_names.accept(_position_body_element);
 											variable_names.accept(_position_body_element);

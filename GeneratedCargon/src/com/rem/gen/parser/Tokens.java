@@ -13,152 +13,128 @@ public class Tokens{
 		}
 		public static class Comment extends Token.Parsed{
 			protected String value = null;
-			public Comment(final String initalSuperName, final String value) {
+			public Comment(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Comment(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Comment() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "comment";
+			public Token.Id getName() {
+				return Token.Id._comment;
 			}
 		}
 		public static class Left extends Token.Parsed{
 			protected String value = null;
-			public Left(final String initalSuperName, final String value) {
+			public Left(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Left(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Left() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "left";
+			public Token.Id getName() {
+				return Token.Id._left;
 			}
 		}
 		public static class Right extends Token.Parsed{
 			protected String value = null;
-			public Right(final String initalSuperName, final String value) {
+			public Right(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Right(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Right() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "right";
+			public Token.Id getName() {
+				return Token.Id._right;
 			}
 		}
 		public static class StandAlone extends Token.Parsed{
 			protected String value = null;
-			public StandAlone(final String initalSuperName, final String value) {
+			public StandAlone(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public StandAlone(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public StandAlone() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "standAlone";
+			public Token.Id getName() {
+				return Token.Id._standAlone;
 			}
 		}
 		public static class Character extends Token.Parsed{
 			protected String value = null;
-			public Character(final String initalSuperName, final String value) {
+			public Character(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Character(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Character() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "character";
+			public Token.Id getName() {
+				return Token.Id._character;
 			}
 		}
 		public static class Escaped extends Token.Parsed{
 			protected String value = null;
-			public Escaped(final String initalSuperName, final String value) {
+			public Escaped(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Escaped(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public Escaped() {
 			}
-			public String getValue(){
+			public String getValue() {
 				return value;
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "escaped";
+			public Token.Id getName() {
+				return Token.Id._escaped;
 			}
 		}
 	}
@@ -166,490 +142,490 @@ public class Tokens{
 		public Syntax() {
 		}
 		public static class syntax_0 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_0 __SYNTAX__ = new Tokens.Syntax.syntax_0("SYNTAX");
-			public syntax_0(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_0 SYNTAX = new Tokens.Syntax.syntax_0(Token.Id._SYNTAX);
+			public syntax_0(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_0() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_0 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_0 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "ignore";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_1 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_1 __SYNTAX__ = new Tokens.Syntax.syntax_1("SYNTAX");
-			public syntax_1(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_1 SYNTAX = new Tokens.Syntax.syntax_1(Token.Id._SYNTAX);
+			public syntax_1(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_1() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_1 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_1 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return ":";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_2 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_2 __SYNTAX__ = new Tokens.Syntax.syntax_2("SYNTAX");
-			public syntax_2(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_2 SYNTAX = new Tokens.Syntax.syntax_2(Token.Id._SYNTAX);
+			public syntax_2(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_2() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_2 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_2 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\n";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_3 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_3 __SYNTAX__ = new Tokens.Syntax.syntax_3("SYNTAX");
-			public syntax_3(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_3 SYNTAX = new Tokens.Syntax.syntax_3(Token.Id._SYNTAX);
+			public syntax_3(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_3() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_3 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_3 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "import ";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_4 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_4 __SYNTAX__ = new Tokens.Syntax.syntax_4("SYNTAX");
-			public static Token.Parsed negate = new Tokens.Syntax.syntax_4("negate");
-			public syntax_4(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_4 SYNTAX = new Tokens.Syntax.syntax_4(Token.Id._SYNTAX);
+			public static Token.Parsed negate = new Tokens.Syntax.syntax_4(Token.Id._negate);
+			public syntax_4(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_4() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_4 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_4 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "^";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setNegate(Token.Parsed newNegate){
+			public void setNegate(Token.Parsed newNegate) {
 				negate = newNegate;
 			}
 		}
 		public static class syntax_5 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_5 __SYNTAX__ = new Tokens.Syntax.syntax_5("SYNTAX");
-			public syntax_5(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_5 SYNTAX = new Tokens.Syntax.syntax_5(Token.Id._SYNTAX);
+			public syntax_5(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_5() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_5 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_5 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "-";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_6 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_6 __SYNTAX__ = new Tokens.Syntax.syntax_6("SYNTAX");
-			public syntax_6(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_6 SYNTAX = new Tokens.Syntax.syntax_6(Token.Id._SYNTAX);
+			public syntax_6(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_6() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_6 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_6 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return ",";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_7 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_7 __SYNTAX__ = new Tokens.Syntax.syntax_7("SYNTAX");
-			public static Token.Parsed SILENT = new Tokens.Syntax.syntax_7("SILENT");
-			public syntax_7(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_7 SYNTAX = new Tokens.Syntax.syntax_7(Token.Id._SYNTAX);
+			public static Token.Parsed SILENT = new Tokens.Syntax.syntax_7(Token.Id._SILENT);
+			public syntax_7(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_7() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_7 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_7 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "silent";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setSILENT(Token.Parsed newSILENT){
+			public void setSILENT(Token.Parsed newSILENT) {
 				SILENT = newSILENT;
 			}
 		}
 		public static class syntax_8 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_8 __SYNTAX__ = new Tokens.Syntax.syntax_8("SYNTAX");
-			public syntax_8(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_8 SYNTAX = new Tokens.Syntax.syntax_8(Token.Id._SYNTAX);
+			public syntax_8(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_8() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_8 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_8 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "@";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_9 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_9 __SYNTAX__ = new Tokens.Syntax.syntax_9("SYNTAX");
-			public syntax_9(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_9 SYNTAX = new Tokens.Syntax.syntax_9(Token.Id._SYNTAX);
+			public syntax_9(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_9() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_9 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_9 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "Braced";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_10 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_10 __SYNTAX__ = new Tokens.Syntax.syntax_10("SYNTAX");
-			public syntax_10(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_10 SYNTAX = new Tokens.Syntax.syntax_10(Token.Id._SYNTAX);
+			public syntax_10(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_10() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_10 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_10 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "Imports";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_11 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_11 __SYNTAX__ = new Tokens.Syntax.syntax_11("SYNTAX");
-			public syntax_11(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_11 SYNTAX = new Tokens.Syntax.syntax_11(Token.Id._SYNTAX);
+			public syntax_11(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_11() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_11 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_11 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "=";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_12 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_12 __SYNTAX__ = new Tokens.Syntax.syntax_12("SYNTAX");
-			public syntax_12(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_12 SYNTAX = new Tokens.Syntax.syntax_12(Token.Id._SYNTAX);
+			public syntax_12(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_12() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_12 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_12 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "Ignore";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_13 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_13 __SYNTAX__ = new Tokens.Syntax.syntax_13("SYNTAX");
-			public static Token.Parsed ignores_none = new Tokens.Syntax.syntax_13("ignores_none");
-			public syntax_13(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_13 SYNTAX = new Tokens.Syntax.syntax_13(Token.Id._SYNTAX);
+			public static Token.Parsed ignores_none = new Tokens.Syntax.syntax_13(Token.Id._ignores_none);
+			public syntax_13(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_13() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_13 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_13 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "None";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setIgnoresNone(Token.Parsed newIgnoresNone){
+			public void setIgnoresNone(Token.Parsed newIgnoresNone) {
 				ignores_none = newIgnoresNone;
 			}
 		}
 		public static class syntax_14 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_14 __SYNTAX__ = new Tokens.Syntax.syntax_14("SYNTAX");
-			public syntax_14(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_14 SYNTAX = new Tokens.Syntax.syntax_14(Token.Id._SYNTAX);
+			public syntax_14(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_14() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_14 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_14 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\n\\t";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_15 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_15 __SYNTAX__ = new Tokens.Syntax.syntax_15("SYNTAX");
-			public syntax_15(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_15 SYNTAX = new Tokens.Syntax.syntax_15(Token.Id._SYNTAX);
+			public syntax_15(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_15() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_15 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_15 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "global";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_16 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_16 __SYNTAX__ = new Tokens.Syntax.syntax_16("SYNTAX");
-			public syntax_16(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_16 SYNTAX = new Tokens.Syntax.syntax_16(Token.Id._SYNTAX);
+			public syntax_16(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_16() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_16 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_16 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "list";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_17 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_17 __SYNTAX__ = new Tokens.Syntax.syntax_17("SYNTAX");
-			public syntax_17(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_17 SYNTAX = new Tokens.Syntax.syntax_17(Token.Id._SYNTAX);
+			public syntax_17(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_17() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_17 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_17 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "with";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_18 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_18 __SYNTAX__ = new Tokens.Syntax.syntax_18("SYNTAX");
-			public syntax_18(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_18 SYNTAX = new Tokens.Syntax.syntax_18(Token.Id._SYNTAX);
+			public syntax_18(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_18() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_18 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_18 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "|";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_19 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_19 __SYNTAX__ = new Tokens.Syntax.syntax_19("SYNTAX");
-			public syntax_19(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_19 SYNTAX = new Tokens.Syntax.syntax_19(Token.Id._SYNTAX);
+			public syntax_19(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_19() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_19 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_19 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "as ";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_20 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_20 __SYNTAX__ = new Tokens.Syntax.syntax_20("SYNTAX");
-			public syntax_20(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_20 SYNTAX = new Tokens.Syntax.syntax_20(Token.Id._SYNTAX);
+			public syntax_20(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_20() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_20 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_20 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "in ";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
 		}
 		public static class syntax_21 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_21 __SYNTAX__ = new Tokens.Syntax.syntax_21("SYNTAX");
-			public static Token.Parsed OPTIONAL = new Tokens.Syntax.syntax_21("OPTIONAL");
-			public syntax_21(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_21 SYNTAX = new Tokens.Syntax.syntax_21(Token.Id._SYNTAX);
+			public static Token.Parsed OPTIONAL = new Tokens.Syntax.syntax_21(Token.Id._OPTIONAL);
+			public syntax_21(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_21() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_21 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_21 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "?";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setOPTIONAL(Token.Parsed newOPTIONAL){
+			public void setOPTIONAL(Token.Parsed newOPTIONAL) {
 				OPTIONAL = newOPTIONAL;
 			}
 		}
 		public static class syntax_22 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_22 __SYNTAX__ = new Tokens.Syntax.syntax_22("SYNTAX");
-			public static Token.Parsed MANY = new Tokens.Syntax.syntax_22("MANY");
-			public syntax_22(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_22 SYNTAX = new Tokens.Syntax.syntax_22(Token.Id._SYNTAX);
+			public static Token.Parsed MANY = new Tokens.Syntax.syntax_22(Token.Id._MANY);
+			public syntax_22(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_22() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_22 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_22 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "*";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setMANY(Token.Parsed newMANY){
+			public void setMANY(Token.Parsed newMANY) {
 				MANY = newMANY;
 			}
 		}
 		public static class syntax_23 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_23 __SYNTAX__ = new Tokens.Syntax.syntax_23("SYNTAX");
-			public static Token.Parsed PLUS = new Tokens.Syntax.syntax_23("PLUS");
-			public syntax_23(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_23 SYNTAX = new Tokens.Syntax.syntax_23(Token.Id._SYNTAX);
+			public static Token.Parsed PLUS = new Tokens.Syntax.syntax_23(Token.Id._PLUS);
+			public syntax_23(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_23() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_23 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_23 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "+";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setPLUS(Token.Parsed newPLUS){
+			public void setPLUS(Token.Parsed newPLUS) {
 				PLUS = newPLUS;
 			}
 		}
 		public static class syntax_24 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_24 __SYNTAX__ = new Tokens.Syntax.syntax_24("SYNTAX");
-			public static Token.Parsed number = new Tokens.Syntax.syntax_24("number");
-			public syntax_24(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_24 SYNTAX = new Tokens.Syntax.syntax_24(Token.Id._SYNTAX);
+			public static Token.Parsed number = new Tokens.Syntax.syntax_24(Token.Id._number);
+			public syntax_24(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_24() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_24 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_24 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\d";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setNumber(Token.Parsed newNumber){
+			public void setNumber(Token.Parsed newNumber) {
 				number = newNumber;
 			}
 		}
 		public static class syntax_25 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_25 __SYNTAX__ = new Tokens.Syntax.syntax_25("SYNTAX");
-			public static Token.Parsed dot = new Tokens.Syntax.syntax_25("dot");
-			public syntax_25(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_25 SYNTAX = new Tokens.Syntax.syntax_25(Token.Id._SYNTAX);
+			public static Token.Parsed dot = new Tokens.Syntax.syntax_25(Token.Id._dot);
+			public syntax_25(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_25() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_25 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_25 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\.";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setDot(Token.Parsed newDot){
+			public void setDot(Token.Parsed newDot) {
 				dot = newDot;
 			}
 		}
 		public static class syntax_26 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_26 __SYNTAX__ = new Tokens.Syntax.syntax_26("SYNTAX");
-			public static Token.Parsed whitespace = new Tokens.Syntax.syntax_26("whitespace");
-			public syntax_26(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_26 SYNTAX = new Tokens.Syntax.syntax_26(Token.Id._SYNTAX);
+			public static Token.Parsed whitespace = new Tokens.Syntax.syntax_26(Token.Id._whitespace);
+			public syntax_26(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_26() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_26 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_26 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\s";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setWhitespace(Token.Parsed newWhitespace){
+			public void setWhitespace(Token.Parsed newWhitespace) {
 				whitespace = newWhitespace;
 			}
 		}
 		public static class syntax_27 extends Token.Parsed{
-			public static Tokens.Syntax.syntax_27 __SYNTAX__ = new Tokens.Syntax.syntax_27("SYNTAX");
-			public static Token.Parsed slash = new Tokens.Syntax.syntax_27("slash");
-			public syntax_27(final String initalSuperName) {
+			public static Tokens.Syntax.syntax_27 SYNTAX = new Tokens.Syntax.syntax_27(Token.Id._SYNTAX);
+			public static Token.Parsed slash = new Tokens.Syntax.syntax_27(Token.Id._slash);
+			public syntax_27(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public syntax_27() {
 			}
-			public void set_SYNTAX(Tokens.Syntax.syntax_27 new_SYNTAX){
-				__SYNTAX__ = new_SYNTAX;
+			public void setSYNTAX(Tokens.Syntax.syntax_27 newSYNTAX) {
+				SYNTAX = newSYNTAX;
 			}
-			public String getValue(){
+			public String getValue() {
 				return "\\\\";
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 			}
-			public void setSlash(Token.Parsed newSlash){
+			public void setSlash(Token.Parsed newSlash) {
 				slash = newSlash;
 			}
 		}
@@ -659,602 +635,522 @@ public class Tokens{
 		}
 		public static class IgnoreCharacterToken extends Token.Parsed{
 			protected String value = null;
-			public IgnoreCharacterToken(final String initalSuperName, final String value) {
+			public IgnoreCharacterToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public IgnoreCharacterToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public IgnoreCharacterToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "ignoreCharacter";
+			public Token.Id getName() {
+				return Token.Id._ignoreCharacter;
 			}
 		}
 		public static class RegexToken extends Token.Parsed{
 			protected String value = null;
-			public RegexToken(final String initalSuperName, final String value) {
+			public RegexToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RegexToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RegexToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "regex";
+			public Token.Id getName() {
+				return Token.Id._regex;
 			}
 		}
 		public static class RangeToken extends Token.Parsed{
 			protected String value = null;
-			public RangeToken(final String initalSuperName, final String value) {
+			public RangeToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RangeToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RangeToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "range";
+			public Token.Id getName() {
+				return Token.Id._range;
 			}
 		}
 		public static class PassConstraintToken extends Token.Parsed{
 			protected String value = null;
-			public PassConstraintToken(final String initalSuperName, final String value) {
+			public PassConstraintToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public PassConstraintToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public PassConstraintToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "passConstraint";
+			public Token.Id getName() {
+				return Token.Id._passConstraint;
 			}
 		}
 		public static class BracedParametersToken extends Token.Parsed{
 			protected String value = null;
-			public BracedParametersToken(final String initalSuperName, final String value) {
+			public BracedParametersToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public BracedParametersToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public BracedParametersToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "braced_parameters";
+			public Token.Id getName() {
+				return Token.Id._braced_parameters;
 			}
 		}
 		public static class ImportParameterToken extends Token.Parsed{
 			protected String value = null;
-			public ImportParameterToken(final String initalSuperName, final String value) {
+			public ImportParameterToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ImportParameterToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ImportParameterToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "import_parameter";
+			public Token.Id getName() {
+				return Token.Id._import_parameter;
 			}
 		}
 		public static class RuleNameToken extends Token.Parsed{
 			protected String value = null;
-			public RuleNameToken(final String initalSuperName, final String value) {
+			public RuleNameToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RuleNameToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RuleNameToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "ruleName";
+			public Token.Id getName() {
+				return Token.Id._ruleName;
 			}
 		}
 		public static class ImportDefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public ImportDefinitionToken(final String initalSuperName, final String value) {
+			public ImportDefinitionToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ImportDefinitionToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ImportDefinitionToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "import_definition";
+			public Token.Id getName() {
+				return Token.Id._import_definition;
 			}
 		}
 		public static class ChainToken extends Token.Parsed{
 			protected String value = null;
-			public ChainToken(final String initalSuperName, final String value) {
+			public ChainToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ChainToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ChainToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "chain";
+			public Token.Id getName() {
+				return Token.Id._chain;
 			}
 		}
 		public static class IgnoresCharacterToken extends Token.Parsed{
 			protected String value = null;
-			public IgnoresCharacterToken(final String initalSuperName, final String value) {
+			public IgnoresCharacterToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public IgnoresCharacterToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public IgnoresCharacterToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "ignores_character";
+			public Token.Id getName() {
+				return Token.Id._ignores_character;
 			}
 		}
 		public static class ListNameToken extends Token.Parsed{
 			protected String value = null;
-			public ListNameToken(final String initalSuperName, final String value) {
+			public ListNameToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ListNameToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ListNameToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "listName";
+			public Token.Id getName() {
+				return Token.Id._listName;
 			}
 		}
 		public static class ListRuleNameToken extends Token.Parsed{
 			protected String value = null;
-			public ListRuleNameToken(final String initalSuperName, final String value) {
+			public ListRuleNameToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ListRuleNameToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ListRuleNameToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "listRuleName";
+			public Token.Id getName() {
+				return Token.Id._listRuleName;
 			}
 		}
 		public static class ChoiceToken extends Token.Parsed{
 			protected String value = null;
-			public ChoiceToken(final String initalSuperName, final String value) {
+			public ChoiceToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ChoiceToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public ChoiceToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "choice";
+			public Token.Id getName() {
+				return Token.Id._choice;
 			}
 		}
 		public static class NewNameToken extends Token.Parsed{
 			protected String value = null;
-			public NewNameToken(final String initalSuperName, final String value) {
+			public NewNameToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public NewNameToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public NewNameToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "newName";
+			public Token.Id getName() {
+				return Token.Id._newName;
 			}
 		}
 		public static class MultipleToken extends Token.Parsed{
 			protected String value = null;
-			public MultipleToken(final String initalSuperName, final String value) {
+			public MultipleToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public MultipleToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public MultipleToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "multiple";
+			public Token.Id getName() {
+				return Token.Id._multiple;
 			}
 		}
 		public static class QuoteTokenToken extends Token.Parsed{
 			protected String value = null;
-			public QuoteTokenToken(final String initalSuperName, final String value) {
+			public QuoteTokenToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public QuoteTokenToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public QuoteTokenToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "quoteToken";
+			public Token.Id getName() {
+				return Token.Id._quoteToken;
 			}
 		}
 		public static class RegexTokenToken extends Token.Parsed{
 			protected String value = null;
-			public RegexTokenToken(final String initalSuperName, final String value) {
+			public RegexTokenToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RegexTokenToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RegexTokenToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "regexToken";
+			public Token.Id getName() {
+				return Token.Id._regexToken;
 			}
 		}
 		public static class RuleTokenToken extends Token.Parsed{
 			protected String value = null;
-			public RuleTokenToken(final String initalSuperName, final String value) {
+			public RuleTokenToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RuleTokenToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public RuleTokenToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "ruleToken";
+			public Token.Id getName() {
+				return Token.Id._ruleToken;
 			}
 		}
 		public static class OptionToken extends Token.Parsed{
 			protected String value = null;
-			public OptionToken(final String initalSuperName, final String value) {
+			public OptionToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public OptionToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public OptionToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "option";
+			public Token.Id getName() {
+				return Token.Id._option;
 			}
 		}
 		public static class GroupToken extends Token.Parsed{
 			protected String value = null;
-			public GroupToken(final String initalSuperName, final String value) {
+			public GroupToken(final Token.Id initalSuperName, final String value) {
 				super(initalSuperName);
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public GroupToken(final String value) {
-				if(value != null){
-					this.value = value;
-				}
+				this.value = value;
 			}
 			public GroupToken() {
 			}
-			public String getValue(){
-				if(children.isEmpty()){
+			public String getValue() {
+				if(children.isEmpty()) {
 					return value;
 				}
-				else{
+				else {
 					return children.get(0).getValue();
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value=newValue;
 			}
-			public String getName(){
-				return "group";
+			public Token.Id getName() {
+				return Token.Id._group;
 			}
 		}
 	}
@@ -1263,596 +1159,596 @@ public class Tokens{
 		}
 		public static class BaseToken extends Token.Parsed{
 			protected String value = null;
-			public BaseToken(final String initalSuperName) {
+			public BaseToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public BaseToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "base";
+			public Token.Id getName() {
+				return Token.Id._base;
 			}
 		}
 		public static class CommentsToken extends Token.Parsed{
 			protected String value = null;
-			public CommentsToken(final String initalSuperName) {
+			public CommentsToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public CommentsToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "comments";
+			public Token.Id getName() {
+				return Token.Id._comments;
 			}
 		}
 		public static class IgnoresToken extends Token.Parsed{
 			protected String value = null;
-			public IgnoresToken(final String initalSuperName) {
+			public IgnoresToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public IgnoresToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "ignores";
+			public Token.Id getName() {
+				return Token.Id._ignores;
 			}
 		}
 		public static class ImportsToken extends Token.Parsed{
 			protected String value = null;
-			public ImportsToken(final String initalSuperName) {
+			public ImportsToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public ImportsToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "imports";
+			public Token.Id getName() {
+				return Token.Id._imports;
 			}
 		}
 		public static class ImportsFileImportToken extends Token.Parsed{
 			protected String value = null;
-			public ImportsFileImportToken(final String initalSuperName) {
+			public ImportsFileImportToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public ImportsFileImportToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "imports__file_import";
+			public Token.Id getName() {
+				return Token.Id._imports__file_import;
 			}
 		}
 		public static class FILENAMEToken extends Token.Parsed{
 			protected String value = null;
-			public FILENAMEToken(final String initalSuperName) {
+			public FILENAMEToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public FILENAMEToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "FILE_NAME";
+			public Token.Id getName() {
+				return Token.Id._FILE_NAME;
 			}
 		}
 		public static class NAMEToken extends Token.Parsed{
 			protected String value = null;
-			public NAMEToken(final String initalSuperName) {
+			public NAMEToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public NAMEToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "NAME";
+			public Token.Id getName() {
+				return Token.Id._NAME;
 			}
 		}
 		public static class OPERATORToken extends Token.Parsed{
 			protected String value = null;
-			public OPERATORToken(final String initalSuperName) {
+			public OPERATORToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public OPERATORToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "OPERATOR";
+			public Token.Id getName() {
+				return Token.Id._OPERATOR;
 			}
 		}
 		public static class NUMBERToken extends Token.Parsed{
 			protected String value = null;
-			public NUMBERToken(final String initalSuperName) {
+			public NUMBERToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public NUMBERToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "NUMBER";
+			public Token.Id getName() {
+				return Token.Id._NUMBER;
 			}
 		}
 		public static class QuoteToken extends Token.Parsed{
 			protected String value = null;
-			public QuoteToken(final String initalSuperName) {
+			public QuoteToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public QuoteToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "quote";
+			public Token.Id getName() {
+				return Token.Id._quote;
 			}
 		}
 		public static class BracedDefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public BracedDefinitionToken(final String initalSuperName) {
+			public BracedDefinitionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public BracedDefinitionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "braced_definition";
+			public Token.Id getName() {
+				return Token.Id._braced_definition;
 			}
 		}
 		public static class RegexToken extends Token.Parsed{
 			protected String value = null;
-			public RegexToken(final String initalSuperName) {
+			public RegexToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex";
+			public Token.Id getName() {
+				return Token.Id._regex;
 			}
 		}
 		public static class RegexOptionToken extends Token.Parsed{
 			protected String value = null;
-			public RegexOptionToken(final String initalSuperName) {
+			public RegexOptionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexOptionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_option";
+			public Token.Id getName() {
+				return Token.Id._regex_option;
 			}
 		}
 		public static class RegexGroupDefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public RegexGroupDefinitionToken(final String initalSuperName) {
+			public RegexGroupDefinitionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexGroupDefinitionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_group_definition";
+			public Token.Id getName() {
+				return Token.Id._regex_group_definition;
 			}
 		}
 		public static class SingleIgnoresCharacterToken extends Token.Parsed{
 			protected String value = null;
-			public SingleIgnoresCharacterToken(final String initalSuperName) {
+			public SingleIgnoresCharacterToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public SingleIgnoresCharacterToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "single_ignores_character";
+			public Token.Id getName() {
+				return Token.Id._single_ignores_character;
 			}
 		}
 		public static class RegexOptionDefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public RegexOptionDefinitionToken(final String initalSuperName) {
+			public RegexOptionDefinitionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexOptionDefinitionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_option_definition";
+			public Token.Id getName() {
+				return Token.Id._regex_option_definition;
 			}
 		}
 		public static class RuleParametersToken extends Token.Parsed{
 			protected String value = null;
-			public RuleParametersToken(final String initalSuperName) {
+			public RuleParametersToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RuleParametersToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "rule_parameters";
+			public Token.Id getName() {
+				return Token.Id._rule_parameters;
 			}
 		}
 		public static class RuleParamsToken extends Token.Parsed{
 			protected String value = null;
-			public RuleParamsToken(final String initalSuperName) {
+			public RuleParamsToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RuleParamsToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "rule_params";
+			public Token.Id getName() {
+				return Token.Id._rule_params;
 			}
 		}
 		public static class BaseElementToken extends Token.Parsed{
 			protected String value = null;
-			public BaseElementToken(final String initalSuperName) {
+			public BaseElementToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public BaseElementToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "base_element";
+			public Token.Id getName() {
+				return Token.Id._base_element;
 			}
 		}
 		public static class RuleToken extends Token.Parsed{
 			protected String value = null;
-			public RuleToken(final String initalSuperName) {
+			public RuleToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RuleToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "rule";
+			public Token.Id getName() {
+				return Token.Id._rule;
 			}
 		}
 		public static class ListToken extends Token.Parsed{
 			protected String value = null;
-			public ListToken(final String initalSuperName) {
+			public ListToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public ListToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "list";
+			public Token.Id getName() {
+				return Token.Id._list;
 			}
 		}
 		public static class DefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public DefinitionToken(final String initalSuperName) {
+			public DefinitionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public DefinitionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "definition";
+			public Token.Id getName() {
+				return Token.Id._definition;
 			}
 		}
 		public static class ElementToken extends Token.Parsed{
 			protected String value = null;
-			public ElementToken(final String initalSuperName) {
+			public ElementToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public ElementToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "element";
+			public Token.Id getName() {
+				return Token.Id._element;
 			}
 		}
 		public static class AtomToken extends Token.Parsed{
 			protected String value = null;
-			public AtomToken(final String initalSuperName) {
+			public AtomToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public AtomToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "atom";
+			public Token.Id getName() {
+				return Token.Id._atom;
 			}
 		}
 		public static class RegexDefinitionToken extends Token.Parsed{
 			protected String value = null;
-			public RegexDefinitionToken(final String initalSuperName) {
+			public RegexDefinitionToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexDefinitionToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_definition";
+			public Token.Id getName() {
+				return Token.Id._regex_definition;
 			}
 		}
 		public static class RegexElementToken extends Token.Parsed{
 			protected String value = null;
-			public RegexElementToken(final String initalSuperName) {
+			public RegexElementToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexElementToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_element";
+			public Token.Id getName() {
+				return Token.Id._regex_element;
 			}
 		}
 		public static class RegexSpecialToken extends Token.Parsed{
 			protected String value = null;
-			public RegexSpecialToken(final String initalSuperName) {
+			public RegexSpecialToken(final Token.Id initalSuperName) {
 				super(initalSuperName);
 			}
 			public RegexSpecialToken() {
 			}
-			public String getValue(){
-				if(value==null){
+			public String getValue() {
+				if(value==null) {
 					return super.getValue();
 				}
-				else{
+				else {
 					return value;
 				}
 			}
-			public void setValue(String newValue){
+			public void setValue(String newValue) {
 				value = newValue;
 			}
-			public String getName(){
-				return "regex_special";
+			public Token.Id getName() {
+				return Token.Id._regex_special;
 			}
 		}
 	}

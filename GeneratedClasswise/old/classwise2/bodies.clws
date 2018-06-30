@@ -1,0 +1,496 @@
+
+> BodyGenerator body = new BodyGenerator();
+> class BodyGenerator {
+  int exceptionIndex = 0?
+  
+  boolean elementHasReturn(%T input) {
+    input : element : body_return {
+        return true;
+      }
+      : body_conditional {
+        element : atom : as_body {
+          %T lastElement = null? 
+          List<%T> elements = atom->>body_element;
+          int i = elements.size() - 1?
+          while i >= 0 && lastElement==null {
+            %Id currentName = elements.get(i).getAll().get(0).getName();
+            if currentName != %Id._comments && currentName != %Id._SYNTAX {
+              lastElement = elements.get(i);
+            }
+            i -= 1;
+          }
+          if lastElement != null {
+            return elementHasReturn(lastElement);
+          }
+        }
+        return false;
+      }
+    return false;
+  }
+  
+  Statement element(%T input, boolean isInner, Context parentContext) {
+    input : element
+      : body_add_to_class    { return addToClass(element,isInner,parentContext); }
+      : body_access_token    { return accessToken(element,isInner,parentContext); }
+      : variable_declaration { return |`variable.declaration(element,isInner,parentContext)`;|; }
+      : variable_assignment  { return |`variable.assignment(element,isInner,parentContext)`;|; }
+      : body_statement       { return |`body.statement(element,isInner,parentContext)`;|; }
+      : body_return          { return element->method_argument != null ?? |return `body.argument(element->method_argument, isInner, parentContext)`;|::|return void;|; }
+      : body_throw           { return |throw `body.statement(element->body_statement,isInner, parentContext)`;|; }
+      : body_conditional {
+          boolean isCase = false?
+          String conditionalName = ""?
+          exceptionIndex = 0;
+          if element->conditional.getAll() == null {
+            conditionalName = element->conditional.getValue().trim();
+          }
+          else {
+            StringBuilder conditionalNameBuilder = new StringBuilder();
+            String space = ""?
+            for %T conditionName: element->conditional.getAll() {
+              conditionalNameBuilder.append(space);
+              conditionalNameBuilder.append(conditionName.getValue().trim());
+              space = " ";
+            }
+            conditionalName = conditionalNameBuilder.toString();
+          }
+          Statement statement = null?
+          if element->body_statement != null {
+            statement = body.statement(element->body_statement,isInner,parentContext);
+          }
+          element : atom : variable_declaration {
+            String operator = 'element->OPERATOR';
+            if operator.contains(":") {
+              Statement headerStatement = new Statement (":");
+              headerStatement.add(variable.declaration(atom,isInner,parentContext));
+              headerStatement.add(statement);
+              statement = headerStatement;
+            }
+            else {
+              Statement headerStatement = new Statement (";");
+              Variable headerVariable = variable.declaration(atom,isInner,parentContext);
+              headerVariable.setAssignment(|0|);
+              headerVariable.setIsFinal(false);
+              headerStatement.add(headerVariable);
+              Statement evaluationStatement = new Statement (operator);
+              evaluationStatement.add(headerVariable.getNameAsStatement());
+              evaluationStatement.add(statement);
+              headerStatement.add(evaluationStatement);
+              Statement incrementationStatement = new Statement ();
+              incrementationStatement.add(headerVariable.getNameAsStatement());
+              incrementationStatement.add(|"++"|);
+              headerStatement.add(incrementationStatement);
+              statement = headerStatement;
+            }
+          }
+          element : atom : exception {
+            String exceptionType;
+            if atom.getValue().contains("*") {
+              exceptionType = "Exception";
+            }
+            else {
+              String exceptionTypeName = atom.getValue();
+              exceptionType = exceptionTypeName + "Exception";
+            }
+            if statement == null {
+              statement = |'exceptionType'|;
+            }
+            else {
+              Statement previousStatement = statement;
+              previousStatement.set("|");
+              previousStatement.add(|`previousStatement`|);
+              previousStatement.add(| 'exceptionType'|);
+              statement = previousStatement;
+            }
+          }
+          
+          if element->exception != null {
+            String exceptionVariableName = "e"+exceptionIndex;
+            Statement exceptionStatement = new Statement (" ");
+            exceptionStatement.add(statement);
+            exceptionStatement.add(|'exceptionVariableName'|);
+            statement = exceptionStatement;
+          }
+          Statement conditionalBody = new Body ()?
+          element : atom : as_body {
+            if element->PRINT != null {
+              int exceptionIndexValue = exceptionIndex;
+              conditionalBody.add(|"e"+'exceptionIndexValue'.printStackTrace();|);
+            }
+            atom : quark : body_element {
+              Statement bodyElem = body.element(quark,isInner,conditionalBody.getContext());
+              if bodyElem != null {
+                conditionalBody.add(bodyElem);
+              }
+            }
+          }
+		  if element->exception != null {
+            exceptionIndex += 1;
+          }
+          if element->statement_as_method != null {
+            conditionalBody = body.statement(element->statement_as_method->body_statement,true,parentContext);
+          }
+          
+          if conditionalName.contains("case") {
+            Statement previousStatement = statement;
+            return new Statement.Conditional(conditionalName.trim()+" ","",| `previousStatement`+":"|,"",conditionalBody);
+          }
+          else {
+            return new Statement.Conditional(conditionalName,statement,conditionalBody);
+          }
+        }
+      return new Statement ();
+    }
+    
+    Statement statement(%T input, boolean isInner, Context parentContext){
+	  Statement statement = new Statement();
+	  input : element 
+	     : type_var {
+	      Type type = new Type();
+	      type.as_variable();
+	      classwise.type_var(element,type,isInner,parentContext); 
+	      return type.getAsStatement();
+	    }
+	    : body_call {
+	      statement.add(body.call(element,isInner,parentContext));
+	    }
+	    : OPERATOR {
+	      if element->exact != null {
+	        statement.set(element.getValue().trim());
+	      }
+	      else {
+	        statement.set(element.getValue().substring(1).trim());
+	      }
+	    }
+	  
+	  return statement;
+	}
+    
+	Statement call(%T input, boolean mustInner, Context parentContext){
+	  boolean isInner = mustInner || input->inner != null;
+	  if input->as_braced != null {
+	    Statement call = new Statement ();
+	    call.add(|(`body.statement(input->as_braced->statement_as_braced->body_statement,isInner,parentContext)`)|);
+	    return call;
+	  }
+	  else if input->as_statement != null {
+        input->as_statement : element : body_element {
+             Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
+             if newBodyElement != null { return newBodyElement.getAsStatement(); }
+          }
+        input->as_statement : element : body_statement {
+            Statement newBodyElement = body.statement(element,false,new Context (true,parentContext));
+            if newBodyElement != null { return newBodyElement.getAsStatement(); }
+          }
+      }
+      
+	  
+	  boolean hasMethodOrVariable = input->>group.size() > 1;
+	  int groupIndex = 0?
+	  Statement statement;
+	  if isInner {
+	    statement = new Statement ();
+	    statement.set(".");
+	  }
+	  else {
+	    if hasMethodOrVariable {
+	      statement = new Statement (new StringEntry("new ExternalStatement(\".\","),new StringEntry(")"),",");
+	    }
+	    else {
+	      statement = new Statement ();
+	    }
+	  }
+	  input : element : group {
+		Parameters parameters = new Parameters ();
+		Parameters arrayParameters = new Parameters ();
+		arrayParameters.set("][");
+		boolean containsParameters = false?
+		element : atom : method_arguments {
+		    containsParameters = true;
+		    atom : quark: method_argument {
+			  parameters.add(body.argument(quark,isInner,parentContext));
+	        }
+	      }
+	    boolean containsArrayParameters = false?
+		element : atom :array_parameters {
+		    containsArrayParameters = true;
+		    if atom->method_argument == null || 'atom->method_argument' == null {
+              arrayParameters.add(|""|);
+		    }
+		    else {
+		      atom : quark : method_argument {
+			    arrayParameters.add(body.argument(quark,isInner,parentContext));
+	          }
+	        }
+	      }
+		Statement subject = null?
+		if element->all_type_name != null {
+		  Type subjectAsType = new Type();
+		  classwise.all_type(element->all_type_name,subjectAsType,isInner,parentContext);
+		  if element->NEW != null {
+		    subjectAsType.plain();
+		    if arrayParameters.size() > 0 {
+		      statement.add(|new `subjectAsType.getAsStatement()`(`parameters`)[`arrayParameters`]|);
+		    }
+		    else {
+		      statement.add(|new `subjectAsType.getAsStatement()`(`parameters`)|);
+		    }
+		  }
+		  else {
+		    if hasMethodOrVariable {
+		      subjectAsType.plain();
+		    }
+		    else {
+		      subjectAsType.as_variable();
+		    }
+		    statement.add(subjectAsType.getAsStatement());
+		  }
+		  continue;
+		}
+		else if element->name_var != null {
+		  NameVar nameVar = new NameVar();
+		  classwise.name_var(element->name_var,nameVar,isInner,parentContext);
+		  subject = nameVar.getAsStatement();
+		}
+		else {
+ 		  String value = 'element->NAME'?
+		  if groupIndex == 0 && classwise.getMainClass().getMethod(value)!=null && (parentContext == null || parentContext.hasLink(value) == false) {
+ 		    value = "MainFlow.self."+value;
+ 	      }
+ 	      if isInner {
+		    subject = |'value'|;
+		  }
+		  else {
+		    subject = new Statement (new StringEntry(value));
+		  }
+		}
+		
+		if containsParameters {
+		  if containsArrayParameters {
+		    statement.add(
+		      new Statement (subject,
+		        new Statement (new StringEntry("("),new Statement (
+		           new StringEntry(")["), new StringEntry("]"),"",arrayParameters),"",parameters)));
+		  }
+		  else {
+		    if isInner {
+		      statement.add(new Statement (subject,new Statement (new StringEntry("("), new StringEntry(")"),"",parameters)));
+		    }
+		    else {
+		      statement.add(new Statement (subject,new Statement (new StringEntry("("), new StringEntry(")"),"",parameters)).getAsStatement());
+		    }
+		  }
+		}
+		else {
+		  if containsArrayParameters {
+		    statement.add(new Statement (subject,new Statement (new StringEntry("["), new StringEntry("]"),"",parameters)));
+		  }
+		  else {
+		    statement.add(subject);
+		  }
+		}
+		groupIndex += 1;
+	  }
+	  if statement.size() == 1 {
+	    return statement.get(0);
+	  }
+	  else {
+	    return statement;
+	  }
+    }
+    
+    
+  int tempTokenElementIndex = 0?
+  Statement addToClass(%T input, boolean isInner, Context parentContext){
+    Type type = new Type();
+    classwise.type_var(input->type_var,type,true,parentContext);
+    NameVar access = new NameVar();
+    if input->name_var != null {
+      classwise.name_var(input->name_var,access,true,parentContext);
+    }
+    type.as_entry();
+    if input->class_declaration != null {
+      Class innerClass = new Class ();
+      Class outerClass = new Class ();
+      classGenerator.declaration(input->class_declaration,innerClass,outerClass,false,parentContext);
+      return |`type.getAsStatement()`.addSubClass(`outerClass.getAsStatement()`);|;
+    }
+    else if input->method_declaration != null {
+      Method newMethod = method.declaration(input->method_declaration,false,parentContext);
+      return |`type.getAsStatement()`.addMethod(`newMethod.getAsStatement()`);|;
+    }
+    else if input->variable_declaration != null {
+      Variable newVariable = variable.declaration(input->variable_declaration,false,parentContext);
+      return |`type.getAsStatement()`.addVariable(`newVariable.getAsStatement()`);|;
+    }
+    else {
+      Body arguments = new Body ();
+      if input->body->as_statement != null {
+        input->body->as_statement : element : body_element {
+          Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
+          if newBodyElement != null { arguments.add(newBodyElement); }
+        }
+        input->body->as_statement : element : body_statement {
+          Statement newBodyElement = body.statement(element,false,new Context (true,parentContext));
+          if newBodyElement != null { arguments.add(newBodyElement); }
+        }
+      }
+      else {
+        input->body : element : body_element {
+          Statement newBodyElement = body.element(element,false,new Context (true,parentContext));
+          if newBodyElement != null { arguments.add(newBodyElement); }
+        }
+      }
+      return |`type.getAsStatement()`.appendToBody(`arguments.getAsStatement()`);|;
+    }
+  }
+  
+  
+  Statement accessToken(%T input, Boolean isInner, Context parentContext){
+    Statement subject;
+    String elementName = input->variableName != null?? 'input->variableName' :: null;
+    NameVar nameVar = new NameVar();
+    classwise.tokenAccess(input->tokenAccess,nameVar,true,parentContext);
+    subject = nameVar.getAsStatement();
+    int numberOfInstances = 0?
+    input : element : tokenInstance { numberOfInstances+=1; }
+    Body manipulateBody = new Body ();
+    String singleTokenName = null?
+    input : element : tokenInstance {
+      String tokenName = 'element->tokenName';
+      singleTokenName = tokenName;
+      Body instanceBody = new Body ();
+      Context bodyContext = new Context (true,parentContext);
+      String elementNameValue;
+      if elementName == null {
+        elementNameValue = tokenName;
+      }
+      else {
+        elementNameValue = elementName;
+      }
+      if numberOfInstances != 1 && elementName == null{
+        Integer tempTokenElementIndexValue = tempTokenElementIndex;
+        instanceBody.add(|%T 'elementName' = "__TEMP_TOKEN_ELEMENT_NAME__"+'tempTokenElementIndexValue'!|);
+      }
+      %T lastElement = null?
+      element : atom : body_element {
+        Statement newBodyElement = body.element(atom,true,bodyContext);
+        if newBodyElement != null {
+          instanceBody.add(newBodyElement);
+          lastElement = atom;
+        }
+      }
+      if numberOfInstances == 1 {
+        manipulateBody.add(instanceBody);
+      }
+      else {
+        if lastElement != null {
+          if body.elementHasReturn(lastElement) == false {
+            instanceBody.add(|break;|);
+          }
+        }
+        manipulateBody.add(|case '"_"+tokenName' `instanceBody`|);
+      }
+    }
+    if numberOfInstances == 1 {
+      String singleTokenNameValue = singleTokenName;
+      return |for %T 'elementName': `subject`.getAllSafely('"com.rem.gen.parser.Token.Id._"+singleTokenNameValue') `manipulateBody`|;
+    }
+    else {
+      if elementName != null {
+        return |for %T 'elementName': `subject`.getAll() {
+                  switch 'elementName'.getName() `manipulateBody`
+                }|;
+      }
+      else {
+        Integer tempTokenElementIndexValue = tempTokenElementIndex;
+        tempTokenElementIndex += 1;
+        return |for %T '"__TEMP_TOKEN_ELEMENT_NAME__"+tempTokenElementIndexValue': `subject`.getAll() `manipulateBody`|;
+      }
+    }
+  }
+  
+  Statement argument(%T input, boolean isInner, Context parentContext){
+    input : element 
+      : class_declaration {
+		Class innerClass = new Class ();
+        Class outerClass = new Class ();
+        classGenerator.declaration(element,innerClass,outerClass,false,parentContext);
+		return |ExternalClassHelper.init(`outerClass.getAsStatement()`)|;
+      }
+      : method_declaration {
+		return method.declaration(element,false, parentContext).getAsStatement();
+	  }
+	  : variable_declaration {
+		return variable.declaration(element,false,parentContext).getAsStatement();
+	  }
+	  : body_statement {
+		return body.statement(element,isInner,parentContext);
+	  }
+	  : as_statement {
+		if element->body_element != null {
+		  Body argumentBody = new Body ();
+		  element : atom : body_element {
+		    Statement newBodyElement = body.element(atom,false,parentContext);
+			if newBodyElement != null { argumentBody.add(newBodyElement); }
+		  }
+		  return argumentBody.getAsStatement();
+	    }
+	    else if element->body_statement != null {
+	      return body.statement(element->body_statement,false,parentContext).getAsStatement();
+	    }
+	  }
+	  : body_entries {
+	    Body elements = new Body ();
+	    element : atom : body_element {
+	      Statement newBodyElement = body.element(atom,false, parentContext);
+	      if newBodyElement != null { elements.add(newBodyElement); }
+		}
+		return elements.getAsStatement();
+	  }
+	  : lambda {
+		Context childContext = new Context (true, parentContext);
+		Parameters variableNames = new Parameters ();
+		element : atom : variableName {
+		  childContext.add(new Variable (|"Object"|, |'atom'|));
+		  variableNames.add(|'atom'|);
+		}
+		Statement vars;
+		if element->>variableName.size()==0||element->>variableName.size()>1 {
+		  vars = |(`variableNames`)|;
+		}
+		else {
+		  vars = variableNames;
+		}
+		Statement statement;
+		if element->body !=null {
+		  Body elements = new Body (true);
+		  element->body : atom : body_element {
+	        Statement newBodyElement = body.element(atom,isInner, childContext);
+	        if newBodyElement != null {  elements.add(newBodyElement); }
+		  }
+		  if isInner {
+		    statement = elements;
+		  }
+		  else {
+		    statement = elements.getAsStatement();
+		  }
+		}
+		else {
+		  statement = body.statement(element->body_statement,isInner, childContext);
+		}
+		
+		Statement result = new Statement();
+		result.set("->");
+		result.add(vars);
+		result.add(statement);
+		return result;
+      }
+	return new Statement ();
+  }
+}
+
+> class Type {
+}
+> class NameVar {
+}

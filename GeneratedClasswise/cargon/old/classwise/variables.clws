@@ -1,0 +1,70 @@
+
+< Token  : \com.\rem.\gen.\parser;
+> VariableGenerator variable = new VariableGenerator();
+> class 'packageName' VariableGenerator {
+> Set<String> definedVariableNames = new HashSet<String>();
+> void addDefinedVariableName(Variable definedVariable){
+	definedVariableNames.add(definedVariable.getName());
+  }
+> Variable declaration(Token declaration,Boolean mustInner,Context parentContext){
+	Boolean isInner = mustInner || declaration->"inner" != null;
+	
+	Variable newVariable = new Variable ();
+	Type type = new Type();
+	
+	for Token element: declaration.getAllSafely("typeName") {
+	  classwise.all_type(element,type,isInner,parentContext);
+	}
+    if declaration->"ARRAY_TYPE" != null {
+      for Token element: declaration.getAllSafely("ARRAY_TYPE"){
+        type.addArraySymbol();
+      }
+    }
+    if declaration->"INLINE_LIST" != null {
+      type.setIsInlineList(true);
+    }
+    
+	newVariable.setType(type.getAsStatement());
+    if declaration->"method_argument" != null {
+      if newVariable.getTypeName().equals("ExternalClassEntry") {
+        body.setIsClassArgument(true);
+	    newVariable.setAssignment(body.argument(declaration->"method_argument",isInner,parentContext));
+	    body.setIsClassArgument(false);
+      }
+      else {
+        newVariable.setAssignment(body.argument(declaration->"method_argument",isInner,parentContext));
+      }
+	}
+	
+	if isInner {
+	  newVariable.setIsFinal(true);
+	}
+	if declaration->"weak" != null {
+	  newVariable.setIsFinal(false);
+    }
+    else {
+      newVariable.setHasSetMethod(false);
+    }
+    if declaration->"static" != null {
+      newVariable.setIsStatic(true);
+    }
+    
+	if declaration->"variableName"->"NAME" != null {
+	  newVariable.setName(|'declaration->"variableName"'|);
+	}
+	else {
+	  NameVar nameVar = new NameVar();
+	  classwise.name_var(declaration->"variableName"->"name_var",nameVar,isInner,parentContext);
+	  newVariable.setName(nameVar.getAsStatement());
+	}
+	return newVariable;
+  }	
+  
+> Statement assignment(Token input, Boolean mustInner, Context parentContext) {
+	Boolean isInner = mustInner || input->"inner" != null ;
+	NameVar nameVar = new NameVar();
+	classwise.name_var(input->"name_var",nameVar,isInner,parentContext);
+	return |`nameVar.getAsStatement()` \= `body.argument(input->"method_argument",isInner,parentContext)` |;
+  }
+
+}
