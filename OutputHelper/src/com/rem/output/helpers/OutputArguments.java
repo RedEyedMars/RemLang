@@ -21,6 +21,10 @@ public class OutputArguments extends Output {
 		this.arrayArguments = other.arrayArguments;
 		return this;
 	}
+	public OutputArguments add(OutputArguments arg){
+		arguments.addAll(arg.arguments);
+		return this;
+	}
 	public OutputArguments add(Output arg){
 		arguments.add(arg);
 		return this;
@@ -38,9 +42,11 @@ public class OutputArguments extends Output {
 	}
 	@Override
 	public void output(Consumer<String> builder) {
-		builder.accept("(");
-		IntStream.range(0,arguments.size()).forEach(P->{if(P>0)builder.accept(",");arguments.get(P).add(builder);});
-		builder.accept(")");
+		if(arrayArguments==null||!arguments.isEmpty()){
+			builder.accept("(");
+			IntStream.range(0,arguments.size()).forEach(P->{if(P>0)builder.accept(",");arguments.get(P).add(builder);});
+			builder.accept(")");
+		}
 		if(arrayArguments!=null)arrayArguments.forEach(AA->AA.add(builder));
 	}
 

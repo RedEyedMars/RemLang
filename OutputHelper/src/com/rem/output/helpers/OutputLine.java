@@ -2,7 +2,10 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 public class OutputLine extends ArrayList<Outputable>{
@@ -11,15 +14,19 @@ public class OutputLine extends ArrayList<Outputable>{
 	private int nextTabs = 0;
 	private boolean isBlank = false;
 
-	public void output(int tabs, Consumer<String> builder) {
+	public void output(int tabs, Consumer<String> builder){
+		Supplier<Supplier<?>> current = get(tabs,builder);
+		while(current!=null){
+			current = (Supplier<Supplier<?>>) current.get();
+		}
+	}
+	private Supplier<Supplier<?>> get(int tabs, Consumer<String> builder) {
 		if(!isBlank&&!isEmpty()){
 			IntStream.range(0,tabs).forEach(I->builder.accept("\t"));
 			this.stream().forEach(O->{if(O!=null)O.output(builder);});
 			builder.accept("\n");
 		}
-		if(next!=null){
-			next.output(tabs+nextTabs, builder);
-		}
+		return next!=null?()->next.get(tabs+nextTabs,builder):null;
 	}
 
 	public OutputLine exact(Object value){
@@ -115,6 +122,9 @@ public class OutputLine extends ArrayList<Outputable>{
 
 	public OutputLine all(List<? extends Output> outputs) {
 		return outputs.stream().reduce(this,(L,O)->L.variable(O).nextLine(),(L,N)->N);
+	}
+	public OutputLine indexedByLambda(int limit,BiFunction<OutputLine,Integer,OutputLine> lambda){
+		return IntStream.range(0, limit).boxed().reduce(this, lambda,(L,N)->N);
 	}
 
 	public OutputLine variablesIfPresent(String prefix, List<? extends Output> outputs, String suffix){

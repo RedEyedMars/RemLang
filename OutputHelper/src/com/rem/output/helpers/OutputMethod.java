@@ -41,7 +41,7 @@ public class OutputMethod extends LineableOutput {
 				              .exact("}");
 		}
 		else {
-			line.variable(header).variable(type).variable(name).variable(parameters).exact(";");
+			line.variable(header).variable(type).exact(" ").variable(name).variable(parameters).exact(";");
 		}
 		return line;
 	}
@@ -151,6 +151,12 @@ public class OutputMethod extends LineableOutput {
 	public OutputContext setParent(OutputContext context) {
 		if(body!=null)this.body.setParent(context);
 		return this.body;
+	}
+
+	public void isInterface() {
+		if(!isStatic){
+			isAbstract = false;
+		}
 	}
 
 }

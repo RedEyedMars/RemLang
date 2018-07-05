@@ -32,12 +32,12 @@ public class OutputBraced  extends Output {
 	}
 	@Override
 	public Output stasis() {
-		OutputStasis stasis = new OutputStasis().name("OutputOperator");
+		OutputStasis stasis = new OutputStasis().name("OutputBraced");
 		if(subject!=null){
 			stasis = stasis.add("set",subject);
 		}
 		if(!open.equals("(")){
-			stasis = stasis.add("style",open,close);
+			stasis = stasis.add("style","\""+open+"\"","\""+close+"\"");
 		}
 		return stasis;
 	}

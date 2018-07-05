@@ -9,7 +9,38 @@ import java.util.stream.IntStream;
 
 public class OutputType extends Output {
 
-	private Output name;
+	public static final OutputType Any = new OutputType("$$$"){
+		{
+			name = new OutputExact("");
+		}
+		public Output stasis(){
+			return new OutputExact("com.rem.output.helpers.OutputType.Any");
+		}
+		public boolean verify(OutputContext context){
+			return true;
+		}
+		public OutputClass getAsClass(){
+			return new OutputClass(){
+				@Override
+				public Boolean hasVariableInContext(String name){
+					return true;
+				}
+				@Override
+				public OutputVariable getVariableFromContext(String name){
+					return new OutputVariable().set(OutputType.Any, "$ANY$"); 
+				}
+				@Override
+				public Boolean hasMethodInContext(String name){
+					return true;
+				}
+				@Override
+				public OutputMethod getMethodFromContext(String name){
+					return new OutputMethod().set(OutputType.Any, new OutputExact("$ANY$")); 
+				}
+			};
+		}
+	};
+	protected Output name;
 	private Template templates = null;
 	private int arraySymbols = 0;
 	private boolean inlineList = false;
@@ -29,11 +60,11 @@ public class OutputType extends Output {
 		return this;
 	}
 	public OutputType add(OutputType next){
-		name = new OutputType.MultiName().set(name,next);
+		this.name = new OutputType.MultiName().set(name,next);
 		return this;
 	}
 	public OutputType set(Output parent, Output name) {
-		name = new OutputType.MultiName().set(parent,name);
+		this.name = new OutputType.MultiName().set(parent,name);
 		return this;
 	}
 	public OutputType or(OutputType rightSide) {
@@ -100,7 +131,8 @@ public class OutputType extends Output {
 				parent.add(builder);
 				builder.accept(".");
 			}
-			name.add(builder);}
+			name.add(builder);
+		}
 
 		@Override
 		public Output stasis() {
@@ -129,8 +161,10 @@ public class OutputType extends Output {
 			return this;
 		}
 		public void output(Consumer<String> builder){
-			left.add(builder);
-			builder.accept("|");
+			if(left!=null){
+				left.add(builder);
+				builder.accept("|");
+			}
 			right.add(builder);
 		}
 
@@ -140,11 +174,12 @@ public class OutputType extends Output {
 		}
 		@Override
 		public boolean verify(OutputContext context) {
-			return OutputHelper.classMap.containsKey(left.evaluate())&&right.verify(context);
+			return (left==null||OutputHelper.classMap.containsKey(left.evaluate()))&&right.verify(context);
 		}
 		@Override
 		public void getImports(Set<String> imports) {
-			throw new RuntimeException("Tried to call import on an internal Output");
+			if(left!=null)left.getImports(imports);
+			right.getImports(imports);
 		}
 	}
 	public static class Template extends Output {

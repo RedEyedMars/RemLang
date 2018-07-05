@@ -1,0 +1,336 @@
+imports cargon2
+
+> String parserExtendsType = "com.rem.output.helpers.OutputHelper.Parser<com.rem.gen.parser.Parser.Result,com.rem.gen.parser.Parser.Result.Pass>";
+
+class com.rem.gen.parser.Parser < 'parserExtendsType' {
+> %New Object rootContender;
+  
+  %Result parse(String fileName) {
+    return parse().setFileName(fileName);
+  }
+  %Result parse(CharBuffer chars){
+    Contension contension = `rootContender`.contend(chars);
+    if contension.standing() {
+      Token rootToken = new Token(Token.Id.ROOT,null);
+      contension.tokenize(rootToken);
+      return new Result.Pass(rootToken);
+    }
+    else {
+      return new Result.Fail();
+    }
+  }
+  
+}
+interface Contender {
+    Contension contend(CharBuffer chars){?}
+  }
+class One < Contender {
+  Contender contender;
+  Token.Id id;
+  One(Token.Id id, Contender contender){
+    this.contender = contender;
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    int position = chars.position();
+    Contension result = contender.contend(chars);
+    if result.standing(){
+      if id == null{
+        return result;
+      }
+      else {
+        return new OneContension(id,result);
+      }
+    }
+    else {
+      chars.position(position);
+      return Parser.UnsuccesfulContension;
+    }
+  }
+}
+class Optional < Contender {
+  Contender contender;
+  Token.Id id;
+  Optional(Token.Id id,Contender contender){
+    this.contender = contender;
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    int position = chars.position();
+    Contension result = contender.contend(chars);
+    if result.standing(){
+      if id == null {
+        return result;
+      }
+      else {
+        return new OneContension(id,result);
+      }
+    }
+    else {
+      chars.position(position);
+      return new EmptyContension(id);
+    }
+  }
+}
+class Many < Contender {
+  Contender contender;
+  Token.Id id;
+  Many(Token.Id id,Contender contender){
+    this.contender = contender;
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    int position = chars.position();
+    List<Contension> results = new ArrayList<Contension>();
+    Contension result = contender.contend(chars);
+    while result.standing(){
+      results.add(result);
+      position = chars.position();
+      result = contender.contend(chars);
+    }
+    chars.position(position);
+    if results.isEmpty() {
+      return new EmptyContension(id);
+    }
+    else {
+      if results.size() == 1 {
+        if id == null {
+          return results.get(0);
+        }
+        else {
+          return new OneContension(id,results.get(0));
+        }
+      }
+      else {
+        return new ManyContensions(id,results);
+      }
+    }
+  }
+}
+class More < Contender {
+  Contender contender;
+  Token.Id id;
+  More(Token.Id id,Contender contender){
+    this.contender = contender;
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    int position = chars.position();
+    List<Contension> results = new ArrayList<Contension>();
+    Contension result = contender.contend(chars);
+    while result.standing(){
+      results.add(result);
+      position = chars.position();
+      result = contender.contend(chars);
+    }
+    chars.position(position);
+    if results.isEmpty() {
+      return Parser.UnsuccesfulContension;
+    }
+    else {
+      if results.size() == 1 {
+        if id == null {
+          return results.get(0);
+        }
+        else {
+          return new OneContension(id,results.get(0));
+        }
+      }
+      else {
+        return new ManyContensions(id,results);
+      }
+    }
+  }
+}
+class Chain < Contender {
+  List<Contender> contenders;
+  Token.Id id;
+  Chain(Token.Id id, Contender... contenders){
+    this.contenders = Arrays.asList(contenders);
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    return new OneContension(id,
+      contenders.parallelStream().map(
+        C=>C.contend(chars.duplicate())).filter(C=>C.standing()).findFirst().orElse(Parser.UnsuccessfulContension));
+  }
+}
+class Chain < Contender {
+  List<Contender> contenders;
+  Token.Id id;
+  Chain(Token.Id id, Contender... contenders){
+    this.contenders = Arrays.asList(contenders);
+    this.id = id;
+  }
+  Contension contend(CharBuffer chars){
+    return new ManyContensions(id,contenders.stream().map(C=>C.contend(chars)).collect(Collectors.toList()));
+  }
+}
+class Terminal < Contender {
+    
+}
+class Contension? <T> {
+  Token.Id id;
+  T value;
+  
+  Contension(Token.Id id, T value){
+    this.id = id;
+    this.value = value;
+  }
+  
+  T getValue(){ return value ; }
+  
+  boolean standing(){?}
+  void tokenize(Consumer<Token> token){?}
+}
+class com.rem.gen.parser.UnsuccessfulContension Contension<Void> {
+  UnsuccessfulContension(){}
+  boolean standing(){
+    return false;
+  }
+  void tokenize(Consumer<Token> token){
+  }
+}
+class com.rem.gen.parser.EmptyContension Contension<Void> {
+  EmptyContension(Token.Id id){
+    this.id = id;
+  }
+  boolean standing(){
+    return true;
+  }
+  void tokenize(Consumer<Token> token){
+  }
+}
+class com.rem.gen.parser.ConcreteContension Contension<List<Contension>> {
+  boolean standing(){
+    return this.value != null;
+  }
+  void tokenize(Token token){
+    token.accept(new Token(this.id,this.value));
+  }
+}
+class com.rem.gen.parser.OneContension Contension<Contension> {
+  boolean standing(){
+    return this.value.standing();
+  }
+  void tokenize(Consumer<Token> token){
+    if this.id == null {
+      this.value.tokenize(token);
+    }
+    else {
+      Token subToken = new Token(this.id,null);
+      token.accept(subToken);
+      this.value.tokenize(subToken);
+    }
+  }
+}
+class com.rem.gen.parser.ManyContensions Contension<List<Contension>> {
+  boolean standing(){
+    return this.value.parallelStream().allMatch(C=>C.standing());
+  }
+  void tokenize(Consumer<Token> token){
+    if this.id == null {
+      this.value.stream().forEach(C=>C.tokenize(token));
+    }
+    else {
+      Token subToken = new Token(this.id,null);
+      token.accept(subToken);
+      this.value.stream().forEach(C=>C.tokenize(subToken));
+    }
+  }
+}
+class com.rem.gen.parser.RegexContension Contension<List<ConcreteContension>> < Consumer<Token> {
+  StringBuilder builder;
+  boolean standing(){
+    return this.value.parallelStream().allMatch(C=>C.standing());
+  }
+  void tokenize(Consumer<Token> token){
+    builder = new StringBuilder();
+    this.value.stream().forEach(C=>C.tokenize(RegexContension.this));
+    if this.id == null {
+      token.accept(new Token(Token.Id._SYNTAX,builder.toString()));
+    }
+    else {
+      token.accept(new Token(this.id,builder.toString()));
+    }
+  }
+  void accept(Token token){
+    if token.getValue() == null {
+      token.build(this);
+    }
+    else {
+      builder.append(token.getValue());
+    }
+  }
+}
+
+class com.rem.gen.parser.Result < '"com.rem.output.helpers.OutputHelper.Parser.Result"' {
+  '"com.rem.output.helpers.OutputHelper.Parser.State"' getState(){
+    return null;
+  }
+  class Pass Result {
+    '"com.rem.output.helpers.OutputHelper.Parser.State"' getState(){
+      return '"com.rem.output.helpers.OutputHelper.Parser.State.SUCCESS"';
+    }
+  }
+  class Fail Result {
+    '"com.rem.output.helpers.OutputHelper.Parser.State"' getState(){
+      return '"com.rem.output.helpers.OutputHelper.Parser.State.FAIL"';
+    }
+  }
+}
+class Token < Consumer<Token> {
+  enum Id {
+    void ROOT;
+  }
+  List<Token> children;
+  Map<Id, List<Token>> map;
+  String value;
+  Id id;
+  Token(Id id, String value){
+    this.id = id;
+    if value != null {
+      this.value = value;
+    }
+    else {
+     this.children = new ArrayList<Token>();
+     this.map = new EnumMap<Id, List<Token>>(Id.class);
+    }
+  }
+  void accept(Token newToken){
+    this.children.add(newToken);
+    if this.map.containsKey(newToken.id) == false {
+      this.map.put(newToken.id,new ArrayList<Token>());
+    }
+    this.map.get(newToken.id).add(newToken);
+  }
+  void build(Consumer<Token> builder){
+    if children != null {
+      children.forEach(builder);
+    }
+    else {
+      builder.accept(this);
+    }
+  }
+  Token get(Id id){
+    List<Token> result = map.get(id);
+    if result != null && result.isEmpty() == false {
+      return result.get(0);
+    }
+    else {
+      return null;
+    }
+  }
+  List<Token> getAll(){
+    return children;
+  }
+  List<Token> getAllSafely(Id id){
+    List<Token> result = map.get(id);
+    if result != null {
+      return result;
+    }
+    else {
+      return new ArrayList<Token>();
+    }
+  }
+}

@@ -6,10 +6,12 @@ import java.util.function.Consumer;
 public class OutputQuote extends Output {
 
 	private Output output = null;
+	private boolean isString = true;
 	public OutputQuote(){
 	}
 	public OutputQuote(String value){
 		set(value);
+		isString = false;
 	}
 	public OutputQuote set(String value){
 		this.output = new OutputExact(value);
@@ -54,7 +56,12 @@ public class OutputQuote extends Output {
 	}
 	@Override
 	public Output stasis() {
-		return new OutputStasis().name("OutputQuote").add("set",output.evaluate());
+		if(!isString){
+			return new OutputStasis().name("OutputQuote").add("set",output.evaluate());
+		}
+		else {
+			return new OutputStasis().name("OutputQuote").add("set",output.evaluate());
+		}
 	}
 	@Override
 	public boolean verify(OutputContext context) {

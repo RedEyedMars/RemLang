@@ -7,6 +7,12 @@ public class OutputExact extends Output {
 
 	public OutputExact(){
 	}
+	public OutputExact(char value){
+		this.value = ""+value;
+	}
+	public OutputExact(boolean value){
+		this.value = ""+value;
+	}
 	public OutputExact(String value){
 		this.value = value;
 	}

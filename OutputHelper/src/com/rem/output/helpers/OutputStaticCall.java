@@ -11,7 +11,12 @@ public class OutputStaticCall  extends CallableOutput {
 		this.type = type;
 		return this;
 	}
-	public OutputStaticCall set(OutputType type,OutputCall calls){
+	public OutputStaticCall set(OutputType type,OutputExact call){
+		this.type = type;
+		this.calls.add(call);
+		return this;
+	}
+	public OutputStaticCall set(OutputType type,CallableOutput calls){
 		this.type = type;
 		this.calls = calls;
 		return this;

@@ -45,7 +45,7 @@ public class OutputConditionalHeader  extends Output {
 	@Override
 	public Output stasis() {
 		OutputStasis stasis = new OutputStasis().name("OutputConditionalHeader").add("declare", declaration);
-		if(separator!=null)stasis = stasis.add("separator",separator);
+		if(separator!=null&&!separator.equals(""))stasis = stasis.add("separator","\""+separator+"\"");
 		if(calls!=null)stasis = stasis.addAll("call",calls);
 		return stasis;
 	}

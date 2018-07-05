@@ -14,32 +14,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.rem.output.helpers.OutputHelper.Parser.Result;
 
 public class OutputHelper {
-	public static interface Parser<ParserResult extends Result,ParserResultPass extends ParserResult> {
-		public enum State {
-			SUCCESS, FAIL
-		}
-		public static interface Result {
-			public State getState();
-		}
-		public ParserResult parse(String string);
-	}
-	public static interface Generator {
-		public void init(Result result);
-		public void setup(Result result);
-		public void generate(Result result);
+	public static interface Parser <R,P extends R>{
+		public R parse(String fileName);
+		public P asPass(R result);
 	}
 	@SuppressWarnings("unchecked")
-	public static <ParserResult extends Parser.Result,ParserResultPass extends ParserResult>
-	  void parse(String[] args, Parser<ParserResult,ParserResultPass> parser, Consumer<ParserResultPass>... onSuccessMethods) {
+	public static <R,P extends R>
+	  void parse(String[] args, Parser<R,P> parser, Consumer<P>... onSuccessMethods) {
 		if (args.length==1 ) {
-			ParserResult result = parser.parse(args[0]);
+			R result = parser.parse(args[0]);
 			System.out.println(result);
-			if (result.getState()==Parser.State.SUCCESS) {
+			P pass = parser.asPass(result);
+			if (pass!=null) {
 				setup(args[0]);
-				Arrays.asList(onSuccessMethods).forEach(C->C.accept((ParserResultPass)result));
+				Arrays.asList(onSuccessMethods).forEach(C->C.accept(pass));
 				output();
 			}
 		}
@@ -59,7 +49,7 @@ public class OutputHelper {
 		if (indexOfDot>=0 ) {
 			int indexOfSlash = fileName.lastIndexOf("/");
 			if (indexOfSlash>=0 ) {
-				__ROOTDIRECTORY__=new File("../"+camelize(fileName.substring(indexOfSlash,indexOfDot))+"/src");
+				__ROOTDIRECTORY__=new File("../"+camelize(fileName.substring(indexOfSlash+1,indexOfDot))+"/src");
 			}
 			else  {
 				__ROOTDIRECTORY__=new File("../"+camelize(fileName.substring(0,indexOfDot))+"/src");
@@ -90,31 +80,17 @@ public class OutputHelper {
 		return builder.toString();
 
 	}
-	public static String camelize(String name) {
-		StringBuilder builder = new StringBuilder();
-		builder.append(("" + name.charAt(0)).toUpperCase());
-		boolean cap = false;
-		for (int i = 1; i < name.length(); ++i) {
-			char c = name.charAt(i);
-			if (c == '_') {
-				cap = true;
-				continue;
-			} else if (cap) {
-				builder.append(("" + c).toUpperCase());
-				cap = false;
-			} else {
-				builder.append(c);
-			}
-		}
-		return builder.toString();
-
-	}
 	public static void addClass(OutputClass newClass){
 		classMap.put(newClass.getFullName().evaluate(), newClass);
+	}
+	public static void addInternalClass(OutputClass newClass){
+		classMap.put(newClass.getFullName().evaluate(), newClass);
+		newClass.solidifyImports(newClass.getPackageName(), packages);
 	}
 	public static void addOutputClass(OutputClass newClass){
 		classMap.put(newClass.getFullName().evaluate(), newClass);
 		outputFiles.add(new OutputFile(newClass));
+		newClass.solidifyImports(newClass.getPackageName(), packages);
 	}
 	public static void writeFile(File outputDirectory, String fileName, Outputable outputFile){
 		try {
@@ -129,9 +105,9 @@ public class OutputHelper {
 		catch(IOException e){
 			e.printStackTrace();
 		}
+		
 	}
 	public static void output() {
-		classMap.keySet().parallelStream().forEach(C->classMap.get(C).solidifyImports(classMap.get(C).getPackageName(),packages));
 		outputFiles.parallelStream().forEach(O->O.outputToFile(__ROOTDIRECTORY__));
 		System.out.println("Output Complete");
 	}
@@ -143,7 +119,7 @@ public class OutputHelper {
 
 	public static void setup(String rootName){
 		setupRootDirectory(rootName);
-		OutputHelper.classMap.put("List",new OutputClass()
+		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("List").template("T1").method(
 						new OutputMethod().type("void").name("add")).method(
 						new OutputMethod().type("void").name("removeAll")).method(
@@ -152,7 +128,7 @@ public class OutputHelper {
 						new OutputMethod().type("void").name("sort")).method(
 						new OutputMethod().type("int").name("size")).method(
 						new OutputMethod().type("T1").name("get")));
-		OutputHelper.classMap.put("ArrayList",new OutputClass()
+		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("ArrayList").template("T1").method(
 				new OutputMethod().type("void").name("add")).method(
 				new OutputMethod().type("void").name("removeAll")).method(
@@ -161,7 +137,7 @@ public class OutputHelper {
 				new OutputMethod().type("void").name("sort")).method(
 				new OutputMethod().type("int").name("size")).method(
 				new OutputMethod().type("T1").name("get")));
-		OutputHelper.classMap.put("Map",new OutputClass()
+		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("Map").template("T1").method(
 				new OutputMethod().type("T1").name("put")).method(
 				new OutputMethod().type("void").name("removeAll")).method(
@@ -170,7 +146,7 @@ public class OutputHelper {
 				new OutputMethod().type("void").name("sort")).method(
 				new OutputMethod().type("int").name("size")).method(
 				new OutputMethod().type("T1").name("get")));
-		OutputHelper.classMap.put("HashMap",new OutputClass()
+		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("HashMap").template("T1").method(
 				new OutputMethod().type("T1").name("put")).method(
 				new OutputMethod().type("void").name("removeAll")).method(
@@ -218,6 +194,7 @@ public class OutputHelper {
 	}
 	public static void suppliment(final String packageName, final String className){
 		OutputHelper.classMap.put(className, new OutputClass()._package(packageName).name(className));
+		OutputHelper.packages.put(className,  new OutputExact(packageName));
 	}
 	private static void supplimentClass(final String packageName, final String className,String... methodParameters){
 		final OutputClass outputClass = new OutputClass()._package(packageName).name(className);
@@ -228,5 +205,6 @@ public class OutputHelper {
 			}
 		}
 		OutputHelper.classMap.put(className, outputClass);
+		OutputHelper.packages.put(className,  new OutputExact(packageName));
 	}
 }

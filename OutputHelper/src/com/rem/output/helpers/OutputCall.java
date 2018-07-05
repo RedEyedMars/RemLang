@@ -48,14 +48,14 @@ public class OutputCall  extends CallableOutput {
 		return this;
 	}
 	public void getImports(Set<String> imports) {
-		subjects.parallelStream().forEach(S->S.getImports(imports));
+		subjects.parallelStream().forEach(S->{if(S!=null)S.getImports(imports);});
 		arguments.parallelStream().forEach(A->{if(A!=null)A.getImports(imports);});
 	}
 	@Override
 	public void output(Consumer<String> builder) {
 		IntStream.range(0,subjects.size()).forEach(I->{
 			if(I>0)builder.accept(".");
-			subjects.get(I).add(builder);
+			if(subjects.get(I)!=null)subjects.get(I).add(builder);
 			if(arguments.get(I)!=null)arguments.get(I).add(builder);});
 	}
 	@Override

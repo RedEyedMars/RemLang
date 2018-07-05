@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="build_all" name="Create Runnable Jar for Project OTLPc">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="../"/>
+    <property name="dir.workspace" value="${dir.buildfile}/../"/>
+    <property name="dir.jarfile" value="${dir.buildfile}/../"/>    
+  	<property name="dir.base" value="${dir.buildfile}/GeneratedCargon/"/>
+    <target name="create_cargon_2_jar">
+    	<jar destfile="../cargon.jar" basedir="./bin" />
+  	</target>
+    <target name="build_all">
+       <antcall target="create_cargon_2_jar"/>
+    </target>
+</project>

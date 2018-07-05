@@ -1,0 +1,119 @@
+> ClassGenerator classGenerator = new ClassGenerator();
+> class ClassGenerator {
+  Set<String> definedClassNames = new HashSet<String>();
+  void addDefinedClassName(String className){
+	definedClassNames.add(className);
+  }
+  Boolean hasDefinedClassName(String className){
+    return definedClassNames.contains(className);
+  }
+
+  %C declaration(%T declaration,%C innerClass, boolean mustInner, %Context parentContext){
+	Boolean isInner = declaration->inner != null || mustInner;
+	%C outerClass = %C();
+	
+	if declaration->className->NAME != null {
+	  outerClass.name(%E('declaration->className'));
+	  innerClass.name(%E('declaration->className'));
+	}
+	else {
+	  outerClass.name(%Concat().add(classwise.name_var(declaration->className->name_var,true,parentContext)));
+	  innerClass.name(%Concat().add(classwise.name_var(declaration->className->name_var,true,parentContext)));
+	}
+	
+	%Call classPackageName = %Call();
+	declaration : element : packageName {
+	  element : atom : NAME {
+	    classPackageName.add(%E('atom'));
+	  }
+	  : name_var {
+	    classPackageName.add(classwise.name_var(atom,true,parentContext));
+	  }
+	}
+	outerClass._package(classPackageName);
+	innerClass._package(innerPackageName);
+	declaration : element : templateTypeName {
+	  outerClass.template(%E('element'));
+	  innerClass.template(%E('element'));
+	}
+	declaration : element : parentName {
+	  if declaration->inner != null {
+		innerClass.extendType(classwise.type_var(element->type_var,isInner,parentContext));
+	  }
+	  outerClass.extendType(classwise.type_var(element->type_var,isInner,parentContext));
+	}
+	declaration : element : interfaceName {
+	  if declaration->inner != null {
+		innerClass.implement(classwise.type_var(element->type_var,isInner,parentContext));
+	  }
+	  outerClass.implement(classwise.type_var(element->type_var,isInner,parentContext));
+	}
+	declaration : element : variable_declaration {
+	  if isInner || element->inner != null {
+	    innerClass.addVariable(variable.declaration(element,isInner,parentContext));
+	  }
+	  else {
+	    outerClass.addVariable(variable.declaration(element,isInner,parentContext));
+	  }
+	}
+	declaration : element : method_declaration {
+	  if isInner || element->inner != null {
+	    innerClass.addMethod(method.declaration(element,isInner,parentContext));
+	  }
+	  else {
+	    outerClass.addMethod(method.declaration(element,isInner,parentContext));
+	  }
+	}
+	declaration : element : class_declaration {
+	  %C subInnerClass = %C();
+	  %C subOuterClass = classGenerator.declaration(element,subInnerClass,isInner,parentContext);
+	  
+	  if element->inner == null {
+	    subInnerClass.addVariable(@%C OUTPUT = `subOuterClass.stasis()`;);
+	    outerClass.encloseClass(subOuterClass.getAsVariable());
+      }
+	  innerClass.encloseClass(subInnerClass);
+	}
+	if 'declaration->objectType'.contains("interface"){
+	  if isInner {
+	    innerClass.isInterface();
+	  }
+	  else {
+	    outerClass.isInterface();
+	  }
+	}
+	else if 'declaration->objectType'.contains("enum"){
+	  if isInner {
+	    innerClass.isEnum();
+	  }
+	  else {
+	    outerClass.isEnum();
+	  }
+	}
+	if declaration->weak != null {
+	  if isInner {
+	    innerClass.isAbstract();
+	  }
+	  else {
+	    outerClass.isAbstract();
+	  }
+	}
+	if declaration->static == null {
+	  outerClass.isStatic();
+	  innerClass.isStatic();
+	}
+	else {
+	  outerClass.isNonStatic();
+	  innerClass.isNonStatic();
+	}
+	return outerClass;
+  }
+> void collectClassNames(%T classToken){    
+	if classToken->className->NAME != null && classToken->inner == null {
+	  addDefinedClassName(%Helper.camelize('classToken->className->NAME'));
+	}
+	classToken : element : class_declaration {
+	  collectClassNames(element);
+	}
+  }
+}

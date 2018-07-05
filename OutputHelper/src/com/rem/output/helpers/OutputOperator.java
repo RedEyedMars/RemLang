@@ -61,4 +61,8 @@ public class OutputOperator  extends Output {
 	public boolean verify(OutputContext context) {
 		return (left==null||left.verify(context)) && (right==null||right.verify(context));
 	}
+	
+	public String operator(){
+		return operator;
+	}
 }

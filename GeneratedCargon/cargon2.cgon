@@ -1,0 +1,70 @@
+base silent = base_element*
+comments Braced # # = [.*] as comment
+ignore:[ ]
+ignores = "ignore" ":" ( single_ignores_character as ignoreCharacter )+ "\n"
+
+imports silent, Imports FILE_NAME = "import " FILE_NAME "\n"
+	base
+
+FILE_NAME = [[^\s]+]
+NAME = [[a-zA-Z_][a-zA-Z0-9_]*]
+OPERATOR = [[^a-zA-Z0-9_\s\n(){}[];\"\'`,]+]
+NUMBER = [[-]?(\d*[.])?\d+f?\s*]
+
+quote                    Braced " " , Ignore None = [.*]
+braced_definition        Braced ( )          = definition
+regex                    Braced [ ]          = regex_definition
+regex_option             Braced [ ] , silent = "^" as negate? regex_option_definition*
+regex_group_definition   Braced ( ) , silent = regex_definition as regex
+single_ignores_character Braced [ ] , silent = [\?.?]
+
+regex_option_definition silent
+	( [.] as left "-" [.] as right ) as range
+	regex_special
+	[.] as standAlone
+
+rule_parameters silent      = rule_params ( "," rule_params )*
+rule_params silent
+	"silent" as SILENT
+	("@" NUMBER as passConstraint)? "Braced" ( [[^\s]+] as left [[^\s]+] as right ) as braced_parameters
+	"Imports" (( quote | NAME as ruleName )+ ) as import_parameter "=" ( element as chain+ ) as import_definition 
+	"Ignore" ( "None" as ignores_none | ( single_ignores_character ) as ignores_character+ )
+
+list_names global list with NAME
+
+base_element silent = ( "\n" | ignores | comments | imports | list | rule )+
+
+rule
+	NAME as ruleName ( rule_parameters )?  ( ( "=" | "\n\t" ) definition )
+
+list
+	NAME as listName in list_names "global"? "list" ("with" NAME as listRuleName) ( ( ","| "\n\t" ) quote | "\n" )*
+
+definition
+	element as chain+ ( ( "|" | "\n\t" ) definition ) as choice?
+
+element
+	atom ( "as " NAME as newName)? ( "in " NAME as listName)? ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
+
+atom silent
+	braced_definition
+	quote as quoteToken
+	regex as regexToken
+	NAME as ruleToken
+
+regex_definition silent
+	regex_element+
+regex_element
+	regex_option as option          ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
+	regex_group_definition as group ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
+	regex_special                   ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
+	[.] as character                ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
+regex_special
+	"\d" as number
+	"\." as dot
+	"\s" as whitespace
+	"\\" [[a-z\"\']] as escaped
+	"\\" as slash
+
+#System.out.print((_state==SUCCESS)+":>"+readLine(_input,_position));
+#

@@ -9,11 +9,11 @@ import java.util.stream.IntStream;
 public class OutputLambda extends Output {
 
 	private List<OutputVariable> variables = new ArrayList<OutputVariable>();
-	private CallableOutput call = null;
+	private Output call = null;
 	private OutputBody body = null;
 	
 	public OutputLambda declare(String variable){
-		this.variables.add(new OutputVariable(new OutputType("$"),new OutputExact(variable)));
+		this.variables.add(new OutputVariable(OutputType.Any,new OutputExact(variable)));
 		return this;
 	}
 	public OutputLambda declare(OutputVariable variable){
@@ -31,7 +31,7 @@ public class OutputLambda extends Output {
 		this.body = body;
 		return this;
 	}
-	public OutputLambda call(CallableOutput call){
+	public OutputLambda call(Output call){
 		this.call = call;
 		return this;
 	}

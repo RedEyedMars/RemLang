@@ -39,7 +39,7 @@ public class OutputCast  extends Output {
 	}
 	@Override
 	public Output stasis() {
-		OutputStasis stasis = new OutputStasis().name("OutputOperator").addAll("type", types);
+		OutputStasis stasis = new OutputStasis().name("OutputCast").addAll("type", types);
 		if(subject!=null)stasis = stasis.add("subject",subject);
 		return stasis;
 	}

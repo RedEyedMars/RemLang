@@ -100,7 +100,7 @@ public class OutputConditional extends LineableOutput {
 	@Override
 	public Output stasis(){
 
-		OutputStasis stasis = new OutputStasis().name("OutputConditional").add("init",conditional);
+		OutputStasis stasis = new OutputStasis().name("OutputConditional").add("init","\""+conditional+"\"");
 		if(bodyAsBody!=null){
 			stasis = stasis.add("body",bodyAsBody);
 		}
@@ -113,7 +113,7 @@ public class OutputConditional extends LineableOutput {
 		if(header!=null){
 			stasis.add("header",header);
 		}
-		return this;
+		return stasis;
 	}
 	@Override
 	public boolean verify(OutputContext context) {
