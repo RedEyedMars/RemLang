@@ -9,7 +9,7 @@ import regex
     root : rule : rule {
       if rulenames.add('rule->ruleName') {
         String idName = "_"+'rule->ruleName';
-        Parser += @ParseRule.Tokenify.One 'idName' = new ParseRule.Tokenify.One(Token.Id.'idName');
+        Parser += @Contender.Multiplicity 'idName' = new Contender.One(Token.Id.'idName');
         if rulenames.size() == 1{
           rootSetCall.add(|'idName'|);
         }
@@ -24,7 +24,7 @@ import regex
     List<%T> rules = root->>rule;
     root : rule : rule {
       String variableName = "_"+'rule->ruleName';
-      Parser::setup() += |'variableName'.setRule(`rule(rule)`);|
+      Parser::setup() += |'variableName'.set(`rule(rule)`);|
       Token.addId(variableName);
     }
   }
@@ -36,10 +36,10 @@ import regex
       subRule = definitions.get(0);
     }
     else {
-      subRule = |new ParseRule.Branch(`definitions`)|;
+      subRule = |new Contender.Branch(`definitions`)|;
     }
     if rule->braced_parameters != null {
-      return %New Object().set(%Type("Braces").add("Rule"),%A().add(%E(Braces.addBrace(
+      return %New Object().set(%Type("Braces").add("Contender"),%A().add(%E(Braces.addBrace(
          'rule->braced_parameters->left'.equals('rule->braced_parameters->right'),
          'rule->braced_parameters->left',
          'rule->braced_parameters->right',
@@ -59,13 +59,13 @@ import regex
       definitions.add(args.get(0));
     }
     else {
-      definitions.add(|new ParseRule.Chain(`args`)|);
+      definitions.add(|new Contender.Chain(`args`)|);
     }
     if definition->choice != null {
       define(definition->choice->definition,definitions);
     }
   }
-> %Static Call element(%T element){
+> %New Object element(%T element){
     %A args = %A();
     if element->newName != null {
       String newName = "_"+'element->newName';
@@ -97,7 +97,7 @@ import regex
         else {
           quote.append(string.charAt(string.length()-1));
         }
-        args.add(|new ParseRule.Terminal('' quote.toString() '')|);
+        args.add(|new Contender.Terminal('' quote.toString() '')|);
       }
       : regexToken {
         args.add(regex(quark->regex));
@@ -107,31 +107,28 @@ import regex
         args.add(|'subRuleName'|);
       }
     if element->multiple == null {
-      return |ParseRule.createOne(`args`)|;
+      return %New Object().set(%Type("Contender").add("One"),args);
     }
     else {
       element->multiple : multiple : OPTIONAL {
-        return |ParseRule.createOptional(`args`)|;
+        return %New Object().set(%Type("Contender").add("Optional"),args);
       }
       : MANY {
-        return |ParseRule.createMany(`args`)|;
+        return %New Object().set(%Type("Contender").add("Many"),args);
       }
       : PLUS {
-        return |ParseRule.createMany(`args`)|;
+        return %New Object().set(%Type("Contender").add("More"),args);
       }
       return null;
     }
     
   }
 class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<Parser.Result,Parser.Result.Pass>"' {
-  @int ERROR_ON_END = 1!
-  @int PASS = 0!
-  @int FAIL = -1!
-  
-  @ParseRule.Tokenify.One __ROOT__ = new ParseRule.Tokenify.One(Token.Id.ROOT);
-  @ParseRule.Loopify.Many __WHITESPACE__ = new ParseRule.Loopify.Many(new ParseRule.Any(`ignoreSpace`)); 
+  @Contender.Multiplicity __ROOT__ = new Contender.One(Token.Id.ROOT);
+  @Contender.Multiplicity __WHITESPACE__ = new Contender.Many(Token.Id.WHITESPACE); 
   void setup(){
-    __ROOT__.setRule(`rootSetCall`);
+    __ROOT__.set(`rootSetCall`);
+    __WHITESPACE__.set(new Contender.Any(`ignoreSpace`));
   }
   Parser.Result.Pass asPass(Parser.Result result){
     return (result instanceof Parser.Result.Pass)?(Parser.Result.Pass)result:null;
@@ -146,9 +143,12 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
         return null;
       }
       BufferedReader reader = new BufferedReader(new FileReader(file));
+      CharBuffer raw = CharBuffer.allocate((int) file.length()+1);
 	  CharBuffer chars = CharBuffer.allocate((int) file.length()+1);
-	  reader.read(chars);
+	  reader.read(raw);
       reader.close();
+	  raw.position(0);
+	  raw.chars().filter(I=>I!='"\'\\r\'"').forEach(I=>chars.put((char)I));
 	  chars.position(0);
       %Result result = parse(chars);
       return result.setFileName(fileName).setParseTime(System.currentTimeMillis()-parseStartTime);
@@ -159,14 +159,15 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
   %Result parse(CharBuffer chars){
     Map<Integer, Braces.Data> braceData = Braces.find(chars.duplicate());
     CharBuffer input = chars.duplicate();
-    Token rootToken = new Token(Token.Id.ROOT,null);
-    ErrorList errors = new ErrorList();
-    int result = __ROOT__.parse(rootToken, errors, input, braceData);
-    
-    if result == Parser.PASS && (input.remaining() == 0 || input.get() == 0) {
+    Contension contension = __ROOT__.contend(input,braceData);
+    if !contension.hasErrors() && (input.remaining() == 0 || input.get() == 0) {
+      Token rootToken = new Token(Token.Id.ROOT,null);
+      contension.tokenize(rootToken);
       return new Parser.Result.Pass(rootToken);
     }
     else {
+      ErrorList errors = new ErrorList();
+      contension.getOnError().accept(errors);
       return new Parser.Result.Fail(chars.duplicate(),errors);
     }
   }
@@ -232,243 +233,204 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
     }
   }
 }
-interface com.rem.gen.parser.ParseRule {
-  int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData)?
-  
-  @ParseRule createOne(Token.Id id, ParseRule rule){
-    return id == null?rule:new Tokenify.One(id,rule);
+interface com.rem.gen.parser.Contender {
+  Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData)?
+  interface Multiplicity Contender {
+    void set(Contender subContender)?
   }
-  @ParseRule createOptional(Token.Id id, ParseRule rule){
-    return id == null?rule:new Tokenify.Optional(id,rule);
-  }
-  @ParseRule createMany(Token.Id id, ParseRule rule){
-    return id==null?new Loopify.Many(rule):new Tokenify.Many(id,rule);
-  }
-  @ParseRule createMore(Token.Id id, ParseRule rule){
-    return id==null?new Loopify.More(rule):new Tokenify.More(id,rule);
-  }
-  interface Tokenify ParseRule{
-    ParseRule setRule(ParseRule rule)?
-    class One < Tokenify {
-      Token.Id id;
-      ParseRule rule;
-      One(Token.Id id){
-        this.id = id;
-      }
-      One(Token.Id id, ParseRule rule){
-        this.id = id;
-        this.rule = rule;
-      }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
-      }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        Token child = new Token(id);
-        int result = rule.parse(child,errors,chars,braceData);
-        if result != Parser.FAIL {
-          parent.accept(child);
-        }
+  class One < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    One(Token.Id id){
+      this.id = id;
+    }
+    One(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      Contension result = contender.contend(chars,braceData);
+      if result.hasErrors() {
         return result;
       }
-    }
-    class Optional < Tokenify {
-      Token.Id id;
-      ParseRule rule;
-      Optional(Token.Id id){
-        this.id = id;
+      else if id == null{
+          return result;
       }
-      Optional(Token.Id id, ParseRule rule){
-        this.id = id;
-        this.rule = rule;
-      }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
-      }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        Token child = new Token(id);
-        int result = rule.parse(child,errors,chars,braceData);
-        if result != Parser.FAIL {
-          parent.accept(child);
-        }
-        return Parser.PASS;
-      }
-    }
-    class Many < Tokenify {
-      Token.Id id;
-      ParseRule rule;
-      Many(Token.Id id){
-        this.id = id;
-      }
-      Many(Token.Id id, ParseRule rule){
-        this.id = id;
-        this.rule = rule;
-      }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
-      }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        int result = Parser.PASS;
-        int ret = Parser.PASS;
-        while result != Parser.FAIL {
-          Token child = new Token(id);
-          result = rule.parse(child,errors,chars,braceData);
-          if result != Parser.FAIL {
-            parent.accept(child);
-            if ret == Parser.PASS && result == Parser.ERROR_ON_END {
-              ret = result;
-            }
-          }
-        }
-        return result;
-      }
-    }
-    class More < Tokenify {
-      Token.Id id;
-      ParseRule rule;
-      More(Token.Id id){
-        this.id = id;
-      }
-      More(Token.Id id, ParseRule rule){
-        this.id = id;
-        this.rule = rule;
-      }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
-      }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        int result = Parser.PASS;
-        int ret = Parser.FAIL;
-        while result != Parser.FAIL {
-          Token child = new Token(id);
-          result = rule.parse(child,errors,chars,braceData);
-          if result != Parser.FAIL {
-            parent.accept(child);
-            if ret == Parser.FAIL || ret == Parser.PASS && result == Parser.ERROR_ON_END {
-              ret = result;
-            }
-          }
-        }
-        return ret;
+      else {
+        return new Contension.One(id,result).setOnError(result.getOnError());
       }
     }
   }
-  interface Loopify ParseRule{
-    ParseRule setRule(ParseRule rule)?
-    class Optional < Loopify {
-      ParseRule rule;
-      Optional(ParseRule rule){
-        this.rule = rule;
+  class Optional < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    Optional(Token.Id id){
+      this.id = id;
+    }
+    Optional(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      Contension result = contender.contend(chars,braceData);
+      if result.hasErrors() {
+        return new Contension.Empty(id).setOnError(result.getOnError());
       }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
+      else if id == null {
+        return result;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        rule.parse(parent,errors,chars,braceData);
-        return Parser.PASS;
+      else {
+        return new Contension.One(id,result).setOnError(result.getOnError());
       }
     }
-    class Many < Loopify {
-      ParseRule rule;
-      Many(ParseRule rule){
-        this.rule = rule;
-      }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
-      }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        int ret = Parser.PASS;
-        while true {
-          int result = rule.parse(parent,errors,chars,braceData);
-          if result == Parser.FAIL {
-            return ret;
-          }
-          else if result == Parser.ERROR_ON_END {
-            ret = result;
-          }
-        }
-      }
+  }
+  class Many < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    Many(Token.Id id){
+      this.id = id;
     }
-    class More < Loopify {
-      ParseRule rule;
-      More(ParseRule rule){
-        this.rule = rule;
+    Many(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while !result.hasErrors() {
+        results.add(result);
+        result = contender.contend(chars,braceData);
       }
-      ParseRule setRule(ParseRule rule){
-        this.rule = rule;
-        return this;
+      if results.isEmpty() {
+        return new Contension.Empty(id).setOnError(result.getOnError());
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-        int ret = Parser.FAIL;
-        while true {
-          int result = rule.parse(parent,errors,chars,braceData);
-          if result == Parser.FAIL {
-            return ret;
+      else {
+        if results.size() == 1 {
+          if id == null {
+            return results.get(0).setOnError(result.getOnError());
           }
           else {
-            ret = result;
+            return new Contension.One(id,results.get(0)).setOnError(result.getOnError());
           }
         }
+        else {
+          return new Contension.Many(id,results).setOnError(result.getOnError());
+        }
       }
     }
   }
-  class Branch < ParseRule {
-    ParseRule[] contenders;
-    Branch(ParseRule... contenders){
-      this.contenders = contenders;
+  class More < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    More(Token.Id id){
+      this.id = id;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-      for int i < contenders.length {
-        ErrorList subErrors = new ErrorList();
-        int result = contenders[i].parse(parent,subErrors,chars,braceData);
-        if result != Parser.FAIL {
-          return result;
+    More(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while !result.hasErrors() {
+        results.add(result);
+        result = contender.contend(chars, braceData);
+      }
+      if results.isEmpty() {
+        return result;
+      }
+      else {
+        if results.size() == 1 {
+          if id == null {
+            return results.get(0).setOnError(result.getOnError());
+          }
+          else {
+            return new Contension.One(id,results.get(0)).setOnError(result.getOnError());
+          }
         }
         else {
-          errors.merge(subErrors);
+          return new Contension.Many(id,results).setOnError(result.getOnError());
         }
       }
-      return Parser.FAIL;
+    }
+  }
+  class Branch < Contender {
+    enum Import { Consumer consumer; }
+    List<Contender> contenders;
+    Branch(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      Map<Contension, Integer> positions_attained = Collections.synchronizedMap(new HashMap<Contension, Integer>());
+      List<Consumer<ErrorList>> onErrors = Collections.synchronizedList(new ArrayList<Consumer<ErrorList>>(contenders.size()));
+      Contension result = contenders.parallelStream().map(C=>{
+        CharBuffer diver = chars.duplicate();
+        '"Contension<?>"' contension = C.contend(diver,braceData);
+        if !contension.hasErrors() {
+	      positions_attained.put(contension,diver.position());
+	      return contension;
+        }
+        else {
+          onErrors.add(contension.getOnError());
+          return null;
+        }
+        }).filter(C=>C!=null).findFirst().orElse(new Contension.Unsuccessful()
+          .setOnError(
+            errors=>onErrors.forEach(
+                E=>E.accept(errors)
+              )
+            ));
+      if !result.hasErrors() {
+        chars.position(positions_attained.get(result));
+	  }
+	  return result;
 	}
   }
-  class Chain < ParseRule {
-    ParseRule[] contenders;
-    Chain(ParseRule... contenders){
-      this.contenders = contenders;
+  class Chain < Contender {
+    List<Contender> contenders;
+    Chain(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-      List<Token> tokens = new ArrayList<Token>(contenders.length);
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
       int position = chars.position();
-      int ret = Parser.PASS;
-      for int i < contenders.length {
-        int result = contenders[i].parse('"tokens"'::add,errors,chars,braceData);
-        if result == Parser.FAIL {
+      List<Contension> results = new ArrayList<Contension>(contenders.size());
+      return contenders.stream().map(C=>{
+        Contension result = C.contend(chars,braceData);
+        results.add(result);
+        if result.hasErrors() {
           chars.position(position);
           return result;
         }
-        else if result == Parser.ERROR_ON_END {
-          ret = result;
+        else {
+          return null;
         }
-      }
-      tokens.forEach(parent);
-      return ret;
-	}
+        }).filter(R=>R!=null).findFirst().orElse(new Contension.Many(null,results).setOnError(
+          results.get(results.size()-1).getOnError()));
+    }
   }
   
-  class Terminal < ParseRule {
+  class Terminal < Contender {
     String value;
     Terminal(String value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    Contension contend(CharBuffer chars,Map<Integer,Braces.Data> braceData){
       if value.length() > chars.remaining() {
-        errors.adjust(new ParseError.BufferEnd(null,chars.position()) );
-        return Parser.FAIL;
+        return new Contension.Unsuccessful().setOnError(
+          errors=>errors.adjust(
+          new ParseError.BufferEnd(null,chars.position())));
       }
       else {
         int position = chars.position();
@@ -478,68 +440,78 @@ interface com.rem.gen.parser.ParseRule {
                c = chars.get();
              }
              return C == c;}) {
-          Parser.__WHITESPACE__.parse(T=>{'""';},new ErrorList.Dummy(),chars,braceData);
-          parent.accept(new Token(Token.Id._SYNTAX,value));
-          return Parser.PASS;
+          Parser.__WHITESPACE__.contend(chars,braceData);
+          return new Contension.Concrete(Token.Id._SYNTAX,value);
         }
         else {
           chars.position(position);
           CharBuffer buffer = chars.duplicate();
           buffer.limit(value.length());
-          errors.adjust(new ParseError.WrongString(null,position,buffer,value));
-          return Parser.FAIL;
+          return new Contension.Unsuccessful().setOnError(
+            errors=>
+            errors.adjust(
+              new ParseError.WrongString(null,
+                position,
+                buffer.chars().boxed().reduce(new StringBuilder(),B,I=>{int i = I; B.append((char)i);return B;},N,P=>N).toString(),
+                value.replace(''"\\n"'',''"\\\\n"'').replace(''"\\t"'',''"\\\\t"'').replace(''"\\r"'',''"\\\\r"''))));
         }
       }
     }
   }
-  class Regex < ParseRule {
-    ParseRule[] contenders;
+  class Regex < Contender {
+    List<Contender> contenders;
     String regex;
-    Regex(String regex,ParseRule... contenders){
+    Regex(String regex,Contender... contenders){
       this.regex = regex;
-      this.contenders = contenders;
+      this.contenders = Arrays.asList(contenders);
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-      CharBuffer buffer = chars.duplicate();
-      ErrorList subErrors = new ErrorList();
-      for int i < contenders.length {
-        if contenders[i].parse(null,subErrors,chars,braceData) == Parser.FAIL {
-          errors.adjust(new ParseError.WrongRegex(null,buffer.position(),subErrors.getError().getPosition(),regex));
-          chars.position(buffer.position());
-          return Parser.FAIL;
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      int position = chars.position();
+      List<Contension> results = new ArrayList<Contension>(contenders.size());
+      Contension result = (('"Contension<?>"')contenders.stream().map(C=>{
+        '"Contension"' contension = C.contend(chars,braceData);
+        results.add(contension);
+        if contension.hasErrors() {
+          return contension;
         }
+        else {
+          return null;
+        }
+        }).filter(R=>R!=null).findFirst().orElse(new Contension.Regex(null,results)))
+          .setOnError(
+              errors=>errors.adjust(
+              new ParseError.WrongRegex(null,position,chars.position()-position,regex))
+            );
+      if !result.hasErrors() {
+        Parser.__WHITESPACE__.contend(chars,braceData);
       }
-      buffer.limit(chars.position());
-      parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
-      Parser.__WHITESPACE__.parse(T=>{'""';},new ErrorList.Dummy(),chars,braceData);
-      return Parser.PASS;
+      else {
+        chars.position(position);
+      }
+      return result;
     }
   }
-  class Not < ParseRule {
-    ParseRule[] contenders;
+  class Not < Contender {
+    List<Contender> contenders;
     String options;
-    Not(String options, ParseRule... contenders){
-      this.contenders = contenders;
+    Not(String options, Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
       this.options = options;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
-      if chars.remaining() == 0 {
-        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
-        return Parser.FAIL;
+    Contension contend(CharBuffer chars,Map<Integer, Braces.Data> braceData){
+      if contenders.parallelStream().map(
+          C=>C.contend(chars.duplicate(),braceData)).allMatch(Contension::hasErrors) {
+          return new Contension.Concrete(Token.Id._SYNTAX,new Character(chars.get()).toString());
       }
-      CharBuffer buffer = chars.duplicate();
-      for int i < contenders.length {
-        if contenders[i].parse(parent,errors,buffer,braceData) == Parser.FAIL {
-          errors.adjust(
-            new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),options));
-          return Parser.FAIL;
-        }
+      else {
+          return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),options)));
       }
-      return Parser.PASS;
     }
   }
   
-  class Range < ParseRule {
+  class Range < Contender {
     int lowerBound;
     int upperBound;
     String expected;
@@ -548,68 +520,71 @@ interface com.rem.gen.parser.ParseRule {
       this.upperBound = upperBound;
       this.expected = ((char)lowerBound)+''"-"''+((char)upperBound);
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    Contension contend(CharBuffer chars,Map<Integer,Braces.Data> braceData){
       if chars.remaining() == 0 {
-        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
-        return Parser.FAIL;
+        return new Contension.Unsuccessful().setOnError(
+          errors=>errors.adjust(new ParseError.BufferEnd(null,chars.position())));
       }
       else {
         char c = chars.get();
         if c >= lowerBound && c <= upperBound {
-          return Parser.PASS;
+          return new Contension.Concrete(Token.Id._SYNTAX,'' "" ''+c);
         }
         else {
           chars.position(chars.position()-1);
-          errors.adjust(
-            new ParseError.WrongString(null,chars.position(),c,expected));
-          return Parser.FAIL;
+          return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.WrongString(null,chars.position(),c,expected)));
         }
       }
     }
   }
-  class Any < ParseRule {
+  class Any < Contender {
     String value;
     Any(String value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    Contension contend(CharBuffer chars,Map<Integer,Braces.Data> braceData){
       if chars.remaining() == 0 {
-        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
-        return Parser.FAIL;
+        return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.BufferEnd(null,chars.position())));
       }
       else {
         char c = chars.get();
         if value.chars().anyMatch(C=>C==c) {
-          return Parser.PASS;
+          return new Contension.Concrete(null,new Character(c).toString());
         }
         else {
           chars.position(chars.position()-1);
-          errors.adjust(
-            new ParseError.WrongString(null,chars.position(),c,value));
-          return Parser.FAIL;
+          return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.WrongString(null,chars.position(),c,value)));
         }
       }
     }
   }
-  class Char < ParseRule {
+  class Char < Contender {
     char value;
     Char(char value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    Contension contend(CharBuffer chars,Map<Integer,Braces.Data> braceData){
       if chars.remaining() < 1 {
-        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
-        return Parser.FAIL;
+        return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.BufferEnd(null,chars.position())));
       }
       else {
-        if chars.get() == this.value {
-          return Parser.PASS;
+        char c = chars.get();
+        if c == this.value {
+          return new Contension.Concrete(Token.Id._SYNTAX,''""''+value);
         }
         else {
           chars.position(chars.position()-1);
-          errors.adjust(
-            new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),new Character(value).toString()));
-          return Parser.FAIL;
+          return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.WrongString(null,chars.position(),new Character(c).toString(),new Character(value).toString())));
         }
       }
     }
@@ -716,35 +691,47 @@ class com.rem.gen.parser.Braces {
     String getOpenString(){        return new Character(open1).toString()+new Character(open2).toString(); }
     String getCloseString(){       return new Character(close1).toString()+new Character(close2).toString();}
   }
-  class Rule < ParseRule {
+  class Contender < '"com.rem.gen.parser"'.Contender {
     Brace brace;
-    ParseRule contender;
-    Rule(Integer braceIndex, ParseRule contender){
+    '"com.rem.gen.parser"'.Contender contender;
+    Contender(Integer braceIndex, '"com.rem.gen.parser"'.Contender contender){
       this.brace = Braces.braces.get(braceIndex);
       this.contender = contender;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    Contension contend(CharBuffer chars, Map<Integer,Data> braceData){
       Data data = braceData.get(chars.position());
       if data != null && brace == data.getBrace() {
         CharBuffer buffer = chars.duplicate();
         buffer.position(buffer.position()+data.getBrace().advanceOpen());
-        Parser.__WHITESPACE__.parse(T=>{'""';},new ErrorList.Dummy(),buffer,braceData);
+        Parser.__WHITESPACE__.contend(buffer,braceData);
         buffer.limit(data.getClose());
-        int result = contender.parse(parent,errors,buffer,braceData);
-        if result == Parser.PASS || buffer.position() != data.getClose() {
-          CharBuffer dupe = buffer.duplicate();
-          dupe.limit(dupe.position()+brace.advanceClose());
-          errors.append(new ParseError.WrongString(null,chars.position(),dupe,brace.getCloseString()));
+        '"Contension<?>"' contension = contender.contend(buffer,braceData);
+        if contension.hasErrors() || buffer.position() != data.getClose() {
+          CharBuffer dupe = chars.duplicate();
+          Consumer<ErrorList> previousOnError = contension.getOnError();
+          contension.setOnError(
+            errors=>{
+              previousOnError.accept(errors);
+              errors.adjust(
+                new ParseError.WrongString(
+                  null,
+                  chars.position(),
+                  IntStream.range(0,brace.advanceClose()).boxed().reduce(new StringBuilder(),B,I=>{B.append((char)dupe.get());return B;},P,N=>P).toString(),
+                  brace.getCloseString()));});
         }
         chars.position(data.getClose()+brace.advanceClose());
-        Parser.__WHITESPACE__.parse(T=>{'""';},new ErrorList.Dummy(),buffer,braceData);
-        return Parser.ERROR_ON_END;
+        Parser.__WHITESPACE__.contend(chars,braceData);
+        return contension;
       }
       else {
         CharBuffer dupe = chars.duplicate();
-        dupe.limit(dupe.position()+brace.advanceOpen());
-        errors.adjust(new ParseError.WrongString(null,chars.position(),dupe,brace.getOpenString()));
-        return Parser.FAIL;
+        return new Contension.Unsuccessful().setOnError(
+            errors=>errors.adjust(
+            new ParseError.WrongString(
+                null,
+                chars.position(),
+                IntStream.range(0,brace.advanceOpen()).boxed().reduce(new StringBuilder(),B,I=>{B.append((char)dupe.get());return B;},P,N=>P).toString(),
+                brace.getOpenString())));
       }
     }
   }
@@ -848,6 +835,133 @@ class com.rem.gen.parser.Braces {
     }
   }
 }
+class com.rem.gen.parser.Contension? <T> {
+  Function<Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess()?
+  Consumer<ErrorList> onError;
+  
+  Token.Id id;  T value;
+  Contension(Token.Id id, T value){
+    this.id = id;
+    this.value = value;
+  }
+  boolean hasErrors(){
+    return false;
+  }
+  Contension setOnError(Consumer<ErrorList> newOnError){
+    this.onError = newOnError;
+    return this;
+  }
+  class Unsuccessful Contension<Integer> {
+    Unsuccessful(){
+    }
+    onSuccess(){
+      return null;
+    }
+    boolean hasErrors(){
+      return true;
+    }
+  }
+  class Empty Contension<Void> {
+    Empty(Token.Id id){
+      super(id,null); 
+    }
+    Function<Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+      return Ts=>Stream.empty();
+    }
+  }
+  class Concrete Contension<String> {
+    
+    Concrete (Token.Id id, String value){
+      super(id,value);
+    }
+    
+    Function< Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+      return Ts=>Stream.of(()=>Ts.accept(new Token(id,value)));
+    }
+  }
+  class One {
+    class WithoutId Contension<Contension> {
+      WithoutId (Token.Id id, Contension value){
+        super(id,value);
+      }
+      Function< Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+        return value.onSuccess();
+      }
+    }
+    class WithId Contension<Contension> {
+      WithId (Token.Id id, Contension value){
+        super(id,value);
+      }
+      Function< Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+        return parent=>{
+            Token child = new Token(id,null);
+            return 
+              Stream.of(Stream.of(()=>parent.accept(child)),value.onSuccess().apply(child)).flatMap(S=>S);
+          };
+      }
+    }
+  }
+  class Many {
+    class WithoutId Contension<Contension> {
+      boolean hasErrors = false;
+      WithoutId (Token.Id id, Contension value){
+        super(id,value);
+        hasErrors = this.value.stream().anyMatch(Contension::hasErrors);
+      }
+      Function< Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+        return parent=>this.value.stream().flatMap(C=>C.onSuccess().apply(parent));
+      }
+      boolean hasErrors(){
+        return hasErrors;
+      }
+    }
+    class WithId Contension<Contension> {
+      WithId (Token.Id id, Contension value){
+        super(id,value);
+        hasErrors = this.value.stream().anyMatch(Contension::hasErrors);
+      }
+      Function< Consumer<Consumer<Token>>, Stream<Consumer<Void>> > onSuccess(){
+        return parent=>{
+                 Token child = new Token(id, null);
+                 return Stream.of(Stream.of(()=>parent.accept(child)),
+                                  this.value.stream().flatMap(C=>C.onSuccess().apply(child))).flatMap(S=>S);
+      }
+      boolean hasErrors(){
+        return hasErrors;
+      }
+    }
+  }
+  class Regex Contension<List<Contension>> < Consumer<Token> {
+    StringBuilder builder = new StringBuilder();
+    boolean hasErrors = false;
+    Regex (Token.Id id, List<Contension> value){
+      hasErrors = this.value.stream().anyMatch(Contension::hasErrors);
+      if id == null {
+        this.onSuccess = Ts => {
+          value.stream().forEach(C=>C.tokenize(Contension.Regex.this));
+          Ts.accept(new Token(Token.Id._SYNTAX,builder.toString()));
+        };
+      }
+      else {
+        this.onSuccess = Ts => {
+          value.stream().forEach(C=>C.tokenize(Contension.Regex.this));
+          token.accept(new Token(id,builder.toString()));
+        };
+      }
+    }
+    boolean hasErrors(){
+      return hasErrors;
+    }
+    void accept(Token token){
+      if token.getValue() == null {
+        token.build(this);
+      }
+      else {
+        builder.append(token.getValue());
+      }
+    }
+  }
+}
 
 class com.rem.gen.parser.Token < Consumer<Token> {
 > Set<String> idNames = new HashSet<String>();
@@ -865,11 +979,6 @@ class com.rem.gen.parser.Token < Consumer<Token> {
   Map<Id, List<Token>> map;
   String value;
   Id id;
-  Token(Id id){
-   this.id=id;
-   this.children = new ArrayList<Token>();
-   this.map = new EnumMap<Id, List<Token>>(Id.class);
-  }
   Token(Id id, String value){
     this.id = id;
     if value != null {
@@ -956,7 +1065,7 @@ class com.rem.gen.parser.Token < Consumer<Token> {
 }
 
 class com.rem.gen.parser.ErrorList {
-  List<ParseError> children = new ArrayList<ParseError>();
+  List<ErrorList> children = new ArrayList<ErrorList>();
   ParseError error = null;
   ErrorList(){
   }
@@ -968,50 +1077,32 @@ class com.rem.gen.parser.ErrorList {
       error = newError;
     }
   }
-  void merge( ErrorList errors){
+  void merge(Token.Id id, ErrorList errors){
     children.addAll(errors.children);
     if errors.error != null {
       adjust(errors.error);
     }
   }
-  void append(ParseError errors){
+  void append(ErrorList errors){
     children.add(errors);
   }
   boolean isEmpty(){
-    return error == null && children.isEmpty();
-  }
-  String toString(CharBuffer chars){
-    StringBuilder builder = new StringBuilder();
-    List<Integer> lines = new ArrayList<Integer>();
-    CharBuffer liner = chars.duplicate();
-    IntStream.range(0,chars.limit()).forEach(I=>{if liner.get()=='"\'\\n\'"' {lines.add(I);}});
-    toString('"builder::append"',lines,chars);
-    return builder.toString();
-  }
-  void toString(Consumer<String> builder,List<Integer> lines,CharBuffer chars){
-    children.forEach(C=>C.toString(builder,lines,chars));
-    if error != null {
-      error.toString(builder,lines,chars);
-    }
-  }
-  class Dummy ErrorList {
-    Dummy(){
-    }
-    void adjust(ParseError newError){
-    }
-    void merge( ErrorList errors){
-    }
-    void append(ErrorList errors){
-    }
-    boolean isEmpty(){
-     return true;
-    }
-    String toString(CharBuffer chars){
-      return ''""'';
-    }
-    void toString(Consumer<String> builder,List<Integer> lines,CharBuffer chars){
-    }
-  }
+   return error == null && children.isEmpty();
+ }
+ String toString(CharBuffer chars){
+   StringBuilder builder = new StringBuilder();
+   List<Integer> lines = new ArrayList<Integer>();
+   CharBuffer liner = chars.duplicate();
+   IntStream.range(0,chars.limit()).forEach(I=>{if liner.get()=='"\'\\n\'"' {lines.add(I);}});
+   toString('"builder::append"',lines,chars);
+   return builder.toString();
+ }
+ void toString(Consumer<String> builder,List<Integer> lines,CharBuffer chars){
+   children.forEach(C=>C.toString(builder,lines,chars));
+   if error != null {
+     error.toString(builder,lines,chars);
+   }
+ }
 }
 class com.rem.gen.parser.ParseError? {
   Token.Id id;
@@ -1063,7 +1154,6 @@ class com.rem.gen.parser.ParseError? {
   }
   class WrongString ParseError {
     String found;
-    CharBuffer foundBuffer;
     String options;
     WrongString(Token.Id id, Integer position, char found, String options){
       super(id,position);
@@ -1075,16 +1165,7 @@ class com.rem.gen.parser.ParseError? {
       this.found = found;
       this.options = options;
     }
-    WrongString(Token.Id id, Integer position, CharBuffer found, String options){
-      super(id,position);
-      this.foundBuffer = found;
-      this.options = options;
-    }
     void description(Consumer<String> builder, int carrotPosition){
-      if found == null {
-        found = foundBuffer.chars().boxed().reduce(new StringBuilder(),B,I=>{int i = I; B.append((char)i);return B;},N,P=>N).toString();
-      }
-      this.options = options.replace(''"\\n"'',''"\\\\n"'').replace(''"\\t"'',''"\\\\t"'').replace(''"\\r"'',''"\\\\r"'');
       if this.found.length()<=1 {
         builder.accept(''"Char"'');
       }

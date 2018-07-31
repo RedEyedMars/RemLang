@@ -1,13 +1,16 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputExact extends Output {
 
 	public OutputExact(){
 	}
 	public OutputExact(char value){
+		this.value = ""+value;
+	}
+	public OutputExact(int value){
 		this.value = ""+value;
 	}
 	public OutputExact(boolean value){
@@ -59,8 +62,9 @@ public class OutputExact extends Output {
 	public boolean verify(OutputContext context) {
 		return true;
 	}
-	@Override
-	public void getImports(Set<String> imports) {
+
+	public Stream<? extends Importable> flatStream(){
+		return Stream.empty();
 	}
 
 }

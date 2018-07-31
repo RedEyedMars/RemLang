@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputBraced  extends Output {
 
@@ -17,10 +17,8 @@ public class OutputBraced  extends Output {
 		this.subject = subject;
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		if(subject != null){
-			subject.getImports(imports);
-		}
+	public Stream<? extends Importable> flatStream(){
+		return subject!=null?subject.flatStream():Stream.empty();
 	}
 	@Override
 	public void output(Consumer<String> builder) {

@@ -2,12 +2,9 @@ base silent = base_element*
 comments Braced # # = [.*] as comment
 NAME = [[a-zA-Z_][a-zA-Z0-9_]*]
 OPERATOR
-	"??"
-	"::"
-	"!!"
 	"%%"
 	[[^a-zA-Z0-9_\s(){}[];\"\'`,\\:][^a-zA-Z0-9_\s(){}[];\"\'`,\\]] as exact
-	[[^a-zA-Z0-9_\s(){}[];?!\"\'`,\\:%]] as exact
+	[[^a-zA-Z0-9_\s(){}[];\"\'`,\\%]] as exact
 	"instanceof " as exact
 NUMBER = [[-]?(\d*[.])?\d+[f]?(x[A-F]+)?\s*]
 
@@ -94,29 +91,32 @@ body_element
 	body_add_to_class
 	body_conditional
 	body_statement ";"
+	statement_as_method
 body_conditional
 	("if "|"else" "if"|"while"|"synchronized"|"switch"|"case") as conditional body_statement ( method_body as as_body | statement_as_method )
 	"else" as conditional ( method_body as as_body | statement_as_method )
-	"for "  as conditional (variable_name_definition ("?" as weak | "!" as isFinal)?) as variable_declaration (":"|"<"|">"|">="|"<=") as OPERATOR body_statement ( method_body as as_body | statement_as_method )
+	"for "  as conditional (variable_name_definition ("!" as isFinal)?) as variable_declaration (":"|"<"|">"|">="|"<=") as OPERATOR body_statement ( method_body as as_body | statement_as_method )
 	"try"  as conditional ( method_body as as_body | statement_as_method )
 	"print" as PRINT? "catch" as conditional ("*" | NAME) as exception ( "|" ("*" | NAME) as exception )* ( method_body as as_body | statement_as_method )
 body_statement
-	( OPERATOR?  body_call ) ( OPERATOR  body_call )*
+	( OPERATOR? body_call ) ( OPERATOR "!" as NOT? body_call )*
 body_call
 	"(" all_type_name as cast_statement ")" (((name_atom as name_var method_arguments? |NAME method_arguments)array_parameters*) ) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 	statement_as_braced as as_braced
 	as_statement
+	((type_var|name_var) "::" NAME) as inline_method_reference
 	(("new " as NEW all_type_name method_arguments array_parameters*)|name_var method_arguments? array_parameters*|"%" non_class_name as all_type_name method_arguments?|type_var as all_type_name|NAME method_arguments array_parameters*) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 body_add_to_class
-	type_var ("->*" ( name_var | NAME)? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
+	type_var ("::" ( name_var | NAME)? method_prototype_parameters? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
 body_access_token
 	(name_atom ( "->" as get NAME ) as access*) as tokenAccess ":" NAME as variableName in variable_names ( ":" NAME as tokenName method_body) as tokenInstance+
 
-
+method_prototype_parameters
+	"(" type_var ("," type_var )*  ")"
 method_parameters
-	"(" (variable_name_definition "?" as weak?) as parameter?  ( "," (variable_name_definition "?" as weak?) as parameter? )* ")"
+	"(" (variable_name_definition "!" as isFinal?) as parameter?  ( "," (variable_name_definition "!" as isFinal?) as parameter? )* ")"
 method_argument
-	( NAME as variableName in variable_names? ("," NAME as variableName in variable_names)* "=>" (body_call | method_body as body) ) as lambda
+	( NAME as variableName in variable_names? ("," NAME as variableName in variable_names)* "=>" (body_statement | method_body as body) ) as lambda
 	class_declaration
 	method_declaration
 	variable_declaration
@@ -124,9 +124,9 @@ method_argument
 	body_statement
 	method_body as body_entries
 method_declaration
-	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ( "{?}" as weak | method_body as body )
+	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ( "?" as weak | method_body as body )
 variable_declaration
-	inner? ("@"|"static") as static? variable_name_definition ( "=" method_argument)? ("!" as isFinal|"?" as weak|";")
+	inner? ("@"|"static") as static? variable_name_definition ( "=" method_argument)? ("!" as isFinal|";")
 variable_assignment
 	name_var "=" method_argument
 
@@ -176,11 +176,11 @@ non_class_name
 
 name_var
 	( name_atom ( ("->>" as getAllSafely | "->" as get) NAME ) as access+ ) as tokenAccess
+	statement_as_quote as name_atom
 	name_atom ( "+" name_atom )*
 name_atom
 	statement_as_char
 	statement_as_method
-	statement_as_quote
 	statement_as_string
 	quote
 	NUMBER

@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputVibrant extends Output {
 
@@ -30,9 +30,8 @@ public class OutputVibrant extends Output {
 		return this.verify(context);
 	}
 
-	@Override
-	public void getImports(Set<String> imports) {
-		this.output.getImports(imports);
+	public Stream<? extends Importable> flatStream(){
+		return output.flatStream();
 	}
 
 }

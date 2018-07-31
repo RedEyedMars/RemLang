@@ -33,17 +33,11 @@
 	else if input->variableParameters != null{
 	  newMethod.parametersAsVariable(body_gen.statement(input->variableParameters->statement_as_method->body_statement,true,parentContext));
 	}
-	#if input->"throwException" != null {
-	  StringBuilder exceptionBuilder = new StringBuilder();
-	  ~String comma = "";
-	  for Token element: input.getAllSafely("throwException"){
-	    exceptionBuilder.append(comma);
-	    exceptionBuilder.append('element');
-	    exceptionBuilder.append("Exception");
-	    comma = ",";
+	if input->throwsException != null {
+	  input->throwsException : element : exception {
+	    newMethod._throws('element');
 	  }
-	  newMethod.setThrowsStatement(exceptionBuilder.toString());
-	}#
+	}
 	if input->body != null {
 	  %B methodBody = %B();
 	  methodBody.setParent(parentContext);

@@ -104,7 +104,9 @@
 	}
 	else {
 	  outerClass.isNonStatic();
-	  innerClass.isNonStatic();
+	  if isInner {
+	    innerClass.isNonStatic();
+	  }
 	}
 	return outerClass;
   }

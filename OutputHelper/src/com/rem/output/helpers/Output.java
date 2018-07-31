@@ -2,7 +2,7 @@ package com.rem.output.helpers;
 
 import java.util.function.Consumer;
 
-public abstract class Output implements Outputable, Stasisable, Verifyable, Importable {
+public abstract class Output implements Outputable, Stasisable, Verifyable, Flattenable {
 	protected String value = null;
 	public String evaluate(){
 		if(value!=null){

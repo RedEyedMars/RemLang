@@ -64,7 +64,9 @@
           Boolean isCase = false;
           String conditionalName = "";
           exceptionIndex = 0;
-          if element->conditional.getAll()==null {
+          if element->conditional_choice != null {
+          }
+          else if element->conditional.getAll()==null {
             conditionalName = element->conditional.getValue().trim();
           }
           else {
@@ -113,9 +115,9 @@
               else {
                 exceptionTypeName = %Helper.camelize(atom.getValue()) + "Exception";
               }
-              exceptionType.or(new %Type().set(exceptionTypeName));
+              exceptionType = exceptionType.or(new %Type(exceptionTypeName));
             }
-            header = new %Header().declare('exceptionType' '"e"+exceptionIndex';);
+            header = new %Header().declare(%V().set(exceptionType,%E('"e"+exceptionIndex')));
           }
           else if headerCall != null {
             header.call(headerCall);
@@ -147,7 +149,10 @@
               ++exceptionIndex;
             }
           }
-          if conditionalName.contains("case") {
+          if element->conditional_choice != null {
+            return resultingConditional.optionalIf('element->conditional_choice','element->conditional_operator'.contains("+")).header(header);
+          }
+          else if conditionalName.contains("case") {
             return resultingConditional.init(conditionalName.trim()+" "+headerCall.evaluate()+":");
           }
           else {
@@ -181,6 +186,9 @@
 	      if element->exact != null {
 	        statement.operator(element.getValue().trim());
 	      }
+	      else if element->instance != null {
+	        statement.operator(" instanceof ");
+	      }
 	      else {
 	        statement.operator(element.getValue().substring(1).trim());
 	      }
@@ -207,6 +215,30 @@
           %Output newBodyElement = body_gen.statement(element,false,parentContext);
           if newBodyElement != null {
             return newBodyElement.stasis();
+          }
+        }
+      }
+      else if input->inline_method_reference != null {
+        if isInner == false {
+          if input->inline_method_reference->name_var != null {
+            return %Operator().left(classwise.name_var(input->inline_method_reference->name_var,isInner,parentContext)).operator("::").right(%E('input->inline_method_reference->NAME'));
+          }
+          else {
+            return %Operator().left(classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext)).operator("::").right(%E('input->inline_method_reference->NAME'));
+          } 
+        }
+        else {
+          if input->inline_method_reference->method_prototype_parameters != null {
+            %A parameters = %A();
+            input->inline_method_reference->method_prototype_parameters : type_var : type_var {
+              parameters.add(classwise.type_var(type_var,isInner,parentContext));
+            }
+            return classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext).getAsGetClass().add(%E("getMethod"),%A().add(%Quote(
+              %Call().add(%E('input->inline_method_reference->NAME'),parameters)))); 
+          }
+          else {
+            return classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext).getAsGetClass().add(%E("getMethod"),%A().add(%Quote(
+              %Call().add(%E('input->inline_method_reference->NAME')))));
           }
         }
       }
@@ -240,11 +272,11 @@
 		    call = new %New Object().set(type,arguments);
 		  }
 		  else {
-		    if hasMethodOrVariable {
+		    if hasMethodOrVariable || isInner == false {
 		      call = new %Static Call().set(type);
 		    }
 		    else {
-		      call = new %Static Call().set(type).add(new %E("OUTPUT"));
+		      call = type.getAsGetClass();
 		    }
 		  }
 		}
@@ -295,18 +327,28 @@
       else {
         accessMethod = new %E('input->accessMethod->NAME');
       }
+      if input->accessMethod->method_prototype_parameters != null {
+        %A types = %A();
+        input->accessMethod->method_prototype_parameters : type_var : type_var {
+          types.add(classwise.type_var(type_var,true,parentContext));
+        }
+        accessMethod = %Call().add(accessMethod,types);
+      }
+      else {
+        accessMethod = %Call().add(accessMethod,%A);
+      }
     }
     else {
       accessMethod = null;
     }
     if input->class_declaration != null {
-      return |%Helper.getClass('' type '').addEnclosedClass(`classGenerator.declaration(input->class_declaration,new %Class(),false,parentContext).stasis()`);|;
+      return |%Helper.getClass('' type '').encloseClass(`classGenerator.declaration(input->class_declaration,new %Class(),false,parentContext).stasis()`);|;
     }
     else if input->method_declaration != null {
-      return |%Helper.getClass('' type '').addMethod(`method.declaration(input->method_declaration,false,parentContext).stasis()`);|;
+      return |%Helper.getClass('' type '').method(`method.declaration(input->method_declaration,false,parentContext).stasis()`);|;
     }
     else if input->variable_declaration != null {
-      return |%Helper.getClass('' type '').addVariable(`variable.declaration(input->variable_declaration,false,parentContext).stasis()`);|;
+      return |%Helper.getClass('' type '').variable(`variable.declaration(input->variable_declaration,false,parentContext).stasis()`);|;
     }
     else {
       %Body arguments = new %Body();
@@ -323,7 +365,7 @@
           arguments.add(body_gen.element(element,false,parentContext));
         }
       }
-      return |%Helper.getClass('' type '').getMethod(accessMethod).add(`arguments.stasis()`);|;
+      return |%Helper.getClass('' type '').getMethod(`%Quote().set(accessMethod)`).add(`arguments.stasis()`);|;
     }
   }
     

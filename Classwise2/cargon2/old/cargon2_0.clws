@@ -1,0 +1,1061 @@
+imports cargon2
+import regex
+
+> %A rootSetCall = %A;
+> Set<String> rulenames = new HashSet<String>();
+> %A ignoreSpace = %A;
+> void setup(%Pass result){
+    %T root = result.getRoot();
+    root : rule : rule {
+      if rulenames.add('rule->ruleName') {
+        String idName = "_"+'rule->ruleName';
+        Parser += @Contender.Multiplicity 'idName' = new Contender.One(Token.Id.'idName');
+        if rulenames.size() == 1{
+          rootSetCall.add(|'idName'|);
+        }
+      }
+    }
+    if ignoreSpace.isEmpty() {
+      ignoreSpace.add(%E(" \t\n\r"));
+    }
+  }
+> void generate(%Pass result){
+    %T root = result.getRoot();
+    List<%T> rules = root->>rule;
+    root : rule : rule {
+      String variableName = "_"+'rule->ruleName';
+      Parser::setup() += |'variableName'.set(`rule(rule)`);|
+      Token.addId(variableName);
+    }
+  }
+> %Output rule(%T rule){
+    %Output subRule;
+    %A definitions = %A();
+    define(rule->definition,definitions);
+    if definitions.isSingle() {
+      subRule = definitions.get(0);
+    }
+    else {
+      subRule = |new Contender.Branch(`definitions`)|;
+    }
+    if rule->braced_parameters != null {#'rule->braced_parameters->left' == 'rule->braced_parameters->right',#
+      return %New Object().set(%Type("Braces").add("Contender"),%A().add(%E(Braces.addBrace(
+         'rule->braced_parameters->left' == 'rule->braced_parameters->right',
+         'rule->braced_parameters->left',
+         'rule->braced_parameters->right',
+         "\\"
+         ))).add(subRule));
+    }
+    else {
+      return subRule;
+    }
+  }
+> void define(%T definition,%A definitions){
+    %A args = %A();
+    definition : chain : chain {
+      args.add(element(chain->element));
+    }
+    if args.isSingle() {
+      definitions.add(args.get(0));
+    }
+    else {
+      definitions.add(|new Contender.Chain(`args`)|);
+    }
+    if definition->choice != null {
+      define(definition->choice->definition,definitions);
+    }
+  }
+> %New Object element(%T element){
+    %A args = %A();
+    if element->newName != null {
+      String newName = "_"+'element->newName';
+      args.add(|Token.Id.'newName'|);
+      Token.addId(newName);
+    }
+    else {
+      args.add(|null|);
+    }
+    element : quark 
+      : braced_definition {
+        args.add(rule(quark));
+      }
+      : quoteToken {
+        args.add(|new Contender.Terminal('' quark.toString().replace("\\","\\\\") '')|);
+      }
+      : regexToken {
+        args.add(regex(quark->regex));
+      }
+      : ruleToken {
+        String subRuleName = "_"+'quark';
+        args.add(|'subRuleName'|);
+      }
+    if element->multiple == null {
+      return %New Object().set(%Type("Contender").add("One"),args);
+    }
+    else {
+      element->multiple : multiple : OPTIONAL {
+        return %New Object().set(%Type("Contender").add("Optional"),args);
+      }
+      : MANY {
+        return %New Object().set(%Type("Contender").add("Many"),args);
+      }
+      : PLUS {
+        return %New Object().set(%Type("Contender").add("More"),args);
+      }
+      return null;
+    }
+    
+  }
+class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<Parser.Result,Parser.Result.Pass>"' {
+  @Contender.Multiplicity __ROOT__ = new Contender.One(Token.Id.ROOT);
+  @Contender.Multiplicity __WHITESPACE__ = new Contender.Many(Token.Id.WHITESPACE); 
+  void setup(){
+    __ROOT__.set(`rootSetCall`);
+    __WHITESPACE__.set(new Contender.Any(`ignoreSpace`));
+  }
+  Parser.Result.Pass asPass(Parser.Result result){
+    return (result instanceof Parser.Result.Pass)?(Parser.Result.Pass)result:null;
+  }
+  
+  %Result parse(String fileName) {
+    setup();
+    try {
+      File file = new File(fileName);
+      if !file.exists() {
+        return null;
+      }
+      BufferedReader reader = new BufferedReader(new FileReader(file));
+	  CharBuffer chars = CharBuffer.allocate((int) file.length()+1);
+	  reader.read(chars);
+	  chars.position(0);
+      %Result result = parse(chars);
+      reader.close();
+      return result.setFileName(fileName);
+    }
+    print catch IO {}
+    return null;
+  }
+  %Result parse(CharBuffer chars){
+    Map<Integer, Braces.BraceData> braceData = braces.find(chars);
+    Contension contension = __ROOT__.contend(chars,braceData);
+    ErrorList errors = contension.errors();
+    if errors.isEmpty() {
+      if chars.remaining() == 1 || chars.remaining() == 0 {  
+        Token rootToken = new Token(Token.Id.ROOT,null);
+        contension.tokenize(rootToken);
+        return new Parser.Result.Pass(rootToken);
+      }
+      else {
+        return new Parser.Result.Fail.EOFNotReached(__ROOT__.findFurthest(chars,braceData));
+      }
+    }
+    else {
+      return new Parser.Result.Fail.Error(errors);
+    }
+  }
+  
+  class Result {
+    String fileName;
+    Result setFileName(String newFileName){
+      fileName = newFileName;
+      return this;
+    }
+    class Pass Result {
+      Token rootToken;
+      Pass(Token rootToken){
+        super();
+        this.rootToken = rootToken;
+      }
+      String toString(){
+		if rootToken!=null {
+		  StringBuilder builder = new StringBuilder();
+		  rootToken.print(builder::append);
+		  return builder.toString();
+		}
+		else {
+		  return ''"NULL TOKEN"'';
+		}
+	  }
+    }
+    class Fail {
+      class Error  Result {
+        ErrorList errors;
+        Error(ErrorList errors){
+          this.errors = errors;
+        }
+      }
+      class EOFNotReached {
+        ErrorList errors;
+        EOFNotReached(ErrorList errors){
+          this.errors = errors;
+        }
+      }
+    }
+  }
+}
+interface com.rem.gen.parser.Contender {
+  Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData)?
+  interface Multiplicity Contender {
+    void set(Contender subContender)?
+  }
+  class One < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    One(Token.Id id){
+      this.id = id;
+    }
+    One(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension findFurthest(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      return contender.contend(chars,braceData);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      Contension result = contender.contend(chars,braceData);
+      if result.errors().isEmpty() {
+        if id == null{
+          return result;
+        }
+        else {
+          return new Contension.One(id,result);
+        }
+      }
+      else {
+        return result;
+      }
+    }
+  }
+  class Optional < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    Optional(Token.Id id){
+      this.id = id;
+    }
+    Optional(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension findFurthest(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      return contender.contend(chars,braceData);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      int position = chars.position();
+      Contension result = contender.contend(chars,braceData);
+      if result.errors().isEmpty() {
+        if id == null {
+          return result;
+        }
+        else {
+          return new Contension.One(id,result);
+        }
+      }
+      else {
+        chars.position(position);
+        return new Contension.Empty(id);
+      }
+    }
+  }
+  class Many < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    Many(Token.Id id){
+      this.id = id;
+    }
+    Many(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension findFurthest(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while result.errors().isEmpty() {
+        results.add(result);
+        result = contender.contend(chars,braceData);
+      }
+      return result;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while result.errors().isEmpty() {
+        results.add(result);
+        result = contender.contend(chars,braceData);
+      }
+      if results.isEmpty() {
+        return new Contension.Empty(id);
+      }
+      else {
+        if results.size() == 1 {
+          if id == null {
+            return results.get(0);
+          }
+          else {
+            return new Contension.One(id,results.get(0));
+          }
+        }
+        else {
+          return new Contension.Many(id,results);
+        }
+      }
+    }
+  }
+  class More < Contender.Multiplicity {
+    Contender contender;
+    Token.Id id;
+    More(Token.Id id){
+      this.id = id;
+    }
+    More(Token.Id id, Contender contender){
+      this.contender = contender;
+      this.id = id;
+    }
+    void set(Contender contender){
+      this.contender = contender;
+    }
+    Contension findFurthest(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while result.errors().isEmpty() {
+        results.add(result);
+        result = contender.contend(chars,braceData);
+      }
+      return result;
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      List<Contension> results = new ArrayList<Contension>();
+      Contension result = contender.contend(chars,braceData);
+      while result.errors().isEmpty() {
+        results.add(result);
+        result = contender.contend(chars, braceData);
+      }
+      if results.isEmpty() {
+        return result;
+      }
+      else {
+        if results.size() == 1 {
+          if id == null {
+            return results.get(0);
+          }
+          else {
+            return new Contension.One(id,results.get(0));
+          }
+        }
+        else {
+          return new Contension.Many(id,results);
+        }
+      }
+    }
+  }
+  class Not < Contender {
+    List<Contender> contenders;
+    Not(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
+    }
+    Contension findFurthest(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      CharBuffer buffer = chars.duplicate();
+      if contenders.parallelStream().map(
+          C=>C.contend(buffer,braceData)).allMatch(C=>!C.errors().isEmpty()) {
+          return new Contension.Concrete(Token.Id._SYNTAX,new Character(chars.get()).toString());
+      }
+      else {
+          return new Contension.Unsuccessful(null,chars.position());
+      }
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      if contenders.parallelStream().map(
+          C=>C.contend(chars.duplicate(),braceData)).allMatch(C=>!C.errors().isEmpty()) {
+          return new Contension.Concrete(Token.Id._SYNTAX,new Character(chars.get()).toString());
+      }
+      else {
+          return new Contension.Unsuccessful(null,chars.position());
+      }
+    }
+  }
+  class Branch < Contender {
+    List<Contender> contenders;
+    Branch(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      return conders.parallelStream().map(C=>C.contend(chars.duplicate(),braceData)).filter(C=>!C.hasErrors()).findFirst();
+	  int furthestPosition = -1;
+	  Contension furthest = null;
+	  for Contender contender: contenders {
+		Contension result = contender.contend(chars, braceData);
+		if result.noErrors() {
+			return result;
+		}
+		else if(result.errors().getFurthest()>furthestPosition){
+		  furthestPosition = result.errors().getFurthest();
+		  furthest = result;
+		}
+	  }
+	  return furthest;
+	}
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+	  int furthestPosition = -1;
+	  Contension furthest = null;
+	  for Contender contender: contenders {
+		Contension result = contender.contend(chars, braceData);
+		if result.noErrors() {
+			return result;
+		}
+		else if(result.errors().getFurthest()>furthestPosition){
+		  furthestPosition = result.errors().getFurthest();
+		  furthest = result;
+		}
+	  }
+	  return furthest;
+	}
+    #
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      HasErrors errors = new HasErrors(); 
+      return contenders.parallelStream().map(
+          C=>new ErrorPlot(C.contend(chars.duplicate(),braceData),errors)).filter(E=>errors.has()?true:E.getContension().errors().isEmpty()).sorted().map(E=>E.getContension()).findFirst().orElse(null);
+    }
+    class HasErrors {
+      boolean hasErrors = true;
+      void foundFreeOfErrors(){
+        hasErrors = false;
+      }
+      boolean has(){
+        return hasErrors;
+      }
+    }
+    class ErrorPlot < Comparable<ErrorPlot> {
+      int furthest;
+      Contension contension;
+      ErrorPlot(Contension contension,HasErrors errors){
+        this.contension = contension;
+        if contension.errors().isEmpty() {
+          errors.foundFreeOfErrors();
+        }
+        else {
+          furthest = contension.errors().getFurthest();
+        }
+      }
+      int compareTo(ErrorPlot plot){
+        return plot.furthest - furthest;
+      }
+    }#
+  }
+  class Chain < Contender {
+    List<Contender> contenders;
+    Chain(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      int position = chars.position();
+      List<Contension> results = new ArrayList<Contension>(contenders.size());
+      return contenders.stream().map(C=>{
+        Contension result = C.contend(chars,braceData);
+        if result.errors().isEmpty() {
+          results.add(result);
+          return null;
+        }
+        else {
+          chars.position(position);
+          return result;
+        }
+        }).filter(R=>R!=null).findAny().orElse(new Contension.Many(null,results));
+    }
+  }
+  class Regex < Contender {
+    List<Contender> contenders;
+    Regex(Contender... contenders){
+      this.contenders = Arrays.asList(contenders);
+    }
+    Contension contend(CharBuffer chars,Map<Integer, Braces.BraceData> braceData){
+      int position = chars.position();
+      List<Contension> results = new ArrayList<Contension>(contenders.size());
+      for Contender contender: contenders {
+        Contension result = contender.contend(chars,braceData);
+        if result.errors().isEmpty() {
+          results.add(result);
+        }
+        else {
+          chars.position(position);
+          return result;
+        }
+      }
+      Parser.__WHITESPACE__.contend(chars,braceData);
+      return new Contension.Regex(null,results);
+    }
+  }
+  class Range < Contender {
+    int lowerBound;
+    int upperBound;
+    Range(int lowerBound, int upperBound){
+      this.lowerBound = lowerBound;
+      this.upperBound = upperBound;
+    }
+    Contension contend(CharBuffer chars,Map<Integer,Braces.BraceData> braceData){
+      if chars.remaining() == 0 {
+        return new Contension.Unsuccessful(null,chars.position());
+      }
+      else {
+        char c = chars.get();
+        if c >= lowerBound && c <= upperBound {
+          return new Contension.Concrete(Token.Id._SYNTAX,'' "" ''+c);
+        }
+        else {
+          chars.position(chars.position()-1);
+          return new Contension.Unsuccessful(null,chars.position());
+        }
+      }
+    }
+  }
+  class Any < Contender {
+    String value;
+    Any(String value){
+      this.value = value;
+    }
+    Contension contend(CharBuffer chars,Map<Integer,Braces.BraceData> braceData){
+      if chars.remaining() == 0 {
+        return new Contension.Unsuccessful(null,chars.position());
+      }
+      else {
+        char c = chars.get();
+        if value.chars().anyMatch(C=>C==c) {
+          return new Contension.Concrete(null,'' "" ''+c);
+        }
+        else {
+          chars.position(chars.position()-1);
+          return new Contension.Unsuccessful(Token.Id._SYNTAX,chars.position());
+        }
+      }
+    }
+  }
+  class Terminal < Contender {
+    String value;
+    Terminal(String value){
+      this.value = value;
+    }
+    Contension contend(CharBuffer chars,Map<Integer,Braces.BraceData> braceData){
+      if value.length() > chars.remaining() {
+        return new Contension.Unsuccessful(null,chars.position());
+      }
+      else {
+        CharBuffer buffer = chars.duplicate();
+        buffer.limit(buffer.position()+value.length());
+        OfInt values = value.chars().iterator();
+        if buffer.chars().allMatch(C=>C==values.next()) {
+          chars.position(chars.position()+value.length());
+          Parser.__WHITESPACE__.contend(chars,braceData);
+          return new Contension.Concrete(Token.Id._SYNTAX,value);
+        }
+        else {
+          return new Contension.Unsuccessful(null,chars.position());
+        }
+      }
+    }
+    
+  }
+  class Char < Contender {
+    char value;
+    Char(char value){
+      this.value = value;
+    }
+    Contension contend(CharBuffer chars,Map<Integer,Braces.BraceData> braceData){
+      if chars.remaining() < 1 {
+        return new Contension.Unsuccessful(null,chars.position());
+      }
+      else {
+        if chars.get() == this.value {
+          chars.position(chars.position()+1);
+          return new Contension.Concrete(Token.Id._SYNTAX,''""''+value);
+        }
+        else {
+          chars.position(chars.position()-1);
+          return new Contension.Unsuccessful(Token.Id._SYNTAX,chars.position());
+        }
+      }
+    }
+    
+  }
+}
+
+class com.rem.gen.parser.Braces {
+  interface Brace {
+    boolean open(int c1, int c2)?
+    boolean close(int c1, int c2)?
+    boolean ignore(int c)?
+    boolean isLock()?
+    int advanceOpen()?
+    int advanceClose()?
+  }
+  class B11 < Brace {
+    char ignore = char\\;
+    char open;
+    char close;
+    boolean isLock = false;
+    B11(char o, char c, char i, boolean isLock){
+      open = o;
+      close = c;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open;  }
+    boolean close(int c1, int c2){ return c1==close; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 1;         }
+    int advanceClose(){            return 1;         }
+  }
+  class B12 < Brace {
+    char ignore = char\\;
+    char open;
+    char close1;
+    char close2;
+    boolean isLock = false;
+    B12(char o, char c1, char c2, char i, boolean isLock){
+      open = o;
+      close1 = c1;
+      close2 = c2;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open;  }
+    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 1;         }
+    int advanceClose(){            return 2;         }
+  }
+  class B21 < Brace {
+    char ignore = char\\;
+    char open1;
+    char open2;
+    char close;
+    boolean isLock = false;
+    B21(char o1, char o2, char c, char i, boolean isLock){
+      open1 = o1;
+      open2 = o2;
+      close = c;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
+    boolean close(int c1, int c2){ return c1==close; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 2;         }
+    int advanceClose(){            return 1;         }
+  }
+  class B22 < Brace {
+    char ignore = char\\;
+    char open1;
+    char open2;
+    char close1;
+    char close2;
+    boolean isLock = false;
+    B22(char o1, char o2, char c1, char c2, char i, boolean isLock){
+      open1 = o1;
+      open2 = o2;
+      close1 = c1;
+      close2 = c2;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
+    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 2;         }
+    int advanceClose(){            return 2;         }
+  }
+  class Contender < '"com.rem.gen.parser"'.Contender {
+    Brace brace;
+    '"com.rem.gen.parser"'.Contender contender;
+    Contender(Integer braceIndex, '"com.rem.gen.parser"'.Contender contender){
+      this.brace = Braces.braces.get(braceIndex);
+      this.contender = contender;
+    }
+    Contension contend(CharBuffer chars, Map<Integer,BraceData> braceData){
+      BraceData data = braceData.get(chars.position());
+      if data != null {
+        CharBuffer buffer = chars.duplicate();
+        buffer.position(buffer.position()+data.getBrace().advanceOpen());
+        buffer.limit(data.getClose());
+        Contension contension = contender.contend(buffer,braceData);
+        if contension.errors().isEmpty() {
+          if data.getClose() == buffer.position() {
+            chars.position(data.getClose()+data.getBrace().advanceClose());
+            return contension;
+          }
+          else {
+            chars.position(data.getClose()+data.getBrace().advanceClose());
+            return new Contension.Unsuccessful(null,buffer.position());
+          }
+        }
+        else {
+          chars.position(data.getClose()+data.getBrace().advanceClose());
+          return contension;
+        }
+      }
+      else {
+        return new Contension.Unsuccessful(null,chars.position());
+      }
+    }
+  }
+  > %A braces_2_2 = %A;
+  > %A braces_2_1 = %A;
+  > %A braces_1_2 = %A;
+  > %A braces_1_1 = %A;
+  > %A allBraces = %A.add(braces_2_2).add(braces_2_1).add(braces_1_2).add(braces_1_1);
+  > Map<String,Integer> allBraceMap = new HashMap<String,Integer>();
+  > void setup(){
+  }
+  > Integer addBrace(boolean lock, String open, String close, String ignore){
+    if !allBraceMap.containsKey(open+''" "''+close) {
+      if open.length() == 1 {
+        if close.length() == 1 {
+          braces_1_1.add(|new Braces.B11(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+        else {
+          braces_1_2.add(|new Braces.B12(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+      }
+      else {
+        if close.length() == 1 {
+          braces_2_1.add(|new Braces.B21(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+        else {
+          braces_2_2.add(|new Braces.B22(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        } 
+      }
+      allBraceMap.put(open+''" "''+close,allBraceMap.size());
+    }
+    return allBraceMap.get(open+''" "''+close);
+  }
+  @List<Brace> braces = Arrays.asList(`allBraces`);
+  @Map<Integer,BraceData> find(CharBuffer chars){
+    Stack<BraceData> data = new Stack<BraceData>();
+    Map<Integer, BraceData> positions = new HashMap<Integer,BraceData>();
+    OfInt itr = chars.duplicate().chars().iterator();
+    if !itr.hasNext() {
+      return positions;
+    }
+    boolean locked = false;
+    int position = 0;
+    int c1;
+    int c2;
+    int c3 = itr.next();
+    if !itr.hasNext() {
+      return positions;
+    }
+    c2 = c3;
+    c3 = itr.next();
+    int cf1 = c2;
+    int cf2 = c3;
+    Brace open = braces.stream().filter(B=>B.open(cf1,cf2)).findAny().orElse(null);
+    if open != null {
+      data.push(new BraceData(position,open));
+      locked = open.isLock();
+    }
+    while itr.hasNext() {
+      c1 = c2;
+      c2 = c3;
+      c3 = itr.next();
+      if !data.isEmpty() {
+        if !data.peek().getBrace().ignore(c1)&&data.peek().getBrace().close(c2,c3) {
+          locked = false;
+          positions.put(position,data.pop().close(position));
+          ++position;
+          continue;
+        }
+      }
+      if !locked {
+        int cf3 = c1;
+        int cf4 = c2;
+        int cf5 = c3;
+        open = braces.stream().filter(B=>!B.ignore(cf3)&&B.open(cf4,cf5)).findAny().orElse(null);
+        if open != null {
+          data.push(new BraceData(position,open));
+          locked = open.isLock();
+        }
+      }
+      ++position;
+    }
+    return positions;
+  }
+  class BraceData {
+    Integer open;
+    Integer close;
+    Brace brace;
+    
+    BraceData(Integer start, Brace brace){
+      this.open = start;
+      this.brace = brace;
+    }
+    BraceData close(Integer close){
+      this.close = close;
+      return this;
+    }
+  }
+}
+class com.rem.gen.parser.Contension? <T> {
+  Token.Id id;
+  T value;
+  
+  Contension(Token.Id id, T value){
+    this.id = id;
+    this.value = value;
+  }
+  
+  boolean noErrors(){ return errors().isEmpty(); }
+  
+  ErrorList errors()?
+  void tokenize(Consumer<Token> token)?
+
+  class Unsuccessful Contension<Integer> {
+    Unsuccessful(Token.Id id, Integer position){
+      super(id,position);
+    }
+    ErrorList errors(){
+      return new ErrorList(new ParseError(this.id,this.value));
+    }
+    void tokenize(Consumer<Token> token){
+    }
+  }
+  class Empty Contension<Void> {
+    Empty(Token.Id id){
+      super(id,null);
+    }
+    ErrorList errors(){
+      return new ErrorList();
+    }
+    void tokenize(Consumer<Token> token){
+    }
+  }
+  class Concrete Contension<String> {
+    
+    Concrete (Token.Id id, String value){
+      super(id,value);
+    }
+    ErrorList errors(){
+      return new ErrorList();
+    }
+    void tokenize(Consumer<Token> tokens){
+      tokens.accept(new Token(this.id==null?Token.Id._SYNTAX:this.id,this.value));
+    }
+  }
+  class One Contension<Contension> {
+    One (Token.Id id, Contension value){
+      super(id,value);
+    }
+    ErrorList errors(){
+      return this.value.errors();
+    }
+    void tokenize(Consumer<Token> token){
+      if this.id == null {
+        this.value.tokenize(token);
+      }
+      else {
+        Token subToken = new Token(this.id,null);
+        token.accept(subToken);
+        this.value.tokenize(subToken);
+      }
+    }
+  }
+  class Many Contension<List<Contension>> {
+    Many (Token.Id id, List<Contension> value){
+      super(id,value);
+    }
+    ErrorList errors(){
+      ErrorList result = new ErrorList();
+      this.value.stream().map(C=>C.errors()).forEach(E=>result.addAll(E));
+      return result;
+    }
+    void tokenize(Consumer<Token> token){
+      if this.id == null {
+        this.value.stream().forEach(C=>C.tokenize(token));
+      }
+      else {
+        Token subToken = new Token(this.id,null);
+        token.accept(subToken);
+        this.value.stream().forEach(C=>C.tokenize(subToken));
+      }
+    }
+  }
+  class Regex Contension<List<Contension>> < Consumer<Token> {
+    StringBuilder builder;
+    Regex (Token.Id id, List<Contension> value){
+      super(id,value);
+    }
+    ErrorList errors(){
+      ErrorList result = new ErrorList();
+      this.value.stream().map(C=>C.errors()).forEach(E=>result.addAll(E));
+      return result;
+    }
+    void tokenize(Consumer<Token> token){
+      builder = new StringBuilder();
+      this.value.stream().forEach(C=>C.tokenize(Contension.Regex.this));
+      if this.id == null {
+        token.accept(new Token(Token.Id._SYNTAX,builder.toString()));
+      }
+      else {
+        token.accept(new Token(this.id,builder.toString()));
+      }
+    }
+    void accept(Token token){
+      if token.getValue() == null {
+        token.build(this);
+      }
+      else {
+        builder.append(token.getValue());
+      }
+    }
+  }
+}
+
+class com.rem.gen.parser.Token < Consumer<Token> {
+> Set<String> idNames = new HashSet<String>();
+> void addId(String idName){
+    if idNames.add(idName){
+      Token.Id += void 'idName';
+    }
+  }
+  enum Id {
+    void ROOT;
+    void WHITESPACE;
+    void _SYNTAX;
+  }
+  List<Token> children;
+  Map<Id, List<Token>> map;
+  String value;
+  Id id;
+  Token(Id id, String value){
+    this.id = id;
+    if value != null {
+      this.value = value;
+    }
+    else {
+     this.children = new ArrayList<Token>();
+     this.map = new EnumMap<Id, List<Token>>(Id.class);
+    }
+  }
+  void accept(Token newToken){
+    this.children.add(newToken);
+    if this.map.containsKey(newToken.id) == false {
+      this.map.put(newToken.id,new ArrayList<Token>());
+    }
+    this.map.get(newToken.id).add(newToken);
+  }
+  void build(Consumer<Token> builder){
+    if children != null {
+      children.forEach(builder);
+    }
+    else {
+      builder.accept(this);
+    }
+  }
+  Token get(Id id){
+    List<Token> result = map.get(id);
+    if result != null && result.isEmpty() == false {
+      return result.get(0);
+    }
+    else {
+      return null;
+    }
+  }
+  List<Token> getAll(){
+    return children;
+  }
+  List<Token> getAllSafely(Id id){
+    List<Token> result = map.get(id);
+    if result != null {
+      return result;
+    }
+    else {
+      return new ArrayList<Token>();
+    }
+  }
+  String toString(){
+    if children == null {
+      return value;
+    }
+    else {
+      return children.isEmpty()?null:children.get(0).toString();
+    }
+  }
+  void print(){
+    print(System.'"out"'::print);
+  }
+  void print(Consumer<String> consumer){
+    print(0,consumer);
+  }
+  void print(int tabs, Consumer<String> consumer){
+    if id == Token.Id.ROOT {
+      if children != null {
+        children.forEach(C=>C.print(tabs,consumer));
+      }
+      return;
+    }
+    if tabs != 0 { consumer.accept(''"\\n"''); }
+    IntStream.range(0,tabs).forEach(I=>consumer.accept(''"  "''));
+    consumer.accept(id.toString().substring(1));
+    if children == null {
+      consumer.accept(''":"''+value);
+    }
+    else {
+      children.forEach(C=>C.print(tabs+''"+"''+1,consumer));
+    }
+  }
+  Token.Id getName() {
+    return id;
+  }
+  String getValue(){
+    return toString();
+  }
+}
+
+class com.rem.gen.parser.ErrorList {
+  List<ParseError> list;
+  int furthest = 0;
+  ErrorList(){
+    list = new ArrayList<ParseError>();
+  }
+  ErrorList(ParseError error){
+    list = Arrays.asList(error);
+  }
+  void add(ParseError newError){
+    list.add(newError);
+    if newError.getPosition() > furthest {
+      furthest = newError.getPosition();
+    }
+  }
+  void addAll(ErrorList errors){
+    if errors.furthest > furthest {
+      furthest = errors.furthest;
+    }
+    list.addAll(errors.list);
+  }
+  boolean isEmpty(){
+   return list.isEmpty();
+ }
+}
+class com.rem.gen.parser.ParseError {
+  Token.Id id;
+  Integer position;
+  ParseError(Token.Id id, Integer position){
+    this.id = id;
+    this.position = position;
+  }
+}
+
+
+
+
+
+

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
@@ -14,6 +13,7 @@ public class OutputLine extends ArrayList<Outputable>{
 	private int nextTabs = 0;
 	private boolean isBlank = false;
 
+	@SuppressWarnings("unchecked")
 	public void output(int tabs, Consumer<String> builder){
 		Supplier<Supplier<?>> current = get(tabs,builder);
 		while(current!=null){

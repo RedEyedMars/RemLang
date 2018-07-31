@@ -1,15 +1,15 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 public class OutputBlankStatement extends LineableOutput {
 	@Override
 	public OutputLine line() {
 		return new OutputLine().blank();
 	}
-
 	@Override
-	public void getImports(Set<String> imports) {
+	public Stream<Importable> flatStream() {
+		return Stream.empty();
 	}
 	@Override
 	public Output stasis() {

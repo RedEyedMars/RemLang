@@ -2,7 +2,7 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.stream.Stream;
 
 public class OutputBody extends OutputContext {
 
@@ -13,6 +13,13 @@ public class OutputBody extends OutputContext {
 		addAll(other);
 	}
 	public OutputBody addAll(OutputBody body){
+		if(body==null){
+			return this;
+		}
+		this.outputs.addAll(body.outputs);
+		return this;
+	}
+	public OutputBody add(OutputBody body){
 		if(body==null){
 			return this;
 		}
@@ -46,6 +53,9 @@ public class OutputBody extends OutputContext {
 		if(output==null){
 			return this;
 		}
+		if(output instanceof OutputBody){
+			return add((OutputBody)output);
+		}
 		outputs.add(output);
 		output.setParent(this);
 		return this;
@@ -57,8 +67,8 @@ public class OutputBody extends OutputContext {
 		outputs.add(new OutputStatement().set(statement));
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		this.outputs.parallelStream().forEach(O->O.getImports(imports));
+	public Stream<? extends Importable> flatStream(){
+		return outputs.stream().flatMap(Flattenable::flatStream);
 	}
 	@Override
 	public OutputLine line() {

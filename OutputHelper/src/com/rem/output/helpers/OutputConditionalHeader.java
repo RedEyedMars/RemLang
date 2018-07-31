@@ -2,8 +2,8 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputConditionalHeader  extends Output {
 
@@ -55,10 +55,26 @@ public class OutputConditionalHeader  extends Output {
 		return (calls==null||calls.parallelStream().allMatch(V->V.verify(context)))&&(declaration==null||declaration.verify(context));
 	}
 
-	@Override
-	public void getImports(Set<String> imports) {
-		if(calls!=null)calls.parallelStream().forEach(V->V.getImports(imports));
-		if(declaration!=null)declaration.getImports(imports);
+	public Stream<? extends Importable> flatStream(){
+		if(calls != null) {
+			if(declaration != null) {
+				return Stream.concat(calls.stream().flatMap(Flattenable::flatStream),
+						declaration.flatStream()); 
+			}
+			else {
+				return calls.stream().flatMap(Flattenable::flatStream);
+			}
+		}
+		else {
+			if(declaration != null) {
+				return declaration.flatStream();
+			}
+			else {
+				return Stream.empty();
+			}
+		}
+	}
+	public void getImports(Consumer<String> imports) {
 	}
 	public OutputVariable getDeclaredVariable() {
 		return declaration;

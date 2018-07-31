@@ -2,9 +2,9 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class OutputCall  extends CallableOutput {
 	private List<Output> subjects = new ArrayList<Output>();
@@ -47,9 +47,9 @@ public class OutputCall  extends CallableOutput {
 		this.arguments.add(arguments);
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		subjects.parallelStream().forEach(S->{if(S!=null)S.getImports(imports);});
-		arguments.parallelStream().forEach(A->{if(A!=null)A.getImports(imports);});
+	public Stream<? extends Importable> flatStream(){
+		return Stream.concat(subjects.stream().flatMap(Flattenable::flatStream),
+				             arguments.stream().flatMap(A->A!=null?A.flatStream():Stream.empty()));
 	}
 	@Override
 	public void output(Consumer<String> builder) {

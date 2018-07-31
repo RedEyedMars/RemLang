@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputVariable extends Output {
 
@@ -32,12 +32,8 @@ public class OutputVariable extends Output {
 	public OutputVariable(OutputType type, Output name){
 		set(type,name);
 	}
-	public void getImports(Set<String> imports) {
-		//System.out.println("IMPORT:"+type.evaluate()+" << "+name.evaluate());
-		type.getImports(imports);
-		if(assignment!=null){
-			assignment.getImports(imports);
-		}
+	public Stream<? extends Importable> flatStream(){
+		return assignment==null?type.flatStream():Stream.concat(type.flatStream(), assignment.flatStream());
 	}
 	public OutputVariable isPublic(){
 		this.isPublic = true;

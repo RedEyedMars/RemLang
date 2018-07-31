@@ -1,6 +1,6 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 public class OutputStatement extends LineableOutput {
 
@@ -31,9 +31,8 @@ public class OutputStatement extends LineableOutput {
 		return new OutputLine().exact(prefix).variable(statement).exact(";");
 	}
 
-	@Override
-	public void getImports(Set<String> imports) {
-		if(this.statement!=null)this.statement.getImports(imports);
+	public Stream<? extends Importable> flatStream(){
+		return statement!=null?statement.flatStream():Stream.empty();
 	}
 	@Override
 	public Output stasis() {

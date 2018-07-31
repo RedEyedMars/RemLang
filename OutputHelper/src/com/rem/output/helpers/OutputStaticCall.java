@@ -1,8 +1,8 @@
 package com.rem.output.helpers;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputStaticCall  extends CallableOutput {
 	private OutputType type = null;
@@ -33,15 +33,20 @@ public class OutputStaticCall  extends CallableOutput {
 		calls.add(subject,arguments);
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		type.getImports(imports);
-		calls.getImports(imports);
+
+	public Stream<? extends Importable> flatStream(){
+		return Stream.concat(type.flatStream(), calls.flatStream());
 	}
 	@Override
 	public void output(Consumer<String> builder) {
 		type.add(builder);
-		builder.accept(".");
-		calls.add(builder);
+		StringBuilder callBuilder = new StringBuilder();
+		calls.add(callBuilder::append);
+		if(!"".equals(callBuilder.toString())){
+
+			builder.accept(".");
+			builder.accept(callBuilder.toString());
+		}
 	}
 	@Override
 	public Output stasis() {

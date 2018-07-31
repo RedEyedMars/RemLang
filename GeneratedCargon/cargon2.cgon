@@ -61,7 +61,7 @@ regex_element
 	[.] as character                ( "?" as OPTIONAL | "*" as MANY | "+" as PLUS ) as multiple?
 regex_special
 	"\d" as number
-	"\." as dot
+	"." as dot
 	"\s" as whitespace
 	"\\" [[a-z\"\']] as escaped
 	"\\" as slash

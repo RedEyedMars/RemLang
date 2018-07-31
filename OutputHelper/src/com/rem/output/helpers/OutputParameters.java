@@ -2,9 +2,9 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class OutputParameters extends Output{
 
@@ -22,8 +22,8 @@ public class OutputParameters extends Output{
 		this.parameters.add(newOutputVariable);
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		parameters.parallelStream().forEach(P->P.getImports(imports));
+	public Stream<? extends Importable> flatStream(){
+		return parameters.stream().flatMap(Flattenable::flatStream);
 	}
 	@Override
 	public void output(Consumer<String> builder) {

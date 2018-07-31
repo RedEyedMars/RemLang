@@ -5,7 +5,7 @@ OPERATOR
 	"%%"
 	[[^a-zA-Z0-9_\s(){}[];\"\'`,\\:][^a-zA-Z0-9_\s(){}[];\"\'`,\\]] as exact
 	[[^a-zA-Z0-9_\s(){}[];\"\'`,\\%]] as exact
-	"instanceof " as exact
+	"instanceof " as instance
 NUMBER = [[-]?(\d*[.])?\d+[f]?(x[A-F]+)?\s*]
 
 quote                  Braced " " , Ignore None = [.*]
@@ -40,13 +40,14 @@ class_names global list with NAME
 	"Thread", "Runnable"
 	"Iterator", "Iterable"
 	"Serializable", "Random"
-	"Set", "HashSet", "TreeSet"
+	"Set", "HashSet", "TreeSet", "EnumSet"
 	"List", "ArrayList", "LinkedList"
-	"Map", "HashMap"
+	"Map", "HashMap", "EnumMap"
 	"Stack", "Deque"
 	"File", "FileReader", "FileWriter", "BufferedReader", "BufferedWriter"
-	"MainFlow", "Parser", "Token", "Result", "Tokens"
-	"Pass", "Fail"
+	"Scanner"
+	"Stream", "IntStream"
+	"Consumer", "Function", "BiFunction", "Predicate"
 class_variable_names list with NAME
 variable_names list with NAME
 	"super","this","null","true","false","continue","break"
@@ -80,7 +81,10 @@ class_element silent
 	comments
 	class_declaration
 	method_declaration
+	inheritance_declaration
 	variable_declaration
+inheritance_declaration
+	"inherits " NAME as variableName in variable_names ("," as comma NAME as variableName in variable_names)*
 body_element
 	comments
 	( "return" method_argument? ";" ) as body_return
@@ -93,6 +97,7 @@ body_element
 	body_statement ";"
 	statement_as_method
 body_conditional
+	"if" ("+"|"/") as conditional_operator "else " (variable_names) as conditional_choice "?" body_statement ( method_body as as_body | statement_as_method )
 	("if "|"else" "if"|"while"|"synchronized"|"switch"|"case") as conditional body_statement ( method_body as as_body | statement_as_method )
 	"else" as conditional ( method_body as as_body | statement_as_method )
 	"for "  as conditional (variable_name_definition ("!" as isFinal)?) as variable_declaration (":"|"<"|">"|">="|"<=") as OPERATOR body_statement ( method_body as as_body | statement_as_method )
@@ -104,19 +109,19 @@ body_call
 	"(" all_type_name as cast_statement ")" (((name_atom as name_var method_arguments? |NAME method_arguments)array_parameters*) ) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 	statement_as_braced as as_braced
 	as_statement
-	((type_var|name_var) "::" NAME) as inline_method_reference
+	((type_var|name_var) "::" NAME method_prototype_parameters?) as inline_method_reference
 	(("new " as NEW all_type_name method_arguments array_parameters*)|name_var method_arguments? array_parameters*|"%" non_class_name as all_type_name method_arguments?|type_var as all_type_name|NAME method_arguments array_parameters*) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 body_add_to_class
-	type_var ("::" ( name_var | NAME)? method_prototype_parameters? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
+	type_var ("::" ( name_var | NAME) method_prototype_parameters? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
 body_access_token
 	(name_atom ( "->" as get NAME ) as access*) as tokenAccess ":" NAME as variableName in variable_names ( ":" NAME as tokenName method_body) as tokenInstance+
 
 method_prototype_parameters
-	"(" type_var ("," type_var )*  ")"
+	"(" type_var? ("," type_var )*  ")"
 method_parameters
 	"(" (variable_name_definition "!" as isFinal?) as parameter?  ( "," (variable_name_definition "!" as isFinal?) as parameter? )* ")"
 method_argument
-	( NAME as variableName in variable_names? ("," NAME as variableName in variable_names)* "=>" (body_statement | method_body as body) ) as lambda
+	(( NAME as variableName in variable_names? ("," NAME as variableName in variable_names)* | "()" as emptyLambda ) "=>" (body_statement | method_body as body) ) as lambda
 	class_declaration
 	method_declaration
 	variable_declaration
@@ -124,7 +129,7 @@ method_argument
 	body_statement
 	method_body as body_entries
 method_declaration
-	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ( "?" as weak | method_body as body )
+	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ("throws" NAME as exception ("," NAME as exception)* ) as throwsException? ( "?" as weak | method_body as body )
 variable_declaration
 	inner? ("@"|"static") as static? variable_name_definition ( "=" method_argument)? ("!" as isFinal|";")
 variable_assignment
@@ -185,6 +190,7 @@ name_atom
 	quote
 	NUMBER
 	variable_names | (class_variable_names) as variable_names
+	"\\" NAME as variable_names
 type_var
 	"$" as asVariable? type_atom ("." type_atom )* template_parameters?
 type_atom

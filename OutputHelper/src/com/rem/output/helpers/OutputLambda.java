@@ -2,9 +2,9 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class OutputLambda extends Output {
 
@@ -68,11 +68,13 @@ public class OutputLambda extends Output {
 	public boolean verify(OutputContext context) {
 		return true;
 	}
-
-	@Override
-	public void getImports(Set<String> imports) {
-		if(body!=null)body.getImports(imports);
-		else if(call!=null)call.getImports(imports);
+	public Stream<? extends Importable> flatStream(){
+		return body!=null?
+				call!=null?Stream.concat(body.flatStream(),call.flatStream())
+						  :body.flatStream()
+				:call!=null?call.flatStream()
+						:Stream.empty();
 	}
+	
 
 }

@@ -1,9 +1,11 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 public class OutputConditional extends LineableOutput {
-	private String conditional;
+	private String conditional = null;
+	private String optionalIfVariable = null;
+	private boolean canBeElseIf = false;
 	private OutputConditionalHeader header = null;
 	private OutputBody bodyAsBody;
 	private Output bodyAsVariable;
@@ -22,6 +24,11 @@ public class OutputConditional extends LineableOutput {
 		if(parentContext!=null){
 			this.bodyAsBody.setParent(parentContext);
 		}
+		return this;
+	}
+	public OutputConditional optionalIf(String optionalVariable,boolean canBeElseIf){
+		this.optionalIfVariable = optionalVariable;
+		this.canBeElseIf = canBeElseIf;
 		return this;
 	}
 	public OutputConditional body(OutputBody body){
@@ -62,12 +69,22 @@ public class OutputConditional extends LineableOutput {
 		return this;
 	}
 
-	public void getImports(Set<String> imports) {
-		if(header != null){
-			header.getImports(imports);
+	public Stream<? extends Importable> flatStream(){
+		if(header != null) {
+			if(bodyAsBody != null) {
+				return Stream.concat(header.flatStream(),bodyAsBody.flatStream()); 
+			}
+			else {
+				return header.flatStream();
+			}
 		}
-		if(bodyAsBody!=null){
-			bodyAsBody.getImports(imports);
+		else {
+			if(bodyAsBody != null) {
+				return bodyAsBody.flatStream();
+			}
+			else {
+				return Stream.empty();
+			}
 		}
 	}
 
@@ -100,7 +117,18 @@ public class OutputConditional extends LineableOutput {
 	@Override
 	public Output stasis(){
 
-		OutputStasis stasis = new OutputStasis().name("OutputConditional").add("init","\""+conditional+"\"");
+		OutputStasis stasis = new OutputStasis().name("OutputConditional");
+		if(conditional!=null){
+			stasis = stasis.add("init","\""+conditional+"\"");
+		}
+		else {
+			if(canBeElseIf){
+				stasis = stasis.add("init",optionalIfVariable+"?\"if\":\"else if\"");
+			}
+			else {
+				stasis = stasis.add("init",optionalIfVariable+"?\"if\":\"else\"");
+			}
+		}
 		if(bodyAsBody!=null){
 			stasis = stasis.add("body",bodyAsBody);
 		}
@@ -111,7 +139,12 @@ public class OutputConditional extends LineableOutput {
 			stasis = stasis.add("body",new OutputBody());
 		}
 		if(header!=null){
-			stasis.add("header",header);
+			if(conditional!=null||canBeElseIf){
+				stasis.add("header",header);
+			}
+			else {
+				stasis.add("header",optionalIfVariable+"?"+header.stasis().evaluate()+":null");
+			}
 		}
 		return stasis;
 	}

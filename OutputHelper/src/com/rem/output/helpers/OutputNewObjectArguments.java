@@ -9,12 +9,12 @@ public class OutputNewObjectArguments extends OutputArguments {
 		if(arrayArguments!=null){
 			arrayArguments.stream().forEach(AA->AA.add(builder));
 			builder.accept("{");
-			IntStream.range(0,arguments.size()).forEach(P->{if(P>0)builder.accept(",");arguments.get(P).add(builder);});
+			outputInnards(builder);
 			builder.accept("}");
 		}
 		else {
 			builder.accept("(");
-			IntStream.range(0,arguments.size()).forEach(P->{if(P>0)builder.accept(",");arguments.get(P).add(builder);});
+			outputInnards(builder);
 			builder.accept(")");
 		}
 	}

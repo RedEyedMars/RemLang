@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputQuote extends Output {
 
@@ -12,6 +12,9 @@ public class OutputQuote extends Output {
 	public OutputQuote(String value){
 		set(value);
 		isString = false;
+	}
+	public OutputQuote(Output value){
+		set(value);
 	}
 	public OutputQuote set(String value){
 		this.output = new OutputExact(value);
@@ -68,7 +71,8 @@ public class OutputQuote extends Output {
 		return true;
 	}
 	@Override
-	public void getImports(Set<String> imports) {
+	public Stream<? extends Importable> flatStream(){
+		return Stream.empty();
 	}
 
 }

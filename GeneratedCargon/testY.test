@@ -104,13 +104,15 @@ body_call
 	"(" all_type_name as cast_statement ")" (((name_atom as name_var method_arguments? |NAME method_arguments)array_parameters*) ) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 	statement_as_braced as as_braced
 	as_statement
+	((type_var|name_var) "::" NAME method_prototype_parameters?) as inline_method_reference
 	(("new " as NEW all_type_name method_arguments array_parameters*)|name_var method_arguments? array_parameters*|"%" non_class_name as all_type_name method_arguments?|type_var as all_type_name|NAME method_arguments array_parameters*) as group ( (".") as separator ( name_var | NAME ) method_arguments? array_parameters*) as group*
 body_add_to_class
-	type_var ("->*" ( name_var | NAME)? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
+	type_var ("::" ( name_var | NAME) method_prototype_parameters? ) as accessMethod? "+=" as add ( class_declaration | method_declaration | variable_declaration | method_body as body | as_statement as body )
 body_access_token
 	(name_atom ( "->" as get NAME ) as access*) as tokenAccess ":" NAME as variableName in variable_names ( ":" NAME as tokenName method_body) as tokenInstance+
 
-
+method_prototype_parameters
+	"(" type_var? ("," type_var )*  ")"
 method_parameters
 	"(" (variable_name_definition "!" as isFinal?) as parameter?  ( "," (variable_name_definition "!" as isFinal?) as parameter? )* ")"
 method_argument
@@ -122,7 +124,7 @@ method_argument
 	body_statement
 	method_body as body_entries
 method_declaration
-	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ( "?" as weak | method_body as body )
+	inner? ("@"|"static") as static? all_type_name "[]" as ARRAY_TYPE* (name_var | NAME) as methodName? ( method_parameters as inline | statement_as_method as variableParameters ) ("throws" NAME as exception ("," NAME as exception)* ) as throwsException? ( "?" as weak | method_body as body )
 variable_declaration
 	inner? ("@"|"static") as static? variable_name_definition ( "=" method_argument)? ("!" as isFinal|";")
 variable_assignment

@@ -1,13 +1,14 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputOperator  extends Output {
 
 	private Output left = null;
 	private Output right = null;
 	private String operator = "";
+	private boolean operatorlessIfSingle = false;
 
 	public OutputOperator(){
 	}
@@ -34,19 +35,29 @@ public class OutputOperator  extends Output {
 		this.right = subject;
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		if(left != null){
-			left.getImports(imports);
-		}
-		if(right != null){
-			right.getImports(imports);
-		}
+	public OutputOperator add(Output subject){
+		if(left==null)return left(subject);
+		else if(right==null)return right(subject);
+		else return new OutputOperator().left(this).operator(operator).right(subject);
+	}
+	public OutputOperator operatorlessIfSingle(){
+		this.operatorlessIfSingle  = true;
+		return this;
+	}
+	public Stream<? extends Importable> flatStream(){
+		return left!=null?right!=null?Stream.concat(left.flatStream(),right.flatStream()):left.flatStream():right!=null?right.flatStream():Stream.empty();
 	}
 	@Override
 	public void output(Consumer<String> builder) {
 		if(left!=null)left.add(builder);
-		builder.accept(operator);
-		if(right != null)right.add(builder);
+
+		if(right != null){
+			builder.accept(operator);
+			right.add(builder);
+		}
+		else if(!operatorlessIfSingle) {
+			builder.accept(operator);
+		}
 	}
 	@Override
 	public Output stasis() {

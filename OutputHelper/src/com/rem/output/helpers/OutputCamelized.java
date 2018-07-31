@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputCamelized extends Output {
 
@@ -28,7 +28,8 @@ public class OutputCamelized extends Output {
 		return true;
 	}
 	@Override
-	public void getImports(Set<String> imports) {
+	public Stream<? extends Importable> flatStream(){
+		return Stream.empty();
 	}
 
 }

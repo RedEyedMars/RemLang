@@ -1,0 +1,171 @@
+class com.rem.gen.parser.FileInputReader CharBuffer {
+  CharBuffer actualBuffer;
+  FileInputReader(CharBuffer actualBuffer){
+    this.actualBuffer = actualBuffer;
+  }
+  CharBuffer append(char c){
+    actualBuffer = actualBuffer.append(c);
+    return this;
+  }
+  CharBuffer append(CharSequence c){
+    actualBuffer = actualBuffer.append(c);
+    return this;
+  }
+  CharBuffer append(CharSequence csq, int start, int end){
+    actualBuffer = actualBuffer.append(csq,start,end);
+    return this;
+  }
+  char[] array(){
+    return actualBuffer.array();
+  }
+  int arrayOffset(){
+    return actualBuffer.arrayOffset();
+  }
+  CharBuffer asReadOnlyBuffer(){
+    actualBuffer = actualBuffer.asReadOnlyBuffer();
+    return this;
+  }
+  char charAt(int index){
+    return actualBuffer.charAt(index);
+  }
+  CharBuffer compact() {
+    actualBuffer = actualBuffer.compact();
+    return this;
+  }
+  int compareTo(CharBuffer that){
+    return actualBuffer.compareTo(that);
+  }
+  CharBuffer duplicate(){
+    actualBuffer = actualBuffer.duplicate();
+    return this;
+  }
+  boolean equals(Object ob){
+    if ob instanceof FileInputReader {
+      return super.equals(ob);
+    }
+    else {
+      return actualBuffer.equals(ob);
+    }
+  }
+  char get() {
+    return actualBuffer.get();
+  }
+  CharBuffer get(char[] dst){
+    return actualBuffer.get(dst);
+  }
+  CharBuffer get(char[] dst, int offset, int length){
+    return actualBuffer.get(dst,offset,length);
+  }
+  char get(int index){
+    return actualBuffer.get(index);
+  }
+  boolean hasArray(){
+    return actualBuffer.hasArray();
+  }
+  int hashCode(){
+    return actualBuffer.hashCode();
+  }
+  boolean isDirect(){
+    return actualBuffer.isDirect();
+  }
+  int length(){
+    return actualBuffer.length();
+  }
+  ByteOrder order(){
+    return actualBuffer.order();
+  }
+  CharBuffer put(char c){
+    if c != '"\'\\r\'"' {
+      actualBuffer = actualBuffer.put(c);
+    }
+    return this;
+  }
+  CharBuffer put(char[] src){
+    actualBuffer = actualBuffer.put(Stream.of(src).filter(C=>C!='"\'\\r\'"').collect(Collectors.toList()).toArray(new char()[0]));
+    return this;
+  }
+  CharBuffer put(char[] src, int offset, int length){
+    actualBuffer = actualBuffer.put(IntStream.range(offset,length).boxed().filter(I=>src[I]!='"\'\\r\'"').collect(Collectors.toList()).toArray(new char()[0]));
+    return this;
+  }
+  CharBuffer put(CharBuffer src){
+    src.chars().forEach(I=>put(I));
+    return this;
+  }
+  CharBuffer put(int index, char c){
+    if c != '"\'\\r\'"' {
+      actualBuffer = actualBuffer.put(index,c);
+    }
+    return this;
+  }
+  CharBuffer put(String src){
+    src.chars().forEach(I=>put(I));
+    return this;
+  }
+  CharBuffer put(String src){
+    return put(src.toCharArray());
+  }
+  CharBuffer put(String src, int start, int end){
+    return put(src.toCharArray(),start,end);
+  }
+  int read(CharBuffer target){
+    return actualBuffer.read(target);
+  }
+  CharBuffer slice(){
+    actualBuffer = actualBuffer.slice();
+    return this;
+  }
+  CharBuffer subSequence(int start,int end){
+    actualBuffer = actualBuffer.subSequence(start,end);
+    return this;
+  }
+  String toString(){
+    return actualBuffer.toString();
+  }
+  int capacity(){
+    return actualBuffer.capacity();
+  }
+  Buffer clear(){
+    actualBuffer = actualBuffer.clear();
+    return this;
+  }
+  Buffer flip(){
+    actualBuffer = actualBuffer.flip();
+    return this;
+  }
+  boolean hasRemaining(){
+    return actualBuffer.hasRemaining();
+  }
+  boolean isReadOnly(){
+    return actualBuffer.isReadOnly();
+  }
+  int limit(){
+    return actualBuffer.limit();
+  }
+  Buffer limit(int newLimit){
+    actualBuffer = actualBuffer.limit(newLimit);
+    return this;
+  }
+  Buffer mark(){
+    actualBuffer =  actualBuffer.mark();
+    return this;
+  }
+  int position(){
+    return actualBuffer.position();
+  }
+  Buffer position(int newPosition){
+    actualBuffer = actualBuffer.position(newPosition);
+    return this;
+  }
+  int remaining(){
+    return actualBuffer.remaining();
+  }
+  Buffer reset(){
+    actualBuffer = actualBuffer.reset();
+    return this;
+  }
+  Buffer rewind(){
+    actualBuffer = actualBuffer.rewind();
+    return this;
+  }
+}

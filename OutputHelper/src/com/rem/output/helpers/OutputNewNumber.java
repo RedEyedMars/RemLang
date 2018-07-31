@@ -1,7 +1,7 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputNewNumber  extends Output {
 	private OutputType type = null;
@@ -30,7 +30,8 @@ public class OutputNewNumber  extends Output {
 		this.arguments = new OutputNewObjectArguments().set(new OutputArguments().add(number));
 		return this;
 	}
-	public void getImports(Set<String> imports) {
+	public Stream<? extends Importable> flatStream(){
+		return Stream.empty();
 	}
 	@Override
 	public void output(Consumer<String> builder) {

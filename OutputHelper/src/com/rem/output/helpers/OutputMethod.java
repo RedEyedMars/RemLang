@@ -1,9 +1,10 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
-public class OutputMethod extends LineableOutput {
+public class OutputMethod extends OutputContext {
 
 	private String access = "public ";
 	private boolean isStatic = false;
@@ -24,24 +25,34 @@ public class OutputMethod extends LineableOutput {
 	private OutputParameters parameters = new OutputParameters();
 	private Output parametersAsVariable = null;
 	private OutputBody body = null;
+	private ListOfOutputs<OutputType> throwsExceptions = null;
 
-	public void getImports(Set<String> imports) {
-		type.getImports(imports);
-		parameters.getImports(imports);
-		if(body!=null)body.getImports(imports);
+	
+	public Stream<? extends Importable> flatStream(){
+		return Stream.of(type,parameters,body,throwsExceptions).filter(O->O!=null).flatMap(Flattenable::flatStream);
 	}
 
 	@Override
 	public OutputLine line() {
 
 		OutputLine line = new OutputLine();
+		line.variable(header).variable(type).exact(" ").variable(name).variable(parameters).indexedByLambda(throwsExceptions==null?0:throwsExceptions.size(), (L,I)->{
+			   if(I==0){
+				   L=L.exact("throws ");
+			   }
+			   else {
+				   L=L.exact(", ");
+			   }
+			   L=L.variable(throwsExceptions.get(I));
+			   return L;
+		   });
 		if(body!=null){
-			line.variable(header).variable(type).exact(" ").variable(name).variable(parameters).exact("{").tabNextLine()
+			line.exact("{").tabNextLine()
 				              .connect(body.line()).untabNextLine()
 				              .exact("}");
 		}
 		else {
-			line.variable(header).variable(type).exact(" ").variable(name).variable(parameters).exact(";");
+			line.exact(";");
 		}
 		return line;
 	}
@@ -89,7 +100,7 @@ public class OutputMethod extends LineableOutput {
 		return this;
 	}
 	public OutputMethod type(String string) {
-		type = new OutputType().set(new OutputExact(string));
+		type = new OutputType(new OutputExact(string));
 		return this;
 	}
 	
@@ -104,6 +115,20 @@ public class OutputMethod extends LineableOutput {
 	
 	public OutputMethod name(OutputType name) {
 		this.name = name;
+		return this;
+	}
+	public OutputMethod _throws(String exceptionName){
+		if(throwsExceptions==null){
+			this.throwsExceptions = new ListOfOutputs<OutputType>();
+		}
+		this.throwsExceptions.add(new OutputType(exceptionName+"Exception"));
+		return this;
+	}
+	public OutputMethod _throws(OutputType exception){
+		if(throwsExceptions==null){
+			this.throwsExceptions = new ListOfOutputs<OutputType>();
+		}
+		this.throwsExceptions.add(exception);
 		return this;
 	}
 	public OutputMethod body(OutputBody newBody){
@@ -136,6 +161,7 @@ public class OutputMethod extends LineableOutput {
 		stasis = stasis.add("set",type,name);
 		if(parametersAsVariable==null)stasis = stasis.add("parameters",parameters);
 		else stasis = stasis.asIs("parameters",parametersAsVariable);
+		if(throwsExceptions!=null)stasis = stasis.addAll("_throws",throwsExceptions);
 		if(body != null){
 			stasis = stasis.add("body",body);
 		}
@@ -156,6 +182,89 @@ public class OutputMethod extends LineableOutput {
 	public void isInterface() {
 		if(!isStatic){
 			isAbstract = false;
+		}
+	}
+
+	public String getSignature() {
+		List<OutputVariable> variables = parameters.getVariables();
+		return name.evaluate()+"("+variables.stream().reduce(new StringBuilder(),(S,V)->{
+			if(V!=variables.get(0)){
+				S.append(",");
+			}
+			S.append(V.getType().evaluate());
+			return S;
+		},(S,T)->S)+")";
+	}
+	
+	
+	
+	
+	
+	
+	
+	public Boolean hasVariableInContext(String query){
+		if(body!=null){
+			return this.body.hasVariableInContext(query);
+		}
+		else {
+			return false;
+		}
+	}
+	public void addVariable(OutputVariable variable) {
+		if(body!=null)this.body.addVariable(variable);
+	}
+	public void addVariables(List<OutputVariable> variables) {
+		if(body!=null)this.body.addVariables(variables);
+	}
+	public OutputVariable getVariableFromContext(String query){
+		if(body!=null){
+			return this.body.getVariableFromContext(query);
+		}
+		else {
+			return null;
+		}
+	}
+	public OutputClass getVariableClassFromContext(String query){
+		if(body!=null){
+			return this.body.getVariableClassFromContext(query);
+		}
+		else {
+			return null;
+		}
+	}
+
+	public Boolean hasMethodInContext(String query){
+		if(body!=null){
+			return this.body.hasMethodInContext(query);
+		}
+		else {
+			return null;
+		}
+	}
+	public void addMethod(OutputMethod method) {
+		if(body!=null){
+			this.body.addMethod(method);
+		}
+	}
+	public void addMethods(List<OutputMethod> methods) {
+		if(body!=null){
+			this.body.addMethods(methods);
+		}
+	}
+	public OutputMethod getMethodFromContext(String query){
+		if(body!=null){
+			return this.body.getMethodFromContext(query);
+		}
+		else {
+			return null;
+		}
+	}
+	public OutputClass getMethodClassFromContext(String query){
+		if(body!=null){
+			return this.body.getMethodClassFromContext(query);
+		}
+		else {
+			return null;
 		}
 	}
 

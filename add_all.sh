@@ -2,6 +2,7 @@
 git add './RemGraveInternal/src/*'
 git add './RemGraveBase/src/*'
 git add './GeneratedBase/src/*'
+git add './Cargon3/src/*'
 git add './Classwise2/classwise2/*'
 git add './Classwise2/cargon2/*'
 git add './GeneratedBase/classwise.ruleset'

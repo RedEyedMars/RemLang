@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class OutputClass extends OutputContext {
@@ -60,16 +61,25 @@ public class OutputClass extends OutputContext {
 
 	public List<Output> getImports(){
 		final Set<String> imports = Collections.synchronizedSet(new HashSet<String>());
-		getImports(imports);
+		flatStream().parallel().forEach(
+				S->S.getImports(imports::add));
 		return imports.stream().map(P->OutputHelper.packages.containsKey(P)?(OutputCall)new OutputCall().add(OutputHelper.packages.get(P)).add(new OutputExact(P)):null).filter(P->P!=null).collect(Collectors.toList());
 	}
-	public void getImports(Set<String> imports){
 
-		if(extendType!=null)extendType.getImports(imports);
-		implementsTypes.parallelStream().forEach(I->I.getImports(imports));
-		variables.parallelStream().forEach(V->V.getImports(imports));
-		methods.parallelStream().forEach(M->M.getImports(imports));
-		enclosedClasses.parallelStream().forEach(C->C.getImports(imports));
+	@Override
+	public Stream<? extends Importable> flatStream(){
+
+		return extendType!=null?
+				     Stream.of(extendType.flatStream(),
+			             implementsTypes.stream().flatMap(Flattenable::flatStream),
+			             variables.stream().flatMap(Flattenable::flatStream), 
+			             methods.stream().flatMap(Flattenable::flatStream),
+			              enclosedClasses.stream().flatMap(Flattenable::flatStream)).flatMap(S->S)
+				:
+					Stream.of(implementsTypes.stream().flatMap(Flattenable::flatStream),
+				             variables.stream().flatMap(Flattenable::flatStream), 
+				             methods.stream().flatMap(Flattenable::flatStream),
+				              enclosedClasses.stream().flatMap(Flattenable::flatStream)).flatMap(S->S);
 	}
 	@Override
 	public OutputLine line() {
@@ -82,7 +92,7 @@ public class OutputClass extends OutputContext {
 				.indexedByLambda(variables.size(),(L,I)->{
 					if(variables.get(I).getIsStatic()||variables.get(I).getIsPublic())return L;
 					String methodName = "get"+OutputHelper.camelize(variables.get(I).getName().evaluate());
-					if(!methodMap.containsKey(methodName)){
+					if(!methodMap.containsKey(methodName+"()")){
 						return L.connect(new OutputMethod()
 								.set(variables.get(I).getType(), new OutputExact(methodName)).parameters(new OutputParameters()).body(
 								new OutputBody().add(new OutputStatement().prefix("return ").set(variables.get(I).getName())))
@@ -179,7 +189,8 @@ public class OutputClass extends OutputContext {
 		this.method(variable);
 	}
 	public OutputClass method(OutputMethod method) {
-		this.methodMap.put(method.getName().evaluate(),method);
+		this.methodMap.put(method.getSignature(),method);
+		this.simpleMethodMap.put(method.getName().evaluate(),method);
 		this.methods.add(method);
 		if(isInterface){
 			method.isInterface();
@@ -197,14 +208,22 @@ public class OutputClass extends OutputContext {
 		this.enclosingClass = enclosingClass;
 		name(name);
 	}
+	public OutputClass getEnclosedClassFromHeirachy(String className){
+		if(name.evaluate().equals(className)){
+			return this;
+		}
+		else {
+			return enclosedClasses.parallelStream().map(C->C.getEnclosedClassFromHeirachy(className)).filter(C->C!=null).findAny().orElse(null);
+		}
+	}
 
 	public OutputClass name(String className) {
 		this.name = new OutputExact(className);
 		if(enclosingClass!=null){
-			this.fullName = new OutputType().set(enclosingClass.fullName,new OutputExact(className));
+			this.fullName = new OutputType(enclosingClass.fullName).add(new OutputExact(className));
 		}
 		else {
-			this.fullName = new OutputType().set(new OutputExact(className));
+			this.fullName = new OutputType(new OutputExact(className));
 		}
 		return this;
 	}
@@ -219,10 +238,10 @@ public class OutputClass extends OutputContext {
 		}
 		this.name = name;
 		if(enclosingClass!=null){
-			this.fullName = new OutputType().set(enclosingClass.getFullName(),name);
+			this.fullName = new OutputType(enclosingClass.getFullName()).add(name);
 		}
 		else {
-			this.fullName = new OutputType().set(name);
+			this.fullName = new OutputType(name);
 		}
 		if(!OutputHelper.classMap.containsKey(getFullName().evaluate())){
 			OutputHelper.classMap.put(getFullName().evaluate(),this);
@@ -251,6 +270,7 @@ public class OutputClass extends OutputContext {
 		stasis = stasis.add("_package",packageName);
 		if(!isPublic)stasis = stasis.add("isPrivate");
 		if(isStatic&&enclosingClass!=null)stasis = stasis.add("isStatic");
+		else if(!isStatic)stasis = stasis.add("isNonStatic");
 		if(isFinal)stasis = stasis.add("isFinal");
 		if(isAbstract)stasis = stasis.add("isAbstract");
 		if(isInterface)stasis = stasis.add("isInterface");
@@ -270,6 +290,10 @@ public class OutputClass extends OutputContext {
 				methods.parallelStream().allMatch(M->M.verify(OutputClass.this))&&
 				enclosedClasses.parallelStream().allMatch(E->E.verify(OutputClass.this));
 	}
+	
+	public Set<String> getMethodNames(){
+		return methodMap.keySet();
+	}
 
 
 	public Output getName(){
@@ -286,6 +310,9 @@ public class OutputClass extends OutputContext {
 	}
 	public OutputClass getEnclosedClass(String enclosedClassName){
 		return enclosedClassMap.get(enclosedClassName);
+	}
+	public OutputClass getEnclosedClass(Output enclosedClass){
+		return enclosedClassMap.get(enclosedClass.evaluate());
 	}
 	public boolean hasVariable(String variableName) {
 		return variableMap.containsKey(variableName);
@@ -312,8 +339,8 @@ public class OutputClass extends OutputContext {
 		public List<Output> getImports(){
 			return parent.getImports();
 		}
-		public void getImports(Set<String> imports){
-			parent.getImports(imports);
+		public Stream<? extends Importable> flatStream(){
+			return parent.flatStream();
 		}
 		@Override
 		public OutputLine line() {

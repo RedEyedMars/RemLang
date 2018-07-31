@@ -3,15 +3,16 @@ package com.rem.output.helpers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-public class OutputType extends Output {
+public class OutputType extends Output implements Importable {
 
 	public static final OutputType Any = new OutputType("$$$"){
 		{
-			name = new OutputExact("");
+			name.clear();
+			name.add(new OutputExact(""));
 		}
 		public Output stasis(){
 			return new OutputExact("com.rem.output.helpers.OutputType.Any");
@@ -40,36 +41,47 @@ public class OutputType extends Output {
 			};
 		}
 	};
-	protected Output name;
+	protected List<Output> name = new ArrayList<Output>();
+	protected List<Output> asGet = new ArrayList<Output>();
 	private Template templates = null;
 	private int arraySymbols = 0;
 	private boolean inlineList = false;
 	public OutputType(){}
+	public OutputType(OutputString name){
+		add(name);
+	}
 	public OutputType(Output name){
-		set(name);
+		add(name);
 	}
 	public OutputType(String name){
-		set(name);
+		add(new OutputExact(name));
 	}
-	public OutputType set(Output name) {
-		this.name = name;
+	public OutputType set(Output... types){
+		Arrays.asList(types).forEach(T->{if(T instanceof OutputString)add((OutputString)T);else add(T);});
 		return this;
 	}
-	public OutputType set(String name) {
-		this.name = new OutputExact(name);
+	public OutputType add(OutputString next){
+		this.name.add(next.getOutput().vibrate());
+		this.asGet.add(next);
 		return this;
 	}
 	public OutputType add(OutputType next){
-		this.name = new OutputType.MultiName().set(name,next);
+		name.addAll(next.name);
+		asGet.addAll(next.asGet);
 		return this;
 	}
-	public OutputType set(Output parent, Output name) {
-		this.name = new OutputType.MultiName().set(parent,name);
+	public OutputType add(String next){
+		this.name.add(new OutputExact(next));
+		this.asGet.add(new OutputQuote().set(next));
+		return this;
+	}
+	public OutputType add(Output next){
+		this.name.add(next);
+		this.asGet.add(new OutputQuote().set(next));
 		return this;
 	}
 	public OutputType or(OutputType rightSide) {
-		name = new OutputType.MultiChoice().set(name,rightSide);
-		return this;
+		return new OutputType.MultiChoice().set(this,rightSide);
 	}
 	public OutputType array(){
 		++arraySymbols;
@@ -92,22 +104,33 @@ public class OutputType extends Output {
 		this.inlineList = true;
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		if(name!=null)imports.add(name.evaluate());
+	public Stream<? extends Importable> flatStream(){
+		return Stream.of(this);
+	}
+	public void getImports(Consumer<String> imports) {
+		name.forEach(T->imports.accept(T.evaluate()));
 	}
 	public OutputClass getAsClass() {
-		return OutputHelper.classMap.get(name.evaluate());
+		if(name.isEmpty())return null;
+		return IntStream.range(1, name.size()).boxed().map(I->name.get(I).evaluate()).reduce(
+				OutputHelper.classMap.get(name.get(0).evaluate()),(C,N)->C==null?null:C.getEnclosedClass(N),(L,R)->R);
+	}
+	public OutputStaticCall getAsGetClass(){
+		OutputStaticCall call = new OutputStaticCall().set(new OutputType("com.rem.output.helpers.OutputHelper"));
+		if(!asGet.isEmpty())call.add(new OutputExact("getClass"), new OutputArguments().add(asGet.get(0)));
+		return IntStream.range(1, asGet.size()).boxed().map(I->asGet.get(I)).reduce(
+				call,(C,N)->C.add(new OutputExact("getEnclosedClass"),new OutputArguments().add(N)),(L,R)->R);
 	}
 	@Override
 	public void output(Consumer<String> builder) {
-		if(name!=null)name.add(builder);
+		IntStream.range(0, name.size()).forEach(I->{if(I>0)builder.accept(".");name.get(I).add(builder);});
 		if(templates!=null)templates.output(builder);
 		IntStream.range(0, arraySymbols).forEach(I->builder.accept("[]"));
 		if(inlineList)builder.accept("...");
 	}
 	@Override
 	public Output stasis() {
-		OutputStasis stasis = new OutputStasis().name("OutputType").add("set", name);
+		OutputStasis stasis = new OutputStasis().name("OutputType").addAll("add", name);
 		if(templates!=null)stasis.add("template",templates);
 		IntStream.range(0, arraySymbols).forEach(I->stasis.add("array"));
 		if(inlineList)stasis.add("isInlineList");
@@ -115,48 +138,13 @@ public class OutputType extends Output {
 	}
 	@Override
 	public boolean verify(OutputContext context) {
-		return OutputHelper.classMap.containsKey(name.evaluate())&&(templates==null||templates.verify(context));
+		return getAsClass()!=null&&(templates==null||templates.verify(context));
 	}
-
-	public static class MultiName extends Output {
-		private Output parent;
-		private Output name;
-		public MultiName set(Output parent, Output name){
-			this.parent = parent;
-			this.name = name;
-			return this;
-		}
-		public void output(Consumer<String> builder){
-			if(parent!=null){
-				parent.add(builder);
-				builder.accept(".");
-			}
-			name.add(builder);
-		}
-
-		@Override
-		public Output stasis() {
-			if(parent!=null){
-				return new OutputStasis().name("OutputType.MultiName").add("set", parent, name);
-			}
-			else {
-				return name.stasis();
-			}
-		}
-		@Override
-		public boolean verify(OutputContext context) {
-			return OutputHelper.classMap.containsKey(evaluate());
-		}
-		@Override
-		public void getImports(Set<String> imports) {
-			throw new RuntimeException("Tried to call import on an internal Output");
-		}
-	}
-	public static class MultiChoice extends Output {
+	public static class MultiChoice extends OutputType {
 		private Output left;
 		private OutputType right;
-		public MultiChoice set(Output left, OutputType right){
-			this.left = left;
+		public MultiChoice set(OutputType left, OutputType right){
+			this.left = left==null?null:left.evaluate().equals("")?null:left;
 			this.right = right;
 			return this;
 		}
@@ -176,10 +164,8 @@ public class OutputType extends Output {
 		public boolean verify(OutputContext context) {
 			return (left==null||OutputHelper.classMap.containsKey(left.evaluate()))&&right.verify(context);
 		}
-		@Override
-		public void getImports(Set<String> imports) {
-			if(left!=null)left.getImports(imports);
-			right.getImports(imports);
+		public Stream<? extends Importable> flatStream(){
+			return Stream.concat(left!=null?left.flatStream():Stream.empty(), right.flatStream());
 		}
 	}
 	public static class Template extends Output {
@@ -210,9 +196,8 @@ public class OutputType extends Output {
 		public boolean verify(OutputContext context) {
 			return names.parallelStream().allMatch(T->T.verify(context));
 		}
-		@Override
-		public void getImports(Set<String> imports) {
-			throw new RuntimeException("Tried to call import on an internal Output");
+		public Stream<? extends Importable> flatStream(){
+			throw new RuntimeException("Tried to call flatStream on an internal Output");
 		}
 	}
 	@Override

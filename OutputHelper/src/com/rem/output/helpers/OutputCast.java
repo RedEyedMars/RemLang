@@ -2,8 +2,8 @@ package com.rem.output.helpers;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class OutputCast  extends Output {
 
@@ -26,11 +26,12 @@ public class OutputCast  extends Output {
 		this.subject = subject;
 		return this;
 	}
-	public void getImports(Set<String> imports) {
-		types.forEach(T->T.getImports(imports));
-		if(subject != null){
-			subject.getImports(imports);
-		}
+
+	@Override
+	public Stream<? extends Importable> flatStream(){
+		return subject!=null
+			   ?Stream.concat(types.stream().flatMap(Flattenable::flatStream),subject.flatStream())
+			   :types.stream().flatMap(Flattenable::flatStream);
 	}
 	@Override
 	public void output(Consumer<String> builder) {

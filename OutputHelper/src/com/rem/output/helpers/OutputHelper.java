@@ -22,7 +22,7 @@ public class OutputHelper {
 	}
 	@SuppressWarnings("unchecked")
 	public static <R,P extends R>
-	  void parse(String[] args, Parser<R,P> parser, Consumer<P>... onSuccessMethods) {
+	void parse(String[] args, Parser<R,P> parser, Consumer<P>... onSuccessMethods) {
 		if (args.length==1 ) {
 			R result = parser.parse(args[0]);
 			System.out.println(result);
@@ -37,9 +37,20 @@ public class OutputHelper {
 			System.err.println("No Filename Provided!");
 		}
 	}
+	public static enum State {
+		SUCCESS,
+		FAIL
+	}
+	public static String getStatus(State state){
+		switch(state){
+		case SUCCESS: return "Passed";
+		case FAIL: return "Failed";
+		}
+		return null;
+	}
 	public static File __ROOTDIRECTORY__;
 	public static List<OutputFile> outputFiles = new ArrayList<OutputFile>();
-    public static Map<String,Output> packages = Collections.synchronizedMap(new HashMap<String,Output>());
+	public static Map<String,Output> packages = Collections.synchronizedMap(new HashMap<String,Output>());
 	public static Map<String,OutputClass> classMap = new HashMap<String,OutputClass>();
 	public static Map<String, List<OutputClass>> waitingClassMap = Collections.synchronizedMap(new HashMap<String, List<OutputClass>>());
 	public static Set<String> inLang = new HashSet<String>();
@@ -80,6 +91,28 @@ public class OutputHelper {
 		return builder.toString();
 
 	}
+
+	public static String getTimeAsString(long parseTime){
+		if(parseTime < 1000) {
+			return parseTime+"ms";
+		}
+		else {
+			StringBuilder builder = new StringBuilder();
+			builder.append((int)(parseTime/1000));
+			builder.append(".");
+			builder.append((int)(parseTime/100)%10);
+			builder.append((int)(parseTime/10)%10);
+			builder.append(((int)parseTime)%10);
+			builder.append("s");
+			return builder.toString();
+		}
+	}
+	public static OutputClass getClass(String className){
+		return classMap.get(className);
+	}
+	public static OutputClass findClass(String className){
+		return classMap.keySet().parallelStream().map(K->classMap.get(K).getEnclosedClassFromHeirachy(className)).filter(C->C!=null).findAny().orElse(null);
+	}
 	public static void addClass(OutputClass newClass){
 		classMap.put(newClass.getFullName().evaluate(), newClass);
 	}
@@ -105,56 +138,65 @@ public class OutputHelper {
 		catch(IOException e){
 			e.printStackTrace();
 		}
-		
+
 	}
 	public static void output() {
 		outputFiles.parallelStream().forEach(O->O.outputToFile(__ROOTDIRECTORY__));
 		System.out.println("Output Complete");
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 
 	public static void setup(String rootName){
 		setupRootDirectory(rootName);
 		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("List").template("T1").method(
 						new OutputMethod().type("void").name("add")).method(
-						new OutputMethod().type("void").name("removeAll")).method(
-						new OutputMethod().type("boolean").name("isEmpty")).method(
-						new OutputMethod().type("void").name("addAll")).method(
-						new OutputMethod().type("void").name("sort")).method(
-						new OutputMethod().type("int").name("size")).method(
-						new OutputMethod().type("T1").name("get")));
+								new OutputMethod().type("void").name("removeAll")).method(
+										new OutputMethod().type("boolean").name("isEmpty")).method(
+												new OutputMethod().type("void").name("addAll")).method(
+														new OutputMethod().type("void").name("sort")).method(
+																new OutputMethod().type("int").name("size")).method(
+																		new OutputMethod().type("T1").name("get")));
 		OutputHelper.addInternalClass(new OutputClass()
 				._package("java.util").isClass().name("ArrayList").template("T1").method(
-				new OutputMethod().type("void").name("add")).method(
-				new OutputMethod().type("void").name("removeAll")).method(
-				new OutputMethod().type("boolean").name("isEmpty")).method(
-				new OutputMethod().type("void").name("addAll")).method(
-				new OutputMethod().type("void").name("sort")).method(
-				new OutputMethod().type("int").name("size")).method(
-				new OutputMethod().type("T1").name("get")));
+						new OutputMethod().type("void").name("add")).method(
+								new OutputMethod().type("void").name("removeAll")).method(
+										new OutputMethod().type("boolean").name("isEmpty")).method(
+												new OutputMethod().type("void").name("addAll")).method(
+														new OutputMethod().type("void").name("sort")).method(
+																new OutputMethod().type("int").name("size")).method(
+																		new OutputMethod().type("T1").name("get")));
 		OutputHelper.addInternalClass(new OutputClass()
-				._package("java.util").isClass().name("Map").template("T1").method(
-				new OutputMethod().type("T1").name("put")).method(
-				new OutputMethod().type("void").name("removeAll")).method(
-				new OutputMethod().type("boolean").name("isEmpty")).method(
-				new OutputMethod().type("void").name("addAll")).method(
-				new OutputMethod().type("void").name("sort")).method(
-				new OutputMethod().type("int").name("size")).method(
-				new OutputMethod().type("T1").name("get")));
+				._package("java.util").isClass().name("Map").template("T1").template("T2").method(
+						new OutputMethod().type("T2").name("put")).method(
+								new OutputMethod().type("void").name("removeAll")).method(
+										new OutputMethod().type("boolean").name("isEmpty")).method(
+												new OutputMethod().type("void").name("addAll")).method(
+														new OutputMethod().type("void").name("sort")).method(
+																new OutputMethod().type("int").name("size")).method(
+																		new OutputMethod().type("T2").name("get")));
 		OutputHelper.addInternalClass(new OutputClass()
-				._package("java.util").isClass().name("HashMap").template("T1").method(
-				new OutputMethod().type("T1").name("put")).method(
-				new OutputMethod().type("void").name("removeAll")).method(
-				new OutputMethod().type("boolean").name("isEmpty")).method(
-				new OutputMethod().type("void").name("addAll")).method(
-				new OutputMethod().type("void").name("sort")).method(
-				new OutputMethod().type("int").name("size")).method(
-				new OutputMethod().type("T1").name("get")));
+				._package("java.util").isClass().name("HashMap").template("T1").template("T2").method(
+						new OutputMethod().type("T2").name("put")).method(
+								new OutputMethod().type("void").name("removeAll")).method(
+										new OutputMethod().type("boolean").name("isEmpty")).method(
+												new OutputMethod().type("void").name("addAll")).method(
+														new OutputMethod().type("void").name("sort")).method(
+																new OutputMethod().type("int").name("size")).method(
+																		new OutputMethod().type("T2").name("get")));
+		OutputHelper.addInternalClass(new OutputClass()
+				._package("java.util").isClass().name("EnumMap").template("T1").method(
+						new OutputMethod().type("T1").name("put")).method(
+								new OutputMethod().type("void").name("removeAll")).method(
+										new OutputMethod().type("boolean").name("isEmpty")).method(
+												new OutputMethod().type("void").name("addAll")).method(
+														new OutputMethod().type("void").name("sort")).method(
+																new OutputMethod().type("int").name("size")).method(
+																		new OutputMethod().type("T1").name("get")));
 		String[] collectionMethods = new String[]{
 				"Object", "add",
 				"void", "remove",
@@ -165,18 +207,26 @@ public class OutputHelper {
 		supplimentClass("java.util","Set",collectionMethods);
 		supplimentClass("java.util","HashSet",collectionMethods);
 		supplimentClass("java.util","TreeSet",collectionMethods);
+		supplimentClass("java.util","EnumSet",collectionMethods);
 		supplimentClass("java.util","Stack",collectionMethods);
 		supplimentClass("java.util","Deque",collectionMethods);
-		
+
+		supplimentClass("java.util","Scanner");
+
 		supplimentClass("java.io","File", "String", "getPath", "void", "mkdirs");
 		supplimentClass("java.io","FileReader");
 		supplimentClass("java.io","FileWriter");
 		supplimentClass("java.io","BufferedReader");
-		supplimentClass("java.io","BufferedWriter");
-		
-		supplimentClass("java.util.stream","Stream");
+		supplimentClass("java.io","BufferedWriter");		
+		supplimentClass("java.io","IOException");
+
 		supplimentClass("java.util.stream","IntStream");
-		
+		supplimentClass("java.util.stream","Stream");
+		supplimentClass("java.util.function","Function");
+		supplimentClass("java.util.function","Consumer");
+		supplimentClass("java.util.function","BiFunction");
+		supplimentClass("java.util.function","Predicate");
+
 		Arrays.asList(new String[]{
 				"Byte","byte",
 				"Double", "double",
@@ -191,6 +241,8 @@ public class OutputHelper {
 				"Runnable", "Object",
 				"Void"
 		}).stream().forEach(S->OutputHelper.inLang.add(S));
+
+
 	}
 	public static void suppliment(final String packageName, final String className){
 		OutputHelper.classMap.put(className, new OutputClass()._package(packageName).name(className));

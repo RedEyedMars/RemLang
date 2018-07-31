@@ -1,8 +1,8 @@
 package com.rem.output.helpers;
 
-import java.util.Set;
+import java.util.function.Consumer;
 
 public interface Importable {
 
-	public void getImports(Set<String> imports);
+	public void getImports(Consumer<String> imports);
 }

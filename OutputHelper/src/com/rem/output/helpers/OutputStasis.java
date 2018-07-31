@@ -1,12 +1,14 @@
 package com.rem.output.helpers;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-public class OutputStasis extends Output {
+public class OutputStasis extends Output implements Importable {
 
 
 	private String name;
@@ -64,14 +66,21 @@ public class OutputStasis extends Output {
 		IntStream.range(0,subjects.size()).forEach(I->add(string,subjects.get(I),arguments.get(I)));
 		return this;
 	}
+	public OutputStasis indexAll(int size, BiFunction<OutputStasis,Integer,OutputStasis> function) {
+		IntStream.range(0,size).boxed().reduce(this,function,(P,N)->P);
+		return this;
+	}
 	public OutputStasis name(String string) {
 		this.name = string;
 		return this;
 	}
 
+	public Stream<? extends Importable> flatStream(){
+		return Arrays.asList(this).stream();
+	}
 	@Override
-	public void getImports(Set<String> imports) {
-		imports.add(name);
+	public void getImports(Consumer<String> imports) {
+		imports.accept(name);
 	}
 
 
@@ -84,9 +93,9 @@ public class OutputStasis extends Output {
 			this.methodName = method;
 			return this;
 		}
-		@Override
-		public void getImports(Set<String> imports) {
-			throw new RuntimeException("Tried to call import on an internal Output");
+
+		public Stream<? extends Importable> flatStream(){
+			throw new RuntimeException("Tried to call flatStream on an internal Output");
 		}
 		public Method arg(Output statis) {
 			if(arg1==null){

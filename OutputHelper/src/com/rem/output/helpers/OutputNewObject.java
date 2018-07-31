@@ -1,9 +1,9 @@
 package com.rem.output.helpers;
 
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class OutputNewObject  extends CallableOutput {
 	private OutputType type = null;
@@ -38,12 +38,10 @@ public class OutputNewObject  extends CallableOutput {
 		calls.add(subject,arguments);
 		return calls;
 	}
-	public void getImports(Set<String> imports) {
-		type.getImports(imports);
-		arguments.getImports(imports);
-		if(calls!=null){
-			calls.getImports(imports);
-		}
+
+	public Stream<? extends Importable> flatStream(){
+		return calls!=null?Stream.of(type.flatStream(), arguments.flatStream(), calls.flatStream()).flatMap(S->S):
+			               Stream.of(type.flatStream(), arguments.flatStream()).flatMap(S->S);
 	}
 	@Override
 	public void output(Consumer<String> builder) {
