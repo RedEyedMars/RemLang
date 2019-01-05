@@ -1,5 +1,0 @@
-< com.rem.output.helpers
-	OutputHelper 
-
-< java.util.stream
-	IntStream

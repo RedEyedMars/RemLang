@@ -1,8 +1,0 @@
-> String packageName = "com.rem.test";
-class myPackage.mySubPackage.MyClass { 
-  void getMyArray(){
-    String rule1 = "String";
-    String rule2 = "Object";
-    String rule3 = rule1+"_"+rule2;
-  }
-}
