@@ -13,7 +13,7 @@ import com.rem.gen.parser.ErrorList;
 import java.util.Arrays;
 import java.util.Map;
 public class Braces {
-	public static List<Brace> braces = Arrays.asList(new Braces.B11('#','#','\\',true),new Braces.B11('"','"','\\',true),new Braces.B11('(',')','\\',false),new Braces.B11('[',']','\\',false));
+	public static List<Brace> braces = Arrays.asList();
 	public static Map<Integer, Data> find(CharBuffer chars){
 		Stack<Data> data = new Stack<Data>();
 		Map<Integer, Data> positions = new HashMap<Integer, Data>();
@@ -307,18 +307,16 @@ public class Braces {
 			if(data!=null&&brace==data.getBrace()){
 				CharBuffer buffer = chars.duplicate();
 				buffer.position(buffer.position()+data.getBrace().advanceOpen());
-				Parser.__WHITESPACE__.parse( T->{						;
- },new ErrorList.Dummy(),buffer,braceData);
+				Parser.consumeWhitespace(buffer,braceData);
 				buffer.limit(data.getClose());
 				int result = contender.parse(parent,errors,buffer,braceData);
-				if(result==Parser.PASS||buffer.position()!=data.getClose()){
+				if(result!=Parser.PASS||buffer.position()!=data.getClose()){
 					CharBuffer dupe = buffer.duplicate();
 					dupe.limit(dupe.position()+brace.advanceClose());
 					errors.append(new ParseError.WrongString(null,chars.position(),dupe,brace.getCloseString()));
 				}
 				chars.position(data.getClose()+brace.advanceClose());
-				Parser.__WHITESPACE__.parse( T->{						;
- },new ErrorList.Dummy(),buffer,braceData);
+				Parser.consumeWhitespace(chars,braceData);
 				return Parser.ERROR_ON_END;
 			}
 			else{

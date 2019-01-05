@@ -3,8 +3,8 @@ import java.util.ArrayList;
 import com.rem.gen.parser.Token;
 import java.util.function.Consumer;
 import java.util.List;
-import java.util.Map;
 import java.util.EnumMap;
+import java.util.Map;
 import java.util.stream.IntStream;
 public class Token implements Consumer<Token> {
 	protected List<Token> children;
@@ -113,67 +113,6 @@ public class Token implements Consumer<Token> {
 	public static enum Id {
 		 ROOT,
 		 WHITESPACE,
-		 _SYNTAX,
-		 _base,
-		 _comment,
-		 _comments,
-		 _ignoreCharacter,
-		 _ignores,
-		 _imports,
-		 _FILE_NAME,
-		 _NAME,
-		 _OPERATOR,
-		 _NUMBER,
-		 _quote,
-		 _braced_definition,
-		 _regex,
-		 _negate,
-		 _regex_option,
-		 _regex_group_definition,
-		 _single_ignores_character,
-		 _range,
-		 _left,
-		 _right,
-		 _standAlone,
-		 _regex_option_definition,
-		 _rule_parameters,
-		 _SILENT,
-		 _passConstraint,
-		 _braced_parameters,
-		 _import_parameter,
-		 _ruleName,
-		 _import_definition,
-		 _chain,
-		 _ignores_none,
-		 _ignores_character,
-		 _rule_params,
-		 _base_element,
-		 _rule,
-		 _listName,
-		 _listRuleName,
-		 _list,
-		 _choice,
-		 _definition,
-		 _newName,
-		 _multiple,
-		 _OPTIONAL,
-		 _MANY,
-		 _PLUS,
-		 _element,
-		 _quoteToken,
-		 _regexToken,
-		 _ruleToken,
-		 _atom,
-		 _regex_definition,
-		 _option,
-		 _group,
-		 _character,
-		 _regex_element,
-		 _number,
-		 _dot,
-		 _whitespace,
-		 _escaped,
-		 _slash,
-		 _regex_special
+		 _SYNTAX
 	}
 }

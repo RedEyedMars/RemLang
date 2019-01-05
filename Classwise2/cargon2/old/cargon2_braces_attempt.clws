@@ -159,18 +159,18 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
   %Result parse(CharBuffer chars){
     Map<Integer, Braces.Data> braceData = Braces.find(chars.duplicate());
     CharBuffer input = chars.duplicate();
-    Token root = new Token(Token.Id.ROOT,null);
+    Token rootToken = new Token(Token.Id.ROOT,null);
     ErrorList errors = new ErrorList();
-    int result = __ROOT__.parse(root, errors, input, braceData);
+    int result = __ROOT__.parse(rootToken, errors, input, braceData);
     
     if result == Parser.PASS && (input.remaining() == 0 || input.get() == 0) {
-      return new Parser.Result.Pass(root);
+      return new Parser.Result.Pass(rootToken);
     }
     else {
       return new Parser.Result.Fail(chars.duplicate(),errors);
     }
   }
-  @void consumeWhitespace(CharBuffer chars, Map<Integer, Braces.Data> braceData){
+  @void consumeWhitespace(CharBuffer chars){
     while chars.remaining()>0 {
       char c = chars.get();
       if c!='"\'\\r\'"'&&!__WHITESPACE__.chars().anyMatch(C=>C==c) {
@@ -194,7 +194,6 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
     String fileName;
     long parseTime;
     State getState()?
-    String description()?
     long accumulateTime(long sum){
       return sum +'"+"'+ parseTime;
     }
@@ -207,12 +206,7 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
         consumer.accept(%Helper.getTimeAsString(parseTime));
       }
       consumer.accept(''"\\n"'');
-      consumer.accept(description());
-    }
-    String toString(){
-      StringBuilder builder = new StringBuilder();
-      print(builder::append,true);
-      return builder.toString();
+      consumer.accept(this.toString());
     }
     Result setParseTime(long parseTime){
       this.parseTime = parseTime;
@@ -223,13 +217,13 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
       return this;
     }
     class Pass Result {
-      Token root;
-      Pass(Token root){
+      Token rootToken;
+      Pass(Token rootToken){
         super();
-        this.root = root;
+        this.rootToken = rootToken;
       }
       Result.State getState(){ return Result.State.PASS; }
-      String description(){
+      String toString(){
         return ''""'';
 	  }
     }
@@ -241,14 +235,14 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
         this.chars = chars;
       }
       Result.State getState(){ return Result.State.FAIL; }
-      String description(){
+      String toString(){
         return errors.toString(chars);
       }
     }
   }
 }
 interface com.rem.gen.parser.ParseRule {
-  int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData)?
+  int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter)?
   
   @ParseRule createOne(Token.Id id, ParseRule rule){
     return id == null?rule:new Tokenify.One(id,rule);
@@ -278,7 +272,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         Token child = new Token(id);
         int result = rule.parse(child,errors,chars,braceData);
         if result != Parser.FAIL {
@@ -301,7 +295,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         Token child = new Token(id);
         int result = rule.parse(child,errors,chars,braceData);
         if result != Parser.FAIL {
@@ -324,7 +318,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         int result = Parser.PASS;
         int ret = Parser.PASS;
         while result != Parser.FAIL {
@@ -354,7 +348,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         int result = Parser.PASS;
         int ret = Parser.FAIL;
         while result != Parser.FAIL {
@@ -382,7 +376,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         rule.parse(parent,errors,chars,braceData);
         return Parser.PASS;
       }
@@ -396,7 +390,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         int ret = Parser.PASS;
         while true {
           int result = rule.parse(parent,errors,chars,braceData);
@@ -418,7 +412,7 @@ interface com.rem.gen.parser.ParseRule {
         this.rule = rule;
         return this;
       }
-      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
         int ret = Parser.FAIL;
         while true {
           int result = rule.parse(parent,errors,chars,braceData);
@@ -437,7 +431,7 @@ interface com.rem.gen.parser.ParseRule {
     Branch(ParseRule... contenders){
       this.contenders = contenders;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       ErrorList subErrors = new ErrorList();
       for int i < contenders.length {
         int result = contenders[i].parse(parent,subErrors,chars,braceData);
@@ -457,7 +451,7 @@ interface com.rem.gen.parser.ParseRule {
     Chain(ParseRule... contenders){
       this.contenders = contenders;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       List<Token> tokens = new ArrayList<Token>(contenders.length);
       int position = chars.position();
       int ret = Parser.PASS;
@@ -481,7 +475,7 @@ interface com.rem.gen.parser.ParseRule {
     Terminal(String value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       if value.length() > chars.remaining() {
         errors.adjust(new ParseError.BufferEnd(null,chars.position()) );
         return Parser.FAIL;
@@ -515,7 +509,7 @@ interface com.rem.gen.parser.ParseRule {
       this.regex = regex;
       this.contenders = contenders;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       CharBuffer buffer = chars.duplicate();
       ErrorList subErrors = new ErrorList();
       for int i < contenders.length {
@@ -526,10 +520,8 @@ interface com.rem.gen.parser.ParseRule {
         }
       }
       buffer.limit(chars.position());
-      if parent != null {
-        parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
-        Parser.consumeWhitespace(chars,braceData);
-      }
+      parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
+      Parser.consumeWhitespace(chars,braceData);
       return Parser.PASS;
     }
   }
@@ -540,7 +532,7 @@ interface com.rem.gen.parser.ParseRule {
       this.contenders = contenders;
       this.options = options;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       if chars.remaining() == 0 {
         errors.adjust(new ParseError.BufferEnd(null,chars.position()));
         return Parser.FAIL;
@@ -567,7 +559,7 @@ interface com.rem.gen.parser.ParseRule {
       this.upperBound = upperBound;
       this.expected = ((char)lowerBound)+''"-"''+((char)upperBound);
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       if chars.remaining() == 0 {
         errors.adjust(new ParseError.BufferEnd(null,chars.position()));
         return Parser.FAIL;
@@ -591,7 +583,7 @@ interface com.rem.gen.parser.ParseRule {
     Any(String value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       if chars.remaining() == 0 {
         errors.adjust(new ParseError.BufferEnd(null,chars.position()));
         return Parser.FAIL;
@@ -615,7 +607,7 @@ interface com.rem.gen.parser.ParseRule {
     Char(char value){
       this.value = value;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
       if chars.remaining() < 1 {
         errors.adjust(new ParseError.BufferEnd(null,chars.position()));
         return Parser.FAIL;
@@ -632,117 +624,115 @@ interface com.rem.gen.parser.ParseRule {
         }
       }
     }
-    
   }
-}
-
-class com.rem.gen.parser.Braces {
-  interface Brace {
-    boolean open(int c1, int c2)?
-    boolean close(int c1, int c2)?
-    boolean ignore(int c)?
-    boolean isLock()?
-    int advanceOpen()?
-    int advanceClose()?
-    String getOpenString()?
-    String getCloseString()?
-  }
-  class B11 < Brace {
-    char ignore = char\\;
-    char open;
-    char close;
-    boolean isLock = false;
-    B11(char o, char c, char i, boolean isLock){
-      open = o;
-      close = c;
-      ignore = i;
-      this.isLock = isLock;
-    }
-    boolean open(int c1, int c2) { return c1==open;  }
-    boolean close(int c1, int c2){ return c1==close; }
-    boolean ignore(int c){         return c==ignore; }
-    boolean isLock(){              return isLock;    }
-    int advanceOpen(){             return 1;         }
-    int advanceClose(){            return 1;         }
-    String getOpenString(){        return new Character(open).toString(); }
-    String getCloseString(){       return new Character(close).toString();}
-  }
-  class B12 < Brace {
-    char ignore = char\\;
-    char open;
-    char close1;
-    char close2;
-    boolean isLock = false;
-    B12(char o, char c1, char c2, char i, boolean isLock){
-      open = o;
-      close1 = c1;
-      close2 = c2;
-      ignore = i;
-      this.isLock = isLock;
-    }
-    boolean open(int c1, int c2) { return c1==open;  }
-    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
-    boolean ignore(int c){         return c==ignore; }
-    boolean isLock(){              return isLock;    }
-    int advanceOpen(){             return 1;         }
-    int advanceClose(){            return 2;         }
-    String getOpenString(){        return new Character(open).toString(); }
-    String getCloseString(){       return new Character(close1).toString()+new Character(close2).toString();}
-  }
-  class B21 < Brace {
+  class Brace11 {
     char ignore = char\\;
     char open1;
-    char open2;
-    char close;
-    boolean isLock = false;
-    B21(char o1, char o2, char c, char i, boolean isLock){
-      open1 = o1;
-      open2 = o2;
-      close = c;
-      ignore = i;
-      this.isLock = isLock;
-    }
-    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
-    boolean close(int c1, int c2){ return c1==close; }
-    boolean ignore(int c){         return c==ignore; }
-    boolean isLock(){              return isLock;    }
-    int advanceOpen(){             return 2;         }
-    int advanceClose(){            return 1;         }
-    String getOpenString(){        return new Character(open1).toString()+new Character(open2).toString(); }
-    String getCloseString(){       return new Character(close).toString();}
-  }
-  class B22 < Brace {
-    char ignore = char\\;
-    char open1;
-    char open2;
     char close1;
-    char close2;
-    boolean isLock = false;
-    B22(char o1, char o2, char c1, char c2, char i, boolean isLock){
-      open1 = o1;
-      open2 = o2;
-      close1 = c1;
-      close2 = c2;
-      ignore = i;
-      this.isLock = isLock;
-    }
-    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
-    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
-    boolean ignore(int c){         return c==ignore; }
-    boolean isLock(){              return isLock;    }
-    int advanceOpen(){             return 2;         }
-    int advanceClose(){            return 2;         }
-    String getOpenString(){        return new Character(open1).toString()+new Character(open2).toString(); }
-    String getCloseString(){       return new Character(close1).toString()+new Character(close2).toString();}
-  }
-  class Rule < ParseRule {
-    Brace brace;
     ParseRule contender;
-    Rule(Integer braceIndex, ParseRule contender){
-      this.brace = Braces.braces.get(braceIndex);
+    Brace11(char i, char o, ParseRule contender, char c){
+      open1 = o;
+      close1 = c;
+      ignore = i;
       this.contender = contender;
     }
-    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
+    
+      if chars.get() == open1 {
+        CharBuffer buffer = chars.duplicate();
+        Parser.consumeWhitespace(buffer);
+        int result = contender.parse(parent,errors,buffer,this);
+        if result != Parser.PASS || buffer.get() != close1{
+          buffer.position(buffer.position() - 1);
+          CharBuffer shower = buffer().duplicate();
+          shower.limit(buffer.position()+1);
+          errors.append(new ParseError.WrongString(null,buffer.position(),shower,close1));
+          chars.position(buffer.position() - 1);
+          progress(chars);
+          Parser.consumeWhitespace(chars);
+          return Parser.ERROR_ON_END;
+        }
+        else {
+          chars.position(buffer.position());
+          Parser.consumeWhitespace(chars);
+          return Parser.PASS;
+        }
+      }
+      else { 
+        chars.position(chars.position()-1);
+        errors.adjust(new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),open1));
+        return Parser.FAIL;
+      }
+    }
+    void progress(CharBuffer chars) {
+      char c = chars.get();
+      int layer = 1;
+      while chars.remaining()>0 && layer > 0 {
+        c = chars.get();
+        while lockers[c] != null {
+          lockers[c].progress(chars);
+          c = chars.get();
+        }
+        if c == open1 {
+          ++layer;
+        }
+        else if c == close1 {
+          --layer;
+        }
+      }
+    }
+    class Locker Brace11 {
+      char ignore = char\\
+      Locker(char i, char o, ParseRule contender, char c){
+        super(o,contender,c);
+        ignore = i;
+      }
+      void progress(CharBuffer chars) {
+        char c = chars.get();
+        boolean ignoring = false;
+        while chars.remaining()>0 && !ignoring && c != close1 ) {
+          ignoring = c == ignore;
+          c = chars.get();
+        }
+      }
+    }
+  }
+    #
+    Brace21(char i, ParseRule contender, char o1, char o2, boolean isLock, char c){
+      open1 = o1;
+      open2 = o2;
+      openSingle = false;
+      close1 = c;
+      ignore = i;
+      this.isLock = isLock;
+      this.contender = contender;
+    }
+    Brace12(char i, ParseRule contender, char o, boolean isLock, char c1, char c2){
+      open1 = o;
+      close1 = c1;
+      close2 = c2;
+      closeSingle = false;
+      ignore = i;
+      this.isLock = isLock;
+      this.contender = contender;
+    }
+    Brace22(char i, ParseRule contender, char o1, char o2, boolean isLock, char c1, char c2){
+      open1 = o1;
+      open1 = o2;
+      openSingle = false;
+      close1 = c1;
+      close1 = c2;
+      closeSingle = false;
+      ignore = i;
+      this.isLock = isLock;
+      this.contender = contender;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Brace delimiter){
+      if chars.get() == open1 {
+      }
+      else { 
+        errors.adjust(new ParseError.WrongString(null,chars.position(),dupe,open1));
+      }
       Data data = braceData.get(chars.position());
       if data != null && brace == data.getBrace() {
         CharBuffer buffer = chars.duplicate();
@@ -767,105 +757,7 @@ class com.rem.gen.parser.Braces {
       }
     }
   }
-  > %A braces_2_2 = %A;
-  > %A braces_2_1 = %A;
-  > %A braces_1_2 = %A;
-  > %A braces_1_1 = %A;
-  > %A allBraces = %A.add(braces_2_2).add(braces_2_1).add(braces_1_2).add(braces_1_1);
-  > Map<String,Integer> allBraceMap = new HashMap<String,Integer>();
-  > void setup(){
-  }
-  > Integer addBrace(boolean lock, String open, String close, String ignore){
-    if !allBraceMap.containsKey(open+''" "''+close) {
-      if open.length() == 1 {
-        if close.length() == 1 {
-          braces_1_1.add(|new Braces.B11(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
-        }
-        else {
-          braces_1_2.add(|new Braces.B12(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
-        }
-      }
-      else {
-        if close.length() == 1 {
-          braces_2_1.add(|new Braces.B21(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
-        }
-        else {
-          braces_2_2.add(|new Braces.B22(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
-        } 
-      }
-      allBraceMap.put(open+''" "''+close,allBraceMap.size());
-    }
-    return allBraceMap.get(open+''" "''+close);
-  }
-  @List<Brace> braces = Arrays.asList(`allBraces`);
-  @Map<Integer,Data> find(CharBuffer chars){
-    Stack<Data> data = new Stack<Data>();
-    Map<Integer, Data> positions = new HashMap<Integer,Data>();
-    OfInt itr = chars.duplicate().chars().iterator();
-    if !itr.hasNext() {
-      return positions;
-    }
-    boolean locked = false;
-    boolean ignored = false;
-    int position = 0;
-    int c1;
-    int c2;
-    int c3 = itr.next();
-    if !itr.hasNext() {
-      return positions;
-    }
-    c2 = c3;
-    c3 = itr.next();
-    int cf1 = c2;
-    int cf2 = c3;
-    Brace open = braces.stream().filter(B=>B.open(cf1,cf2)).findAny().orElse(null);
-    if open != null {
-      data.push(new Data(position,open));
-      locked = open.isLock();
-    }
-    while itr.hasNext() {
-      c1 = c2;
-      c2 = c3;
-      c3 = itr.next();
-      ++position;
-      
-      if !ignored && locked && data.peek().getBrace().ignore(c2) {
-        ignored = true;
-      }
-      else if ignored {
-        ignored = false;
-      }
-      else if !data.isEmpty() && data.peek().getBrace().close(c2,c3) {
-          locked = false;
-          data.pop().close(position,positions);
-      }
-      else if !locked {
-        int cf3 = c1;
-        int cf4 = c2;
-        int cf5 = c3;
-        open = braces.stream().filter(B=>!B.ignore(cf3)&&B.open(cf4,cf5)).findAny().orElse(null);
-        if open != null {
-          data.push(new Data(position,open));
-          locked = open.isLock();
-        }
-      }
-    }
-    return positions;
-  }
-  class Data {
-    Integer open;
-    Integer close;
-    Brace brace;
-    
-    Data(Integer start, Brace brace){
-      this.open = start;
-      this.brace = brace;
-    }
-    void close(Integer close, Map<Integer, Data> positions){
-      this.close = close;
-      positions.put(open,this);
-    }
-  }
+    #
 }
 
 class com.rem.gen.parser.Token < Consumer<Token> {

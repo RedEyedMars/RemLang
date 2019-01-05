@@ -159,12 +159,12 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
   %Result parse(CharBuffer chars){
     Map<Integer, Braces.Data> braceData = Braces.find(chars.duplicate());
     CharBuffer input = chars.duplicate();
-    Token root = new Token(Token.Id.ROOT,null);
+    Token rootToken = new Token(Token.Id.ROOT,null);
     ErrorList errors = new ErrorList();
-    int result = __ROOT__.parse(root, errors, input, braceData);
+    int result = __ROOT__.parse(rootToken, errors, input, braceData);
     
     if result == Parser.PASS && (input.remaining() == 0 || input.get() == 0) {
-      return new Parser.Result.Pass(root);
+      return new Parser.Result.Pass(rootToken);
     }
     else {
       return new Parser.Result.Fail(chars.duplicate(),errors);
@@ -194,7 +194,6 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
     String fileName;
     long parseTime;
     State getState()?
-    String description()?
     long accumulateTime(long sum){
       return sum +'"+"'+ parseTime;
     }
@@ -207,12 +206,7 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
         consumer.accept(%Helper.getTimeAsString(parseTime));
       }
       consumer.accept(''"\\n"'');
-      consumer.accept(description());
-    }
-    String toString(){
-      StringBuilder builder = new StringBuilder();
-      print(builder::append,true);
-      return builder.toString();
+      consumer.accept(this.toString());
     }
     Result setParseTime(long parseTime){
       this.parseTime = parseTime;
@@ -223,13 +217,13 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
       return this;
     }
     class Pass Result {
-      Token root;
-      Pass(Token root){
+      Token rootToken;
+      Pass(Token rootToken){
         super();
-        this.root = root;
+        this.rootToken = rootToken;
       }
       Result.State getState(){ return Result.State.PASS; }
-      String description(){
+      String toString(){
         return ''""'';
 	  }
     }
@@ -241,7 +235,7 @@ class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<P
         this.chars = chars;
       }
       Result.State getState(){ return Result.State.FAIL; }
-      String description(){
+      String toString(){
         return errors.toString(chars);
       }
     }
@@ -526,10 +520,8 @@ interface com.rem.gen.parser.ParseRule {
         }
       }
       buffer.limit(chars.position());
-      if parent != null {
-        parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
-        Parser.consumeWhitespace(chars,braceData);
-      }
+      parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
+      Parser.consumeWhitespace(chars,braceData);
       return Parser.PASS;
     }
   }

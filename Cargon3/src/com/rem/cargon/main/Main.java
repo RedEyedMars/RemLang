@@ -13,6 +13,7 @@ public class Main {
 		//scanner.nextLine();
 		Parser.Result  result = new Parser().parse("cargon3.cgon");
 		result.print(System.out::print, true);
+		//new Parser().asPass(result).getRootToken().print(System.out::print);
 		//scanner.nextLine();
 		//scanner.close();
 	}

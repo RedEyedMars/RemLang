@@ -15,7 +15,7 @@ public interface ParseRule {
 		return id==null?rule:new Tokenify.One(id,rule);
 	}
 	public static ParseRule createOptional(Token.Id id,ParseRule rule){
-		return id==null?rule:new Tokenify.Optional(id,rule);
+		return id==null?new Loopify.Optional(rule):new Tokenify.Optional(id,rule);
 	}
 	public static ParseRule createMany(Token.Id id,ParseRule rule){
 		return id==null?new Loopify.Many(rule):new Tokenify.Many(id,rule);
@@ -235,16 +235,17 @@ public interface ParseRule {
 			this.contenders=contenders;
 		}
 		public int parse(Consumer<Token> parent,ErrorList errors,CharBuffer chars,Map<Integer, Braces.Data> braceData){
+			ErrorList subErrors = new ErrorList();
 			for(int i = 0;i<contenders.length;++i){
-				ErrorList subErrors = new ErrorList();
 				int result = contenders[i].parse(parent,subErrors,chars,braceData);
 				if(result!=Parser.FAIL){
+					if(result==Parser.ERROR_ON_END){
+						errors.merge(subErrors);
+					}
 					return result;
 				}
-				else{
-					errors.merge(subErrors);
-				}
 			}
+			errors.merge(subErrors);
 			return Parser.FAIL;
 		}
 	}
@@ -295,8 +296,7 @@ public interface ParseRule {
 						}
 						return C==c;
  })){
-					Parser.__WHITESPACE__.parse( T->{						;
- },new ErrorList.Dummy(),chars,braceData);
+					Parser.consumeWhitespace(chars,braceData);
 					parent.accept(new Token(Token.Id._SYNTAX,value));
 					return Parser.PASS;
 				}
@@ -335,8 +335,7 @@ public interface ParseRule {
 			}
 			buffer.limit(chars.position());
 			parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
-			Parser.__WHITESPACE__.parse( T->{						;
- },new ErrorList.Dummy(),chars,braceData);
+			Parser.consumeWhitespace(chars,braceData);
 			return Parser.PASS;
 		}
 	}
@@ -360,11 +359,12 @@ public interface ParseRule {
 			}
 			CharBuffer buffer = chars.duplicate();
 			for(int i = 0;i<contenders.length;++i){
-				if(contenders[i].parse(parent,errors,buffer,braceData)==Parser.FAIL){
+				if(contenders[i].parse(parent,errors,buffer,braceData)==Parser.PASS){
 					errors.adjust(new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),options));
 					return Parser.FAIL;
 				}
 			}
+			chars.get();
 			return Parser.PASS;
 		}
 	}

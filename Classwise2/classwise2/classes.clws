@@ -69,7 +69,7 @@
 	  %C subOuterClass = classGenerator.declaration(element,subInnerClass,isInner,parentContext);
 	  
 	  if element->inner == null {
-	    subInnerClass.addVariable(@%C OUTPUT = `subOuterClass.stasis()`;);
+	    subInnerClass.addVariable(@%C OUTPUT = `subOuterClass.stasis()`.mark(););
 	    outerClass.encloseClass(subOuterClass.getAsVariable());
       }
 	  innerClass.encloseClass(subInnerClass);

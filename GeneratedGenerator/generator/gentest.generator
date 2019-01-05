@@ -1,6 +1,0 @@
-uses Listnames Tokens
-import "meta.generator"
-import "entries.generator"
-import "gen.generator"
-import "check.generator"
-import "entryClass.generator"

@@ -1,6 +1,0 @@
-uses Listnames Rules Tokens Base
-import "meta.generator"
-import "rule.generator"
-import "list.generator"
-import "custom.generator"
-

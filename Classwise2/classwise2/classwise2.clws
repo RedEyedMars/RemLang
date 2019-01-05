@@ -125,9 +125,10 @@ import variables
 > void generate(%Pass result){
     mainClass = class  'innerPackageName'.'mainClassName' {
         @void main(String[] args){
-           %Helper.parse(args,%Parser(),'mainClassName'::init,'mainClassName'::setup,'mainClassName'::generate);
+           'mainClassName'.init();
+           %Helper.parse(args,%Parser(),'mainClassName'::setup,'mainClassName'::generate);
         }
-        @void init(%Pass result) {`setupClassList`;}
+        @void init() {`setupClassList`;}
       };
 	
     findAllClasses(result.getRoot());

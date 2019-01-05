@@ -116,7 +116,7 @@
                 exceptionType.set(exceptionTypeName);
               }
               else {
-                exceptionType.or(new %Type().set(exceptionTypeName));
+                exceptionType.or(xd%Type().set(exceptionTypeName));
               }
             }
             header = new %Header().declare('exceptionType' '"e"+exceptionIndex';);
@@ -132,7 +132,7 @@
             resultingConditional.body(body_gen.statement(element->statement_as_method->body_statement,true,parentContext));
           }
           else {
-            resultingConditional.body(new %Body());
+            resultingConditional.body(%Body());
             element : atom : as_body {
               if element->PRINT != null {
                 resultingConditional.add(

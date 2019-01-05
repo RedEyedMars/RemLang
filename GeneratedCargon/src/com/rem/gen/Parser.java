@@ -2025,12 +2025,18 @@ setIsAbstract(true);;__add_variable_0__();;__add_variable_1__();;__add_method_0_
 	public void __INIT__() {
 		super.__SETUP__(
 			null,
-			new ExternalStatement(".",new ExternalStatement(".",new ExternalStatement(new VariableNameEntry(MainFlow.self.packageName),"")),new ExternalStatement(new StringEntry("parser"),"")),
+			new ExternalStatement(".",
+					new ExternalStatement(".",
+							new ExternalStatement(
+									new VariableNameEntry(MainFlow.self.packageName),"")),
+					new ExternalStatement(new StringEntry("parser"),"")),
 			new Entry(){public void get(StringBuilder builder){}},
 			new VariableNameEntry("Parser"),
 			"class ",
 			null,
-			Arrays.asList(new Entry[]{}),
+			Arrays.asList(new Entry[]{
+					new StringEntry("com.rem.output.helpers.OutputHelper.Parser<Parser.Result,Parser.Result.Pass>")
+			}),
 			null);
 		setIsStatic(false);
 		__add_variable_0__();
@@ -2052,6 +2058,23 @@ setIsAbstract(true);;__add_variable_0__();;__add_variable_1__();;__add_method_0_
 		__add_sub_class_0__();
 		__add_sub_class_1__();
 		__add_sub_class_2__();
+
+		ExternalMethodEntry asPassMethod = new ExternalMethodEntry(
+				0,false,
+				new ExternalStatement.TypeName(new StringEntry("Parser.Result.Pass")),"",
+				new Entry(){public void get(StringBuilder builder){
+					builder.append("asPass");}},
+				Arrays.asList(
+						new ExternalVariableEntry[]{
+								new ExternalVariableEntry(true,false,false,
+										new ExternalStatement.TypeName(
+												new ExternalStatement(new StringEntry("Parser.Result"),"")),"",
+										new Entry(){public void get(StringBuilder builder){builder.append("result");}},
+										null)}),"",new ExternalStatement.Body(
+												new ExternalStatement(
+														new TabEntry(
+																new StringEntry("return ")),new StringEntry(";"),"",new ExternalStatement(new StringEntry("(result instanceof Parser.Result.Pass)?((Parser.Result.Pass)result):null"),""))));
+		addMethod(asPassMethod);
 	}
 	public static class Context extends ExternalClassEntry{
 		public static final Context _ = new Context();
