@@ -1,0 +1,566 @@
+
+> BodyGenerator body_gen = new BodyGenerator();
+> class BodyGenerator {
+    Integer exceptionIndex = 0;
+    
+    boolean elementHasReturn(%T input) {
+      input : element : body_return {
+          return true;
+        }
+        : body_conditional { 
+          return conditionalHasReturn(element);
+        }
+      return false;
+    }
+    boolean conditionalHasReturn(%T input){
+      input : atom : as_body {
+        %T lastElement = null; 
+        List<%T> elements = atom->>body_element;
+        int i = elements.size() - 1;
+        while i >= 0 && lastElement==null {
+          String currentName = 'elements.get(i).getAll().get(0).getName()';
+          if currentName.equals("comments")==false&&currentName.equals("SYNTAX")==false {
+             lastElement = elements.get(i);
+             break;
+          }
+          i -= 1;
+        }
+        if lastElement != null {
+          return elementHasReturn(lastElement);
+        }
+      }
+      return false;
+    }
+    
+    %Lineable element(%T input, Boolean isInner, %Context parentContext) {
+      input : element 
+        : body_add_to_class {
+          return addToClass(element,isInner,parentContext);
+        }
+        : body_access_token {
+          return accessToken(element,isInner,parentContext);
+        }
+        : variable_declaration {
+          return |`variable.declaration(element,isInner,parentContext)`;|;
+        }
+        : variable_assignment {
+          return variable.assignment(element,isInner,parentContext);
+        }
+        : body_statement {
+          return |`body_gen.statement(element,isInner,parentContext)`;|;
+        }
+        : body_return {
+          if element->method_argument != null {
+            return |return `body_gen.argument(element->method_argument, isInner, parentContext)`;|;
+          }
+          else {
+            return |return;|;
+          }
+        }
+        : body_throw {
+          return |throw `body_gen.statement(element->body_statement,isInner, parentContext)`;|;
+        }
+        : body_conditional {
+          %Conditional resultingConditional = %Conditional();
+          Boolean isCase = false;
+          String conditionalName = "";
+          exceptionIndex = 0;
+          if element->conditional_choice != null {
+          }
+          else if element->conditional.getAll()==null {
+            conditionalName = element->conditional.getValue().trim();
+          }
+          else {
+            StringBuilder conditionalNameBuilder = new StringBuilder();
+            String space = "";
+            element->conditional : conditionName : SYNTAX {
+              conditionalNameBuilder.append(space);
+              conditionalNameBuilder.append(conditionName.getValue().trim());
+              space = " ";
+            }
+            conditionalName = conditionalNameBuilder.toString();
+          }
+          %Header header = new %Header();
+          %Output headerCall = null;
+          
+          if element->body_statement != null {
+            headerCall = body_gen.statement(element->body_statement,isInner,parentContext);
+          }
+          if element->variable_declaration != null {
+            element : atom : variable_declaration {
+              String operator = 'element->OPERATOR';
+              if operator.contains(":") {
+                header.declare(variable.declaration(atom,isInner,parentContext));
+                header.separator(":");
+                header.call(headerCall);
+              }
+              else {
+                header.separator(";");
+                %Variable headerVariable = variable.declaration(atom,isInner,parentContext).assign(new %E("0"));
+                header.declare(headerVariable);
+                %Operator rightSide = new %Operator().operator(";");
+                rightSide.left(new %Operator().left(headerVariable.getName()).operator(operator).right(headerCall));
+                rightSide.right(new %Operator().operator("++").right(headerVariable.getName()));
+                header.call(rightSide);
+              }
+            }
+          }
+          else if element->exception != null {
+            %Type exceptionType = new %Type();
+            element : atom : exception {
+              String exceptionTypeName;
+              if atom.getValue().contains("*") {
+                exceptionTypeName = "Exception";
+              }
+              else {
+                exceptionTypeName = %Helper.camelize(atom.getValue()) + "Exception";
+              }
+              exceptionType = exceptionType.or(new %Type(exceptionTypeName));
+            }
+            header = new %Header().declare(%V().set(exceptionType,%E('"e"+exceptionIndex')));
+          }
+          else if headerCall != null {
+            header.call(headerCall);
+          }
+          else {
+            header = null;
+          }
+          
+          if element->statement_as_method != null {
+            resultingConditional.body(body_gen.statement(element->statement_as_method->body_statement,true,parentContext));
+          }
+          else {
+            resultingConditional.body(new %Body());
+            element : atom : as_body {
+              if element->PRINT != null {
+                resultingConditional.add(
+                    new %Call().add(
+                       new %E("e"+'exceptionIndex'))
+                          .add(new %E("printStackTrace"),new %Arguments()));
+              }
+              atom : quark : body_element {
+                %Lineable bodyElem = body_gen.element(quark,isInner,resultingConditional.body());
+                if bodyElem != null {
+                  resultingConditional.add(bodyElem);
+                }
+              }
+            }
+		    if element->exception != null {
+              ++exceptionIndex;
+            }
+          }
+          if element->conditional_choice != null {
+            return resultingConditional.optionalIf('element->conditional_choice','element->conditional_operator'.contains("+")).header(header);
+          }
+          else if conditionalName.contains("case") {
+            return resultingConditional.init(conditionalName.trim()).asCase(headerCall);
+          }
+          else {
+            return resultingConditional.init(conditionalName.trim()).header(header);
+          }
+        }
+      
+      return null; #new OutputBlankStatement();# 
+    }
+    
+    
+	%Output statement(%T input, Boolean isInner, %Context parentContext) {
+	  %Operator statement = new %Operator();
+	  Boolean isFirst = true;
+	  input : element : body_call {
+	      if isFirst {
+	        statement.left(body_gen.call(element,isInner,parentContext));
+	      }
+	      else {
+	        statement.right(body_gen.call(element,isInner,parentContext));
+	      }
+	      isFirst = false;
+	    }
+	    : lambda {
+	    %Lambda lambda = new %Lambda();
+	      element : atom 
+	        : variableName {
+              lambda.declare(%E('atom'));
+		    }
+		    : name_var {
+		      lambda.declare(classwise.name_var(atom,isInner,parentContext));
+		    }
+		  if element->body !=null {
+		    element->body : atom : body_element {
+  	          lambda.add(body_gen.element(atom,isInner, parentContext));
+		    }
+		  }
+		  else {
+  	        lambda.call(body_gen.statement(element->body_statement,isInner, parentContext));
+		  }
+		  statement = statement.left(lambda).operatorlessIfSingle();
+        }
+	    : NOT {
+	      statement.operator(statement.operator()+" !");
+	      isFirst = false;
+	    }
+	    : OPERATOR {
+	      %Operator nextStatement = new %Operator().left(statement);
+	      statement = nextStatement;
+	      if element->exact != null {
+	        statement.operator(element.getValue().trim());
+	      }
+	      else if element->instance != null {
+	        statement.operator(" instanceof ");
+	      }
+	      else {
+	        statement.operator(element.getValue().substring(1).trim());
+	      }
+	      isFirst = false;
+	    }
+	    : body_statement {
+	      statement = statement.left(body_gen.statement(element,isInner,parentContext)).operatorlessIfSingle();
+	    }
+	  if input->cast_statement !=null{
+        %Cast cast = %Cast();
+        input : atom : cast_statement {
+          cast.type(classwise.type_var(atom->all_type_name,isInner,parentContext));
+        }
+        return cast.subject(statement);
+      }
+      else {
+        return statement;
+      }
+	}
+	
+    
+	%Output call(%T input, Boolean mustInner, %Context parentContext){
+	  Boolean isInner = mustInner || input->inner != null;
+	  if input->cast_statement !=null{
+        %Cast cast = %Cast();
+        input : atom : cast_statement {
+          cast.type(classwise.all_type(atom->all_type_name,isInner,parentContext));
+        }
+        return cast.subject(body_gen.statement(input->body_statement,isInner,parentContext));
+      }
+	  if input->as_braced != null {
+	    return new %Braced().set(body_gen.statement(input->as_braced->statement_as_braced->body_statement,isInner,parentContext));
+	  }
+	  else if input->as_statement != null {
+	    input->as_statement : element : body_element { 
+          %Output newBodyElement = body_gen.element(element,false,parentContext);
+          if newBodyElement != null {
+            return newBodyElement.stasis();
+          }
+        }
+        input->as_statement : element : body_statement {
+          %Output newBodyElement = body_gen.statement(element,false,parentContext);
+          if newBodyElement != null {
+            return newBodyElement.stasis();
+          }
+        }
+      }
+      else if input->inline_method_reference != null {
+        if isInner == false {
+          if input->inline_method_reference->name_var != null {
+            return %Operator().left(classwise.name_var(input->inline_method_reference->name_var,isInner,parentContext)).operator("::").right(%E('input->inline_method_reference->NAME'));
+          }
+          else {
+            return %Operator().left(classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext)).operator("::").right(%E('input->inline_method_reference->NAME'));
+          } 
+        }
+        else {
+          if input->inline_method_reference->method_prototype_parameters != null {
+            %A parameters = %A();
+            input->inline_method_reference->method_prototype_parameters : type_var : type_var {
+              parameters.add(classwise.type_var(type_var,isInner,parentContext));
+            }
+            if input->inline_method_reference->NAME != null {
+              return classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext).getAsGetClass().add(%E("getMethod"),%A().add(%Quote(
+                %Call().add(%E('input->inline_method_reference->NAME'),parameters)))); 
+            }
+            else if input->inline_method_reference->name_var != null{
+              return classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext).getAsGetClass().add(%E("getMethod"),%A().add(
+                
+                %Operator().left(classwise.name_var(input->inline_method_reference->name_var,isInner,parentContext)).operator("+").right(%Quote(parameters))));
+            }
+          }
+          else {
+            return classwise.type_var(input->inline_method_reference->type_var,isInner,parentContext).getAsGetClass().add(%E("getMethod"),%A().add(%Quote(
+              %Call().add(%E('input->inline_method_reference->NAME')))));
+          }
+        }
+      }
+	  %Callable call = null;
+	  int groupIndex = 0;
+	  boolean hasMethodOrVariable = input->>group.size() > 1;
+	  input : element : group {
+		%Arguments arguments = new %Arguments ();
+		boolean hasArguments = false;
+		arguments.hasMethodArguments(false);
+		element : atom : method_arguments {
+		  hasArguments = true;
+		  arguments.hasMethodArguments(true);
+		  atom : quark : method_argument {
+			arguments.add(body_gen.argument(quark,isInner,parentContext));
+	      }
+	    }
+	    element : atom : array_parameters {
+		  hasArguments = true;
+		  if atom->method_argument == null || 'atom->method_argument' == null {
+		    arguments.array(%E(""));
+		  }
+		  else {
+		    atom : quark : method_argument {
+			  arguments.array(body_gen.argument(quark,isInner,parentContext));
+	        }
+	      }
+	    }
+		if element->all_type_name != null {
+		  %Type type = classwise.all_type(element->all_type_name,isInner,parentContext);
+		  if element->NEW != null || (element->all_type_name->non_class_name != null && ('element->all_type_name->non_class_name'.startsWith("H")||'element->all_type_name->non_class_name'.startsWith("Structure"))==false){
+		    call = new %New Object().set(type,arguments);
+		  }
+		  else {
+		    
+		    if isInner == true && element->all_type_name->type_var != null && element->all_type_name->type_var->asVariable != null {
+		      call = type.getAsGetClass();
+		    }
+		    else if hasMethodOrVariable || isInner == false {
+		      call = new %Static Call().set(type);
+		    }
+		    else {
+		      call = type.getAsGetClass();
+		    }
+		  }
+		}
+		else {
+		  %Output nameVar;
+		  if element->name_var != null {
+		    nameVar = classwise.name_var(element->name_var,isInner,parentContext);
+		  }
+		  else {
+ 		    String value = 'element->NAME';
+		    if groupIndex==0&&classwise.mainClass.getMethod(value)!=null && (parentContext == null || parentContext.hasVariableInContext(value) == false) {
+ 		      value = classwise.mainClassName+"."+value;
+ 	        }
+		    nameVar = new %E(value);
+		  }
+		  
+		  if groupIndex == 0 {
+            call = new %Call();
+		  }
+		  if hasArguments {
+            call.add(nameVar,arguments);
+		  }
+		  else {
+		    call.add(nameVar);
+		  }
+		}
+		++groupIndex;
+	  }
+	  return call;
+  }
+  Integer tempTokenElementIndex = 0;
+  %Lineable addToClass(%T input, Boolean isInner, %Context parentContext){
+    %Type type = classwise.type_var(input->type_var,true,parentContext);
+    %Output accessMethod;
+    if input->accessMethod != null {
+      StringBuilder accessMethodBuilder = new StringBuilder();
+      boolean isQuoting = true;
+      if input->accessMethod->name_var != null {
+        if input->accessMethod->name_var->name_atom!=null&&(input->accessMethod->name_var->name_atom->statement_as_method!=null || input->accessMethod->name_var->name_atom->statement_as_string!=null) {
+          accessMethodBuilder.append(classwise.name_var(input->accessMethod->name_var,true,parentContext).evaluate());
+          isQuoting = false;
+        }
+        else {
+          accessMethodBuilder.append("\""+'input->accessMethod->name_var');
+          isQuoting = true;
+        }
+      }
+      else if input->accessMethod->NAME != null {
+        accessMethodBuilder.append("\""+'input->accessMethod->NAME');
+        isQuoting = true;
+      }
+      else {
+        accessMethodBuilder.append("\"");
+        isQuoting = true;
+      }
+      if input->accessMethod->method_prototype_parameters != null {
+        if isQuoting {
+          accessMethodBuilder.append("(");
+        }
+        else {
+          accessMethodBuilder.append("+\"(");
+          isQuoting = true;
+        }
+        boolean isFirstType = true;
+        input->accessMethod->method_prototype_parameters : type_var : type_var {
+          if !isFirstType {
+            if isQuoting {
+              accessMethodBuilder.append(",");
+            }
+            else {
+              accessMethodBuilder.append("+\",");
+              isQuoting = true;
+            }
+          }
+          isQuoting = classwise.stringifyTypeVar(type_var,accessMethodBuilder,isQuoting);
+          isFirstType = false;
+        }
+        if isQuoting {
+          accessMethodBuilder.append(")\"");
+        }
+        else {
+          accessMethodBuilder.append("+\")\"");
+        }
+      }
+      else if isQuoting {
+        accessMethodBuilder.append("\"");
+      }
+      accessMethod = %E('accessMethodBuilder');
+    }
+    else {
+      accessMethod = null;
+    }
+    if input->class_declaration != null {
+      return |`type.getAsGetClass()`.encloseClass(`classGenerator.declaration(input->class_declaration,new %Class(),false,parentContext).stasis()`);|;
+    }
+    else if input->method_declaration != null {
+      return |`type.getAsGetClass()`.method(`method.declaration(input->method_declaration,false,parentContext).stasis()`);|;
+    }
+    else if input->variable_declaration != null {
+      return |`type.getAsGetClass()`.variable(`variable.declaration(input->variable_declaration,false,parentContext).stasis()`);|;
+    }
+    else if input->statement_as_method != null {
+      if accessMethod != null {
+        return |`type.getAsGetClass()`.getMethod(`accessMethod`).'input->addition_operator.getAll().get(0).getName().toString().substring(1)'(`
+          body_gen.statement(input->statement_as_method->body_statement,true,parentContext)`);|;
+      }
+      else {
+        return |`type.getAsGetClass()`.'input->addition_operator.getAll().get(0).getName().toString().substring(1)'(`
+          body_gen.statement(input->statement_as_method->body_statement,true,parentContext)`);|;
+      }
+    }
+    else {
+      %Body arguments = new %Body();
+      if input->body->as_statement != null {
+        input->body->as_statement : element : body_element {
+          arguments.add(body_gen.element(element,false,parentContext));
+        }
+        input->body->as_statement : element : body_statement {
+          arguments.add(body_gen.statement(element,false,parentContext));
+        }
+      }
+      else {
+        input->body : element : body_element {
+          arguments.add(body_gen.element(element,false,parentContext));
+        }
+      }
+      return |`type.getAsGetClass()`.getMethod(`accessMethod`).'input->addition_operator.getAll().get(0).getName().toString().substring(1)'(`arguments.stasis()`);|;
+    }
+  }
+    
+  %Lineable accessToken(%T input, Boolean isInner, %Context parentContext){
+    String elementName = null;
+    if input->variableName != null {
+      elementName = input->variableName.getValue();
+    }
+    %Output subject = classwise.tokenAccess(input->tokenAccess,true,parentContext);
+    Integer numberOfInstances = 0;
+    input : element : tokenInstance { ++numberOfInstances; }
+    
+    %Body manipulateBody = new %Body();
+    String singleTokenName = null;
+    %Type tokenType = new %Type("com.rem.gen.parser.Token");
+    input : element : tokenInstance {
+      String tokenName = 'element->tokenName';
+      singleTokenName = tokenName;
+      %Body instanceBody = new %Body().setParent(parentContext);
+      String elementNameValue;
+      if elementName == null {  elementNameValue = tokenName;  }
+      else                   {  elementNameValue = elementName; }
+      
+      if numberOfInstances != 1 && elementName == null{
+        instanceBody.add('tokenType' 'elementName' = '"__TEMP_TOKEN_ELEMENT_NAME__"+tempTokenElementIndex';);
+      }
+      %T lastElement = null;
+      element : atom : body_element {
+        %Lineable newBodyElement = body_gen.element(atom,true,instanceBody);
+        if newBodyElement != null {
+          instanceBody.add(newBodyElement);
+          lastElement = atom;
+        }
+      }
+      if numberOfInstances == 1 {
+        manipulateBody.add(instanceBody);
+      }
+      else {
+        if lastElement != null && body_gen.elementHasReturn(lastElement) == false {
+          instanceBody.add(new %Exact("break"));
+        }
+        manipulateBody.add(
+          new %Conditional("case _"+'tokenName'+" :").body(instanceBody));
+      }
+    }
+    if numberOfInstances == 1 {
+      return new %Conditional("for").header(new %ConditionalHeader().declare('tokenType' 'elementName';).separator(":").call(new %Call().add(subject).add(new %E("getAllSafely"),new %Arguments().add(new %E("com.rem.gen.parser.Token.Id._"+'singleTokenName'))))).body(manipulateBody);
+    }
+    else {
+      if elementName != null {
+        return new %Conditional("for").header(new %ConditionalHeader().declare('tokenType' 'elementName';).separator(":").call(new %Call().add(subject).add(new %E("getAll"),new %Arguments()))).body(new %Body().add(new %Conditional("switch").header(new %ConditionalHeader().call(new %Call().add(new %E('elementName')).add(new %E("getName"),new %Arguments()))).body(manipulateBody)));
+      }
+      else {
+        Integer tempTokenElementIndexValue = tempTokenElementIndex;
+        ++tempTokenElementIndex;
+        return new %Conditional("for").header(new %ConditionalHeader().declare('tokenType' '"__TEMP_TOKEN_ELEMENT_NAME__"+tempTokenElementIndexValue';).separator(":").call(new %Call().add(subject).add(new %Exact("getAllSafely"),new %Arguments().add(new %Exact("com.rem.gen.parser.Token.Id._"+'singleTokenName'))))).body(manipulateBody);
+      }
+    }
+  }
+  %Output argument(%T input, Boolean isInner, %Context parentContext){
+    input : element : class_declaration {
+		return classGenerator.declaration(element, new %Class(),false,parentContext).stasis();
+      }
+      : method_declaration {
+		return method.declaration(element,false, parentContext).stasis();
+	  }
+	  : variable_declaration {
+		return variable.declaration(element,false,parentContext).stasis();
+	  }
+	  : body_statement {
+		return body_gen.statement(element,isInner,parentContext);
+	  }
+	  : as_statement {
+		if element->body_element != null {
+		  %Body argumentBody = new %Body();
+		  element : atom : body_element { argumentBody.add(body_gen.element(atom,false,parentContext)); }
+		  return argumentBody.stasis();
+	    }
+	    else if element->body_statement != null {
+	      return body_gen.statement(element->body_statement,false,parentContext).stasis();
+	    }
+	  }
+	  : body_entries {
+	    %Body elements = new %Body ();
+	    element : atom : body_element {
+	      elements.add(body_gen.element(atom,false, parentContext));
+		}
+		return elements.stasis();
+	  }
+	  : lambda {
+	    %Lambda lambda = new %Lambda();
+	    element : atom : variableName {
+            lambda.declare('atom');
+		  }
+		  : name_var {
+		    lambda.declare(classwise.name_var(atom,isInner,parentContext));
+		  }
+		if element->body !=null {
+		  element->body : atom : body_element {
+	        lambda.add(body_gen.element(atom,isInner, parentContext));
+		  }
+		}
+		else {
+	      lambda.call(body_gen.statement(element->body_statement,isInner, parentContext));
+		}
+		return lambda;
+      }
+    
+    return null; #new OutputBlankStatement();# 
+  }
+}

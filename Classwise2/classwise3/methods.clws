@@ -1,0 +1,84 @@
+
+> MethodGenerator method = new MethodGenerator();
+> class MethodGenerator {
+  Set<String> definedMethodNames = new HashSet<String>();
+  void addDefinedMethodName(%M newMethod){
+    definedMethodNames.add(newMethod.getName().evaluate());
+  }
+  %M declaration(%T declaration,Boolean isInner, %Context parentContext){
+	return definition(declaration,isInner,false, parentContext);
+  }
+  %M declaration(%T declaration,Boolean isInner, Boolean isInnerClass, %Context parentContext){
+	return definition(declaration,isInner, isInnerClass, parentContext);
+  }
+
+  %M definition(%T input, Boolean mustInner, Boolean isInnerClass, %Context parentContext){
+	Boolean isInner = mustInner || input->inner != null ;
+	%M newMethod = %M();
+	newMethod.setParent(parentContext);
+	
+	%Type methodType = classwise.all_type(input->all_type_name,isInner,parentContext);
+	if input->ARRAY_TYPE != null {
+	  input : element : ARRAY_TYPE {
+        methodType.array();
+	  }
+	}
+	int numberOfTemplates = 0;
+	input : element : template_atom {
+	  List<%Type> templateExtends = new ArrayList<%Type>();
+	  element : atom : extendsType {
+	    newMethod.templateExtends(numberOfTemplates,classwise.all_type(atom,isInner,parentContext));
+	  } 
+	  numberOfTemplates = numberOfTemplates + 1;
+	  element : atom : templateTypeName {
+	    newMethod.template(%E('element'));
+	  }
+	}
+	if input->inline != null {
+	  if input->inline->method_parameters != null{
+	    %P parameters = %P();
+	    input->inline->method_parameters : parameter : parameter {
+	      parameters.add(variable.declaration(parameter,isInner,parentContext));
+	    }
+	    newMethod.parameters(parameters);
+	  }
+	}
+	else if input->variableParameters != null{
+	  newMethod.parametersAsVariable(body_gen.statement(input->variableParameters->statement_as_method->body_statement,true,parentContext));
+	}
+	if input->throwsException != null {
+	  input->throwsException : element : exception {
+	    newMethod._throws('element');
+	  }
+	}
+	if input->body != null {
+	  %B methodBody = %B();
+	  methodBody.setParent(parentContext);
+	  input->body : element : body_element {
+	    methodBody.add(body_gen.element(element,isInner,methodBody));
+	  }
+	  newMethod.body(methodBody);
+	}
+	else if input->statement_as_method != null {
+	  newMethod.bodyAsArgument(%E('input->statement_as_method->body_statement'));
+	}
+	
+	if input->methodName == null {
+	  newMethod.set(methodType, %E(""));
+	}
+	else if input->methodName->NAME != null {
+	  newMethod.set(methodType, %E('input->methodName->NAME'));
+	}
+	else {
+	  newMethod.set(methodType, classwise.name_var(input->methodName->name_var,isInner,parentContext));
+	}
+	if input->static != null || isInnerClass {
+	  newMethod.isStatic();
+	}
+	if input->weak != null {
+	  newMethod.isAbstract();
+	}
+	
+	return newMethod;
+  }
+}

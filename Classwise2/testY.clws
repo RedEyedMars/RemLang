@@ -1,0 +1,8 @@
+
+import classwise2/classwise2
+
+>class TestYY {
+  void test() {
+    catch IO {}
+  }
+}

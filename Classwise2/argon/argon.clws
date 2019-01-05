@@ -1,0 +1,1150 @@
+imports argon
+import regex
+
+> %A rootSetCall = %A;
+> Set<String> rulenames = new HashSet<String>();
+> %A ignoreSpace = %A;
+> void onCreate(%Pass result) {
+  }
+> void onModify(%Pass result){
+  }
+> void onParse(%Pass result, %Input helper) {
+    
+  }
+> void setup(%Pass result){
+    %T root = result.getRoot();
+    root : rule : rule {
+      if rulenames.add('rule->ruleName') {
+        String idName = "_"+'rule->ruleName';
+        Parser += @ParseRule.Tokenify.One 'idName' = new ParseRule.Tokenify.One(Token.Id.'idName');
+        if rulenames.size() == 1{
+          rootSetCall.add(|'idName'|);
+        }
+      }
+    }
+    if ignoreSpace.isEmpty() {
+      ignoreSpace.add(|''" \\t\\n\\r"''|);
+    }
+  }
+> void generate(%Pass result){
+    %T root = result.getRoot();
+    List<%T> rules = root->>rule;
+    root : rule : rule {
+      String variableName = "_"+'rule->ruleName';
+      Parser::setup() += |'variableName'.setRule(`rule(rule)`);|
+      Token.addId(variableName);
+    }
+  }
+> %Output rule(%T rule){
+    %Output subRule;
+    %A definitions = %A();
+    define(rule->definition,definitions);
+    if definitions.isSingle() {
+      subRule = definitions.get(0);
+    }
+    else {
+      subRule = |new ParseRule.Branch(`definitions`)|;
+    }
+    if rule->braced_parameters != null {
+      return %New Object().set(%Type("Braces").add("Rule"),%A().add(%E(Braces.addBrace(
+         'rule->braced_parameters->left'.equals('rule->braced_parameters->right'),
+         'rule->braced_parameters->left',
+         'rule->braced_parameters->right',
+         "\\"
+         ))).add(subRule));
+    }
+    else {
+      return subRule;
+    }
+  }
+> void define(%T definition,%A definitions){
+    %A args = %A();
+    definition : chain : chain {
+      args.add(element(chain->element));
+    }
+    if args.isSingle() {
+      definitions.add(args.get(0));
+    }
+    else {
+      definitions.add(|new ParseRule.Chain(`args`)|);
+    }
+    if definition->choice != null {
+      define(definition->choice->definition,definitions);
+    }
+  }
+> %Static Call element(%T element){
+    %A args = %A();
+    if element->newName != null {
+      String newName = "_"+'element->newName';
+      args.add(|Token.Id.'newName'|);
+      Token.addId(newName);
+    }
+    else {
+      args.add(|null|);
+    }
+    element : quark 
+      : braced_definition {
+        args.add(rule(quark));
+      }
+      : quoteToken {
+        StringBuilder quote = new StringBuilder();
+        String string = quark.toString();
+        IntStream.range(0,string.length()-1).forEach(I=>{
+          if new Character(string.charAt(I)).toString().equals("\\") && string.charAt(I+1) != char\n && string.charAt(I+1) != char\t && string.charAt(I+1) != char\r {
+            quote.append(string.charAt(I));
+            quote.append(string.charAt(I));
+          }
+          else {
+            quote.append(string.charAt(I));
+          }});
+        if new Character(string.charAt(string.length()-1)).toString().equals("\\") {
+          quote.append(string.charAt(string.length()-1));
+          quote.append(string.charAt(string.length()-1));
+        }
+        else {
+          quote.append(string.charAt(string.length()-1));
+        }
+        args.add(|new ParseRule.Terminal('' quote.toString() '')|);
+      }
+      : regexToken {
+        args.add(regex(quark->regex));
+      }
+      : ruleToken {
+        String subRuleName = "_"+'quark';
+        args.add(|'subRuleName'|);
+      }
+    if element->multiple == null {
+      return |ParseRule.createOne(`args`)|;
+    }
+    else {
+      element->multiple : multiple : OPTIONAL {
+        return |ParseRule.createOptional(`args`)|;
+      }
+      : MANY {
+        return |ParseRule.createMany(`args`)|;
+      }
+      : PLUS {
+        return |ParseRule.createMore(`args`)|;
+      }
+      return null;
+    }
+    
+  }
+class com.rem.gen.parser.Parser < '"com.rem.output.helpers.OutputHelper.Parser<Parser.Result,Parser.Result.Pass>"' {
+  @int ERROR_ON_END = 1!
+  @int PASS = 0!
+  @int FAIL = -1!
+  
+  @ParseRule.Tokenify.One __ROOT__ = new ParseRule.Tokenify.One(Token.Id.ROOT);
+  @String __WHITESPACE__ = `ignoreSpace`;
+  void setup(){
+    __ROOT__.setRule(`rootSetCall`);
+  }
+  Parser.Result.Pass asPass(Parser.Result result){
+    return (result instanceof Parser.Result.Pass)?(Parser.Result.Pass)result:null;
+  }
+  
+  %Result parse(String fileName) {
+    long parseStartTime = System.currentTimeMillis();
+    setup();
+    try {
+      File file = new File(fileName);
+      if !file.exists() {
+        return null;
+      }
+      BufferedReader reader = new BufferedReader(new FileReader(file));
+	  CharBuffer chars = CharBuffer.allocate((int) file.length()+1);
+	  reader.read(chars);
+      reader.close();
+	  chars.position(0);
+      %Result result = parse(chars);
+      return result.setFileName(fileName).setParseTime(System.currentTimeMillis()-parseStartTime);
+    }
+    print catch IO {}
+    return null;
+  }
+  %Result parse(CharBuffer chars){
+    Map<Integer, Braces.Data> braceData = Braces.find(chars.duplicate());
+    CharBuffer input = chars.duplicate();
+    Token root = new Token(Token.Id.ROOT,null);
+    ErrorList errors = new ErrorList();
+    int result = __ROOT__.parse(root, errors, input, braceData);
+    
+    if result == Parser.PASS && (input.remaining() == 0 || input.get() == 0) {
+      return new Parser.Result.Pass(root);
+    }
+    else {
+      return new Parser.Result.Fail(chars.duplicate(),errors);
+    }
+  }
+  @void consumeWhitespace(CharBuffer chars, Map<Integer, Braces.Data> braceData){
+    while chars.remaining()>0 {
+      char c = chars.get();
+      if c!='"\'\\r\'"'&&!__WHITESPACE__.chars().anyMatch(C=>C==c) {
+        chars.position(chars.position()-1);
+        return;
+      } 
+    }
+  }
+  
+  class Result? {
+    enum State {
+      void PASS; void FAIL;
+    }
+    @String getStatus(State state){
+      switch state {
+      case \PASS { return ''"Passed"''; }
+      case \FAIL { return ''"Failed"''; } 
+      }
+      return null;
+    } 
+    String fileName;
+    long parseTime;
+    State getState()?
+    String description()?
+    long accumulateTime(long sum){
+      return sum +'"+"'+ parseTime;
+    }
+    void print(Consumer<String> consumer, boolean isSolo){
+      consumer.accept(fileName);
+      consumer.accept(''" "'');
+      consumer.accept(getStatus(getState()));
+      if isSolo {
+        consumer.accept(''" in "'');
+        consumer.accept(%Helper.getTimeAsString(parseTime));
+      }
+      consumer.accept(''"\\n"'');
+      consumer.accept(description());
+    }
+    String toString(){
+      StringBuilder builder = new StringBuilder();
+      print(builder::append,true);
+      return builder.toString();
+    }
+    Result setParseTime(long parseTime){
+      this.parseTime = parseTime;
+      return this;
+    }
+    Result setFileName(String newFileName){
+      fileName = newFileName;
+      return this;
+    }
+    class Pass Result {
+      Token root;
+      Pass(Token root){
+        super();
+        this.root = root;
+      }
+      Result.State getState(){ return Result.State.PASS; }
+      String description(){
+        return ''""'';
+	  }
+    }
+    class Fail Result {
+      ErrorList errors;
+      CharBuffer chars;
+      Fail(CharBuffer chars, ErrorList errors){
+        this.errors = errors;
+        this.chars = chars;
+      }
+      Result.State getState(){ return Result.State.FAIL; }
+      String description(){
+        return errors.toString(chars);
+      }
+    }
+  }
+}
+interface com.rem.gen.parser.ParseRule {
+  int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData)?
+  
+  @ParseRule createOne(Token.Id id, ParseRule rule){
+    return id == null?rule:new Tokenify.One(id,rule);
+  }
+  @ParseRule createOptional(Token.Id id, ParseRule rule){
+    return id == null?new Loopify.Optional(rule):new Tokenify.Optional(id,rule);
+  }
+  @ParseRule createMany(Token.Id id, ParseRule rule){
+    return id==null?new Loopify.Many(rule):new Tokenify.Many(id,rule);
+  }
+  @ParseRule createMore(Token.Id id, ParseRule rule){
+    return id==null?new Loopify.More(rule):new Tokenify.More(id,rule);
+  }
+  interface Tokenify ParseRule{
+    ParseRule setRule(ParseRule rule)?
+    class One < Tokenify {
+      Token.Id id;
+      ParseRule rule;
+      One(Token.Id id){
+        this.id = id;
+      }
+      One(Token.Id id, ParseRule rule){
+        this.id = id;
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        Token child = new Token(id);
+        int result = rule.parse(child,errors,chars,braceData);
+        if result != Parser.FAIL {
+          parent.accept(child);
+        }
+        return result;
+      }
+    }
+    class Optional < Tokenify {
+      Token.Id id;
+      ParseRule rule;
+      Optional(Token.Id id){
+        this.id = id;
+      }
+      Optional(Token.Id id, ParseRule rule){
+        this.id = id;
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        Token child = new Token(id);
+        int result = rule.parse(child,errors,chars,braceData);
+        if result != Parser.FAIL {
+          parent.accept(child);
+        }
+        return Parser.PASS;
+      }
+    }
+    class Many < Tokenify {
+      Token.Id id;
+      ParseRule rule;
+      Many(Token.Id id){
+        this.id = id;
+      }
+      Many(Token.Id id, ParseRule rule){
+        this.id = id;
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        int result = Parser.PASS;
+        int ret = Parser.PASS;
+        while result != Parser.FAIL {
+          Token child = new Token(id);
+          result = rule.parse(child,errors,chars,braceData);
+          if result != Parser.FAIL {
+            parent.accept(child);
+            if ret == Parser.PASS && result == Parser.ERROR_ON_END {
+              ret = result;
+            }
+          }
+        }
+        return result;
+      }
+    }
+    class More < Tokenify {
+      Token.Id id;
+      ParseRule rule;
+      More(Token.Id id){
+        this.id = id;
+      }
+      More(Token.Id id, ParseRule rule){
+        this.id = id;
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        int result = Parser.PASS;
+        int ret = Parser.FAIL;
+        while result != Parser.FAIL {
+          Token child = new Token(id);
+          result = rule.parse(child,errors,chars,braceData);
+          if result != Parser.FAIL {
+            parent.accept(child);
+            if ret == Parser.FAIL || ret == Parser.PASS && result == Parser.ERROR_ON_END {
+              ret = result;
+            }
+          }
+        }
+        return ret;
+      }
+    }
+  }
+  interface Loopify ParseRule{
+    ParseRule setRule(ParseRule rule)?
+    class Optional < Loopify {
+      ParseRule rule;
+      Optional(ParseRule rule){
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        rule.parse(parent,errors,chars,braceData);
+        return Parser.PASS;
+      }
+    }
+    class Many < Loopify {
+      ParseRule rule;
+      Many(ParseRule rule){
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        int ret = Parser.PASS;
+        while true {
+          int result = rule.parse(parent,errors,chars,braceData);
+          if result == Parser.FAIL {
+            return ret;
+          }
+          else if result == Parser.ERROR_ON_END {
+            ret = result;
+          }
+        }
+      }
+    }
+    class More < Loopify {
+      ParseRule rule;
+      More(ParseRule rule){
+        this.rule = rule;
+      }
+      ParseRule setRule(ParseRule rule){
+        this.rule = rule;
+        return this;
+      }
+      int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+        int ret = Parser.FAIL;
+        while true {
+          int result = rule.parse(parent,errors,chars,braceData);
+          if result == Parser.FAIL {
+            return ret;
+          }
+          else {
+            ret = result;
+          }
+        }
+      }
+    }
+  }
+  class Branch < ParseRule {
+    ParseRule[] contenders;
+    Branch(ParseRule... contenders){
+      this.contenders = contenders;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      ErrorList subErrors = new ErrorList();
+      for int i < contenders.length {
+        int result = contenders[i].parse(parent,subErrors,chars,braceData);
+        if result != Parser.FAIL {
+          if result == Parser.ERROR_ON_END {
+            errors.merge(subErrors);
+          }
+          return result;
+        }
+      }
+      errors.merge(subErrors);
+      return Parser.FAIL;
+	}
+  }
+  class Chain < ParseRule {
+    ParseRule[] contenders;
+    Chain(ParseRule... contenders){
+      this.contenders = contenders;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      List<Token> tokens = new ArrayList<Token>(contenders.length);
+      int position = chars.position();
+      int ret = Parser.PASS;
+      for int i < contenders.length {
+        int result = contenders[i].parse('"tokens"'::add,errors,chars,braceData);
+        if result == Parser.FAIL {
+          chars.position(position);
+          return result;
+        }
+        else if result == Parser.ERROR_ON_END {
+          ret = result;
+        }
+      }
+      tokens.forEach(parent);
+      return ret;
+	}
+  }
+  
+  class Terminal < ParseRule {
+    String value;
+    Terminal(String value){
+      this.value = value;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      if value.length() > chars.remaining() {
+        errors.adjust(new ParseError.BufferEnd(null,chars.position()) );
+        return Parser.FAIL;
+      }
+      else {
+        int position = chars.position();
+        if value.chars().allMatch(C=>{
+             char c = chars.get();
+             while c == '"\'\\r\'"' {
+               c = chars.get();
+             }
+             return C == c;}) {
+          Parser.consumeWhitespace(chars,braceData);
+          parent.accept(new Token(Token.Id._SYNTAX,value));
+          return Parser.PASS;
+        }
+        else {
+          chars.position(position);
+          CharBuffer buffer = chars.duplicate();
+          buffer.limit(value.length());
+          errors.adjust(new ParseError.WrongString(null,position,buffer,value));
+          return Parser.FAIL;
+        }
+      }
+    }
+  }
+  class Regex < ParseRule {
+    ParseRule[] contenders;
+    String regex;
+    Regex(String regex,ParseRule... contenders){
+      this.regex = regex;
+      this.contenders = contenders;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      CharBuffer buffer = chars.duplicate();
+      ErrorList subErrors = new ErrorList();
+      for int i < contenders.length {
+        if contenders[i].parse(null,subErrors,chars,braceData) == Parser.FAIL {
+          errors.adjust(new ParseError.WrongRegex(null,buffer.position(),subErrors.getError().getPosition(),regex));
+          chars.position(buffer.position());
+          return Parser.FAIL;
+        }
+      }
+      buffer.limit(chars.position());
+      if parent != null {
+        parent.accept(new Token(Token.Id._SYNTAX,buffer.toString()));
+        Parser.consumeWhitespace(chars,braceData);
+      }
+      return Parser.PASS;
+    }
+  }
+  class Not < ParseRule {
+    ParseRule[] contenders;
+    String options;
+    Not(String options, ParseRule... contenders){
+      this.contenders = contenders;
+      this.options = options;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      if chars.remaining() == 0 {
+        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
+        return Parser.FAIL;
+      }
+      CharBuffer buffer = chars.duplicate();
+      for int i < contenders.length {
+        if contenders[i].parse(parent,errors,buffer,braceData) == Parser.PASS {
+          errors.adjust(
+            new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),options));
+          return Parser.FAIL;
+        }
+      }
+      chars.get();
+      return Parser.PASS;
+    }
+  }
+  
+  class Range < ParseRule {
+    int lowerBound;
+    int upperBound;
+    String expected;
+    Range(int lowerBound, int upperBound){
+      this.lowerBound = lowerBound;
+      this.upperBound = upperBound;
+      this.expected = ((char)lowerBound)+''"-"''+((char)upperBound);
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      if chars.remaining() == 0 {
+        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
+        return Parser.FAIL;
+      }
+      else {
+        char c = chars.get();
+        if c >= lowerBound && c <= upperBound {
+          return Parser.PASS;
+        }
+        else {
+          chars.position(chars.position()-1);
+          errors.adjust(
+            new ParseError.WrongString(null,chars.position(),c,expected));
+          return Parser.FAIL;
+        }
+      }
+    }
+  }
+  class Any < ParseRule {
+    String value;
+    Any(String value){
+      this.value = value;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      if chars.remaining() == 0 {
+        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
+        return Parser.FAIL;
+      }
+      else {
+        char c = chars.get();
+        if value.chars().anyMatch(C=>C==c) {
+          return Parser.PASS;
+        }
+        else {
+          chars.position(chars.position()-1);
+          errors.adjust(
+            new ParseError.WrongString(null,chars.position(),c,value));
+          return Parser.FAIL;
+        }
+      }
+    }
+  }
+  class Char < ParseRule {
+    char value;
+    Char(char value){
+      this.value = value;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      if chars.remaining() < 1 {
+        errors.adjust(new ParseError.BufferEnd(null,chars.position()));
+        return Parser.FAIL;
+      }
+      else {
+        if chars.get() == this.value {
+          return Parser.PASS;
+        }
+        else {
+          chars.position(chars.position()-1);
+          errors.adjust(
+            new ParseError.WrongString(null,chars.position(),chars.duplicate().get(),new Character(value).toString()));
+          return Parser.FAIL;
+        }
+      }
+    }
+    
+  }
+}
+
+class com.rem.gen.parser.Braces {
+  interface Brace {
+    boolean open(int c1, int c2)?
+    boolean close(int c1, int c2)?
+    boolean ignore(int c)?
+    boolean isLock()?
+    int advanceOpen()?
+    int advanceClose()?
+    String getOpenString()?
+    String getCloseString()?
+  }
+  class B11 < Brace {
+    char ignore = char\\;
+    char open;
+    char close;
+    boolean isLock = false;
+    B11(char o, char c, char i, boolean isLock){
+      open = o;
+      close = c;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open;  }
+    boolean close(int c1, int c2){ return c1==close; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 1;         }
+    int advanceClose(){            return 1;         }
+    String getOpenString(){        return new Character(open).toString(); }
+    String getCloseString(){       return new Character(close).toString();}
+  }
+  class B12 < Brace {
+    char ignore = char\\;
+    char open;
+    char close1;
+    char close2;
+    boolean isLock = false;
+    B12(char o, char c1, char c2, char i, boolean isLock){
+      open = o;
+      close1 = c1;
+      close2 = c2;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open;  }
+    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 1;         }
+    int advanceClose(){            return 2;         }
+    String getOpenString(){        return new Character(open).toString(); }
+    String getCloseString(){       return new Character(close1).toString()+new Character(close2).toString();}
+  }
+  class B21 < Brace {
+    char ignore = char\\;
+    char open1;
+    char open2;
+    char close;
+    boolean isLock = false;
+    B21(char o1, char o2, char c, char i, boolean isLock){
+      open1 = o1;
+      open2 = o2;
+      close = c;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
+    boolean close(int c1, int c2){ return c1==close; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 2;         }
+    int advanceClose(){            return 1;         }
+    String getOpenString(){        return new Character(open1).toString()+new Character(open2).toString(); }
+    String getCloseString(){       return new Character(close).toString();}
+  }
+  class B22 < Brace {
+    char ignore = char\\;
+    char open1;
+    char open2;
+    char close1;
+    char close2;
+    boolean isLock = false;
+    B22(char o1, char o2, char c1, char c2, char i, boolean isLock){
+      open1 = o1;
+      open2 = o2;
+      close1 = c1;
+      close2 = c2;
+      ignore = i;
+      this.isLock = isLock;
+    }
+    boolean open(int c1, int c2) { return c1==open1&&c2==open2;  }
+    boolean close(int c1, int c2){ return c1==close1&&c2==close2; }
+    boolean ignore(int c){         return c==ignore; }
+    boolean isLock(){              return isLock;    }
+    int advanceOpen(){             return 2;         }
+    int advanceClose(){            return 2;         }
+    String getOpenString(){        return new Character(open1).toString()+new Character(open2).toString(); }
+    String getCloseString(){       return new Character(close1).toString()+new Character(close2).toString();}
+  }
+  class Rule < ParseRule {
+    Brace brace;
+    ParseRule contender;
+    Rule(Integer braceIndex, ParseRule contender){
+      this.brace = Braces.braces.get(braceIndex);
+      this.contender = contender;
+    }
+    int parse(Consumer<Token> parent, ErrorList errors, CharBuffer chars, Map<Integer, Braces.Data> braceData){
+      Data data = braceData.get(chars.position());
+      if data != null && brace == data.getBrace() {
+        CharBuffer buffer = chars.duplicate();
+        buffer.position(buffer.position()+data.getBrace().advanceOpen());
+        Parser.consumeWhitespace(buffer,braceData);
+        buffer.limit(data.getClose());
+        int result = contender.parse(parent,errors,buffer,braceData);
+        if result != Parser.PASS || buffer.position() != data.getClose() {
+          CharBuffer dupe = buffer.duplicate();
+          dupe.limit(dupe.position()+brace.advanceClose());
+          errors.append(new ParseError.WrongString(null,chars.position(),dupe,brace.getCloseString()));
+        }
+        chars.position(data.getClose()+brace.advanceClose());
+        Parser.consumeWhitespace(chars,braceData);
+        return Parser.ERROR_ON_END;
+      }
+      else {
+        CharBuffer dupe = chars.duplicate();
+        dupe.limit(dupe.position()+brace.advanceOpen());
+        errors.adjust(new ParseError.WrongString(null,chars.position(),dupe,brace.getOpenString()));
+        return Parser.FAIL;
+      }
+    }
+  }
+  > %A braces_2_2 = %A;
+  > %A braces_2_1 = %A;
+  > %A braces_1_2 = %A;
+  > %A braces_1_1 = %A;
+  > %A allBraces = %A.add(braces_2_2).add(braces_2_1).add(braces_1_2).add(braces_1_1);
+  > Map<String,Integer> allBraceMap = new HashMap<String,Integer>();
+  > void setup(){
+  }
+  > Integer addBrace(boolean lock, String open, String close, String ignore){
+    if !allBraceMap.containsKey(open+''" "''+close) {
+      if open.length() == 1 {
+        if close.length() == 1 {
+          braces_1_1.add(|new Braces.B11(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+        else {
+          braces_1_2.add(|new Braces.B12(`%E("'"+open.charAt(0)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+      }
+      else {
+        if close.length() == 1 {
+          braces_2_1.add(|new Braces.B21(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        }
+        else {
+          braces_2_2.add(|new Braces.B22(`%E("'"+open.charAt(0)+"'")`,`%E("'"+open.charAt(1)+"'")`,`%E("'"+close.charAt(0)+"'")`,`%E("'"+close.charAt(1)+"'")`,`%E(("'"+ignore.charAt(0)+"'").replace("\\","\\\\"))`,`%E(lock)`)|);
+        } 
+      }
+      allBraceMap.put(open+''" "''+close,allBraceMap.size());
+    }
+    return allBraceMap.get(open+''" "''+close);
+  }
+  @List<Brace> braces = Arrays.asList(`allBraces`);
+  @Map<Integer,Data> find(CharBuffer chars){
+    Stack<Data> data = new Stack<Data>();
+    Map<Integer, Data> positions = new HashMap<Integer,Data>();
+    OfInt itr = chars.duplicate().chars().iterator();
+    if !itr.hasNext() {
+      return positions;
+    }
+    boolean locked = false;
+    boolean ignored = false;
+    int position = 0;
+    int c1;
+    int c2;
+    int c3 = itr.next();
+    if !itr.hasNext() {
+      return positions;
+    }
+    c2 = c3;
+    c3 = itr.next();
+    int cf1 = c2;
+    int cf2 = c3;
+    Brace open = braces.stream().filter(B=>B.open(cf1,cf2)).findAny().orElse(null);
+    if open != null {
+      data.push(new Data(position,open));
+      locked = open.isLock();
+    }
+    while itr.hasNext() {
+      c1 = c2;
+      c2 = c3;
+      c3 = itr.next();
+      ++position;
+      
+      if !ignored && locked && data.peek().getBrace().ignore(c2) {
+        ignored = true;
+      }
+      else if ignored {
+        ignored = false;
+      }
+      else if !data.isEmpty() && data.peek().getBrace().close(c2,c3) {
+          locked = false;
+          data.pop().close(position,positions);
+      }
+      else if !locked {
+        int cf3 = c1;
+        int cf4 = c2;
+        int cf5 = c3;
+        open = braces.stream().filter(B=>!B.ignore(cf3)&&B.open(cf4,cf5)).findAny().orElse(null);
+        if open != null {
+          data.push(new Data(position,open));
+          locked = open.isLock();
+        }
+      }
+    }
+    return positions;
+  }
+  class Data {
+    Integer open;
+    Integer close;
+    Brace brace;
+    
+    Data(Integer start, Brace brace){
+      this.open = start;
+      this.brace = brace;
+    }
+    void close(Integer close, Map<Integer, Data> positions){
+      this.close = close;
+      positions.put(open,this);
+    }
+  }
+}
+
+class com.rem.gen.parser.Token < Consumer<Token> {
+> Set<String> idNames = new HashSet<String>();
+> void addId(String idName){
+    if idNames.add(idName){
+      Token.Id += void 'idName';
+    }
+  }
+  enum Id {
+    void ROOT;
+    void WHITESPACE;
+    void _SYNTAX;
+  }
+  List<Token> children;
+  Map<Id, List<Token>> map;
+  String value;
+  Id id;
+  Token(Id id){
+   this.id=id;
+   this.children = new ArrayList<Token>();
+   this.map = new EnumMap<Id, List<Token>>(Id.class);
+  }
+  Token(Id id, String value){
+    this.id = id;
+    if value != null {
+      this.value = value;
+    }
+    else {
+     this.children = new ArrayList<Token>();
+     this.map = new EnumMap<Id, List<Token>>(Id.class);
+    }
+  }
+  void accept(Token newToken){
+    this.children.add(newToken);
+    if this.map.containsKey(newToken.id) == false {
+      this.map.put(newToken.id,new ArrayList<Token>());
+    }
+    this.map.get(newToken.id).add(newToken);
+  }
+  void build(Consumer<Token> builder){
+    if children != null {
+      children.forEach(builder);
+    }
+    else {
+      builder.accept(this);
+    }
+  }
+  Token get(Id id){
+    List<Token> result = map.get(id);
+    if result != null && result.isEmpty() == false {
+      return result.get(0);
+    }
+    else {
+      return null;
+    }
+  }
+  List<Token> getAll(){
+    return children;
+  }
+  List<Token> getAllSafely(Id id){
+    List<Token> result = map.get(id);
+    if result != null {
+      return result;
+    }
+    else {
+      return new ArrayList<Token>();
+    }
+  }
+  String toString(){
+    if children == null {
+      return value;
+    }
+    else {
+      return children.isEmpty()?null:children.get(0).toString();
+    }
+  }
+  void print(){
+    print(System.'"out"'::print);
+  }
+  void print(Consumer<String> consumer){
+    print(0,consumer);
+  }
+  void print(int tabs, Consumer<String> consumer){
+    if id == Token.Id.ROOT {
+      if children != null {
+        children.forEach(C=>C.print(tabs,consumer));
+      }
+      return;
+    }
+    if tabs != 0 { consumer.accept(''"\\n"''); }
+    IntStream.range(0,tabs).forEach(I=>consumer.accept(''"  "''));
+    consumer.accept(id.toString().substring(1));
+    if children == null {
+      consumer.accept(''":"''+value);
+    }
+    else {
+      children.forEach(C=>C.print(tabs+''"+"''+1,consumer));
+    }
+  }
+  Token.Id getName() {
+    return id;
+  }
+  String getValue(){
+    return toString();
+  }
+}
+
+class com.rem.gen.parser.ErrorList {
+  List<ParseError> children = new ArrayList<ParseError>();
+  ParseError error = null;
+  ErrorList(){
+  }
+  ErrorList(ParseError error){
+    this.error = error;
+  }
+  void adjust(ParseError newError){
+    if error==null||newError.getPosition() > error.getPosition() {
+      error = newError;
+    }
+  }
+  void merge( ErrorList errors){
+    children.addAll(errors.children);
+    if errors.error != null {
+      adjust(errors.error);
+    }
+  }
+  void append(ParseError errors){
+    children.add(errors);
+  }
+  boolean isEmpty(){
+    return error == null && children.isEmpty();
+  }
+  String toString(CharBuffer chars){
+    StringBuilder builder = new StringBuilder();
+    List<Integer> lines = new ArrayList<Integer>();
+    CharBuffer liner = chars.duplicate();
+    IntStream.range(0,chars.limit()).forEach(I=>{if liner.get()=='"\'\\n\'"' {lines.add(I);}});
+    toString('"builder::append"',lines,chars);
+    return builder.toString();
+  }
+  void toString(Consumer<String> builder,List<Integer> lines,CharBuffer chars){
+    children.forEach(C=>C.toString(builder,lines,chars));
+    if error != null {
+      error.toString(builder,lines,chars);
+    }
+  }
+  class Dummy ErrorList {
+    Dummy(){
+    }
+    void adjust(ParseError newError){
+    }
+    void merge( ErrorList errors){
+    }
+    void append(ErrorList errors){
+    }
+    boolean isEmpty(){
+     return true;
+    }
+    String toString(CharBuffer chars){
+      return ''""'';
+    }
+    void toString(Consumer<String> builder,List<Integer> lines,CharBuffer chars){
+    }
+  }
+}
+class com.rem.gen.parser.ParseError? {
+  Token.Id id;
+  Integer position;
+  ParseError(Token.Id id, Integer position){
+    this.id = id;
+    this.position = position;
+  }
+  int getLine(List<Integer> lines){
+    return IntStream.range(0,lines.size()).parallel().filter(I=>position<=lines.get(I)).findFirst().orElse(lines.size());
+  }
+  
+  void toString(Consumer<String> builder, List<Integer> lines, CharBuffer chars){
+    chars = chars.duplicate();
+    int lineIndex = getLine(lines);
+    int position;
+    if lineIndex > 0 {
+      position = this.position - lines.get(lineIndex-1);
+    }
+    else {
+      position = this.position;
+    }
+    builder.accept(''"Error on line "'');
+    builder.accept(new Integer(lineIndex).toString());
+    builder.accept(''":"'');
+    description(builder,position);
+    builder.accept(''"\\n"'');
+    if lines.size() > 1 {
+      if lineIndex > 1 {
+        chars.position(lines.get(lineIndex-1));
+      }
+      if lineIndex < lines.size() {
+        chars.limit(lines.get(lineIndex));
+      }
+    }
+    chars.chars().forEach(I=>builder.accept(new Character((char)I).toString()));
+    builder.accept(''"\\n"'');
+    IntStream.range(0,position).forEach(I=>builder.accept(''" "''));
+    builder.accept(''"^\\n"'');
+  }
+  void description(Consumer<String> builder, int carrotPosition)?
+  class BufferEnd ParseError {
+    BufferEnd(Token.Id id, Integer position){
+      super(id,position);
+    }
+    void description(Consumer<String> builder, int carrotPosition){
+      builder.accept(''"Unexpected End of Input:"'');
+    }
+  }
+  class WrongString ParseError {
+    String found;
+    CharBuffer foundBuffer;
+    String options;
+    WrongString(Token.Id id, Integer position, char found, String options){
+      super(id,position);
+      this.found = new Character(found).toString();
+      this.options = options;
+    }
+    WrongString(Token.Id id, Integer position, String found, String options){
+      super(id,position);
+      this.found = found;
+      this.options = options;
+    }
+    WrongString(Token.Id id, Integer position, CharBuffer found, String options){
+      super(id,position);
+      this.foundBuffer = found;
+      this.options = options;
+    }
+    void description(Consumer<String> builder, int carrotPosition){
+      if found == null {
+        found = foundBuffer.chars().boxed().reduce(new StringBuilder(),B,I=>{int i = I; B.append((char)i);return B;},N,P=>N).toString();
+      }
+      this.options = options.replace(''"\\n"'',''"\\\\n"'').replace(''"\\t"'',''"\\\\t"'').replace(''"\\r"'',''"\\\\r"'');
+      if this.found.length()<=1 {
+        builder.accept(''"Char"'');
+      }
+      else {
+        builder.accept(''"String"'');
+      }
+      builder.accept(''" Expected: "'');
+      builder.accept(this.options);
+      builder.accept(''"\\t but found: "'');
+      builder.accept(this.found);
+    }
+  }
+  class WrongRegex ParseError {
+    Integer subPosition;
+    String options;
+    WrongRegex(Token.Id id, Integer position, Integer subPosition, String options){
+      super(id,position);
+      this.subPosition = subPosition;
+      this.options = options;
+    }
+    void description(Consumer<String> builder, int carrotPosition){
+      builder.accept(''"Error:\\n"'');
+      builder.accept(''"\\tRegex Failed: "'');
+      builder.accept(this.options);
+      builder.accept(''"\\t At:\\n"'');
+      
+      IntStream.range(0,carrotPosition+''"+"''+subPosition).forEach(I=>builder.accept(''" "''));
+      builder.accept(''"v"'');
+    }
+  }
+}
+
+
+
+
+
+

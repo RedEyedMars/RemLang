@@ -1,0 +1,124 @@
+
+> %Output regex(%T regex){
+    return regex(regex,null);
+  }
+> %Output regex(%T regex,StringBuilder parentStringBuilder){
+    %A args = %A;
+    %Quote asString = %Quote;
+    args.add(asString);
+    StringBuilder asStringBuilder = new StringBuilder();
+    regex : element : regex_element {
+      %Output arg = null;
+      element : atom
+        : group {
+          asStringBuilder.append("(");
+          arg = regex(atom->regex,asStringBuilder);
+          asStringBuilder.append(")");
+        }
+        : option {
+          arg = regex_option(atom,asStringBuilder);
+        }
+        : character {
+          String result = 'atom';
+          if result.equals("\"") {
+            result = "\\\"";
+          }
+          else if result.equals("\\") {
+            result = "\\\\";
+          }
+          arg = |new ParseRule.Any('' result '')|;
+          asStringBuilder.append(result);
+        }
+        : regex_special {
+          arg = regex_special(atom,asStringBuilder);
+        }
+      if element->multiple == null {
+          args.add(arg);
+      }
+      else {
+        element->multiple : multiple : OPTIONAL {
+          args.add(|new ParseRule.Loopify.Optional(`arg`)|);
+          asStringBuilder.append("?");
+        }
+        : MANY {
+          args.add(|new ParseRule.Loopify.Many(`arg`)|);
+          asStringBuilder.append("*");
+        }
+        : PLUS {
+          args.add(|new ParseRule.Loopify.More(`arg`)|);
+          asStringBuilder.append("+");
+        }
+      }
+    }
+    asString.set(asStringBuilder.toString());
+    if parentStringBuilder != null {
+      parentStringBuilder.append(asStringBuilder.toString());
+    }
+    return %New Object().set(%Type("ParseRule").add("Regex"),args);
+  }
+> %Output regex_option(%T option, StringBuilder asStringBuilder){
+    StringBuilder personalStringBuilder = new StringBuilder();
+    asStringBuilder.append("[");
+    
+    %A args = %A;
+    %Quote personalString = %Quote;
+    if option->negate != null {
+      asStringBuilder.append("^");
+      args.add(personalString);
+    }
+    option : type : range {
+      args.add(|new ParseRule.Range(`%E((int)'type->left'.charAt(0))`,`%E((int)'type->right'.charAt(0))`)|);
+      personalStringBuilder.append('type->left');
+      personalStringBuilder.append("-");
+      personalStringBuilder.append('type->right');
+    }
+    : regex_special {
+      args.add(regex_special(type,personalStringBuilder));
+    }
+    : standAlone {
+      String result = "\'"+'type'+"\'";
+      if result.equals("\'") {
+        result = "\'\\\'\'";
+      }
+      else if result.equals("\\") {
+        result = "\'\\\\\'";
+      }
+      args.add(|new ParseRule.Char('result')|);
+      personalStringBuilder.append(result);
+    }
+    asStringBuilder.append(personalStringBuilder.toString());
+    asStringBuilder.append("]");
+    if option->negate != null {
+      personalString.set(personalStringBuilder.toString());
+      return |new ParseRule.Not(`args`)|;
+    }
+    else {
+      return |new ParseRule.Branch(`args`)|;
+    }
+  }
+> %Output regex_special(%T special, StringBuilder asStringBuilder){
+    special : atom 
+      : number {
+        asStringBuilder.append("\\\\d");
+        return |new ParseRule.Range(48,57)|;
+      }
+      : dot {
+        asStringBuilder.append(".");
+        return |new ParseRule.Range(32,128)|;
+      }
+      : whitespace {
+        asStringBuilder.append("\\\\s");
+        return |new ParseRule.Any('' " \\t\\n\\r" '')|;
+      }
+      : escaped {
+        String result = "\'\\"+'atom'+"\'";
+        asStringBuilder.append("\\"+'atom');
+        return |new ParseRule.Char(' result ')|;
+      }
+      : slash {
+        String result = "\'\\\\\'";
+        asStringBuilder.append("\\\\");
+        return |new ParseRule.Char('result')|;
+      }
+    return null;
+  }
